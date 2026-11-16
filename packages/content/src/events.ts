@@ -47,7 +47,20 @@ export const EVENT_PLACEHOLDERS = [
   'city',
   'hometown',
   'business',
+  'partner',
+  'child',
 ] as const;
+
+/**
+ * Eventi che il motore fa arrivare da solo quando succede qualcosa nella vita privata (un
+ * tradimento scoperto, una nascita, il partner che se ne va). Ogni evento con `trigger` è anche
+ * `chainOnly`.
+ */
+export const EVENT_TRIGGERS = ['affairDiscovered', 'childBorn', 'partnerLeft'] as const;
+export type EventTrigger = (typeof EVENT_TRIGGERS)[number];
+
+/** Situazione sentimentale richiesta da un evento: `partner` vale per qualsiasi relazione. */
+export const RELATIONSHIP_STATES = ['single', 'partner', 'dating', 'engaged', 'married'] as const;
 
 export const EVENT_CATEGORIES = [
   'dressing_room',
@@ -57,6 +70,7 @@ export const EVENT_CATEGORIES = [
   'family',
   'transfer',
   'business',
+  'love',
 ] as const;
 
 const range = z
@@ -90,6 +104,14 @@ export const eventConditionsSchema = z
     seasonWeek: range.optional(),
     /** Il giocatore ha (o non ha) almeno un'attività aperta; `{business}` è la principale. */
     business: z.boolean().optional(),
+    /** Situazione sentimentale; `{partner}` richiede una relazione. */
+    relationship: z.enum(RELATIONSHIP_STATES).optional(),
+    /** Affinità con il partner (0–100): vale solo se c'è un partner. */
+    affinity: range.optional(),
+    /** Il giocatore ha (o non ha) figli; `{child}` è il più giovane. */
+    children: z.boolean().optional(),
+    /** C'è (o non c'è) una storia segreta in corso. */
+    affair: z.boolean().optional(),
   })
   .strict();
 
@@ -127,6 +149,14 @@ const effectBase = {
   trait: z.object({ type: z.literal('trait'), traitId: id, action: z.enum(['add', 'remove']) }),
   /** Cambia l'andamento (0–100) dell'attività principale del giocatore. */
   business: z.object({ type: z.literal('business'), health: z.number() }),
+  /** Cambia l'affinità con il partner (nessun effetto da single). */
+  partner: z.object({ type: z.literal('partner'), affinity: z.number() }),
+  /** Il giocatore conosce qualcuno: una persona da invitare a uscire (solo da single). */
+  meet: z.object({ type: z.literal('meet') }),
+  /** Inizia o chiude una storia segreta (iniziarla richiede un partner). */
+  affair: z.object({ type: z.literal('affair'), action: z.enum(['start', 'end']) }),
+  /** La relazione finisce (con le conseguenze di una separazione o di un divorzio). */
+  breakup: z.object({ type: z.literal('breakup') }),
 };
 
 type BaseEffect = z.infer<(typeof effectBase)[keyof typeof effectBase]>;
@@ -150,6 +180,10 @@ export const eventEffectSchema: z.ZodType<EventEffect> = z.lazy(() =>
     effectBase.injury,
     effectBase.trait,
     effectBase.business,
+    effectBase.partner,
+    effectBase.meet,
+    effectBase.affair,
+    effectBase.breakup,
     z.object({
       type: z.literal('chance'),
       p: z.number().min(0).max(1),
@@ -177,6 +211,8 @@ export const eventSchema = z
     once: z.boolean().optional(),
     /** Mai estratto a caso: arriva solo tramite un effetto `schedule`. */
     chainOnly: z.boolean().optional(),
+    /** Arriva quando succede il fatto indicato nella vita privata (richiede `chainOnly`). */
+    trigger: z.enum(EVENT_TRIGGERS).optional(),
     /** Titolo in stile prima pagina. */
     titleKey: textKey,
     /** Testo; con più varianti le chiavi sono `<textKey>.1` ... `<textKey>.n`. */
@@ -184,7 +220,8 @@ export const eventSchema = z
     textVariants: z.number().int().min(1).optional(),
     choices: z.array(eventChoiceSchema).min(1).max(4),
   })
-  .strict();
+  .strict()
+  .refine((e) => !e.trigger || e.chainOnly, { message: 'events with a trigger must be chainOnly' });
 
 export const eventsSchema = z.array(eventSchema);
 

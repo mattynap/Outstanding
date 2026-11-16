@@ -6,6 +6,7 @@ import difficultyJson from '../data/difficulty.json';
 import editorJson from '../data/editor.json';
 import financeJson from '../data/finance.json';
 import lookJson from '../data/look.json';
+import privateJson from '../data/private.json';
 import economyJson from '../data/economy.json';
 import eventsJson from '../data/events.json';
 import matchJson from '../data/match.json';
@@ -22,6 +23,7 @@ import {
   editorSchema,
   lookSchema,
   financeSchema,
+  privateSchema,
   eventsConfigSchema,
   matchSchema,
   playerConfigSchema,
@@ -36,6 +38,7 @@ import {
   type EditorConfig,
   type LookConfig,
   type FinanceConfig,
+  type PrivateConfig,
   type EventsConfig,
   type MatchConfig,
   type PlayerConfig,
@@ -61,6 +64,7 @@ export const configSchema = {
   difficulty: difficultySchema,
   look: lookSchema,
   finance: financeSchema,
+  private: privateSchema,
 } as const;
 
 export interface GameConfig {
@@ -78,6 +82,7 @@ export interface GameConfig {
   difficulty: DifficultyConfig;
   look: LookConfig;
   finance: FinanceConfig;
+  private: PrivateConfig;
 }
 
 /** Oggetti di configurazione grezzi (non validati), uno per file JSON. */
@@ -162,6 +167,13 @@ function crossCheck(c: GameConfig): string[] {
   for (const id of Object.keys(c.career.score.trophies)) {
     if (!trophyIds.has(id)) problems.push(`career: unknown trophy "${id}"`);
   }
+  const needs = new Set(c.private.actions.map((a) => a.id));
+  for (const id of ['meet', 'ask_out', 'propose', 'wedding', 'child']) {
+    if (!needs.has(id)) problems.push(`private: missing action "${id}"`);
+  }
+  if (c.private.affinity.leaveAtOrBelow >= c.private.affinity.crisisBelow) {
+    problems.push('private: affinity.leaveAtOrBelow must be below crisisBelow');
+  }
   return problems;
 }
 
@@ -181,6 +193,7 @@ export const rawDefaultConfig: RawConfig = {
   difficulty: difficultyJson,
   look: lookJson,
   finance: financeJson,
+  private: privateJson,
 };
 
 /** Configurazione predefinita distribuita con il gioco. */

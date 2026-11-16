@@ -2,6 +2,7 @@ import type { WeekActionConfig } from '@outstanding/config';
 import { difficultyMods } from '../difficulty';
 import { defaultContext, type GameContext } from '../context';
 import { applyGrowth, injure, injuryChance, rollInjury } from '../player/progression';
+import { applyParty, type PartyReport } from '../private/private';
 import { SKILLS } from '../player/ratings';
 import { Rng } from '../rng';
 import type { GameState, Player, Skill, Skills } from '../types';
@@ -33,6 +34,8 @@ export interface WeekPlanReport {
   injury?: { type: string; weeksLeft: number };
   /** Vero se le cure hanno accorciato l'infortunio. */
   healed: boolean;
+  /** Com'è andata la serata, se il giocatore è uscito. */
+  party?: PartyReport;
 }
 
 const isInjured = (p: Player) => Boolean(p.injury && p.injury.weeksLeft > 0);
@@ -84,6 +87,7 @@ function applyDeltas(player: Player, a: WeekActionConfig, ctx: GameContext): Pla
     },
     condition: {
       ...player.condition,
+      form: clamp(player.condition.form + (e.form ?? 0), 0, 100),
       energy: clamp(player.condition.energy + (e.energy ?? 0), 0, 100),
       morale: clamp(player.condition.morale + (e.morale ?? 0), 0, 100),
       injuryRisk: clamp(player.condition.injuryRisk + (e.injuryRisk ?? 0), 0, 100),
@@ -167,9 +171,23 @@ export function planWeek(
     player = applyDeltas(player, action, ctx);
   }
 
+  let next: GameState = { ...state, player };
+  let party: PartyReport | undefined;
+  if (choices.some((c) => getAction(c.actionId, ctx).kind === 'party')) {
+    const out = applyParty(next, rng, ctx);
+    next = out.state;
+    party = out.report;
+  }
+
   return {
-    state: { ...state, player, plannedWeek: state.week, rngState: rng.getState() },
-    report: { choices: [...choices], gains, ...(injury ? { injury } : {}), healed },
+    state: { ...next, plannedWeek: state.week, rngState: rng.getState() },
+    report: {
+      choices: [...choices],
+      gains,
+      ...(injury ? { injury } : {}),
+      healed,
+      ...(party ? { party } : {}),
+    },
   };
 }
 

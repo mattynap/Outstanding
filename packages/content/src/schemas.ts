@@ -117,6 +117,30 @@ export const sponsorSchema = z.object({
 export const sponsorsSchema = z.array(sponsorSchema).min(4);
 export type Sponsor = z.infer<typeof sponsorSchema>;
 
+/** Materiale per le persone della vita privata (partner, figli): nomi, mestieri, acconciature. */
+export const PARTNER_HAIR = [
+  'long',
+  'bob',
+  'bun',
+  'curly',
+  'ponytail',
+  'short',
+  'buzz',
+  'quiff',
+] as const;
+export type PartnerHair = (typeof PARTNER_HAIR)[number];
+export const privateContentSchema = z.object({
+  /** I nomi maschili sono quelli di names.json. */
+  femaleFirstNames: z.array(z.string().min(2)).min(10),
+  /** Mestieri del partner (testi in `private.jobs.<id>.f` e `.m`). */
+  jobs: z.array(id).min(3),
+  partnerHair: z.object({
+    f: z.array(z.enum(PARTNER_HAIR)).min(1),
+    m: z.array(z.enum(PARTNER_HAIR)).min(1),
+  }),
+});
+export type PrivateContent = z.infer<typeof privateContentSchema>;
+
 /** Tabella di traduzioni piatta: "chiave.puntata" -> testo. */
 export const translationsSchema = z.record(z.string(), z.string().min(1));
 

@@ -4,8 +4,9 @@ import { Rng } from './rng';
 import { CURRENT_SAVE_VERSION } from './save/serialize';
 import { setupSeasonCups } from './cups/cups';
 import { createFinance } from './finance/finance';
+import { createPrivateLife } from './private/private';
 import { buildSeasonCalendar } from './season/schedule';
-import type { Difficulty, GameState, Player, World } from './types';
+import type { Difficulty, GameState, Interest, Player, World } from './types';
 import { generateWorld, groupId, IdGen } from './world/generate';
 import { getGroup, getLeagueByLevel } from './world/queries';
 
@@ -14,6 +15,8 @@ export interface NewCareerOptions extends NewPlayerOptions {
   startLevel?: number;
   /** Difficoltà della carriera (predefinita: `config.difficulty.default`). */
   difficulty?: Difficulty;
+  /** Da chi è attratto il giocatore (predefinito: `config.private.defaultInterest`). */
+  interest?: Interest;
 }
 
 /** Trova la città dei contenuti corrispondente a quella natale del giocatore (senza distinguere maiuscole). */
@@ -117,5 +120,6 @@ export function newCareer(
     nextId: ids.next,
     difficulty: options.difficulty ?? ctx.config.difficulty.default,
     finance: createFinance(ctx),
+    privateLife: createPrivateLife(options.interest, ctx),
   };
 }

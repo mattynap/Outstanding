@@ -66,6 +66,18 @@
       }
     },
     {
+      "id": "party",
+      "kind": "party",
+      "effects": {
+        "energy": -12,
+        "form": -3,
+        "morale": 3,
+        "happiness": 6,
+        "popularity": 1,
+        "discipline": -2
+      }
+    },
+    {
       "id": "sponsor_shoot",
       "kind": "sponsor",
       "effects": {

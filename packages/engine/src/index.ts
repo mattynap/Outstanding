@@ -44,7 +44,27 @@ export {
   type LoanQuote,
   type WealthWeek,
 } from './finance/finance';
-export { DIFFICULTIES } from '@outstanding/config';
+export { DIFFICULTIES, INTERESTS } from '@outstanding/config';
+export {
+  applyParty,
+  applyWeeklyPrivate,
+  breakUp,
+  createPrivateLife,
+  doPrivateAction,
+  endAffair,
+  getPrivateActions,
+  privateOf,
+  relationshipState,
+  scaledCost,
+  setInterest,
+  type BreakupReport,
+  type PartyReport,
+  type PrivateActionReport,
+  type PrivateActionView,
+  type PrivateOutcome,
+  type PrivateWeek,
+  type RelationshipState,
+} from './private/private';
 export {
   careerScore,
   careerTotals,

@@ -1,0 +1,139 @@
+{
+  "defaultInterest": "women",
+  "affinity": {
+    "start": 55,
+    "driftPerWeek": -0.6,
+    "marriedDriftPerWeek": -0.4,
+    "crisisBelow": 25,
+    "leaveAtOrBelow": 5,
+    "crisisHappinessPerWeek": -1
+  },
+  "meeting": {
+    "prospectWeeks": 3,
+    "chance": 0.45,
+    "popularityBonus": 0.004
+  },
+  "askOut": {
+    "chance": 0.55,
+    "popularityBonus": 0.003,
+    "happinessOnYes": 6,
+    "happinessOnNo": -3
+  },
+  "actions": [
+    {
+      "id": "meet",
+      "needs": "single",
+      "minAge": 16,
+      "cost": { "min": 20, "salaryWeeks": 0.1 },
+      "effects": { "energy": -3, "happiness": 2 }
+    },
+    {
+      "id": "ask_out",
+      "needs": "prospect",
+      "minAge": 16,
+      "cost": { "min": 0, "salaryWeeks": 0 },
+      "effects": {}
+    },
+    {
+      "id": "dinner",
+      "needs": "partner",
+      "minAge": 16,
+      "cost": { "min": 30, "salaryWeeks": 0.15 },
+      "affinity": 5,
+      "effects": { "happiness": 3 }
+    },
+    {
+      "id": "gift",
+      "needs": "partner",
+      "minAge": 16,
+      "cost": { "min": 50, "salaryWeeks": 0.5 },
+      "affinity": 8,
+      "effects": { "happiness": 1 }
+    },
+    {
+      "id": "holiday",
+      "needs": "partner",
+      "minAge": 16,
+      "freeWeekOnly": true,
+      "cost": { "min": 250, "salaryWeeks": 2 },
+      "affinity": 14,
+      "effects": { "energy": 15, "happiness": 8, "morale": 3 }
+    },
+    {
+      "id": "propose",
+      "needs": "dating",
+      "minAge": 18,
+      "minWeeksTogether": 26,
+      "minAffinity": 60,
+      "cost": { "min": 300, "salaryWeeks": 4 },
+      "effects": {}
+    },
+    {
+      "id": "wedding",
+      "needs": "engaged",
+      "minAge": 18,
+      "minWeeksInStage": 12,
+      "cost": { "min": 2000, "salaryWeeks": 10 },
+      "affinity": 10,
+      "effects": { "happiness": 15, "morale": 5, "popularity": 3 }
+    },
+    {
+      "id": "child",
+      "needs": "partner",
+      "minAge": 20,
+      "minWeeksTogether": 52,
+      "minAffinity": 55,
+      "cost": { "min": 0, "salaryWeeks": 0 },
+      "effects": {}
+    },
+    {
+      "id": "kids_time",
+      "needs": "children",
+      "minAge": 16,
+      "cost": { "min": 10, "salaryWeeks": 0.05 },
+      "affinity": 2,
+      "effects": { "happiness": 5, "morale": 2, "energy": -2 }
+    }
+  ],
+  "proposal": {
+    "chanceAtMinAffinity": 0.5,
+    "chancePerAffinityPoint": 0.015,
+    "happinessOnYes": 10,
+    "affinityOnNo": -12,
+    "happinessOnNo": -8
+  },
+  "children": {
+    "max": 4,
+    "conceiveChance": 0.4,
+    "pregnancyWeeks": 36,
+    "birthHappiness": 15,
+    "birthAffinity": 10,
+    "cost": { "min": 15, "salaryWeeks": 0.08 },
+    "happinessPerWeek": 0.3,
+    "maxHappinessPerWeek": 0.8
+  },
+  "breakup": {
+    "happiness": -12,
+    "morale": -6,
+    "popularity": 2
+  },
+  "divorce": {
+    "liquidShare": 0.3,
+    "alimonyPerChild": { "min": 25, "salaryWeeks": 0.08 }
+  },
+  "affair": {
+    "happinessPerWeek": 0.4,
+    "disciplinePerWeek": -0.3,
+    "discoveryChance": 0.05,
+    "discoveryPerPopularity": 0.0007,
+    "onDiscovery": { "affinity": -35, "popularity": 4, "reputation": -6, "happiness": -8 }
+  },
+  "party": {
+    "gossipChance": 0.15,
+    "gossip": { "reputation": -3, "popularity": 2, "affinity": -6 },
+    "partnerAffinity": -2,
+    "fineChance": 0.35,
+    "fine": { "min": 30, "salaryWeeks": 0.5 },
+    "fineCoachRelationship": -6
+  }
+}

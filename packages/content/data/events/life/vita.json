@@ -121,5 +121,101 @@
         ]
       }
     ]
+  },
+  {
+    "id": "festa_esclusiva_01",
+    "category": "life",
+    "weight": 2,
+    "cooldownWeeks": 16,
+    "conditions": {
+      "age": {
+        "min": 18
+      },
+      "stats": [
+        {
+          "path": "image.popularity",
+          "gte": 30
+        }
+      ]
+    },
+    "titleKey": "events.festa_esclusiva_01.title",
+    "textKey": "events.festa_esclusiva_01.text",
+    "choices": [
+      {
+        "textKey": "events.festa_esclusiva_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": 3
+          },
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -8
+          },
+          {
+            "type": "partner",
+            "affinity": -3
+          },
+          {
+            "type": "chance",
+            "p": 0.3,
+            "effects": [
+              {
+                "type": "stat",
+                "path": "image.reputation",
+                "delta": -3
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "textKey": "events.festa_esclusiva_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.discipline",
+            "delta": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "festa_compleanno_01",
+    "category": "life",
+    "weight": 2,
+    "cooldownWeeks": 20,
+    "titleKey": "events.festa_compleanno_01.title",
+    "textKey": "events.festa_compleanno_01.text",
+    "choices": [
+      {
+        "textKey": "events.festa_compleanno_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 4
+          },
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -5
+          }
+        ]
+      },
+      {
+        "textKey": "events.festa_compleanno_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": 3
+          }
+        ]
+      }
+    ]
   }
 ]

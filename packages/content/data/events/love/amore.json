@@ -1,0 +1,658 @@
+[
+  {
+    "id": "amore_incontro_serata_01",
+    "category": "love",
+    "weight": 3,
+    "cooldownWeeks": 8,
+    "conditions": {
+      "relationship": "single"
+    },
+    "titleKey": "events.amore_incontro_serata_01.title",
+    "textKey": "events.amore_incontro_serata_01.text",
+    "textVariants": 2,
+    "choices": [
+      {
+        "textKey": "events.amore_incontro_serata_01.c1",
+        "effects": [
+          {
+            "type": "meet"
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 2
+          }
+        ]
+      },
+      {
+        "textKey": "events.amore_incontro_serata_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "amore_incontro_messaggio_01",
+    "category": "love",
+    "weight": 2,
+    "cooldownWeeks": 12,
+    "conditions": {
+      "relationship": "single",
+      "stats": [
+        {
+          "path": "image.popularity",
+          "gte": 20
+        }
+      ]
+    },
+    "titleKey": "events.amore_incontro_messaggio_01.title",
+    "textKey": "events.amore_incontro_messaggio_01.text",
+    "choices": [
+      {
+        "textKey": "events.amore_incontro_messaggio_01.c1",
+        "effects": [
+          {
+            "type": "meet"
+          }
+        ]
+      },
+      {
+        "textKey": "events.amore_incontro_messaggio_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.discipline",
+            "delta": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "amore_pranzo_famiglia_01",
+    "category": "love",
+    "weight": 2,
+    "cooldownWeeks": 52,
+    "conditions": {
+      "relationship": "partner"
+    },
+    "titleKey": "events.amore_pranzo_famiglia_01.title",
+    "textKey": "events.amore_pranzo_famiglia_01.text",
+    "choices": [
+      {
+        "textKey": "events.amore_pranzo_famiglia_01.c1",
+        "effects": [
+          {
+            "type": "partner",
+            "affinity": 7
+          },
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -3
+          }
+        ]
+      },
+      {
+        "textKey": "events.amore_pranzo_famiglia_01.c2",
+        "effects": [
+          {
+            "type": "partner",
+            "affinity": -7
+          },
+          {
+            "type": "stat",
+            "path": "persona.discipline",
+            "delta": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "amore_gelosia_01",
+    "category": "love",
+    "weight": 2,
+    "cooldownWeeks": 20,
+    "conditions": {
+      "relationship": "partner",
+      "stats": [
+        {
+          "path": "image.popularity",
+          "gte": 35
+        }
+      ]
+    },
+    "titleKey": "events.amore_gelosia_01.title",
+    "textKey": "events.amore_gelosia_01.text",
+    "choices": [
+      {
+        "textKey": "events.amore_gelosia_01.c1",
+        "effects": [
+          {
+            "type": "partner",
+            "affinity": 4
+          },
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": -1
+          }
+        ]
+      },
+      {
+        "textKey": "events.amore_gelosia_01.c2",
+        "effects": [
+          {
+            "type": "partner",
+            "affinity": -6
+          },
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "amore_anniversario_01",
+    "category": "love",
+    "weight": 2,
+    "cooldownWeeks": 52,
+    "conditions": {
+      "relationship": "partner"
+    },
+    "titleKey": "events.amore_anniversario_01.title",
+    "textKey": "events.amore_anniversario_01.text",
+    "choices": [
+      {
+        "textKey": "events.amore_anniversario_01.c1",
+        "effects": [
+          {
+            "type": "money",
+            "delta": -80
+          },
+          {
+            "type": "partner",
+            "affinity": 5
+          }
+        ]
+      },
+      {
+        "textKey": "events.amore_anniversario_01.c2",
+        "effects": [
+          {
+            "type": "chance",
+            "p": 0.5,
+            "effects": [
+              {
+                "type": "partner",
+                "affinity": 3
+              }
+            ],
+            "otherwise": [
+              {
+                "type": "partner",
+                "affinity": -9
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "amore_lavoro_lontano_01",
+    "category": "love",
+    "weight": 1,
+    "cooldownWeeks": 60,
+    "conditions": {
+      "relationship": "partner",
+      "age": {
+        "min": 19
+      }
+    },
+    "titleKey": "events.amore_lavoro_lontano_01.title",
+    "textKey": "events.amore_lavoro_lontano_01.text",
+    "choices": [
+      {
+        "textKey": "events.amore_lavoro_lontano_01.c1",
+        "effects": [
+          {
+            "type": "partner",
+            "affinity": 9
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": -3
+          }
+        ]
+      },
+      {
+        "textKey": "events.amore_lavoro_lontano_01.c2",
+        "effects": [
+          {
+            "type": "chance",
+            "p": 0.5,
+            "effects": [
+              {
+                "type": "partner",
+                "affinity": 2
+              }
+            ],
+            "otherwise": [
+              {
+                "type": "partner",
+                "affinity": -12
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "amore_copertina_01",
+    "category": "love",
+    "weight": 2,
+    "cooldownWeeks": 40,
+    "conditions": {
+      "relationship": "partner",
+      "stats": [
+        {
+          "path": "image.popularity",
+          "gte": 45
+        }
+      ]
+    },
+    "titleKey": "events.amore_copertina_01.title",
+    "textKey": "events.amore_copertina_01.text",
+    "choices": [
+      {
+        "textKey": "events.amore_copertina_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": 3
+          },
+          {
+            "type": "money",
+            "delta": 1500
+          },
+          {
+            "type": "chance",
+            "p": 0.5,
+            "effects": [
+              {
+                "type": "partner",
+                "affinity": 3
+              }
+            ],
+            "otherwise": [
+              {
+                "type": "partner",
+                "affinity": -4
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "textKey": "events.amore_copertina_01.c2",
+        "effects": [
+          {
+            "type": "partner",
+            "affinity": 4
+          },
+          {
+            "type": "stat",
+            "path": "image.reputation",
+            "delta": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "amore_tentazione_01",
+    "category": "love",
+    "weight": 2,
+    "cooldownWeeks": 26,
+    "conditions": {
+      "relationship": "partner",
+      "affair": false,
+      "age": {
+        "min": 18
+      },
+      "stats": [
+        {
+          "path": "image.popularity",
+          "gte": 25
+        }
+      ]
+    },
+    "titleKey": "events.amore_tentazione_01.title",
+    "textKey": "events.amore_tentazione_01.text",
+    "textVariants": 2,
+    "choices": [
+      {
+        "textKey": "events.amore_tentazione_01.c1",
+        "effects": [
+          {
+            "type": "affair",
+            "action": "start"
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 3
+          }
+        ]
+      },
+      {
+        "textKey": "events.amore_tentazione_01.c2",
+        "effects": [
+          {
+            "type": "partner",
+            "affinity": 3
+          },
+          {
+            "type": "stat",
+            "path": "persona.discipline",
+            "delta": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "amore_foto_sospette_01",
+    "category": "love",
+    "weight": 3,
+    "cooldownWeeks": 6,
+    "conditions": {
+      "relationship": "partner",
+      "affair": true
+    },
+    "titleKey": "events.amore_foto_sospette_01.title",
+    "textKey": "events.amore_foto_sospette_01.text",
+    "choices": [
+      {
+        "textKey": "events.amore_foto_sospette_01.c1",
+        "effects": [
+          {
+            "type": "affair",
+            "action": "end"
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": -2
+          },
+          {
+            "type": "stat",
+            "path": "persona.discipline",
+            "delta": 2
+          }
+        ]
+      },
+      {
+        "textKey": "events.amore_foto_sospette_01.c2",
+        "effects": [
+          {
+            "type": "money",
+            "delta": -1500
+          },
+          {
+            "type": "chance",
+            "p": 0.6,
+            "effects": [
+              {
+                "type": "stat",
+                "path": "persona.discipline",
+                "delta": -1
+              }
+            ],
+            "otherwise": [
+              {
+                "type": "stat",
+                "path": "image.reputation",
+                "delta": -4
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "textKey": "events.amore_foto_sospette_01.c3",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "amore_crisi_01",
+    "category": "love",
+    "weight": 3,
+    "cooldownWeeks": 12,
+    "conditions": {
+      "relationship": "partner",
+      "affinity": {
+        "max": 35
+      }
+    },
+    "titleKey": "events.amore_crisi_01.title",
+    "textKey": "events.amore_crisi_01.text",
+    "choices": [
+      {
+        "textKey": "events.amore_crisi_01.c1",
+        "effects": [
+          {
+            "type": "chance",
+            "p": 0.6,
+            "effects": [
+              {
+                "type": "partner",
+                "affinity": 12
+              }
+            ],
+            "otherwise": [
+              {
+                "type": "partner",
+                "affinity": -4
+              }
+            ]
+          },
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -4
+          }
+        ]
+      },
+      {
+        "textKey": "events.amore_crisi_01.c2",
+        "effects": [
+          {
+            "type": "breakup"
+          }
+        ]
+      },
+      {
+        "textKey": "events.amore_crisi_01.c3",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.discipline",
+            "delta": 2
+          },
+          {
+            "type": "partner",
+            "affinity": -4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "amore_lista_invitati_01",
+    "category": "love",
+    "weight": 3,
+    "cooldownWeeks": 30,
+    "conditions": {
+      "relationship": "engaged"
+    },
+    "titleKey": "events.amore_lista_invitati_01.title",
+    "textKey": "events.amore_lista_invitati_01.text",
+    "choices": [
+      {
+        "textKey": "events.amore_lista_invitati_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": 2
+          },
+          {
+            "type": "partner",
+            "affinity": -3
+          }
+        ]
+      },
+      {
+        "textKey": "events.amore_lista_invitati_01.c2",
+        "effects": [
+          {
+            "type": "partner",
+            "affinity": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "amore_scoperta_01",
+    "category": "love",
+    "weight": 1,
+    "cooldownWeeks": 0,
+    "chainOnly": true,
+    "trigger": "affairDiscovered",
+    "conditions": {
+      "relationship": "partner"
+    },
+    "titleKey": "events.amore_scoperta_01.title",
+    "textKey": "events.amore_scoperta_01.text",
+    "choices": [
+      {
+        "textKey": "events.amore_scoperta_01.c1",
+        "effects": [
+          {
+            "type": "chance",
+            "p": 0.5,
+            "effects": [
+              {
+                "type": "partner",
+                "affinity": 15
+              }
+            ],
+            "otherwise": [
+              {
+                "type": "breakup"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "textKey": "events.amore_scoperta_01.c2",
+        "effects": [
+          {
+            "type": "breakup"
+          }
+        ]
+      },
+      {
+        "textKey": "events.amore_scoperta_01.c3",
+        "effects": [
+          {
+            "type": "chance",
+            "p": 0.35,
+            "effects": [
+              {
+                "type": "partner",
+                "affinity": 6
+              }
+            ],
+            "otherwise": [
+              {
+                "type": "partner",
+                "affinity": -15
+              },
+              {
+                "type": "stat",
+                "path": "image.reputation",
+                "delta": -2
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "amore_addio_01",
+    "category": "love",
+    "weight": 1,
+    "cooldownWeeks": 0,
+    "chainOnly": true,
+    "trigger": "partnerLeft",
+    "titleKey": "events.amore_addio_01.title",
+    "textKey": "events.amore_addio_01.text",
+    "choices": [
+      {
+        "textKey": "events.amore_addio_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.discipline",
+            "delta": 3
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": -2
+          }
+        ]
+      },
+      {
+        "textKey": "events.amore_addio_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 4
+          },
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -3
+          }
+        ]
+      }
+    ]
+  }
+]

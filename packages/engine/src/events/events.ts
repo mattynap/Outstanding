@@ -7,6 +7,15 @@ import {
   type StatPath,
 } from '@outstanding/content';
 import { mainBusiness, shiftMainBusiness } from '../finance/finance';
+import {
+  breakUp,
+  endAffair,
+  meetSomeone,
+  privateParams,
+  relationshipState,
+  shiftPartner,
+  startAffair,
+} from '../private/private';
 import { defaultContext, type GameContext } from '../context';
 import { computeOvr } from '../player/ratings';
 import { Rng } from '../rng';
@@ -43,7 +52,11 @@ export type EventChange =
   | { kind: 'transferRequest'; to: TransferRequest['to'] }
   | { kind: 'injury'; injuryType: string; weeks: number }
   | { kind: 'trait'; traitId: string; action: 'add' | 'remove' }
-  | { kind: 'business'; name: string; before: number; after: number };
+  | { kind: 'business'; name: string; before: number; after: number }
+  | { kind: 'partner'; name: string; before: number; after: number }
+  | { kind: 'meet'; name: string }
+  | { kind: 'affair'; action: 'start' | 'end' }
+  | { kind: 'breakup'; name: string; settlement: number };
 
 export interface EventReport {
   eventId: string;
@@ -92,6 +105,17 @@ export function checkConditions(
   }
   if (c.seasonWeek && !inRange(weekOfSeason(state.week, cal), c.seasonWeek)) return false;
   if (c.business !== undefined && Boolean(mainBusiness(state)) !== c.business) return false;
+  if (c.relationship) {
+    const rel = relationshipState(state);
+    if (c.relationship === 'partner' ? rel === 'single' : rel !== c.relationship) return false;
+  }
+  if (c.affinity) {
+    const partner = state.privateLife?.partner;
+    if (!partner || !inRange(partner.affinity, c.affinity)) return false;
+  }
+  const life = state.privateLife;
+  if (c.children !== undefined && (life?.children.length ?? 0) > 0 !== c.children) return false;
+  if (c.affair !== undefined && Boolean(life?.affair) !== c.affair) return false;
   if (c.level || c.professional !== undefined || c.coachRelationship) {
     if (!club) return false;
     const { league } = getGroup(state.world, club.groupId);
@@ -196,7 +220,7 @@ function eventParams(state: GameState): Record<string, string> {
   if (agent) params['agent'] = `${agent.firstName} ${agent.lastName}`;
   const business = mainBusiness(state);
   if (business) params['business'] = business.name;
-  return params;
+  return { ...params, ...privateParams(state) };
 }
 
 /** Eventi della settimana ancora senza risposta. */
@@ -318,6 +342,42 @@ function applyEffects(
         s = shiftMainBusiness(s, effect.health);
         const after = mainBusiness(s)!.health;
         changes.push({ kind: 'business', name: main.name, before: main.health, after });
+        break;
+      }
+      case 'partner': {
+        const partner = s.privateLife?.partner;
+        if (!partner) break;
+        s = shiftPartner(s, effect.affinity, ctx);
+        const after = s.privateLife!.partner!.affinity;
+        changes.push({ kind: 'partner', name: partner.firstName, before: partner.affinity, after });
+        break;
+      }
+      case 'meet': {
+        if (s.privateLife?.partner) break;
+        s = meetSomeone(s, rng, ctx);
+        const name = s.privateLife?.prospect?.firstName;
+        if (name) changes.push({ kind: 'meet', name });
+        break;
+      }
+      case 'affair': {
+        const has = Boolean(s.privateLife?.affair);
+        if (effect.action === 'start' && !has && s.privateLife?.partner) {
+          s = startAffair(s, ctx);
+        } else if (effect.action === 'end' && has) {
+          s = endAffair(s, ctx);
+        } else break;
+        changes.push({ kind: 'affair', action: effect.action });
+        break;
+      }
+      case 'breakup': {
+        if (!s.privateLife?.partner) break;
+        const ended = breakUp(s, ctx);
+        s = ended.state;
+        changes.push({
+          kind: 'breakup',
+          name: ended.report.name,
+          settlement: ended.report.settlement,
+        });
         break;
       }
       case 'chance': {

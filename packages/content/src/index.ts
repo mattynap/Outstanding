@@ -10,6 +10,7 @@ import itUiJson from '../data/i18n/it.ui.json';
 import { rawEvents } from './eventFiles';
 import { eventsSchema, type GameEvent } from './events';
 import namesJson from '../data/names.json';
+import privateJson from '../data/private.json';
 import sponsorsJson from '../data/sponsors.json';
 import traitsJson from '../data/traits.json';
 import {
@@ -18,6 +19,7 @@ import {
   clubsDataSchema,
   foreignSchema,
   namesSchema,
+  privateContentSchema,
   sponsorsSchema,
   traitsSchema,
   translationsSchema,
@@ -26,6 +28,7 @@ import {
   type ClubsData,
   type ForeignCountry,
   type Names,
+  type PrivateContent,
   type Sponsor,
   type Trait,
   type Translations,
@@ -44,6 +47,8 @@ export interface GameContent {
   /** Paesi stranieri per i club delle coppe europee. */
   foreign: ForeignCountry[];
   sponsors: Sponsor[];
+  /** Nomi e dettagli per partner e figli. */
+  private: PrivateContent;
   events: GameEvent[];
   i18n: { it: Translations };
 }
@@ -56,6 +61,7 @@ export interface RawContent {
   foreign: unknown;
   avatar: unknown;
   sponsors: unknown;
+  private: unknown;
   /** Un array di eventi per file, con il nome del file per i messaggi di errore. */
   events: { file: string; data: unknown }[];
   /** Le traduzioni sono divise in più file e unite al caricamento. */
@@ -93,6 +99,7 @@ export function parseContent(raw: RawContent): GameContent {
     foreign: parse('foreign.json', foreignSchema, raw.foreign),
     avatar: parse('avatar.json', avatarSchema, raw.avatar),
     sponsors: parse('sponsors.json', sponsorsSchema, raw.sponsors),
+    private: parse('private.json', privateContentSchema, raw.private),
     events: raw.events.flatMap((f) => parse(f.file, eventsSchema, f.data)),
     i18n: { it: mergeTranslations(raw.i18n.it) },
   };
@@ -107,6 +114,7 @@ export const rawDefaultContent: RawContent = {
   foreign: foreignJson,
   avatar: avatarJson,
   sponsors: sponsorsJson,
+  private: privateJson,
   events: rawEvents,
   i18n: {
     it: [

@@ -3,6 +3,7 @@
  * file va registrato qui (l'app non può leggere le cartelle a runtime).
  */
 import allenamento from '../data/events/training/allenamento.json';
+import amore from '../data/events/love/amore.json';
 import attivita from '../data/events/business/attivita.json';
 import famiglia from '../data/events/family/famiglia.json';
 import media from '../data/events/media/media.json';
@@ -18,4 +19,5 @@ export const rawEvents: { file: string; data: unknown }[] = [
   { file: 'events/family/famiglia.json', data: famiglia },
   { file: 'events/transfer/mercato.json', data: mercato },
   { file: 'events/business/attivita.json', data: attivita },
+  { file: 'events/love/amore.json', data: amore },
 ];

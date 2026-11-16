@@ -1,4 +1,4 @@
-import { EVENT_PLACEHOLDERS, eventTextKeys, flattenEffects } from './events';
+import { EVENT_PLACEHOLDERS, EVENT_TRIGGERS, eventTextKeys, flattenEffects } from './events';
 import type { GameContent } from './index';
 
 /**
@@ -106,6 +106,16 @@ export function checkContent(content: GameContent): string[] {
       errors.push(`sponsors: missing text key "sponsors.categories.${cat}"`);
     }
   }
+  const pc = content.private;
+  dupes('private.femaleFirstNames', pc.femaleFirstNames);
+  dupes('private.jobs', pc.jobs);
+  for (const job of pc.jobs) {
+    for (const g of ['f', 'm']) {
+      if (!(`private.jobs.${job}.${g}` in t)) {
+        errors.push(`private: missing text key "private.jobs.${job}.${g}"`);
+      }
+    }
+  }
   checkEvents(content, errors);
   return errors;
 }
@@ -136,6 +146,13 @@ function checkEvents(content: GameContent, errors: string[]): void {
         if (name === 'business' && e.conditions?.business !== true) {
           errors.push(`${where}: {business} needs the condition "business": true`);
         }
+        const rel = e.conditions?.relationship;
+        if (name === 'partner' && (!rel || rel === 'single')) {
+          errors.push(`${where}: {partner} needs a relationship condition`);
+        }
+        if (name === 'child' && e.conditions?.children !== true) {
+          errors.push(`${where}: {child} needs the condition "children": true`);
+        }
       }
     }
     const traitRefs = [...(e.conditions?.traits ?? []), ...(e.conditions?.traitsNot ?? [])];
@@ -154,8 +171,13 @@ function checkEvents(content: GameContent, errors: string[]): void {
       if (!traitIds.has(id)) errors.push(`${where}: unknown trait "${id}"`);
     }
   }
+  for (const trigger of EVENT_TRIGGERS) {
+    if (!content.events.some((e) => e.trigger === trigger)) {
+      errors.push(`events: no event for the trigger "${trigger}"`);
+    }
+  }
   for (const e of content.events) {
-    if (e.chainOnly && !scheduled.has(e.id)) {
+    if (e.chainOnly && !e.trigger && !scheduled.has(e.id)) {
       errors.push(`events.${e.id}: chainOnly event is never scheduled`);
     }
   }

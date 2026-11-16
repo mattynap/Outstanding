@@ -1,8 +1,8 @@
-import type { Difficulty } from '@outstanding/config';
-import type { TattooZone } from '@outstanding/content';
+import type { Difficulty, Interest } from '@outstanding/config';
+import type { PartnerHair, TattooZone } from '@outstanding/content';
 import type { RngState } from './rng';
 
-export type { Difficulty, TattooZone };
+export type { Difficulty, Interest, PartnerHair, TattooZone };
 
 export type Role = 'GK' | 'DEF' | 'MID' | 'ATT';
 export type Skill =
@@ -448,6 +448,70 @@ export interface GameState {
   difficulty?: Difficulty;
   /** Patrimonio: deposito, investimenti, beni, attività e prestiti (assente nei salvataggi vecchi). */
   finance?: Finance;
+  /** Vita privata: relazione, figli, ex (assente nei salvataggi vecchi). */
+  privateLife?: PrivateLife;
+}
+
+export type Gender = 'f' | 'm';
+export type PartnerStage = 'dating' | 'engaged' | 'married';
+
+/** Una persona della vita privata, con quanto serve per il ritratto. */
+export interface PrivatePerson {
+  firstName: string;
+  lastName: string;
+  gender: Gender;
+  /** Id del mestiere (content/private.json). */
+  job: string;
+  /** Indici in content/avatar.json (carnagione, colore dei capelli) e acconciatura. */
+  skin: number;
+  hairColor: number;
+  hair: PartnerHair;
+}
+
+/** La persona conosciuta di recente: si può invitare a uscire fino a `expiresWeek`. */
+export interface Prospect extends PrivatePerson {
+  expiresWeek: number;
+}
+
+export interface Partner extends PrivatePerson {
+  stage: PartnerStage;
+  /** Settimana in cui è iniziata la relazione e in cui è iniziata la fase attuale. */
+  sinceWeek: number;
+  stageWeek: number;
+  /** Intesa della coppia 0–100: in basso c'è la crisi, a zero la fine. */
+  affinity: number;
+}
+
+export interface Child {
+  id: string;
+  firstName: string;
+  gender: Gender;
+  birthWeek: number;
+  /** Falso dopo un divorzio: il figlio vive con l'altro genitore e si paga l'assegno. */
+  withPlayer: boolean;
+}
+
+export interface ExPartner {
+  firstName: string;
+  lastName: string;
+  gender: Gender;
+  endedWeek: number;
+  stage: PartnerStage;
+}
+
+export interface PrivateLife {
+  /** Da chi è attratto il giocatore (scelto alla creazione, modificabile). */
+  interest: Interest;
+  partner?: Partner;
+  prospect?: Prospect;
+  children: Child[];
+  exes: ExPartner[];
+  /** Storia segreta in corso. */
+  affair?: { sinceWeek: number };
+  /** Figlio in arrivo. */
+  expecting?: { dueWeek: number };
+  /** Settimana dell'ultima azione privata (-1 = mai). */
+  actionWeek: number;
 }
 
 /** Quote di un titolo o di una moneta possedute e quanto sono costate in tutto. */

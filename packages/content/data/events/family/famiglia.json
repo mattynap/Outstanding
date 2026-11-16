@@ -45,5 +45,173 @@
         "effects": [{ "type": "stat", "path": "persona.happiness", "delta": -5 }]
       }
     ]
+  },
+  {
+    "id": "figli_notte_insonne_01",
+    "category": "family",
+    "weight": 3,
+    "cooldownWeeks": 10,
+    "conditions": {
+      "children": true
+    },
+    "titleKey": "events.figli_notte_insonne_01.title",
+    "textKey": "events.figli_notte_insonne_01.text",
+    "choices": [
+      {
+        "textKey": "events.figli_notte_insonne_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -8
+          },
+          {
+            "type": "partner",
+            "affinity": 4
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 2
+          }
+        ]
+      },
+      {
+        "textKey": "events.figli_notte_insonne_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": 2
+          },
+          {
+            "type": "partner",
+            "affinity": -5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "figli_allo_stadio_01",
+    "category": "family",
+    "weight": 2,
+    "cooldownWeeks": 20,
+    "conditions": {
+      "children": true,
+      "professional": true
+    },
+    "titleKey": "events.figli_allo_stadio_01.title",
+    "textKey": "events.figli_allo_stadio_01.text",
+    "choices": [
+      {
+        "textKey": "events.figli_allo_stadio_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "condition.morale",
+            "delta": 4
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 3
+          }
+        ]
+      },
+      {
+        "textKey": "events.figli_allo_stadio_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.discipline",
+            "delta": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "figli_recita_01",
+    "category": "family",
+    "weight": 2,
+    "cooldownWeeks": 26,
+    "conditions": {
+      "children": true
+    },
+    "titleKey": "events.figli_recita_01.title",
+    "textKey": "events.figli_recita_01.text",
+    "choices": [
+      {
+        "textKey": "events.figli_recita_01.c1",
+        "effects": [
+          {
+            "type": "relationship",
+            "target": "coach",
+            "delta": -4
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 5
+          }
+        ]
+      },
+      {
+        "textKey": "events.figli_recita_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.discipline",
+            "delta": 2
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": -4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "figli_nascita_01",
+    "category": "family",
+    "weight": 1,
+    "cooldownWeeks": 0,
+    "chainOnly": true,
+    "trigger": "childBorn",
+    "conditions": {
+      "children": true
+    },
+    "titleKey": "events.figli_nascita_01.title",
+    "textKey": "events.figli_nascita_01.text",
+    "choices": [
+      {
+        "textKey": "events.figli_nascita_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": 3
+          },
+          {
+            "type": "stat",
+            "path": "image.followers",
+            "delta": 500
+          }
+        ]
+      },
+      {
+        "textKey": "events.figli_nascita_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 3
+          }
+        ]
+      }
+    ]
   }
 ]

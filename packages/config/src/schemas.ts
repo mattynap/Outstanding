@@ -478,12 +478,13 @@ const conditionDelta = z
     discipline: z.number(),
     injuryRisk: z.number(),
     popularity: z.number(),
+    form: z.number(),
   })
   .partial();
 
 const weekAction = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/),
-  kind: z.enum(['training', 'rest', 'recovery', 'leisure', 'sponsor']),
+  kind: z.enum(['training', 'rest', 'recovery', 'leisure', 'sponsor', 'party']),
   /** Moltiplicatore della crescita per gli allenamenti. */
   intensity: z.number().positive().optional(),
   /** L'allenamento si concentra su un'abilità scelta dal giocatore. */
@@ -904,3 +905,126 @@ export const financeSchema = z.object({
   }),
 });
 export type FinanceConfig = z.infer<typeof financeSchema>;
+
+export const INTERESTS = ['women', 'men', 'both'] as const;
+export type Interest = (typeof INTERESTS)[number];
+/** Condizione sulla vita sentimentale richiesta da un'azione privata. */
+export const PRIVATE_NEEDS = [
+  'single',
+  'prospect',
+  'partner',
+  'dating',
+  'engaged',
+  'children',
+] as const;
+
+/** Costo in euro: il massimo tra un minimo fisso e una quota dello stipendio settimanale. */
+const scaledCost = z.object({
+  min: z.number().int().nonnegative(),
+  salaryWeeks: z.number().nonnegative(),
+});
+
+const privateDelta = z
+  .object({
+    energy: z.number(),
+    morale: z.number(),
+    happiness: z.number(),
+    popularity: z.number(),
+  })
+  .partial();
+
+/**
+ * Vita privata: incontri, relazione (affinità 0–100), proposta, matrimonio, figli, separazioni,
+ * tradimenti e serate. Le azioni private sono una a settimana, fuori dal piano di allenamento.
+ */
+export const privateSchema = z.object({
+  defaultInterest: z.enum(INTERESTS),
+  affinity: z.object({
+    start: z.number().min(0).max(100),
+    driftPerWeek: z.number(),
+    marriedDriftPerWeek: z.number(),
+    /** Sotto questa soglia la coppia è in crisi: la felicità cala ogni settimana. */
+    crisisBelow: z.number().min(0).max(100),
+    /** A questa soglia (o sotto) il partner se ne va. */
+    leaveAtOrBelow: z.number().min(0).max(100),
+    crisisHappinessPerWeek: z.number(),
+  }),
+  meeting: z.object({
+    /** Settimane in cui la persona conosciuta resta disponibile per un appuntamento. */
+    prospectWeeks: z.number().int().positive(),
+    chance: share,
+    popularityBonus: z.number().nonnegative(),
+  }),
+  askOut: z.object({
+    chance: share,
+    popularityBonus: z.number().nonnegative(),
+    happinessOnYes: z.number(),
+    happinessOnNo: z.number(),
+  }),
+  actions: z
+    .array(
+      z.object({
+        id: z.string().regex(/^[a-z0-9_]+$/),
+        needs: z.enum(PRIVATE_NEEDS),
+        minAge: z.number().int().positive(),
+        /** Solo nelle settimane senza partite (vacanze). */
+        freeWeekOnly: z.boolean().optional(),
+        minWeeksTogether: z.number().int().nonnegative().optional(),
+        minWeeksInStage: z.number().int().nonnegative().optional(),
+        minAffinity: z.number().min(0).max(100).optional(),
+        cost: scaledCost,
+        affinity: z.number().optional(),
+        effects: privateDelta,
+      }),
+    )
+    .min(1),
+  proposal: z.object({
+    chanceAtMinAffinity: share,
+    chancePerAffinityPoint: z.number().nonnegative(),
+    happinessOnYes: z.number(),
+    affinityOnNo: z.number(),
+    happinessOnNo: z.number(),
+  }),
+  children: z.object({
+    max: z.number().int().positive(),
+    conceiveChance: share,
+    pregnancyWeeks: z.number().int().positive(),
+    birthHappiness: z.number(),
+    birthAffinity: z.number(),
+    /** Costo settimanale di ogni figlio che vive con il giocatore. */
+    cost: scaledCost,
+    happinessPerWeek: z.number().nonnegative(),
+    maxHappinessPerWeek: z.number().nonnegative(),
+  }),
+  breakup: z.object({ happiness: z.number(), morale: z.number(), popularity: z.number() }),
+  divorce: z.object({
+    /** Quota di cassa e deposito (se positivi) che va all'ex coniuge. */
+    liquidShare: share,
+    /** Assegno settimanale per ogni figlio che vive con l'ex. */
+    alimonyPerChild: scaledCost,
+  }),
+  affair: z.object({
+    happinessPerWeek: z.number(),
+    disciplinePerWeek: z.number(),
+    discoveryChance: share,
+    discoveryPerPopularity: z.number().nonnegative(),
+    onDiscovery: z.object({
+      affinity: z.number(),
+      popularity: z.number(),
+      reputation: z.number(),
+      happiness: z.number(),
+    }),
+  }),
+  party: z.object({
+    gossipChance: share,
+    gossip: z.object({ reputation: z.number(), popularity: z.number(), affinity: z.number() }),
+    /** Variazione di affinità di ogni serata senza il partner. */
+    partnerAffinity: z.number(),
+    /** Probabilità di multa del club se la serata cade nella settimana di una partita. */
+    fineChance: share,
+    fine: scaledCost,
+    fineCoachRelationship: z.number(),
+  }),
+});
+export type PrivateConfig = z.infer<typeof privateSchema>;
+export type PrivateActionConfig = PrivateConfig['actions'][number];

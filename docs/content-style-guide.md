@@ -23,8 +23,13 @@ Come si scrivono gli eventi e gli altri testi del gioco.
   `it.json` (interfaccia, partita) e `it.events.json` (eventi). Una chiave non può comparire in
   due file.
 - Segnaposto ammessi negli eventi: `{firstName}`, `{lastName}`, `{club}`, `{coach}`, `{agent}`,
-  `{city}` (città del club, o quella natale se senza squadra), `{hometown}`.
-  `{agent}` non va usato finché il procuratore non esiste (M7).
+  `{city}` (città del club, o quella natale se senza squadra), `{hometown}`, `{business}`
+  (richiede la condizione `business: true`), `{partner}` (richiede una condizione
+  `relationship` diversa da `single`), `{child}` (richiede `children: true`).
+  `{club}` e `{coach}` solo nelle categorie che richiedono una squadra o con una condizione che la
+  garantisce (`level`, `professional`, `coachRelationship`). `{agent}` per ora non va usato:
+  nessuna condizione garantisce che il procuratore ci sia.
+- Testi dell'interfaccia con un numero: singolare e plurale con `{n|offerta|offerte}`.
 - **Titolo** in stile prima pagina: massimo 8 parole, senza punto finale.
 - **Testo:** 1–3 frasi, massimo circa 200 caratteri.
 - **Scelte:** frasi all'infinito o alla seconda persona, massimo 6–7 parole ("Resti a casa").
@@ -51,7 +56,8 @@ esistente non richiede codice.
 ```
 
 - `id`: `<argomento>_<descrizione>_<nn>`, minuscolo con underscore.
-- `category`: `dressing_room`, `training`, `media`, `life`, `family`, `transfer`. Le categorie
+- `category`: `dressing_room`, `training`, `media`, `life`, `family`, `transfer`, `business`,
+  `love`. Le categorie
   `dressing_room`, `training` e `transfer` richiedono che il giocatore abbia una squadra.
 - `weight`: peso nell'estrazione casuale (1 raro, 3 frequente).
 - `cooldownWeeks`: settimane prima che l'evento possa tornare. `once: true` = una volta per carriera.
@@ -63,7 +69,12 @@ esistente non richiede codice.
 
 `age`, `level`, `seasonWeek`, `coachRelationship` (intervalli `{ "min", "max" }`), `stats`
 (`[{ "path", "gte", "lte" }]`), `window` (`summer`, `winter`, `closed`), `flags`, `flagsNot`,
-`roles`, `traits`, `traitsNot`, `professional`, `injured`.
+`roles`, `traits`, `traitsNot`, `professional`, `injured`, `business` (ha un'attività),
+`relationship` (`single`, `partner`, `dating`, `engaged`, `married`), `affinity` (intervallo, solo
+con partner), `children`, `affair`.
+
+`trigger` (`affairDiscovered`, `childBorn`, `partnerLeft`) insieme a `chainOnly`: l'evento arriva
+quando il motore registra quel fatto della vita privata.
 
 ### Effetti
 
@@ -78,6 +89,11 @@ esistente non richiede codice.
 | `injury`        | `injuryType`, `weeks` `[min, max]`                 |                                                                 |
 | `trait`         | `traitId`, `action` (`add`, `remove`)              |                                                                 |
 | `chance`        | `p`, `effects`, `otherwise`                        | Esito incerto: rende le scelte meno prevedibili                 |
+| `business`      | `health`                                           | Andamento dell'attività principale                              |
+| `partner`       | `affinity`                                         | Intesa con il partner (nessun effetto da single)                |
+| `meet`          | —                                                  | Si conosce qualcuno (solo da single)                            |
+| `affair`        | `action` (`start`, `end`)                          | Storia segreta (iniziarla richiede un partner)                  |
+| `breakup`       | —                                                  | Fine della relazione, con le regole della separazione           |
 
 Percorsi validi per `stat`: `condition.*` (form, energy, morale, injuryRisk), `persona.*`
 (discipline, temperament, happiness), `image.*` (popularity, reputation, followers), `money.*`
@@ -87,8 +103,16 @@ Percorsi validi per `stat`: `condition.*` (form, energy, morale, injuryRisk), `p
 
 - Statistiche di umore e immagine: ±1–6 per un evento normale, fino a ±10 per uno raro.
 - Abilità: al massimo +1 per evento (la crescita vera arriva dall'allenamento).
+- Intesa con il partner: ±2–10.
 - Energia: −3/−15 per serate e sforzi extra.
-- Soldi: in proporzione allo stipendio (dilettanti 30–80 a settimana).
+- Soldi: in proporzione allo stipendio (dilettanti 30–180 a settimana). Spese grosse solo con una
+  condizione che le renda sostenibili (`money.cash`, `professional`, `level`, `business`).
+
+## Varietà
+
+- Prima di scrivere un evento, controllare che il tema non ci sia già (`it.events.json`).
+- Il numero di notizie a settimana non cambia con il numero di eventi (`config/events.json`): più
+  eventi significano più varietà, non più tempo di gioco.
 
 ## Controllo
 

@@ -360,3 +360,12 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
   simili.
 - Simulatore (prudente, 1000 carriere, seme 42): massima serie 61,1%, leggende 2,5% (prima 3,0%):
   gli sponsor ora dipendono dai follower e cambiano la sequenza del caso; differenza nel rumore.
+
+### Contenuti – 101 eventi
+
+- 55 notizie nuove (da 46 a 101), obiettivo della versione di prova raggiunto: spogliatoio 17,
+  allenamento 13, media 12, mercato 9, vita 14, famiglia 11, affari 8, cuori 17.
+- Nuove catene: il cucciolo adottato che, qualche settimana dopo, distrugge le scarpe nuove.
+- Guida di stile aggiornata con categorie, condizioni, effetti e segnaposto arrivati in M15–M17.
+- Simulatore (prudente, 1000 carriere, seme 42): massima serie 60,6%, leggende 3,2%, tempo di
+  gioco invariato (le notizie a settimana non aumentano).

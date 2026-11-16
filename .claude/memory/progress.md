@@ -84,8 +84,11 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
 - M17 (media, 2026-11-16): decisioni in [[user-ideas-roadmap]]; provato nel browser (post,
   presentazione in conferenza, partita giocata con intervista, feed). Aggiunti i plurali nei testi
   (`{n|uno|tanti}` in `translate`). Simulatore: 61,1% / 2,5%.
-- Prossimo passo: **M12 (pubblicazione Android)**; prima, se l'utente vuole, i contenuti verso i
-  100 eventi (ora 46) e il tempo di gioco (3–7 h contro 2–4 h).
+- Contenuti (2026-11-16, richiesta utente): **101 eventi**, obiettivo della prova raggiunto.
+  I prossimi (verso 300) saranno della versione completa: da marcare e filtrare senza
+  l'entitlement `full` (vedi M11).
+- Prossimo passo: **M12 (pubblicazione Android)**; ancora aperto il tempo di gioco (3–7 h contro
+  2–4 h).
   Nota M15: i prezzi dei beni sono alti rispetto agli stipendi dei dilettanti (si compra davvero
   solo dalla Serie Bronzo in su), ed è voluto. Piano e decisioni in [[user-ideas-roadmap]]. Ancora aperto: tempo di gioco. Contenuti:
   arrivare a 100 eventi in parallelo.

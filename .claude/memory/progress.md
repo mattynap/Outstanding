@@ -77,9 +77,13 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
   utente). Provato nel browser con Playwright.
 - M15 (finanze, 2026-11-16): decisioni in [[user-ideas-roadmap]]; provato nel browser
   (deposito, acquisto cripto, grafico, mutuo rifiutato, prestito). Simulatore invariato.
-- Prossimo passo: **M16 (vita privata: relazioni, famiglia, feste)**, poi M17 e solo dopo M12.
-  Da valutare con l'utente: i prezzi sono molto bassi rispetto agli stipendi dei dilettanti (si
-  compra davvero solo dalla Serie Bronzo in su), ed è voluto. Piano e decisioni in [[user-ideas-roadmap]]. Ancora aperto: tempo di gioco. Contenuti:
+- M16 (vita privata, 2026-11-16): decisioni in [[user-ideas-roadmap]]; provato nel browser
+  (incontro, proposta, crisi, divorzio con alert, notizia "Cuori", impostazioni). Lo stato di prova
+  si inietta con `ng.getComponent(document.querySelector('app-private')).game.commit(...)` (solo in
+  sviluppo). Simulatore quasi invariato (61,2% / 3,0%).
+- Prossimo passo: **M17 (media: social, interviste, conferenze stampa)**, poi M12.
+  Nota M15: i prezzi dei beni sono alti rispetto agli stipendi dei dilettanti (si compra davvero
+  solo dalla Serie Bronzo in su), ed è voluto. Piano e decisioni in [[user-ideas-roadmap]]. Ancora aperto: tempo di gioco. Contenuti:
   arrivare a 100 eventi in parallelo.
 - `docs/TODO.txt` lo modifica l'utente: non includerlo nei commit.
 - Stato git: tutto committato e pushato su `origin/dev` (main fermo a M2).

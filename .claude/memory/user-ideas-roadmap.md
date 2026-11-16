@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: ba3e7028-a690-4902-a1e6-0b641b622f63
-  modified: 2026-11-16T17:04:01.599Z
+  modified: 2026-11-16T18:56:06.726Z
 ---
 
 Il 2026-11-16 l'utente ha mandato la lista integrata delle idee (docs/TODO.txt, numerata 1–10, il 5
@@ -35,6 +35,13 @@ Decisioni dell'utente:
   **rendita + notizie** (rendita da popolarità e caso, possono chiudere, eventi con scelte); **mutuo**
   per gli immobili + **prestito personale**, concessi in base a stipendio e contratto, pignoramento
   se non si pagano le rate.
+- **M16 (decisioni 2026-11-16):** schermata "Vita privata" con partner (affinità 0–100), famiglia e
+  azioni settimanali facoltative (cena, regalo, vacanza) + catene di eventi (incontro, fidanzamento,
+  proposta, matrimonio, figli); orientamento scelto in creazione ("interessato a: donne / uomini /
+  entrambi"), modificabile nelle impostazioni; tradimenti con gossip, crisi, separazione e, dopo il
+  matrimonio, divorzio con quota del patrimonio liquido + assegno settimanale se ci sono figli;
+  "serata/festa" come azione del piano settimanale (felicità/popolarità su, energia/forma giù,
+  rischio gossip o multa vicino alla partita) + inviti esclusivi via evento.
 - **Immagini:** vignette SVG piatte disegnate dal codice (stesso stile di stemmi e avatar), niente
   asset esterni.
 - **Tono:** allusivo, obiettivo **PEGI 12**: tradimenti, gossip, feste e alcol con ironia e senza

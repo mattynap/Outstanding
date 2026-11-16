@@ -57,6 +57,14 @@ Il patrimonio (`engine/src/finance`) si aggiorna in `advanceWeek` dopo stipendio
 del mercato usano un `Rng` ricavato da seme e settimana, così investire o no non cambia il resto
 della carriera; il caso delle attività usa il generatore della carriera solo se ce ne sono.
 
+La vita privata (`engine/src/private`) si aggiorna in `advanceWeek` dopo il patrimonio: intesa,
+storia segreta, nascite, spese per i figli e assegni. Consuma il generatore della carriera solo se
+c'è una storia segreta o un figlio in arrivo. Le azioni private (`doPrivateAction`, una a
+settimana) sono separate dal piano di allenamento; la serata (`party`) è invece un'azione del piano
+e i suoi rischi si calcolano in `planWeek`. Quando succede qualcosa (tradimento scoperto, nascita,
+partner che se ne va) il motore mette in coda per la settimana dopo l'evento con il `trigger`
+corrispondente.
+
 Le funzioni pubbliche ricevono un `GameContext` opzionale (config + contenuti); se assente si usa
 quello predefinito dei pacchetti `config` e `content`. Nei test si può iniettare un contesto
 modificato.

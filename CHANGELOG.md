@@ -309,3 +309,31 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
 - App: schermata "Patrimonio" (da Finanze e vita) con riepilogo, deposito, mercati con grafico
   dei prezzi toccabile, beni e attività con vignette illustrate disegnate dal codice, banca. Il
   saldo della settimana comprende rendite, mantenimento e rate.
+
+### M16 – Vita privata
+
+- Vita privata (`GameState.privateLife`, motore in `engine/src/private/private.ts`, parametri in
+  `config/data/private.json`, nomi e mestieri in `content/data/private.json`), con le decisioni
+  dell'utente:
+  - orientamento scelto alla creazione ("ti interessano: donne / uomini / entrambi"),
+    modificabile nelle impostazioni;
+  - una azione privata a settimana, fuori dal piano di allenamento: uscire a conoscere gente,
+    chiedere un appuntamento, cena, regalo, vacanza (solo nelle settimane senza partite), proposta,
+    matrimonio, allargare la famiglia, giornata con i figli; costi scalati sullo stipendio;
+  - relazione con intesa 0–100 che cala piano: sotto 25 la coppia è in crisi (la felicità cala), a
+    zero il partner se ne va;
+  - figli con nome, età e spese settimanali; dopo una separazione vivono con l'altro genitore e si
+    paga l'assegno; il divorzio costa il 30% di cassa e deposito;
+  - storie segrete che nascono dagli eventi e possono essere scoperte (più facile se si è famosi):
+    gossip, crisi, possibile separazione;
+  - "Serata" come nuova azione del piano settimanale: morale e felicità su, energia e forma giù,
+    rischio gossip e, se in settimana c'è una partita, multa del club.
+- Eventi: nuova categoria "Cuori", condizioni `relationship`, `affinity`, `children`, `affair`,
+  segnaposto `{partner}` e `{child}`, effetti `partner`, `meet`, `affair`, `breakup`; eventi che il
+  motore fa arrivare da solo (`trigger`: tradimento scoperto, nascita, partner che se ne va).
+  Diciannove notizie nuove (46 in tutto), tono allusivo da PEGI 12.
+- App: schermata "Vita privata" (da Finanze e vita) in stile cronaca rosa, con ritratto del
+  partner disegnato dal codice, intesa, famiglia, storie passate e azioni con vignette; scelta
+  dell'orientamento in creazione e nelle impostazioni; avvisi di gossip e multa dopo la serata.
+- Simulatore (prudente, 1000 carriere, seme 42): massima serie 61,2% (prima 61,9%), leggende 3,0%
+  (prima 3,1%): cambia solo l'estrazione delle notizie.

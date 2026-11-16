@@ -73,6 +73,7 @@ Tema: scuro predefinito; il chiaro si attiva con `data-theme="light"` su `<html>
 | `<app-tip>`                                                            | Nota del caporedattore della settimana guidata                          |
 | `<app-vignette>`                                                       | Vignetta piatta di un bene o di un'attività (id del catalogo)           |
 | `<app-price-chart>`                                                    | Andamento di un prezzo: una linea, area leggera, punto finale, tocco    |
+| `<app-portrait>`                                                       | Ritratto tondo di partner o persona conosciuta (testa, spalle, capelli) |
 
 Correzioni dell'editor ("Redazione"): il nome originale resta sopra quello nuovo, piccolo e barrato
 con una riga rossa (`--o-headline-red`), più il segno ✎ a destra della riga; i colori si scelgono
@@ -88,6 +89,17 @@ Vignette (M15): scene 160×96 in colori fissi da illustrazione (cielo `#BFD9DE`,
 strada), oggetti piatti senza contorni con un dettaglio d'accento; sempre accanto al nome, mai da
 sole. Grafico dei prezzi: una sola serie in `--o-accent`, nessun asse, riferimento tratteggiato
 (prezzo medio di acquisto o primo valore), variazione scritta con segno oltre che colorata.
+
+Vita privata (M16): la scheda di chi c'è nel cuore è un foglio di giornale (`.o-paper`) da cronaca
+rosa: occhiello rosso con la fase ("Insieme", "Fidanzati", "Sposati"), ritratto tondo con doppio
+bordo carta, nome in `o-headline`, mestiere in corsivo. L'intesa è una barra con gradiente da
+corallo a rosso (`#D9775F` → `#C2304A`) e una tacca bianca alla soglia di crisi; accanto, il
+giudizio a parole con un cuore. I pulsanti sopra la carta sono a pillola con bordo
+`--o-paper-rule`, mai i pulsanti scuri dell'app. Azioni della settimana: vignetta a sinistra
+(104 px), nome, descrizione, prezzo e pulsante stretto a destra; le azioni bloccate restano visibili
+in grigio con il motivo in corsivo, quelle fuori luogo per la situazione non si mostrano. Vignette
+nuove: notte di città (incontri, proposta), stanza calda (appuntamento, cena, regalo, figlio),
+spiaggia (vacanza), arco di fiori (matrimonio), parco (figli).
 
 Simboli degli stemmi: `packages/app/src/app/ui/symbols.ts`, uno per ogni id di
 `content/data/clubs.json`. Avatar "figurina" (stile scelto dall'utente in M14): mezzo busto vettoriale su fondo `--o-surface`,

@@ -1,7 +1,8 @@
 import type { Difficulty } from '@outstanding/config';
+import type { TattooZone } from '@outstanding/content';
 import type { RngState } from './rng';
 
-export type { Difficulty };
+export type { Difficulty, TattooZone };
 
 export type Role = 'GK' | 'DEF' | 'MID' | 'ATT';
 export type Skill =
@@ -52,13 +53,29 @@ export interface SeasonRecord {
   trophies: string[];
 }
 
-/** Aspetto dell'avatar: indici nelle tavolozze di content/avatar.json. */
-export interface Appearance {
+/** Parti dell'avatar scelte per indice nelle liste di content/avatar.json. */
+export interface AppearanceIndices {
   skin: number;
   hairColor: number;
   hairStyle: number;
   face: number;
   beard: number;
+  body: number;
+  eyes: number;
+  eyeColor: number;
+  brows: number;
+  nose: number;
+  earring: number;
+  necklace: number;
+  headband: number;
+}
+
+/** Aspetto dell'avatar: parti per indice, tatuaggi per zona e invecchiamento visibile. */
+export interface Appearance extends AppearanceIndices {
+  /** Id del tatuaggio (content/avatar.json) per zona; zona assente = nessun tatuaggio. */
+  tattoos: Partial<Record<TattooZone, string>>;
+  /** Se vero, con l'età capelli e barba ingrigiscono e la fronte si stempia. */
+  ageing: boolean;
 }
 
 export interface Player {

@@ -1,3 +1,4 @@
+import { completeAppearance } from '../player/look';
 import type { GameState } from '../types';
 
 /** Versione corrente del formato di salvataggio. Va incrementata, con una migrazione, a ogni cambio di forma di GameState. */
@@ -76,5 +77,7 @@ export function deserialize(json: string): GameState {
   }
   const migrated = migrate(raw as Record<string, unknown>);
   assertShape(migrated);
-  return migrated;
+  // Salvataggi precedenti alle parti nuove dell'avatar: si completano con i valori predefiniti.
+  const player = migrated.player;
+  return { ...migrated, player: { ...player, appearance: completeAppearance(player.appearance) } };
 }

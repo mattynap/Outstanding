@@ -1,7 +1,51 @@
 {
   "skinTones": ["#F3D2B5", "#E2AE86", "#C98E66", "#A06A47", "#7A4B31", "#4E3022"],
   "hairColors": ["#17110D", "#3B2A1E", "#6B4A2F", "#A0703F", "#D9B46C", "#B5452A", "#9A9A9A"],
-  "hairStyles": ["corti", "rasati", "ricci", "lunghi", "cresta", "codino", "calvo"],
+  "hairStyles": [
+    "corti",
+    "rasati",
+    "ricci",
+    "lunghi",
+    "cresta",
+    "codino",
+    "calvo",
+    "raccolti",
+    "riga",
+    "treccine"
+  ],
   "faceShapes": ["ovale", "squadrato", "tondo"],
-  "beards": ["nessuna", "accenno", "pizzetto", "barba"]
+  "beards": ["nessuna", "accenno", "pizzetto", "barba", "baffi"],
+  "bodies": ["snella", "atletica", "robusta"],
+  "eyeShapes": ["mandorla", "tondi", "sottili"],
+  "eyeColors": ["#4A2E1A", "#2A1A10", "#6B4A2F", "#3D6E8C", "#4E7A4A", "#7A8A99"],
+  "brows": ["dritte", "arcuate", "folte"],
+  "noses": ["piccolo", "dritto", "largo"],
+  "earrings": ["nessuno", "punto", "cerchio"],
+  "necklaces": ["nessuna", "catenina"],
+  "headbands": ["nessuna", "fascia"],
+  "tattoos": [
+    { "id": "tribale", "zones": ["armLeft", "armRight"] },
+    { "id": "scritta", "zones": ["armLeft", "armRight"] },
+    { "id": "rosa", "zones": ["armLeft", "armRight", "neck"] },
+    { "id": "stella", "zones": ["armLeft", "armRight", "neck"] },
+    { "id": "numeri_romani", "zones": ["armLeft", "armRight"] },
+    { "id": "manica", "zones": ["armLeft", "armRight"], "unlock": { "type": "age", "min": 20 } },
+    {
+      "id": "pallone",
+      "zones": ["armLeft", "armRight", "neck"],
+      "unlock": { "type": "appearances", "min": 50 }
+    },
+    { "id": "corona", "zones": ["armLeft", "armRight", "neck"], "unlock": { "type": "topLevel" } },
+    {
+      "id": "coppa",
+      "zones": ["armLeft", "armRight"],
+      "unlock": { "type": "trophies", "min": 1 }
+    },
+    {
+      "id": "ali",
+      "zones": ["armLeft", "armRight", "neck"],
+      "unlock": { "type": "appearances", "min": 300 }
+    }
+  ],
+  "ageing": { "greyFromAge": 33, "fullGreyAge": 41, "recedeFromAge": 34 }
 }

@@ -75,6 +75,14 @@ export function checkContent(content: GameContent): string[] {
     ['hairStyles', av.hairStyles],
     ['faceShapes', av.faceShapes],
     ['beards', av.beards],
+    ['bodies', av.bodies],
+    ['eyeShapes', av.eyeShapes],
+    ['brows', av.brows],
+    ['noses', av.noses],
+    ['earrings', av.earrings],
+    ['necklaces', av.necklaces],
+    ['headbands', av.headbands],
+    ['tattoos', av.tattoos.map((x) => x.id)],
   ] as const) {
     dupes(`avatar.${kind}`, [...ids]);
     for (const part of ids) {
@@ -83,6 +91,11 @@ export function checkContent(content: GameContent): string[] {
       }
     }
   }
+
+  if (av.ageing.fullGreyAge <= av.ageing.greyFromAge) {
+    errors.push('avatar: ageing.fullGreyAge must be after greyFromAge');
+  }
+  if (!av.tattoos.some((x) => !x.unlock)) errors.push('avatar: no tattoo available at creation');
 
   dupes(
     'sponsors',

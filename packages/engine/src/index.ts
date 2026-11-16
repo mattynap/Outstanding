@@ -6,6 +6,20 @@ export { Rng, type RngState } from './rng';
 export { defaultContext, type GameContext } from './context';
 export { newCareer, type NewCareerOptions } from './career';
 export { careerDifficulty, difficultyMods } from './difficulty';
+export {
+  APPEARANCE_LISTS,
+  APPEARANCE_PARTS,
+  FIXED_PARTS,
+  STYLE_PARTS,
+  appearanceSizes,
+  changeLook,
+  completeAppearance,
+  getTattoo,
+  lookChangeCost,
+  tattooUnlocked,
+  type AppearancePart,
+} from './player/look';
+export { TATTOO_ZONES } from '@outstanding/content';
 export { DIFFICULTIES } from '@outstanding/config';
 export {
   careerScore,

@@ -790,3 +790,14 @@ export const difficultySchema = z.object({
   }),
 });
 export type DifficultyConfig = z.infer<typeof difficultySchema>;
+
+/** Cambi di aspetto in carriera (barbiere, accessori, tatuatore): costi in euro. */
+export const lookSchema = z.object({
+  /** Un cambio di taglio, colore, barba o accessori, comunque sia ampio. */
+  styleChangeCost: z.number().int().nonnegative(),
+  /** Ogni tatuaggio nuovo o sostituito. */
+  tattooCost: z.number().int().nonnegative(),
+  /** Ogni tatuaggio tolto. */
+  tattooRemovalCost: z.number().int().nonnegative(),
+});
+export type LookConfig = z.infer<typeof lookSchema>;

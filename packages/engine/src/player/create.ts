@@ -2,6 +2,13 @@ import type { GameContext } from '../context';
 import type { Rng } from '../rng';
 import type { Appearance, Player, Role, SeasonStats, Skills } from '../types';
 import { clamp } from '../util';
+import {
+  appearanceSizes,
+  completeAppearance,
+  getTattoo,
+  tattooUnlocked,
+  validateAppearance,
+} from './look';
 import { SKILLS } from './ratings';
 
 export interface NewPlayerOptions {
@@ -16,17 +23,8 @@ export interface NewPlayerOptions {
   appearance?: Partial<Appearance>;
 }
 
-/** Numero di varianti disponibili per ogni parte dell'avatar. */
-function appearanceSizes(ctx: GameContext): Record<keyof Appearance, number> {
-  const a = ctx.content.avatar;
-  return {
-    skin: a.skinTones.length,
-    hairColor: a.hairColors.length,
-    hairStyle: a.hairStyles.length,
-    face: a.faceShapes.length,
-    beard: a.beards.length,
-  };
-}
+/** Parti estratte a caso se mancano (le prime dell'avatar: l'ordine delle estrazioni non cambia). */
+const RANDOM_PARTS = ['skin', 'hairColor', 'hairStyle', 'face', 'beard'] as const;
 
 export const emptySeasonStats = (): SeasonStats => ({
   appearances: 0,
@@ -50,12 +48,10 @@ export function validateNewPlayerOptions(opts: NewPlayerOptions, ctx: GameContex
     throw new Error(`At most ${ctx.config.player.maxTraitsAtCreation} traits at creation`);
   }
   if (new Set(traits).size !== traits.length) throw new Error('Duplicate traits');
-  const sizes = appearanceSizes(ctx);
-  for (const [part, value] of Object.entries(opts.appearance ?? {})) {
-    const size = sizes[part as keyof Appearance];
-    if (size === undefined) throw new Error(`Unknown appearance part "${part}"`);
-    if (!Number.isInteger(value) || value < 0 || value >= size) {
-      throw new Error(`Invalid appearance ${part}: ${value}`);
+  validateAppearance(opts.appearance ?? {}, ctx);
+  for (const id of Object.values(opts.appearance?.tattoos ?? {})) {
+    if (id && !tattooUnlocked(getTattoo(id, ctx), null, ctx)) {
+      throw new Error(`Tattoo "${id}" is not available at creation`);
     }
   }
   for (const id of traits) {
@@ -91,10 +87,11 @@ export function createPlayer(
 
   // L'aspetto si estrae per ultimo, così non cambia il resto della generazione.
   const sizes = appearanceSizes(ctx);
-  const appearance = {} as Appearance;
-  for (const part of Object.keys(sizes) as (keyof Appearance)[]) {
-    appearance[part] = opts.appearance?.[part] ?? rng.int(0, sizes[part] - 1);
+  const drawn: Partial<Appearance> = {};
+  for (const part of RANDOM_PARTS) {
+    drawn[part] = opts.appearance?.[part] ?? rng.int(0, sizes[part] - 1);
   }
+  const appearance = completeAppearance({ ...opts.appearance, ...drawn });
 
   const init = cfg.initial;
   return {

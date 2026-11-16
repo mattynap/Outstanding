@@ -279,7 +279,7 @@ Ogni milestone è finita quando: build ok, lint ok, test verdi, `CHANGELOG.md` a
 - **M10 – Salvataggi:** salvataggio automatico ogni settimana, più slot, migrazioni.
 - **M11 – Servizi:** interfacce per analytics, pubblicità a premio e acquisti in-app, con implementazioni finte per lo sviluppo; integrazione reale solo su richiesta.
 - **M11b – Editor:** schermata per rinominare club, giocatori e competizioni e cambiarne i colori; esportazione/importazione JSON con validazione; le modifiche si applicano sopra il mondo generato senza alterare i dati originali.
-- **M12 – Pubblicazione Android:** icona, splash, build firmata, checklist per Google Play.
+- **M12 – Pubblicazione Android:** icona, splash, build firmata, checklist per Google Play; controllo che i nomi inventati (club, leghe, coppe, testate) non coincidano con società o marchi esistenti (registri pubblici e banche dati dei marchi), eventuale parere legale sulla proprietà intellettuale.
 - **Contenuti (in parallelo da M5):** 100 eventi per la versione di prova, poi 300 per la completa.
 - **Fase 2:** solo dopo approvazione esplicita dell'utente.
 

@@ -5,6 +5,8 @@ export type * from './types';
 export { Rng, type RngState } from './rng';
 export { defaultContext, type GameContext } from './context';
 export { newCareer, type NewCareerOptions } from './career';
+export { careerDifficulty, difficultyMods } from './difficulty';
+export { DIFFICULTIES } from '@outstanding/config';
 export {
   careerScore,
   careerTotals,

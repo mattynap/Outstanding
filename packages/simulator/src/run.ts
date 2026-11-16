@@ -13,6 +13,7 @@ import {
   isLegend,
   isSeasonOver,
   newCareer,
+  type Difficulty,
   planWeek,
   playerFixture,
   playMatch,
@@ -111,11 +112,12 @@ export function runCareer(
   seed: number,
   strategyId: StrategyId,
   ctx: GameContext = defaultContext,
+  difficulty?: Difficulty,
 ): CareerResult {
   const strategy = getStrategy(strategyId);
   // Le scelte della strategia usano un generatore separato: lo stato del gioco resta deterministico.
   const rng = Rng.fromSeed(seed ^ 0x5bd1e995);
-  let s = newCareer(randomCareerOptions(rng, ctx), seed, ctx);
+  let s = newCareer({ ...randomCareerOptions(rng, ctx), difficulty }, seed, ctx);
   const d: Decisions = {
     weeks: 0,
     events: 0,

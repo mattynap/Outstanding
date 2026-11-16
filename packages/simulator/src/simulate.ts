@@ -1,4 +1,5 @@
 import { Worker } from 'node:worker_threads';
+import type { Difficulty } from '@outstanding/engine';
 import { runCareer, type CareerResult } from './run';
 import type { StrategyId } from './strategies';
 
@@ -19,6 +20,7 @@ export async function simulate(
   strategy: StrategyId,
   workers: number,
   onProgress?: (done: number) => void,
+  difficulty?: Difficulty,
 ): Promise<CareerResult[]> {
   const order = new Map(seeds.map((s, i) => [s, i]));
   const results: CareerResult[] = new Array(seeds.length);
@@ -28,7 +30,7 @@ export async function simulate(
     onProgress?.(++done);
   };
   if (workers <= 1) {
-    for (const seed of seeds) collect(runCareer(seed, strategy));
+    for (const seed of seeds) collect(runCareer(seed, strategy, undefined, difficulty));
     return results;
   }
   const chunks: number[][] = Array.from({ length: workers }, () => []);
@@ -40,7 +42,7 @@ export async function simulate(
         (chunk) =>
           new Promise<void>((resolve, reject) => {
             const worker = new Worker(new URL('./worker.ts', import.meta.url), {
-              workerData: { seeds: chunk, strategy },
+              workerData: { seeds: chunk, strategy, difficulty },
             });
             worker.on('message', collect);
             worker.on('error', reject);

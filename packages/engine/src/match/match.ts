@@ -1,4 +1,5 @@
 import { defaultContext, type GameContext } from '../context';
+import { difficultyMods } from '../difficulty';
 import { applyMatchAftermath } from '../player/condition';
 import { computeOvr } from '../player/ratings';
 import { Rng } from '../rng';
@@ -176,7 +177,13 @@ function describeMoment(state: GameState, m: MatchState, ctx: GameContext): KeyM
     options: type.options.map((o) => ({
       id: o.id,
       textKey: `match.moments.${type.id}.options.${o.id}`,
-      chance: optionChance(state.player, o, opponent.rating, ctx),
+      chance: optionChance(
+        state.player,
+        o,
+        opponent.rating,
+        ctx,
+        difficultyMods(state, ctx).matchChance,
+      ),
     })),
   };
 }
@@ -254,6 +261,7 @@ function finishMatch(
     state.week,
     rng,
     ctx,
+    difficultyMods(state, ctx),
   );
   const { currentMatch: _done, ...rest } = state;
   // In coppa una gara decisiva in parità prosegue con supplementari e rigori.
@@ -402,7 +410,15 @@ export function decideMoment(
   const clubs = matchClubs(state, m);
   const opponent = clubs[other(m.side)];
   const minute = m.pending.minute;
-  const success = rng.chance(optionChance(state.player, option, opponent.rating, ctx));
+  const success = rng.chance(
+    optionChance(
+      state.player,
+      option,
+      opponent.rating,
+      ctx,
+      difficultyMods(state, ctx).matchChance,
+    ),
+  );
   const outcome = success ? option.success : option.failure;
 
   let cur: MatchState = {

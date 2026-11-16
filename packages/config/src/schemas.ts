@@ -761,3 +761,32 @@ export const editorSchema = z.object({
   maxFileBytes: z.number().int().positive(),
 });
 export type EditorConfig = z.infer<typeof editorSchema>;
+
+export const DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
+export type Difficulty = (typeof DIFFICULTIES)[number];
+
+/** Modificatori di una difficoltà: moltiplicatori (1 = invariato) e bonus sulle probabilità in partita. */
+const difficultyLevelSchema = z.object({
+  /** Moltiplica la crescita da allenamento e partite. */
+  growth: z.number().positive(),
+  /** Moltiplica la probabilità di infortunio. */
+  injury: z.number().positive(),
+  /** Moltiplica la probabilità settimanale di ricevere offerte. */
+  offerChance: z.number().positive(),
+  /** Moltiplica gli stipendi offerti dai club. */
+  salary: z.number().positive(),
+  /** Si somma alla probabilità di successo dei momenti chiave (prima dei limiti min/max). */
+  matchChance: z.number().min(-0.5).max(0.5),
+});
+export type DifficultyLevel = z.infer<typeof difficultyLevelSchema>;
+
+/** Difficoltà scelta alla creazione della carriera. */
+export const difficultySchema = z.object({
+  default: z.enum(DIFFICULTIES),
+  levels: z.object({
+    easy: difficultyLevelSchema,
+    normal: difficultyLevelSchema,
+    hard: difficultyLevelSchema,
+  }),
+});
+export type DifficultyConfig = z.infer<typeof difficultySchema>;

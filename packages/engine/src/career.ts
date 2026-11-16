@@ -4,13 +4,15 @@ import { Rng } from './rng';
 import { CURRENT_SAVE_VERSION } from './save/serialize';
 import { setupSeasonCups } from './cups/cups';
 import { buildSeasonCalendar } from './season/schedule';
-import type { GameState, Player, World } from './types';
+import type { Difficulty, GameState, Player, World } from './types';
 import { generateWorld, groupId, IdGen } from './world/generate';
 import { getGroup, getLeagueByLevel } from './world/queries';
 
 export interface NewCareerOptions extends NewPlayerOptions {
   /** Livello di campionato in cui inizia la carriera (uno di `config.world.startLevels`). */
   startLevel?: number;
+  /** Difficoltà della carriera (predefinita: `config.difficulty.default`). */
+  difficulty?: Difficulty;
 }
 
 /** Trova la città dei contenuti corrispondente a quella natale del giocatore (senza distinguere maiuscole). */
@@ -112,5 +114,6 @@ export function newCareer(
     sponsorOffers: [],
     marketWeek: -1,
     nextId: ids.next,
+    difficulty: options.difficulty ?? ctx.config.difficulty.default,
   };
 }

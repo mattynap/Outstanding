@@ -1,4 +1,5 @@
 import { defaultContext, type GameContext } from '../context';
+import { difficultyMods } from '../difficulty';
 import { computeOvr } from '../player/ratings';
 import { Rng } from '../rng';
 import { getTransferWindow } from '../season/week';
@@ -52,6 +53,11 @@ export function marketSalary(level: number, ovr: number, ctx: GameContext): numb
   const [lo, hi] = levelCfg.ratingRange;
   const t = clamp((ovr - lo) / Math.max(1, hi - lo), 0, 1);
   return band.min + t * (band.max - band.min);
+}
+
+/** Stipendio che un club offre davvero: quello di mercato corretto per la difficoltà della carriera. */
+function offeredSalary(state: GameState, level: number, ovr: number, ctx: GameContext): number {
+  return marketSalary(level, ovr, ctx) * difficultyMods(state, ctx).salary;
 }
 
 const roundSalary = (v: number, ctx: GameContext) => {
@@ -166,7 +172,7 @@ function transferOffer(
   const pick = rng.weighted(pool, (c) => o.levelWeights[c.relation]);
   const ovr = computeOvr(state.player.skills, state.player.role, ctx.config.ratings);
   const salary =
-    marketSalary(pick.level, ovr, ctx) * (1 + rng.float(-o.salaryNoise, o.salaryNoise));
+    offeredSalary(state, pick.level, ovr, ctx) * (1 + rng.float(-o.salaryNoise, o.salaryNoise));
   return buildOffer(
     state,
     pick.club,
@@ -238,7 +244,8 @@ export function refreshMarket(state: GameState, ctx: GameContext = defaultContex
       base *
         (1 + p.image.popularity * e.offers.popularityFactor) *
         (1 + (p.condition.form - 50) * e.offers.formFactor) *
-        (1 + agentQuality(s) * e.agents.offerChanceBonusPerQuality),
+        (1 + agentQuality(s) * e.agents.offerChanceBonusPerQuality) *
+        difficultyMods(s, ctx).offerChance,
       0,
       1,
     );
@@ -264,7 +271,7 @@ export function refreshMarket(state: GameState, ctx: GameContext = defaultContex
       const ovr = computeOvr(p.skills, p.role, ctx.config.ratings);
       const salary = Math.max(
         p.contract.salaryWeekly * (1 + e.renewal.raise),
-        marketSalary(clubLevel(s, club.id), ovr, ctx),
+        offeredSalary(s, clubLevel(s, club.id), ovr, ctx),
       );
       add(buildOffer(s, club, 'renewal', salary, seasonsFor(s, rng, ctx), rng, ids, ctx));
     }

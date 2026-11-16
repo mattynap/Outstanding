@@ -2,6 +2,7 @@
 import calendarJson from '../data/calendar.json';
 import careerJson from '../data/career.json';
 import cupsJson from '../data/cups.json';
+import difficultyJson from '../data/difficulty.json';
 import editorJson from '../data/editor.json';
 import economyJson from '../data/economy.json';
 import eventsJson from '../data/events.json';
@@ -14,6 +15,7 @@ import {
   calendarSchema,
   careerSchema,
   cupsSchema,
+  difficultySchema,
   economySchema,
   editorSchema,
   eventsConfigSchema,
@@ -25,6 +27,7 @@ import {
   type CalendarConfig,
   type CareerConfig,
   type CupsConfig,
+  type DifficultyConfig,
   type EconomyConfig,
   type EditorConfig,
   type EventsConfig,
@@ -49,6 +52,7 @@ export const configSchema = {
   cups: cupsSchema,
   career: careerSchema,
   editor: editorSchema,
+  difficulty: difficultySchema,
 } as const;
 
 export interface GameConfig {
@@ -63,6 +67,7 @@ export interface GameConfig {
   cups: CupsConfig;
   career: CareerConfig;
   editor: EditorConfig;
+  difficulty: DifficultyConfig;
 }
 
 /** Oggetti di configurazione grezzi (non validati), uno per file JSON. */
@@ -163,6 +168,7 @@ export const rawDefaultConfig: RawConfig = {
   cups: cupsJson,
   career: careerJson,
   editor: editorJson,
+  difficulty: difficultyJson,
 };
 
 /** Configurazione predefinita distribuita con il gioco. */

@@ -83,6 +83,8 @@ export function optionChance(
   option: MomentOptionConfig,
   opponentRating: number,
   ctx: GameContext,
+  /** Bonus della difficoltà sulla probabilità (vedi `difficultyMods`). */
+  difficultyBonus = 0,
 ): number {
   const cfg = ctx.config.match.moments;
   let total = 0;
@@ -97,6 +99,7 @@ export function optionChance(
     (cfg.formWeight * (form - 50)) / 50 +
     (cfg.moraleWeight * (morale - 50)) / 50 +
     (cfg.energyWeight * (energy - 50)) / 50 +
-    traitBonus(player, option.tag, ctx);
+    traitBonus(player, option.tag, ctx) +
+    difficultyBonus;
   return clamp(1 / (1 + Math.exp(-x)) + mods, cfg.minChance, cfg.maxChance);
 }

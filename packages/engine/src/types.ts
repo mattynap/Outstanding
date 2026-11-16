@@ -1,4 +1,7 @@
+import type { Difficulty } from '@outstanding/config';
 import type { RngState } from './rng';
+
+export type { Difficulty };
 
 export type Role = 'GK' | 'DEF' | 'MID' | 'ATT';
 export type Skill =
@@ -424,4 +427,6 @@ export interface GameState {
   currentMatch?: MatchState;
   /** Modifiche dell'editor (assente finché il giocatore non cambia nulla). */
   edits?: WorldEdits;
+  /** Difficoltà scelta alla creazione (assente nei salvataggi precedenti: vale quella predefinita). */
+  difficulty?: Difficulty;
 }

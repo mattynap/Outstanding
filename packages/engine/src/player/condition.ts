@@ -1,3 +1,4 @@
+import type { DifficultyLevel } from '@outstanding/config';
 import type { GameContext } from '../context';
 import type { Rng } from '../rng';
 import type { Player, Selection } from '../types';
@@ -26,6 +27,8 @@ export function applyMatchAftermath(
   week: number,
   rng: Rng,
   ctx: GameContext,
+  /** Modificatori della difficoltà: solo crescita e infortuni. */
+  mods: Pick<DifficultyLevel, 'growth' | 'injury'> = { growth: 1, injury: 1 },
 ): { player: Player; injured: boolean } {
   const c = ctx.config.progression.condition;
   const played = outcome.minutesPlayed > 0;
@@ -54,12 +57,17 @@ export function applyMatchAftermath(
     p = { ...p, relationships: { ...p.relationships, [coachId]: clamp(trust + delta, -100, 100) } };
   }
   if (played) {
-    p = applyGrowth(p, ctx.config.progression.growth.matchPer90 * share, week, ctx).player;
+    p = applyGrowth(
+      p,
+      ctx.config.progression.growth.matchPer90 * share * mods.growth,
+      week,
+      ctx,
+    ).player;
   }
 
   let injured = false;
   const chance = injuryChance(
-    ctx.config.progression.injuries.matchChancePer90 * share,
+    ctx.config.progression.injuries.matchChancePer90 * share * mods.injury,
     player,
     ctx,
   );

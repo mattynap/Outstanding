@@ -1,4 +1,5 @@
 import type { WeekActionConfig } from '@outstanding/config';
+import { difficultyMods } from '../difficulty';
 import { defaultContext, type GameContext } from '../context';
 import { applyGrowth, injure, injuryChance, rollInjury } from '../player/progression';
 import { SKILLS } from '../player/ratings';
@@ -126,6 +127,7 @@ export function planWeek(
   }
 
   const rng = Rng.fromState(state.rngState);
+  const mods = difficultyMods(state, ctx);
   let player = state.player;
   const gains: Partial<Skills> = {};
   let injury: WeekPlanReport['injury'];
@@ -134,12 +136,21 @@ export function planWeek(
   for (const c of choices) {
     const action = getAction(c.actionId, ctx);
     if (action.kind === 'training') {
-      const grown = applyGrowth(player, action.intensity ?? 1, state.week, ctx, c.focus);
+      const grown = applyGrowth(
+        player,
+        (action.intensity ?? 1) * mods.growth,
+        state.week,
+        ctx,
+        c.focus,
+      );
       player = grown.player;
       for (const [s, g] of Object.entries(grown.gains) as [Skill, number][]) {
         gains[s] = Math.round(((gains[s] ?? 0) + g) * 100) / 100;
       }
-      if (action.injuryChance && rng.chance(injuryChance(action.injuryChance, player, ctx))) {
+      if (
+        action.injuryChance &&
+        rng.chance(injuryChance(action.injuryChance * mods.injury, player, ctx))
+      ) {
         injury = rollInjury(rng, ctx);
         player = injure(player, injury, ctx);
       }

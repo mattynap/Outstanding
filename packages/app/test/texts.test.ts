@@ -43,6 +43,7 @@ describe("testi dell'interfaccia", () => {
       ...STAT_PATHS.map((p) => `ui.statPath.${p}`),
       ...['summer', 'winter', 'closed'].map((w) => `ui.market.window.${w}`),
       ...['dark', 'light'].map((th) => `ui.settings.themes.${th}`),
+      ...['purchased', 'cancelled', 'failed'].map((r) => `ui.settings.full.result.${r}`),
     ];
     expect(need.filter((k) => !(k in t))).toEqual([]);
   });

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { AlertController, IonContent, IonIcon } from '@ionic/angular';
@@ -7,7 +7,9 @@ import { chevronBack } from 'ionicons/icons';
 import { ENGINE_VERSION } from '@outstanding/engine';
 import { GameService } from '../core/game.service';
 import { I18nService, TranslatePipe } from '../core/i18n.service';
+import { PlatformService } from '../core/services/platform.service';
 import { SettingsService, type Theme } from '../core/settings.service';
+import { ToastService } from '../core/toast.service';
 
 /** Impostazioni: tema, carriera salvata, informazioni e licenze. */
 @Component({
@@ -60,6 +62,55 @@ import { SettingsService, type Theme } from '../core/settings.service';
         }
 
         <section class="o-card">
+          <h2 class="o-section-title">{{ 'ui.settings.full.title' | t }}</h2>
+          @if (platform.fullVersion()) {
+            <p class="small none">{{ 'ui.settings.full.owned' | t }}</p>
+          } @else {
+            <p class="small o-muted none">{{ 'ui.settings.full.pitch' | t }}</p>
+            <button
+              class="o-btn o-btn--small"
+              type="button"
+              [disabled]="busy()"
+              (click)="buyFull()"
+            >
+              {{ 'ui.settings.full.buy' | t }}
+            </button>
+          }
+          <button
+            class="o-btn o-btn--ghost o-btn--small"
+            type="button"
+            [disabled]="busy()"
+            (click)="restore()"
+          >
+            {{ 'ui.settings.full.restore' | t }}
+          </button>
+          @if (platform.fakeStore) {
+            <p class="small o-muted none">{{ 'ui.settings.full.fake' | t }}</p>
+          }
+        </section>
+
+        <section class="o-card">
+          <h2 class="o-section-title">{{ 'ui.settings.privacy.title' | t }}</h2>
+          <p class="small o-muted none">{{ 'ui.settings.privacy.text' | t }}</p>
+          <div class="o-row" role="radiogroup" [attr.aria-label]="'ui.settings.privacy.title' | t">
+            @for (choice of [false, true]; track choice) {
+              <button
+                class="o-choice"
+                type="button"
+                role="radio"
+                [attr.aria-checked]="platform.consent() === choice"
+                [attr.aria-pressed]="platform.consent() === choice"
+                (click)="setConsent(choice)"
+              >
+                <span class="o-choice__body">{{
+                  (choice ? 'ui.settings.privacy.yes' : 'ui.settings.privacy.no') | t
+                }}</span>
+              </button>
+            }
+          </div>
+        </section>
+
+        <section class="o-card">
           <h2 class="o-section-title">{{ 'ui.settings.about' | t }}</h2>
           <p class="small o-muted none">{{ 'ui.settings.fiction' | t }}</p>
           <p class="small o-muted none">{{ 'ui.settings.fonts' | t }}</p>
@@ -96,6 +147,40 @@ export class SettingsPage {
 
   protected readonly themes: Theme[] = ['dark', 'light'];
   protected readonly version = ENGINE_VERSION;
+  protected readonly platform = inject(PlatformService);
+  private readonly toast = inject(ToastService);
+  protected readonly busy = signal(false);
+
+  protected setConsent(value: boolean): void {
+    void this.platform.setConsent(value);
+  }
+
+  protected async buyFull(): Promise<void> {
+    this.busy.set(true);
+    try {
+      const result = await this.platform.buy('full_version');
+      await this.toast.show(
+        this.i18n.t('ui.settings.full.result.' + result),
+        result === 'failed' ? 'error' : 'info',
+      );
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  protected async restore(): Promise<void> {
+    this.busy.set(true);
+    try {
+      await this.platform.restore();
+      await this.toast.show(
+        this.i18n.t(
+          this.platform.fullVersion() ? 'ui.settings.full.restored' : 'ui.settings.full.nothing',
+        ),
+      );
+    } finally {
+      this.busy.set(false);
+    }
+  }
 
   constructor() {
     addIcons({ chevronBack });

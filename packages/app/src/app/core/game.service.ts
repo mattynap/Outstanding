@@ -1,9 +1,10 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import {
   acceptOffer,
   acceptSponsor,
   advanceWeek,
   beginMatch,
+  careerScore,
   computeOvr,
   decideMoment,
   defaultContext,
@@ -37,6 +38,8 @@ import {
 } from '@outstanding/engine';
 import { CapacitorSaveBackend } from './saves/capacitor-backend';
 import { SlotStore, type SlotView } from './saves/slots';
+import { PlatformService } from './services/platform.service';
+import { clubInfo } from './views';
 
 /** Cosa deve fare il giocatore adesso: guida il pulsante principale della settimana. */
 export type NextStep =
@@ -49,6 +52,7 @@ export type NextStep =
 @Injectable({ providedIn: 'root' })
 export class GameService {
   readonly ctx = defaultContext;
+  private readonly platform = inject(PlatformService);
   private readonly store = new SlotStore(new CapacitorSaveBackend(), this.ctx);
 
   /** Slot della carriera caricata e riepilogo di tutti gli slot. */
@@ -125,7 +129,13 @@ export class GameService {
     await this.flush();
     this.resetReports();
     this.slot.set(slot);
-    await this.commit(newCareer(options, seed, this.ctx));
+    const state = newCareer(options, seed, this.ctx);
+    await this.commit(state);
+    this.platform.track({
+      name: 'career_start',
+      role: state.player.role,
+      startLevel: clubInfo(state, this.ctx)?.level ?? 0,
+    });
     await this.flush();
   }
 
@@ -166,6 +176,7 @@ export class GameService {
     const { state, report } = advanceWeek(this.require(), this.ctx);
     this.lastWeek.set(report);
     await this.commit(state);
+    this.trackRetirement(state);
     return report;
   }
 
@@ -173,6 +184,14 @@ export class GameService {
     const { state, seasonReport } = endSeason(this.require(), this.ctx);
     this.lastSeason.set(seasonReport);
     await this.commit(state);
+    const r = seasonReport.record;
+    this.platform.track({
+      name: 'season_end',
+      season: r.season,
+      level: r.leagueLevel,
+      promoted: r.promoted,
+    });
+    this.trackRetirement(state);
     return seasonReport;
   }
 
@@ -261,7 +280,9 @@ export class GameService {
   }
 
   async retire(): Promise<void> {
-    await this.commit(retire(this.require(), this.ctx));
+    const state = retire(this.require(), this.ctx);
+    await this.commit(state);
+    this.trackRetirement(state);
   }
 
   // --- Interni -----------------------------------------------------------------------------
@@ -298,6 +319,17 @@ export class GameService {
     } finally {
       this.writing = null;
     }
+  }
+
+  /** Statistica anonima di fine carriera (parte solo con il consenso del giocatore). */
+  private trackRetirement(state: GameState): void {
+    if (!state.retired) return;
+    this.platform.track({
+      name: 'retire',
+      age: state.retired.age,
+      seasons: state.player.history.length,
+      tier: careerScore(state.player.history, state.player.role, this.ctx).tierId,
+    });
   }
 
   private resetReports(): void {

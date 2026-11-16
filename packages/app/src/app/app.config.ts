@@ -9,6 +9,7 @@ import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular';
 import { RouteReuseStrategy } from '@angular/router';
 import { routes } from './app.routes';
 import { GameService } from './core/game.service';
+import { PlatformService } from './core/services/platform.service';
 import { SettingsService } from './core/settings.service';
 
 export const appConfig: ApplicationConfig = {
@@ -22,7 +23,8 @@ export const appConfig: ApplicationConfig = {
       // inject() va chiamato subito, prima di qualsiasi await.
       const settings = inject(SettingsService);
       const game = inject(GameService);
-      return settings.load().then(() => game.init());
+      const platform = inject(PlatformService);
+      return Promise.all([settings.load(), platform.init()]).then(() => game.init());
     }),
   ],
 };

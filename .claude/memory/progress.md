@@ -40,11 +40,21 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
   da stipendi di massima serie fino a 60.000/settimana.
 - Prossimo passo: M7b (coppe), poi M8 (simulatore). Contenuti: arrivare a 100 eventi in parallelo.
 
-## Idee dell'utente da pianificare (docs/TODO.txt)
+## Idee dell'utente (docs/TODO.txt) — NON ancora pianificate
 
 Personalizzazione del personaggio, finanze personali, investimenti con immagini, vita affettiva,
 feste private, difficoltà iniziale (facile/normale/difficile), impostazione "solo testo o altro".
-Chiesto all'utente il 2026-11-16 in quali milestone inserirle.
+2026-11-16: proposta di collocazione (M9 avatar, nuova M7c "Vita privata", difficoltà tarata in
+M8, solo-testo in fase 2) **non approvata**: l'utente vuole prima **integrare la lista** con altre
+idee. Non inserirle in CLAUDE.md né nelle milestone finché l'utente non lo conferma.
+
+## Da dove riprendere (sessione successiva al 2026-11-16)
+
+1. Chiedere all'utente la lista integrata delle idee (docs/TODO.txt aggiornato) e concordare dove
+   inserirle; poi aggiornare CLAUDE.md (sezione 11) e la memoria.
+2. Chiedere se tenere `docs/TODO.txt` versionato (finito per errore nel commit di M7).
+3. Poi proseguire con M7b (coppe), salvo diverse priorità dell'utente.
+- Stato git: tutto committato e pushato su `origin/dev` (main fermo a M2).
 
 ## Decisioni prese dall'utente (2026-11-16)
 

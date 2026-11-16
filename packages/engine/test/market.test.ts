@@ -51,7 +51,7 @@ const patchPlayer = (s: GameState, p: Partial<Player>): GameState => ({
 /** Gioca la settimana (partita compresa) e passa alla successiva. */
 function nextWeek(s: GameState): GameState {
   let x = s;
-  if (playerFixture(x) && !playerFixture(x)!.result) x = playMatch(x, () => 0).state;
+  while (playerFixture(x)) x = playMatch(x, () => 0).state;
   return advanceWeek(x).state;
 }
 

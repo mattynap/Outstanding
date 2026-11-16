@@ -5,6 +5,8 @@ import type { Fixture, GameState } from '../types';
 import { applyWeeklyFinances, type WeekFinance } from '../market/life';
 import { refreshMarket } from '../market/offers';
 import { weeklyRecovery } from '../player/condition';
+import { progressCups, settleKnockout } from '../cups/cups';
+import { clubRatings } from '../world/queries';
 import { quickResult } from './quickSim';
 
 export type TransferWindow = 'summer' | 'winter';
@@ -14,6 +16,8 @@ export interface WeekReport {
   week: number;
   /** Risultati della settimana nel girone del giocatore. */
   results: Fixture[];
+  /** Risultati della settimana nelle coppe a cui partecipa il club del giocatore. */
+  cupResults: Fixture[];
   /** Entrate e uscite della settimana. */
   finance: WeekFinance;
 }
@@ -35,13 +39,21 @@ export function getTransferWindow(
   return null;
 }
 
-/** La partita del club del giocatore nella settimana corrente, se c'è. */
-export function playerFixture(state: GameState): Fixture | undefined {
+/**
+ * Tutte le partite del club del giocatore nella settimana corrente: campionato e, nelle settimane
+ * infrasettimanali, coppa.
+ */
+export function playerFixtures(state: GameState): Fixture[] {
   const clubId = state.player.clubId;
-  if (!clubId) return undefined;
-  return state.calendar.find(
+  if (!clubId) return [];
+  return state.calendar.filter(
     (f) => f.week === state.week && (f.homeId === clubId || f.awayId === clubId),
   );
+}
+
+/** La prossima partita ancora da giocare del club del giocatore in questa settimana, se c'è. */
+export function playerFixture(state: GameState): Fixture | undefined {
+  return playerFixtures(state).find((f) => !f.result);
 }
 
 /**
@@ -54,25 +66,36 @@ export function advanceWeek(
 ): { state: GameState; report: WeekReport } {
   if (state.retired) throw new Error('The career is over');
   if (isSeasonOver(state, ctx)) throw new Error('Season is over: call endSeason');
-  const own = playerFixture(state);
   if (state.pendingEvents.length > 0) throw new Error('Pending events: call resolveEvent');
-  if (own && !own.result) throw new Error('The player has a match this week: call playMatch');
+  if (playerFixture(state)) throw new Error('The player has a match this week: call playMatch');
 
   const rng = Rng.fromState(state.rngState);
-  const ratings = new Map(state.world.clubs.map((c) => [c.id, c.rating]));
-  const calendar = state.calendar.map((f) => {
+  const ratings = clubRatings(state.world);
+  let calendar = state.calendar;
+  // Si simula in ordine: per il ritorno di una sfida serve il risultato dell'andata.
+  calendar = calendar.map((f) => {
     if (f.week !== state.week || f.result) return f;
     const result = quickResult(
       ratings.get(f.homeId) ?? 0,
       ratings.get(f.awayId) ?? 0,
       rng,
       ctx.config.match.quickSim,
+      f.cup?.neutral ?? false,
     );
-    return { ...f, result };
+    return settleKnockout({ ...f, result }, state.calendar, ratings, rng, ctx);
   });
+  const cupsProgress = progressCups({ ...state, calendar }, rng, ctx);
+  calendar = [...calendar, ...cupsProgress.fixtures];
 
-  const groupId = state.world.clubs.find((c) => c.id === state.player.clubId)?.groupId;
+  const clubId = state.player.clubId;
+  const groupId = state.world.clubs.find((c) => c.id === clubId)?.groupId;
   const results = calendar.filter((f) => f.week === state.week && f.groupId === groupId);
+  const playerCups = new Set(
+    state.cups.filter((c) => clubId && c.participants.includes(clubId)).map((c) => c.competitionId),
+  );
+  const cupResults = calendar.filter(
+    (f) => f.week === state.week && f.cup && playerCups.has(f.cup.competitionId),
+  );
   const { player, finance } = applyWeeklyFinances(
     weeklyRecovery(state.player, ctx),
     state.world.npcs,
@@ -82,10 +105,11 @@ export function advanceWeek(
     ...state,
     player,
     calendar,
+    cups: cupsProgress.cups,
     week: state.week + 1,
     rngState: rng.getState(),
   };
   // Il mercato della settimana nuova; a stagione finita ci pensa endSeason.
   if (!isSeasonOver(next, ctx)) next = refreshMarket(next, ctx);
-  return { state: next, report: { week: state.week, results, finance } };
+  return { state: next, report: { week: state.week, results, cupResults, finance } };
 }

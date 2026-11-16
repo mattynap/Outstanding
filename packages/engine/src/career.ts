@@ -2,10 +2,11 @@ import { defaultContext, type GameContext } from './context';
 import { createPlayer, type NewPlayerOptions } from './player/create';
 import { Rng } from './rng';
 import { CURRENT_SAVE_VERSION } from './save/serialize';
+import { setupSeasonCups } from './cups/cups';
 import { buildSeasonCalendar } from './season/schedule';
 import type { GameState, Player, World } from './types';
 import { generateWorld, groupId, IdGen } from './world/generate';
-import { getGroup } from './world/queries';
+import { getGroup, getLeagueByLevel } from './world/queries';
 
 export interface NewCareerOptions extends NewPlayerOptions {
   /** Livello di campionato in cui inizia la carriera (uno di `config.world.startLevels`). */
@@ -82,6 +83,13 @@ export function newCareer(
   let player = createPlayer(options, 'p0', rng, ctx);
   const world = generateWorld(rng, ids, week, ctx);
   player = signFirstClub(player, world, startLevel, season, rng, ctx);
+  const leagueFixtures = buildSeasonCalendar(world, season, rng, ctx.config.calendar);
+  // Prima stagione: senza una classifica precedente, alle coppe europee vanno i club più forti.
+  const rating = new Map(world.clubs.map((c) => [c.id, c.rating]));
+  const ranking = getLeagueByLevel(world, 1)
+    .groups.flatMap((g) => g.clubIds)
+    .sort((a, b) => rating.get(b)! - rating.get(a)! || (a < b ? -1 : 1));
+  const cups = setupSeasonCups(world, season, ranking, undefined, rng, ctx);
 
   return {
     saveVersion: CURRENT_SAVE_VERSION,
@@ -91,7 +99,8 @@ export function newCareer(
     season,
     player,
     world,
-    calendar: buildSeasonCalendar(world, season, rng, ctx.config.calendar),
+    calendar: [...leagueFixtures, ...cups.fixtures],
+    cups: cups.cups,
     eventLog: [],
     cooldowns: {},
     scheduled: [],

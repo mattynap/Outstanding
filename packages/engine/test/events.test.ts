@@ -70,7 +70,7 @@ describe('estrazione degli eventi', () => {
       expect(new Set(events.map((e) => e.category)).size).toBe(events.length);
       total += events.length;
       s = resolveAll(state);
-      if (playerFixture(s)) s = playMatch(s, () => 0).state;
+      while (playerFixture(s)) s = playMatch(s, () => 0).state;
       s = advanceWeek(s).state;
     }
     expect(total).toBeGreaterThan(10);
@@ -241,7 +241,7 @@ describe('eventi del gioco', () => {
           if (s.player.clubId) expect(e.params['club']).toBeDefined();
           s = resolveEvent(s, e.eventId, pick++ % e.choices.length).state;
         }
-        if (playerFixture(s)) s = playMatch(s, () => 0).state;
+        while (playerFixture(s)) s = playMatch(s, () => 0).state;
         s = advanceWeek(s).state;
       }
       s = endSeason(s).state;

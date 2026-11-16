@@ -5,7 +5,7 @@ import { Rng } from '../rng';
 import { expectedGoals } from '../season/quickSim';
 import { playerFixture } from '../season/week';
 import type {
-  Club,
+  ClubBase,
   GameState,
   MatchEvent,
   MatchState,
@@ -14,7 +14,8 @@ import type {
   Side,
 } from '../types';
 import { clamp, roundTo } from '../util';
-import { getClub } from '../world/queries';
+import { settleKnockout } from '../cups/cups';
+import { clubRatings, getAnyClub, getClub } from '../world/queries';
 import {
   getMomentType,
   optionChance,
@@ -42,6 +43,11 @@ export interface MatchReport {
   goals: number;
   assists: number;
   cleanSheet: boolean;
+  /** Coppa: gol dei supplementari e rigori, se la sfida è finita in parità. */
+  extraTime?: { home: number; away: number };
+  penalties?: { home: number; away: number };
+  /** Id della coppa, se è una partita di coppa. */
+  competitionId?: string;
   /** Infortunio subito durante la partita. */
   injury?: { type: string; weeksLeft: number };
 }
@@ -62,7 +68,7 @@ function fullName(p: { firstName: string; lastName: string }): string {
 }
 
 /** Marcatore casuale di una rosa, pesato per ruolo. */
-function pickScorer(club: Club, rng: Rng, ctx: GameContext): RosterPlayer {
+function pickScorer(club: ClubBase, rng: Rng, ctx: GameContext): RosterPlayer {
   const w = ctx.config.match.scorerWeights;
   return rng.weighted(club.roster, (p) => w[p.role]);
 }
@@ -78,14 +84,19 @@ function playerOnPitch(m: MatchState, minute: number): boolean {
 }
 
 interface MatchClubs {
-  home: Club;
-  away: Club;
+  home: ClubBase;
+  away: ClubBase;
+  neutral: boolean;
 }
 
 function matchClubs(state: GameState, m: MatchState): MatchClubs {
   const fixture = state.calendar.find((f) => f.id === m.fixtureId);
   if (!fixture) throw new Error(`Unknown fixture "${m.fixtureId}"`);
-  return { home: getClub(state.world, fixture.homeId), away: getClub(state.world, fixture.awayId) };
+  return {
+    home: getAnyClub(state.world, fixture.homeId),
+    away: getAnyClub(state.world, fixture.awayId),
+    neutral: fixture.cup?.neutral ?? false,
+  };
 }
 
 function addGoal(
@@ -128,7 +139,7 @@ function simulateBlock(
   const ovr = computeOvr(state.player.skills, state.player.role, ctx.config.ratings);
   const ratings = { home: clubs.home.rating, away: clubs.away.rating };
   ratings[m.side] += (ovr - own.rating) * cfg.playerImpact * share;
-  const xg = expectedGoals(ratings.home, ratings.away, cfg.quickSim);
+  const xg = expectedGoals(ratings.home, ratings.away, cfg.quickSim, clubs.neutral);
   const scale = {
     [m.side]: 1 + (cfg.xgScaleWhileOnPitch.for - 1) * share,
     [other(m.side)]: 1 + (cfg.xgScaleWhileOnPitch.against - 1) * share,
@@ -150,7 +161,7 @@ function describeMoment(state: GameState, m: MatchState, ctx: GameContext): KeyM
   const pending = m.pending;
   if (!pending) throw new Error('No key moment pending');
   const type = getMomentType(pending.momentId, ctx);
-  const opponent = getClub(state.world, m.opponentId);
+  const opponent = getAnyClub(state.world, m.opponentId);
   // I gol di un blocco vengono simulati prima dei suoi momenti: si contano solo quelli già avvenuti.
   const score = { home: 0, away: 0 };
   for (const e of m.events) {
@@ -245,12 +256,18 @@ function finishMatch(
     ctx,
   );
   const { currentMatch: _done, ...rest } = state;
+  // In coppa una gara decisiva in parità prosegue con supplementari e rigori.
+  const settled = settleKnockout(
+    { ...fixture, result: { ...m.score } },
+    state.calendar,
+    clubRatings(state.world),
+    rng,
+    ctx,
+  );
   const next: GameState = {
     ...rest,
     player: after.player,
-    calendar: state.calendar.map((f) =>
-      f.id === m.fixtureId ? { ...f, result: { ...m.score } } : f,
-    ),
+    calendar: state.calendar.map((f) => (f.id === m.fixtureId ? settled : f)),
   };
   return {
     state: next,
@@ -269,6 +286,9 @@ function finishMatch(
       goals: m.goals,
       assists: m.assists,
       cleanSheet,
+      ...(settled.extraTime ? { extraTime: { ...settled.extraTime } } : {}),
+      ...(settled.penalties ? { penalties: { ...settled.penalties } } : {}),
+      ...(fixture.cup ? { competitionId: fixture.cup.competitionId } : {}),
       ...(after.injured && after.player.injury ? { injury: { ...after.player.injury } } : {}),
     },
   };

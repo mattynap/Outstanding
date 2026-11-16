@@ -1,4 +1,5 @@
 import type { LevelConfig } from '@outstanding/config';
+import { setupSeasonCups } from '../cups/cups';
 import { defaultContext, type GameContext } from '../context';
 import { emptySeasonStats } from '../player/create';
 import { seasonMarketTransition } from '../market/life';
@@ -6,7 +7,7 @@ import { applyDecline } from '../player/progression';
 import { computeOvr } from '../player/ratings';
 import { Rng } from '../rng';
 import { ageAt } from '../time';
-import type { Area, Club, GameState, League, RosterPlayer, SeasonRecord } from '../types';
+import type { Area, Club, ClubBase, GameState, League, RosterPlayer, SeasonRecord } from '../types';
 import { clamp } from '../util';
 import { clubRatingFromRoster } from '../world/club';
 import { IdGen } from '../world/generate';
@@ -29,6 +30,8 @@ export interface SeasonReport {
   standings: StandingRow[];
   /** Vincitrice di ogni girone. */
   champions: { leagueId: string; groupId: string; clubId: string }[];
+  /** Vincitrice di ogni coppa. */
+  cupWinners: { competitionId: string; clubId: string }[];
   movements: ClubMovement[];
 }
 
@@ -66,18 +69,18 @@ function assignGroups(
 }
 
 /** Invecchia le rose: crescita/declino per età, ritirati sostituiti da giovani, avvicinamento al livello. */
-function evolveRoster(
-  club: Club,
-  levelCfg: LevelConfig,
+function evolveRoster<C extends ClubBase>(
+  club: C,
+  ratingRange: readonly [number, number],
   week: number,
   rng: Rng,
   ids: IdGen,
   ctx: GameContext,
-): Club {
+): C {
   const { rosterAging: aging, roster: rosterCfg, formation } = ctx.config.world;
   const { names } = ctx.content;
   const weeksPerYear = ctx.config.calendar.weeksPerSeason;
-  const mid = (levelCfg.ratingRange[0] + levelCfg.ratingRange[1]) / 2;
+  const mid = (ratingRange[0] + ratingRange[1]) / 2;
   const pull = aging.levelPull * (mid - club.rating);
 
   const roster: RosterPlayer[] = club.roster.map((p) => {
@@ -191,10 +194,24 @@ export function endSeason(
   const clubs = state.world.clubs.map((club) => {
     const gid = newGroupOf.get(club.id)!;
     const levelCfg = cfg.world.levels.find((l) => l.level === levelOfGroup.get(gid))!;
-    return evolveRoster({ ...club, groupId: gid }, levelCfg, state.week, rng, ids, ctx);
+    return evolveRoster({ ...club, groupId: gid }, levelCfg.ratingRange, state.week, rng, ids, ctx);
+  });
+  const foreignClubs = state.world.foreignClubs.map((club) => {
+    const tier = cfg.cups.foreign.tiers[club.tier] ?? cfg.cups.foreign.tiers.at(-1)!;
+    return evolveRoster(club, tier.ratingRange, state.week, rng, ids, ctx);
   });
 
-  // 5. Riepilogo stagionale del giocatore.
+  // 5. Coppe: vincitrici e qualificate alle coppe europee della stagione successiva.
+  const cupWinners = state.cups.flatMap((c) =>
+    c.winnerId ? [{ competitionId: c.competitionId, clubId: c.winnerId }] : [],
+  );
+  const topLeague = state.world.leagues.find((l) => l.level === 1)!;
+  const ranking = topLeague.groups.flatMap((g) => tables.get(g.id)!.map((r) => r.clubId));
+  const nationalWinner = state.cups.find(
+    (c) => c.competitionId === cfg.cups.nationalCup.id,
+  )?.winnerId;
+
+  // 6. Riepilogo stagionale del giocatore.
   const p = state.player;
   const oldClub = p.clubId ? clubsById.get(p.clubId) : undefined;
   const oldTable = oldClub ? tables.get(oldClub.groupId) : undefined;
@@ -213,16 +230,27 @@ export function endSeason(
     leaguePosition: position || null,
     promoted: move?.kind === 'promoted',
     relegated: move?.kind === 'relegated',
+    trophies: oldClub
+      ? [
+          ...champions.filter((c) => c.clubId === oldClub.id).map((c) => c.leagueId),
+          ...cupWinners.filter((c) => c.clubId === oldClub.id).map((c) => c.competitionId),
+        ]
+      : [],
   };
-  const world = { ...state.world, leagues, clubs };
+  const world = { ...state.world, leagues, clubs, foreignClubs };
   const nextSeason = state.season + 1;
-  const calendar = buildSeasonCalendar(world, nextSeason, rng, cfg.calendar);
+  const nextCups = setupSeasonCups(world, nextSeason, ranking, nationalWinner, rng, ctx);
+  const calendar = [
+    ...buildSeasonCalendar(world, nextSeason, rng, cfg.calendar),
+    ...nextCups.fixtures,
+  ];
 
   const next: GameState = {
     ...state,
     season: nextSeason,
     world,
     calendar,
+    cups: nextCups.cups,
     player: {
       ...applyDecline(p, record.age, ctx),
       seasonStats: emptySeasonStats(),
@@ -240,6 +268,7 @@ export function endSeason(
       record,
       standings: oldTable ?? [],
       champions,
+      cupWinners,
       movements,
     },
   };

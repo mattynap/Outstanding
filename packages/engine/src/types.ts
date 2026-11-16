@@ -45,6 +45,8 @@ export interface SeasonRecord {
   leaguePosition: number | null;
   promoted: boolean;
   relegated: boolean;
+  /** Trofei vinti con il club: id del campionato (titolo del girone) o della coppa. */
+  trophies: string[];
 }
 
 export interface Player {
@@ -113,12 +115,12 @@ export interface RosterPlayer {
 
 export type Area = 'N' | 'C' | 'S';
 
-export interface Club {
+/** Dati comuni a tutti i club, italiani e stranieri. */
+export interface ClubBase {
   id: string;
   name: string;
   shortName: string;
   city: string;
-  area: Area;
   /** Seme deterministico per la grafica procedurale. */
   seed: number;
   crest: Crest;
@@ -126,9 +128,22 @@ export interface Club {
   /** Forza della squadra 0–100, ricavata dalla rosa. */
   rating: number;
   roster: RosterPlayer[];
+}
+
+/** Club della piramide italiana. */
+export interface Club extends ClubBase {
+  area: Area;
   coachId: string;
   /** Id del girone di campionato attuale. */
   groupId: string;
+}
+
+/** Club straniero: esiste solo per le coppe europee. */
+export interface ForeignClub extends ClubBase {
+  /** Id del paese in content/foreign.json. */
+  country: string;
+  /** Fascia di forza (indice in config/cups.json foreign.tiers). */
+  tier: number;
 }
 
 export interface LeagueGroup {
@@ -201,17 +216,60 @@ export interface Retirement {
   reason: 'age' | 'no_offers' | 'choice';
 }
 
+export interface Score {
+  home: number;
+  away: number;
+}
+
+/** Fase di una coppa: preliminari, gironi o turni a eliminazione diretta. */
+export type CupStage = 'r1' | 'r2' | 'r3' | 'group' | 'last32' | 'last16' | 'qf' | 'sf' | 'final';
+
+/** Dati di una partita di coppa. */
+export interface CupInfo {
+  competitionId: string;
+  stage: CupStage;
+  /** Turno da 1 (0 = fase a gironi). */
+  round: number;
+  /** Sfida a eliminazione diretta (le due gare di andata e ritorno hanno lo stesso id). */
+  tieId?: string;
+  leg: 1 | 2;
+  legs: 1 | 2;
+  /** Campo neutro (finali): nessun vantaggio casalingo. */
+  neutral: boolean;
+}
+
 export interface Fixture {
   id: string;
   season: number;
   /** Settimana assoluta. */
   week: number;
   matchday: number;
+  /** Id del campionato o, per le coppe, della competizione. */
   leagueId: string;
+  /** Id del girone (di campionato, di coppa, o del turno a eliminazione diretta). */
   groupId: string;
   homeId: string;
   awayId: string;
-  result?: { home: number; away: number };
+  /** Presente per le partite di coppa. */
+  cup?: CupInfo;
+  /** Risultato dei 90 minuti. */
+  result?: Score;
+  /** Gol dei tempi supplementari (solo gare decisive finite in parità). */
+  extraTime?: Score;
+  penalties?: Score;
+}
+
+/** Stato di una coppa nella stagione corrente. */
+export interface CupState {
+  competitionId: string;
+  season: number;
+  /** Partecipanti dal più forte al più debole. */
+  participants: string[];
+  /** Gironi (solo coppe europee). */
+  groups: { id: string; letter: string; clubIds: string[] }[];
+  /** Indice (in config) del prossimo turno a eliminazione diretta da sorteggiare. */
+  nextRound: number;
+  winnerId?: string;
 }
 
 /** Esito della convocazione: titolare, in panchina o fuori dai convocati. */
@@ -283,6 +341,8 @@ export interface TransferRequest {
 
 export interface World {
   clubs: Club[];
+  /** Club stranieri delle coppe europee (fuori dalla piramide e dal mercato). */
+  foreignClubs: ForeignClub[];
   leagues: League[];
   competitions: Competition[];
   npcs: Npc[];
@@ -299,6 +359,8 @@ export interface GameState {
   player: Player;
   world: World;
   calendar: Fixture[];
+  /** Coppe della stagione corrente. */
+  cups: CupState[];
   eventLog: { eventId: string; week: number; choice: number }[];
   /** eventId -> settimana assoluta in cui l'evento torna disponibile. */
   cooldowns: Record<string, number>;

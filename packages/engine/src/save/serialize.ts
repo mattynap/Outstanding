@@ -59,6 +59,9 @@ function assertShape(
   const world = raw['world'];
   if (typeof world !== 'object' || world === null) fail('world');
   if (!Array.isArray(raw['calendar'])) fail('calendar');
+  if (!Array.isArray(raw['cups'])) fail('cups');
+  if (!Array.isArray((world as Record<string, unknown>)['foreignClubs']))
+    fail('world.foreignClubs');
 }
 
 export function deserialize(json: string): GameState {

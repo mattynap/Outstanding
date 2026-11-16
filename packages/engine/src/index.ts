@@ -14,6 +14,7 @@ export {
   getTransferWindow,
   isSeasonOver,
   playerFixture,
+  playerFixtures,
   type TransferWindow,
   type WeekReport,
 } from './season/week';
@@ -70,7 +71,23 @@ export {
   setLifestyle,
   type WeekFinance,
 } from './market/life';
-export { getClub, getGroup, getLeagueByLevel, playerClub } from './world/queries';
+export {
+  clubCups,
+  continentalQualifiers,
+  cupGroupTables,
+  settleKnockout,
+  stageFor,
+  tieWinner,
+} from './cups/cups';
+export {
+  clubRatings,
+  getAnyClub,
+  getClub,
+  getGroup,
+  getLeagueByLevel,
+  levelOfClub,
+  playerClub,
+} from './world/queries';
 export {
   serialize,
   deserialize,

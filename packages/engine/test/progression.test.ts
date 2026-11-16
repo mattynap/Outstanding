@@ -187,7 +187,7 @@ describe('crescita e declino', () => {
           ok ? [{ actionId: 'train_normal' }, { actionId: 'rest' }] : [{ actionId: 'rest' }],
         ).state;
       }
-      if (playerFixture(s)) s = playMatch(s, () => 0).state;
+      while (playerFixture(s)) s = playMatch(s, () => 0).state;
       s = advanceWeek(s).state;
     }
     expect(ovr(s.player)).toBeGreaterThan(before + 2);

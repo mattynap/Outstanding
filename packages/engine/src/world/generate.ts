@@ -3,6 +3,7 @@ import type { GameContext } from '../context';
 import type { Rng } from '../rng';
 import type { Club, Competition, League, LeagueGroup, Npc, World } from '../types';
 import { clubRatingFromRoster, clubVisuals, generateRoster, pickClubName } from './club';
+import { generateForeignClubs } from './foreign';
 
 export const leagueId = (level: number) => `L${level}`;
 export const groupId = (level: number, area: string | null) => `L${level}${area ?? ''}`;
@@ -38,7 +39,7 @@ function agentTerms(rng: Rng, ctx: GameContext): { quality: number; commission: 
 
 /**
  * Genera la piramide calcistica italiana fittizia: campionati, gironi per area, club con città reali
- * e nomi inventati, rose, allenatori e procuratori.
+ * e nomi inventati, rose, allenatori e procuratori; in più i club stranieri delle coppe europee.
  */
 export function generateWorld(rng: Rng, ids: IdGen, week: number, ctx: GameContext): World {
   const { world: cfg, calendar } = ctx.config;
@@ -140,5 +141,6 @@ export function generateWorld(rng: Rng, ids: IdGen, week: number, ctx: GameConte
     });
   }
 
-  return { clubs, leagues, competitions: [...COMPETITIONS], npcs };
+  const foreignClubs = generateForeignClubs(rng, ids, week, ctx);
+  return { clubs, foreignClubs, leagues, competitions: [...COMPETITIONS], npcs };
 }

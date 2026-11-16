@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { checkContent, defaultContent, parseContent, rawDefaultContent } from '../src/index';
+import {
+  checkContent,
+  defaultContent,
+  parseContent,
+  rawDefaultContent,
+  type GameEvent,
+} from '../src/index';
 
 describe('content', () => {
   it('default content passes all cross checks', () => {
@@ -15,5 +21,82 @@ describe('content', () => {
   it('reports missing text keys', () => {
     const broken = { ...defaultContent, i18n: { it: {} } };
     expect(checkContent(broken).some((e) => e.includes('missing text key'))).toBe(true);
+  });
+});
+
+describe('eventi', () => {
+  const base = defaultContent.events[0]!;
+  const withEvents = (events: GameEvent[], texts: Record<string, string> = {}) => ({
+    ...defaultContent,
+    events,
+    i18n: { it: { ...defaultContent.i18n.it, ...texts } },
+  });
+
+  it('i 20 eventi iniziali sono presenti e validi', () => {
+    expect(defaultContent.events.length).toBeGreaterThanOrEqual(20);
+    expect(checkContent(defaultContent)).toEqual([]);
+  });
+
+  it('segnala id duplicati', () => {
+    const errors = checkContent(withEvents([...defaultContent.events, base]));
+    expect(errors.some((e) => e.includes('duplicate id'))).toBe(true);
+  });
+
+  it('segnala catene verso eventi inesistenti', () => {
+    const broken: GameEvent = {
+      ...base,
+      id: 'catena_rotta',
+      choices: [
+        {
+          textKey: base.choices[0]!.textKey,
+          effects: [{ type: 'schedule', eventId: 'nessuno', inWeeks: 2 }],
+        },
+      ],
+    };
+    const errors = checkContent(withEvents([...defaultContent.events, broken]));
+    expect(errors.some((e) => e.includes('unknown event "nessuno"'))).toBe(true);
+  });
+
+  it('segnala segnaposto sconosciuti, tratti inesistenti e catene mai attivate', () => {
+    const broken: GameEvent = {
+      ...base,
+      id: 'difettoso',
+      chainOnly: true,
+      titleKey: 'events.difettoso.title',
+      textKey: 'events.difettoso.text',
+      textVariants: 1,
+      conditions: { traits: ['tratto_inventato'] },
+    };
+    const errors = checkContent(
+      withEvents([...defaultContent.events, broken], {
+        'events.difettoso.title': 'Titolo',
+        'events.difettoso.text': 'Ciao {soprannome}',
+      }),
+    );
+    expect(errors.some((e) => e.includes('{soprannome}'))).toBe(true);
+    expect(errors.some((e) => e.includes('unknown trait'))).toBe(true);
+    expect(errors.some((e) => e.includes('never scheduled'))).toBe(true);
+  });
+
+  it('lo schema rifiuta percorsi di statistiche inesistenti', () => {
+    const bad = [
+      {
+        ...base,
+        choices: [{ textKey: 'x', effects: [{ type: 'stat', path: 'player.magic', delta: 1 }] }],
+      },
+    ];
+    expect(() =>
+      parseContent({ ...rawDefaultContent, events: [{ file: 'events/prova.json', data: bad }] }),
+    ).toThrow(/events\/prova\.json/);
+  });
+
+  it('rifiuta chiavi di testo duplicate tra file di traduzione', () => {
+    const dup = { 'roles.GK': 'Portiere' };
+    expect(() =>
+      parseContent({
+        ...rawDefaultContent,
+        i18n: { it: [...rawDefaultContent.i18n.it, { file: 'i18n/dup.json', data: dup }] },
+      }),
+    ).toThrow(/duplicate text key/);
   });
 });

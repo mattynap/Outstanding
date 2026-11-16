@@ -1,0 +1,5 @@
+{
+  "perWeekWeights": [0.45, 0.4, 0.15],
+  "maxPerCategoryPerWeek": 1,
+  "statLimits": { "pctMin": 0, "pctMax": 100 }
+}

@@ -1,0 +1,243 @@
+[
+  {
+    "id": "spogliatoio_scherzo_01",
+    "category": "dressing_room",
+    "weight": 3,
+    "cooldownWeeks": 20,
+    "titleKey": "events.spogliatoio_scherzo_01.title",
+    "textKey": "events.spogliatoio_scherzo_01.text",
+    "textVariants": 2,
+    "choices": [
+      {
+        "textKey": "events.spogliatoio_scherzo_01.c1",
+        "effects": [
+          { "type": "stat", "path": "persona.happiness", "delta": 3 },
+          { "type": "stat", "path": "condition.morale", "delta": 2 },
+          { "type": "flag", "flag": "spogliatoio_integrato" }
+        ]
+      },
+      {
+        "textKey": "events.spogliatoio_scherzo_01.c2",
+        "effects": [
+          {
+            "type": "chance",
+            "p": 0.5,
+            "effects": [
+              { "type": "stat", "path": "condition.morale", "delta": 6 },
+              { "type": "flag", "flag": "spogliatoio_integrato" }
+            ],
+            "otherwise": [
+              { "type": "relationship", "target": "coach", "delta": -4 },
+              { "type": "stat", "path": "persona.discipline", "delta": -2 }
+            ]
+          }
+        ]
+      },
+      {
+        "textKey": "events.spogliatoio_scherzo_01.c3",
+        "effects": [
+          { "type": "relationship", "target": "coach", "delta": 3 },
+          { "type": "stat", "path": "condition.morale", "delta": -4 },
+          { "type": "flag", "flag": "permaloso" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "spogliatoio_capitano_consiglio_01",
+    "category": "dressing_room",
+    "weight": 2,
+    "cooldownWeeks": 30,
+    "conditions": { "age": { "max": 23 } },
+    "titleKey": "events.spogliatoio_capitano_consiglio_01.title",
+    "textKey": "events.spogliatoio_capitano_consiglio_01.text",
+    "choices": [
+      {
+        "textKey": "events.spogliatoio_capitano_consiglio_01.c1",
+        "effects": [
+          { "type": "stat", "path": "persona.discipline", "delta": 3 },
+          { "type": "stat", "path": "skills.physical", "delta": 1 },
+          { "type": "stat", "path": "condition.energy", "delta": -8 }
+        ]
+      },
+      {
+        "textKey": "events.spogliatoio_capitano_consiglio_01.c2",
+        "effects": [
+          { "type": "stat", "path": "condition.energy", "delta": 5 },
+          { "type": "stat", "path": "persona.happiness", "delta": 2 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "spogliatoio_cena_squadra_01",
+    "category": "dressing_room",
+    "weight": 2,
+    "cooldownWeeks": 16,
+    "titleKey": "events.spogliatoio_cena_squadra_01.title",
+    "textKey": "events.spogliatoio_cena_squadra_01.text",
+    "textVariants": 2,
+    "choices": [
+      {
+        "textKey": "events.spogliatoio_cena_squadra_01.c1",
+        "effects": [
+          { "type": "money", "delta": -150 },
+          { "type": "stat", "path": "condition.morale", "delta": 5 },
+          { "type": "flag", "flag": "spogliatoio_integrato" }
+        ]
+      },
+      {
+        "textKey": "events.spogliatoio_cena_squadra_01.c2",
+        "effects": [
+          { "type": "money", "delta": -40 },
+          { "type": "stat", "path": "condition.morale", "delta": 2 }
+        ]
+      },
+      {
+        "textKey": "events.spogliatoio_cena_squadra_01.c3",
+        "effects": [
+          { "type": "stat", "path": "condition.energy", "delta": 6 },
+          { "type": "stat", "path": "condition.morale", "delta": -3 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "spogliatoio_lite_compagno_01",
+    "category": "dressing_room",
+    "weight": 2,
+    "cooldownWeeks": 26,
+    "titleKey": "events.spogliatoio_lite_compagno_01.title",
+    "textKey": "events.spogliatoio_lite_compagno_01.text",
+    "choices": [
+      {
+        "textKey": "events.spogliatoio_lite_compagno_01.c1",
+        "effects": [
+          {
+            "type": "chance",
+            "p": 0.5,
+            "effects": [
+              { "type": "stat", "path": "image.reputation", "delta": 3 },
+              { "type": "stat", "path": "condition.morale", "delta": 3 }
+            ],
+            "otherwise": [
+              { "type": "relationship", "target": "coach", "delta": -6 },
+              { "type": "stat", "path": "persona.discipline", "delta": -2 }
+            ]
+          }
+        ]
+      },
+      {
+        "textKey": "events.spogliatoio_lite_compagno_01.c2",
+        "effects": [
+          { "type": "stat", "path": "condition.morale", "delta": -4 },
+          { "type": "stat", "path": "persona.discipline", "delta": 2 }
+        ]
+      },
+      {
+        "textKey": "events.spogliatoio_lite_compagno_01.c3",
+        "effects": [
+          { "type": "stat", "path": "persona.happiness", "delta": 2 },
+          { "type": "schedule", "eventId": "spogliatoio_lite_seguito_01", "inWeeks": 3 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "spogliatoio_lite_seguito_01",
+    "category": "dressing_room",
+    "weight": 1,
+    "cooldownWeeks": 0,
+    "chainOnly": true,
+    "titleKey": "events.spogliatoio_lite_seguito_01.title",
+    "textKey": "events.spogliatoio_lite_seguito_01.text",
+    "choices": [
+      {
+        "textKey": "events.spogliatoio_lite_seguito_01.c1",
+        "effects": [
+          { "type": "stat", "path": "condition.morale", "delta": 4 },
+          { "type": "stat", "path": "condition.energy", "delta": -4 },
+          { "type": "flag", "flag": "spogliatoio_integrato" }
+        ]
+      },
+      {
+        "textKey": "events.spogliatoio_lite_seguito_01.c2",
+        "effects": [{ "type": "stat", "path": "persona.discipline", "delta": 1 }]
+      }
+    ]
+  },
+  {
+    "id": "mister_colloquio_01",
+    "category": "dressing_room",
+    "weight": 2,
+    "cooldownWeeks": 30,
+    "titleKey": "events.mister_colloquio_01.title",
+    "textKey": "events.mister_colloquio_01.text",
+    "choices": [
+      {
+        "textKey": "events.mister_colloquio_01.c1",
+        "effects": [
+          { "type": "relationship", "target": "coach", "delta": 5 },
+          { "type": "flag", "flag": "promessa_mister" },
+          { "type": "schedule", "eventId": "mister_verifica_01", "inWeeks": 4 }
+        ]
+      },
+      {
+        "textKey": "events.mister_colloquio_01.c2",
+        "effects": [
+          {
+            "type": "chance",
+            "p": 0.4,
+            "effects": [
+              { "type": "relationship", "target": "coach", "delta": 3 },
+              { "type": "stat", "path": "condition.morale", "delta": 5 }
+            ],
+            "otherwise": [
+              { "type": "relationship", "target": "coach", "delta": -5 },
+              { "type": "stat", "path": "condition.morale", "delta": -2 }
+            ]
+          }
+        ]
+      },
+      {
+        "textKey": "events.mister_colloquio_01.c3",
+        "effects": [{ "type": "relationship", "target": "coach", "delta": 1 }]
+      }
+    ]
+  },
+  {
+    "id": "mister_verifica_01",
+    "category": "dressing_room",
+    "weight": 1,
+    "cooldownWeeks": 0,
+    "chainOnly": true,
+    "conditions": { "flags": ["promessa_mister"] },
+    "titleKey": "events.mister_verifica_01.title",
+    "textKey": "events.mister_verifica_01.text",
+    "choices": [
+      {
+        "textKey": "events.mister_verifica_01.c1",
+        "effects": [
+          { "type": "flag", "flag": "promessa_mister", "value": null },
+          {
+            "type": "chance",
+            "p": 0.6,
+            "effects": [
+              { "type": "relationship", "target": "coach", "delta": 6 },
+              { "type": "stat", "path": "skills.defending", "delta": 1 }
+            ],
+            "otherwise": [{ "type": "relationship", "target": "coach", "delta": -4 }]
+          }
+        ]
+      },
+      {
+        "textKey": "events.mister_verifica_01.c2",
+        "effects": [
+          { "type": "flag", "flag": "promessa_mister", "value": null },
+          { "type": "relationship", "target": "coach", "delta": -2 },
+          { "type": "stat", "path": "persona.discipline", "delta": 2 }
+        ]
+      }
+    ]
+  }
+]

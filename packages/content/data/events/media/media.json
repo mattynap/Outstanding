@@ -1,0 +1,97 @@
+[
+  {
+    "id": "media_intervista_locale_01",
+    "category": "media",
+    "weight": 3,
+    "cooldownWeeks": 12,
+    "titleKey": "events.media_intervista_locale_01.title",
+    "textKey": "events.media_intervista_locale_01.text",
+    "textVariants": 2,
+    "choices": [
+      {
+        "textKey": "events.media_intervista_locale_01.c1",
+        "effects": [
+          { "type": "stat", "path": "image.popularity", "delta": 3 },
+          { "type": "stat", "path": "image.reputation", "delta": 2 }
+        ]
+      },
+      {
+        "textKey": "events.media_intervista_locale_01.c2",
+        "effects": [
+          { "type": "stat", "path": "image.popularity", "delta": 6 },
+          { "type": "stat", "path": "image.reputation", "delta": -2 },
+          {
+            "type": "chance",
+            "p": 0.3,
+            "effects": [{ "type": "relationship", "target": "coach", "delta": -4 }]
+          }
+        ]
+      },
+      {
+        "textKey": "events.media_intervista_locale_01.c3",
+        "effects": [
+          { "type": "stat", "path": "image.popularity", "delta": -1 },
+          { "type": "stat", "path": "image.reputation", "delta": 1 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "media_video_virale_01",
+    "category": "media",
+    "weight": 2,
+    "cooldownWeeks": 20,
+    "titleKey": "events.media_video_virale_01.title",
+    "textKey": "events.media_video_virale_01.text",
+    "textVariants": 2,
+    "choices": [
+      {
+        "textKey": "events.media_video_virale_01.c1",
+        "effects": [
+          { "type": "stat", "path": "image.followers", "delta": 300 },
+          { "type": "stat", "path": "image.popularity", "delta": 3 }
+        ]
+      },
+      {
+        "textKey": "events.media_video_virale_01.c2",
+        "effects": [{ "type": "stat", "path": "persona.discipline", "delta": 1 }]
+      },
+      {
+        "textKey": "events.media_video_virale_01.c3",
+        "effects": [
+          {
+            "type": "chance",
+            "p": 0.5,
+            "effects": [{ "type": "stat", "path": "image.followers", "delta": 500 }],
+            "otherwise": [
+              { "type": "stat", "path": "image.reputation", "delta": -4 },
+              { "type": "stat", "path": "condition.morale", "delta": -3 }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tifosi_striscione_01",
+    "category": "media",
+    "weight": 2,
+    "cooldownWeeks": 40,
+    "conditions": { "stats": [{ "path": "image.popularity", "gte": 15 }] },
+    "titleKey": "events.tifosi_striscione_01.title",
+    "textKey": "events.tifosi_striscione_01.text",
+    "choices": [
+      {
+        "textKey": "events.tifosi_striscione_01.c1",
+        "effects": [
+          { "type": "stat", "path": "image.popularity", "delta": 4 },
+          { "type": "stat", "path": "persona.happiness", "delta": 4 }
+        ]
+      },
+      {
+        "textKey": "events.tifosi_striscione_01.c2",
+        "effects": [{ "type": "stat", "path": "image.followers", "delta": 150 }]
+      }
+    ]
+  }
+]

@@ -1,0 +1,49 @@
+[
+  {
+    "id": "famiglia_pranzo_domenica_01",
+    "category": "family",
+    "weight": 3,
+    "cooldownWeeks": 10,
+    "titleKey": "events.famiglia_pranzo_domenica_01.title",
+    "textKey": "events.famiglia_pranzo_domenica_01.text",
+    "textVariants": 2,
+    "choices": [
+      {
+        "textKey": "events.famiglia_pranzo_domenica_01.c1",
+        "effects": [
+          { "type": "stat", "path": "persona.happiness", "delta": 4 },
+          { "type": "stat", "path": "condition.energy", "delta": -3 }
+        ]
+      },
+      {
+        "textKey": "events.famiglia_pranzo_domenica_01.c2",
+        "effects": [
+          { "type": "stat", "path": "condition.energy", "delta": 5 },
+          { "type": "stat", "path": "persona.happiness", "delta": -3 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "famiglia_aiuto_economico_01",
+    "category": "family",
+    "weight": 1,
+    "cooldownWeeks": 40,
+    "conditions": { "stats": [{ "path": "money.cash", "gte": 200 }] },
+    "titleKey": "events.famiglia_aiuto_economico_01.title",
+    "textKey": "events.famiglia_aiuto_economico_01.text",
+    "choices": [
+      {
+        "textKey": "events.famiglia_aiuto_economico_01.c1",
+        "effects": [
+          { "type": "money", "delta": -200 },
+          { "type": "stat", "path": "persona.happiness", "delta": 5 }
+        ]
+      },
+      {
+        "textKey": "events.famiglia_aiuto_economico_01.c2",
+        "effects": [{ "type": "stat", "path": "persona.happiness", "delta": -5 }]
+      }
+    ]
+  }
+]

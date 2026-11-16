@@ -1,0 +1,125 @@
+[
+  {
+    "id": "vita_scuola_01",
+    "category": "life",
+    "weight": 3,
+    "cooldownWeeks": 0,
+    "once": true,
+    "conditions": { "age": { "max": 18 }, "seasonWeek": { "min": 30, "max": 44 } },
+    "titleKey": "events.vita_scuola_01.title",
+    "textKey": "events.vita_scuola_01.text",
+    "choices": [
+      {
+        "textKey": "events.vita_scuola_01.c1",
+        "effects": [
+          { "type": "stat", "path": "condition.energy", "delta": -8 },
+          { "type": "stat", "path": "persona.discipline", "delta": 3 },
+          { "type": "flag", "flag": "diplomato" }
+        ]
+      },
+      {
+        "textKey": "events.vita_scuola_01.c2",
+        "effects": [
+          { "type": "stat", "path": "persona.happiness", "delta": 3 },
+          { "type": "flag", "flag": "scuola_trascurata" },
+          { "type": "schedule", "eventId": "vita_scuola_seguito_01", "inWeeks": 6 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vita_scuola_seguito_01",
+    "category": "life",
+    "weight": 1,
+    "cooldownWeeks": 0,
+    "chainOnly": true,
+    "titleKey": "events.vita_scuola_seguito_01.title",
+    "textKey": "events.vita_scuola_seguito_01.text",
+    "choices": [
+      {
+        "textKey": "events.vita_scuola_seguito_01.c1",
+        "effects": [
+          { "type": "stat", "path": "persona.happiness", "delta": -3 },
+          { "type": "stat", "path": "persona.discipline", "delta": 2 },
+          { "type": "flag", "flag": "scuola_trascurata", "value": null }
+        ]
+      },
+      {
+        "textKey": "events.vita_scuola_seguito_01.c2",
+        "effects": [
+          { "type": "stat", "path": "persona.happiness", "delta": -1 },
+          { "type": "stat", "path": "condition.morale", "delta": 3 },
+          { "type": "flag", "flag": "tutto_sul_calcio" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vita_patente_01",
+    "category": "life",
+    "weight": 2,
+    "cooldownWeeks": 26,
+    "conditions": {
+      "age": { "min": 18 },
+      "flagsNot": ["patente"],
+      "stats": [{ "path": "money.cash", "gte": 400 }]
+    },
+    "titleKey": "events.vita_patente_01.title",
+    "textKey": "events.vita_patente_01.text",
+    "choices": [
+      {
+        "textKey": "events.vita_patente_01.c1",
+        "effects": [
+          { "type": "money", "delta": -400 },
+          { "type": "stat", "path": "persona.happiness", "delta": 4 },
+          { "type": "flag", "flag": "patente" }
+        ]
+      },
+      {
+        "textKey": "events.vita_patente_01.c2",
+        "effects": [{ "type": "stat", "path": "persona.happiness", "delta": -1 }]
+      }
+    ]
+  },
+  {
+    "id": "vita_festa_amici_01",
+    "category": "life",
+    "weight": 3,
+    "cooldownWeeks": 10,
+    "titleKey": "events.vita_festa_amici_01.title",
+    "textKey": "events.vita_festa_amici_01.text",
+    "textVariants": 3,
+    "choices": [
+      {
+        "textKey": "events.vita_festa_amici_01.c1",
+        "effects": [
+          { "type": "stat", "path": "persona.happiness", "delta": 6 },
+          { "type": "stat", "path": "condition.energy", "delta": -15 },
+          { "type": "stat", "path": "condition.form", "delta": -5 },
+          {
+            "type": "chance",
+            "p": 0.25,
+            "effects": [
+              { "type": "stat", "path": "image.reputation", "delta": -5 },
+              { "type": "relationship", "target": "coach", "delta": -5 }
+            ]
+          }
+        ]
+      },
+      {
+        "textKey": "events.vita_festa_amici_01.c2",
+        "effects": [
+          { "type": "stat", "path": "persona.happiness", "delta": 3 },
+          { "type": "stat", "path": "condition.energy", "delta": -5 }
+        ]
+      },
+      {
+        "textKey": "events.vita_festa_amici_01.c3",
+        "effects": [
+          { "type": "stat", "path": "persona.happiness", "delta": -3 },
+          { "type": "stat", "path": "persona.discipline", "delta": 2 }
+        ]
+      }
+    ]
+  }
+]

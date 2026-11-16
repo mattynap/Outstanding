@@ -338,6 +338,19 @@ export const matchSchema = z
     }
   });
 
+export const eventsConfigSchema = z
+  .object({
+    /** Peso di avere 0, 1, 2, ... eventi casuali in una settimana (la lunghezza fissa il massimo). */
+    perWeekWeights: z.array(z.number().min(0)).min(1),
+    maxPerCategoryPerWeek: z.number().int().min(1),
+    /** Limiti delle statistiche percentuali modificate dagli eventi. */
+    statLimits: z.object({ pctMin: z.number(), pctMax: z.number() }),
+  })
+  .refine((e) => e.perWeekWeights.some((w) => w > 0), {
+    message: 'perWeekWeights needs a positive weight',
+  });
+
+export type EventsConfig = z.infer<typeof eventsConfigSchema>;
 export type MatchConfig = z.infer<typeof matchSchema>;
 export type MomentTypeConfig = z.infer<typeof momentType>;
 export type MomentOptionConfig = z.infer<typeof momentOption>;

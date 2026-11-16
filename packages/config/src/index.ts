@@ -1,6 +1,7 @@
 /** Parametri di bilanciamento (JSON validati con Zod). */
 import calendarJson from '../data/calendar.json';
 import economyJson from '../data/economy.json';
+import eventsJson from '../data/events.json';
 import matchJson from '../data/match.json';
 import playerJson from '../data/player.json';
 import ratingsJson from '../data/ratings.json';
@@ -8,12 +9,14 @@ import worldJson from '../data/world.json';
 import {
   calendarSchema,
   economySchema,
+  eventsConfigSchema,
   matchSchema,
   playerConfigSchema,
   ratingsSchema,
   worldSchema,
   type CalendarConfig,
   type EconomyConfig,
+  type EventsConfig,
   type MatchConfig,
   type PlayerConfig,
   type RatingsConfig,
@@ -29,6 +32,7 @@ export const configSchema = {
   world: worldSchema,
   economy: economySchema,
   match: matchSchema,
+  events: eventsConfigSchema,
 } as const;
 
 export interface GameConfig {
@@ -38,6 +42,7 @@ export interface GameConfig {
   world: WorldConfig;
   economy: EconomyConfig;
   match: MatchConfig;
+  events: EventsConfig;
 }
 
 /** Oggetti di configurazione grezzi (non validati), uno per file JSON. */
@@ -64,6 +69,7 @@ export const rawDefaultConfig: RawConfig = {
   world: worldJson,
   economy: economyJson,
   match: matchJson,
+  events: eventsJson,
 };
 
 /** Configurazione predefinita distribuita con il gioco. */

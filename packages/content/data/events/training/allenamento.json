@@ -1,0 +1,112 @@
+[
+  {
+    "id": "allenamento_extra_tiro_01",
+    "category": "training",
+    "weight": 3,
+    "cooldownWeeks": 12,
+    "conditions": { "roles": ["ATT", "MID"], "injured": false },
+    "titleKey": "events.allenamento_extra_tiro_01.title",
+    "textKey": "events.allenamento_extra_tiro_01.text",
+    "textVariants": 2,
+    "choices": [
+      {
+        "textKey": "events.allenamento_extra_tiro_01.c1",
+        "effects": [
+          { "type": "stat", "path": "skills.shooting", "delta": 1 },
+          { "type": "stat", "path": "condition.energy", "delta": -10 },
+          { "type": "stat", "path": "condition.injuryRisk", "delta": 3 }
+        ]
+      },
+      {
+        "textKey": "events.allenamento_extra_tiro_01.c2",
+        "effects": [{ "type": "stat", "path": "persona.happiness", "delta": 1 }]
+      }
+    ]
+  },
+  {
+    "id": "allenamento_pioggia_01",
+    "category": "training",
+    "weight": 2,
+    "cooldownWeeks": 16,
+    "conditions": { "injured": false, "seasonWeek": { "min": 14, "max": 34 } },
+    "titleKey": "events.allenamento_pioggia_01.title",
+    "textKey": "events.allenamento_pioggia_01.text",
+    "choices": [
+      {
+        "textKey": "events.allenamento_pioggia_01.c1",
+        "effects": [
+          {
+            "type": "chance",
+            "p": 0.85,
+            "effects": [
+              { "type": "stat", "path": "persona.discipline", "delta": 2 },
+              { "type": "relationship", "target": "coach", "delta": 3 }
+            ],
+            "otherwise": [{ "type": "injury", "injuryType": "distorsione", "weeks": [1, 3] }]
+          }
+        ]
+      },
+      {
+        "textKey": "events.allenamento_pioggia_01.c2",
+        "effects": [
+          { "type": "stat", "path": "condition.energy", "delta": 4 },
+          { "type": "relationship", "target": "coach", "delta": -3 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "allenamento_rigori_portiere_01",
+    "category": "training",
+    "weight": 3,
+    "cooldownWeeks": 14,
+    "conditions": { "roles": ["GK"], "injured": false },
+    "titleKey": "events.allenamento_rigori_portiere_01.title",
+    "textKey": "events.allenamento_rigori_portiere_01.text",
+    "choices": [
+      {
+        "textKey": "events.allenamento_rigori_portiere_01.c1",
+        "effects": [
+          { "type": "stat", "path": "skills.goalkeeping", "delta": 1 },
+          { "type": "stat", "path": "condition.energy", "delta": -6 }
+        ]
+      },
+      {
+        "textKey": "events.allenamento_rigori_portiere_01.c2",
+        "effects": [
+          { "type": "stat", "path": "condition.morale", "delta": 2 },
+          { "type": "stat", "path": "persona.discipline", "delta": -1 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "allenamento_fastidio_01",
+    "category": "training",
+    "weight": 2,
+    "cooldownWeeks": 20,
+    "conditions": { "injured": false },
+    "titleKey": "events.allenamento_fastidio_01.title",
+    "textKey": "events.allenamento_fastidio_01.text",
+    "choices": [
+      {
+        "textKey": "events.allenamento_fastidio_01.c1",
+        "effects": [
+          { "type": "injury", "injuryType": "affaticamento", "weeks": [1, 1] },
+          { "type": "stat", "path": "condition.injuryRisk", "delta": -5 }
+        ]
+      },
+      {
+        "textKey": "events.allenamento_fastidio_01.c2",
+        "effects": [
+          {
+            "type": "chance",
+            "p": 0.6,
+            "effects": [{ "type": "relationship", "target": "coach", "delta": 3 }],
+            "otherwise": [{ "type": "injury", "injuryType": "stiramento", "weeks": [3, 5] }]
+          }
+        ]
+      }
+    ]
+  }
+]

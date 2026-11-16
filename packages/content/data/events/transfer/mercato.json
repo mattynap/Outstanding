@@ -1,0 +1,59 @@
+[
+  {
+    "id": "mercato_osservatore_01",
+    "category": "transfer",
+    "weight": 2,
+    "cooldownWeeks": 26,
+    "conditions": {
+      "level": { "min": 2 },
+      "stats": [{ "path": "condition.form", "gte": 55 }],
+      "flagsNot": ["trattativa_in_corso"]
+    },
+    "titleKey": "events.mercato_osservatore_01.title",
+    "textKey": "events.mercato_osservatore_01.text",
+    "choices": [
+      {
+        "textKey": "events.mercato_osservatore_01.c1",
+        "effects": [
+          { "type": "flag", "flag": "trattativa_in_corso" },
+          { "type": "schedule", "eventId": "mercato_proposta_01", "inWeeks": 2 }
+        ]
+      },
+      {
+        "textKey": "events.mercato_osservatore_01.c2",
+        "effects": [
+          { "type": "relationship", "target": "coach", "delta": 3 },
+          { "type": "stat", "path": "condition.morale", "delta": 1 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mercato_proposta_01",
+    "category": "transfer",
+    "weight": 1,
+    "cooldownWeeks": 0,
+    "chainOnly": true,
+    "titleKey": "events.mercato_proposta_01.title",
+    "textKey": "events.mercato_proposta_01.text",
+    "choices": [
+      {
+        "textKey": "events.mercato_proposta_01.c1",
+        "effects": [
+          { "type": "flag", "flag": "trattativa_in_corso", "value": null },
+          { "type": "startTransfer", "to": "higher_level" },
+          { "type": "stat", "path": "condition.morale", "delta": 5 }
+        ]
+      },
+      {
+        "textKey": "events.mercato_proposta_01.c2",
+        "effects": [
+          { "type": "flag", "flag": "trattativa_in_corso", "value": null },
+          { "type": "relationship", "target": "coach", "delta": 5 },
+          { "type": "stat", "path": "image.popularity", "delta": 2 },
+          { "type": "flag", "flag": "bandiera" }
+        ]
+      }
+    ]
+  }
+]

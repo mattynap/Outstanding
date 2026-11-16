@@ -1,3 +1,4 @@
+import { EVENT_PLACEHOLDERS, eventTextKeys, flattenEffects } from './events';
 import type { GameContent } from './index';
 
 /**
@@ -44,5 +45,54 @@ export function checkContent(content: GameContent): string[] {
     }
   }
 
+  checkEvents(content, errors);
   return errors;
+}
+
+/** Controlli sugli eventi: id, chiavi di testo, segnaposto, catene e riferimenti ai tratti. */
+function checkEvents(content: GameContent, errors: string[]): void {
+  const t = content.i18n.it;
+  const ids = new Set<string>();
+  for (const e of content.events) {
+    if (ids.has(e.id)) errors.push(`events: duplicate id "${e.id}"`);
+    ids.add(e.id);
+  }
+  const traitIds = new Set(content.traits.map((tr) => tr.id));
+  const allowed = new Set<string>(EVENT_PLACEHOLDERS);
+  const scheduled = new Set<string>();
+
+  for (const e of content.events) {
+    const where = `events.${e.id}`;
+    const keys = [e.titleKey, ...eventTextKeys(e), ...e.choices.map((c) => c.textKey)];
+    for (const key of keys) {
+      const text = t[key];
+      if (text === undefined) {
+        errors.push(`${where}: missing text key "${key}"`);
+        continue;
+      }
+      for (const [, name] of text.matchAll(/\{(\w+)\}/g)) {
+        if (!allowed.has(name!)) errors.push(`${where}: unknown placeholder {${name}} in "${key}"`);
+      }
+    }
+    const traitRefs = [...(e.conditions?.traits ?? []), ...(e.conditions?.traitsNot ?? [])];
+    for (const choice of e.choices) {
+      for (const effect of flattenEffects(choice.effects)) {
+        if (effect.type === 'schedule') {
+          scheduled.add(effect.eventId);
+          if (!ids.has(effect.eventId)) {
+            errors.push(`${where}: schedules unknown event "${effect.eventId}"`);
+          }
+        }
+        if (effect.type === 'trait') traitRefs.push(effect.traitId);
+      }
+    }
+    for (const id of traitRefs) {
+      if (!traitIds.has(id)) errors.push(`${where}: unknown trait "${id}"`);
+    }
+  }
+  for (const e of content.events) {
+    if (e.chainOnly && !scheduled.has(e.id)) {
+      errors.push(`events.${e.id}: chainOnly event is never scheduled`);
+    }
+  }
 }

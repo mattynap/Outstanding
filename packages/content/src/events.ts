@@ -46,6 +46,7 @@ export const EVENT_PLACEHOLDERS = [
   'agent',
   'city',
   'hometown',
+  'business',
 ] as const;
 
 export const EVENT_CATEGORIES = [
@@ -55,6 +56,7 @@ export const EVENT_CATEGORIES = [
   'life',
   'family',
   'transfer',
+  'business',
 ] as const;
 
 const range = z
@@ -86,6 +88,8 @@ export const eventConditionsSchema = z
     coachRelationship: range.optional(),
     /** Settimana all'interno della stagione (da 0). */
     seasonWeek: range.optional(),
+    /** Il giocatore ha (o non ha) almeno un'attività aperta; `{business}` è la principale. */
+    business: z.boolean().optional(),
   })
   .strict();
 
@@ -121,6 +125,8 @@ const effectBase = {
       .refine(([a, b]) => a <= b, { message: 'weeks min must be <= max' }),
   }),
   trait: z.object({ type: z.literal('trait'), traitId: id, action: z.enum(['add', 'remove']) }),
+  /** Cambia l'andamento (0–100) dell'attività principale del giocatore. */
+  business: z.object({ type: z.literal('business'), health: z.number() }),
 };
 
 type BaseEffect = z.infer<(typeof effectBase)[keyof typeof effectBase]>;
@@ -143,6 +149,7 @@ export const eventEffectSchema: z.ZodType<EventEffect> = z.lazy(() =>
     effectBase.startTransfer,
     effectBase.injury,
     effectBase.trait,
+    effectBase.business,
     z.object({
       type: z.literal('chance'),
       p: z.number().min(0).max(1),

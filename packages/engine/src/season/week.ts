@@ -2,6 +2,7 @@ import { defaultContext, type GameContext } from '../context';
 import { Rng } from '../rng';
 import { seasonStartWeek, weekOfSeason } from '../time';
 import type { Fixture, GameState } from '../types';
+import { applyWeeklyWealth, type WealthWeek } from '../finance/finance';
 import { applyWeeklyFinances, type WeekFinance } from '../market/life';
 import { refreshMarket } from '../market/offers';
 import { weeklyRecovery } from '../player/condition';
@@ -20,6 +21,8 @@ export interface WeekReport {
   cupResults: Fixture[];
   /** Entrate e uscite della settimana. */
   finance: WeekFinance;
+  /** Movimenti del patrimonio: interessi, mantenimento, rate, attività. */
+  wealth: WealthWeek;
 }
 
 /** Vero quando tutte le settimane della stagione sono state giocate: poi va chiamato endSeason. */
@@ -101,9 +104,11 @@ export function advanceWeek(
     state.world.npcs,
     ctx,
   );
+  const wealthStep = applyWeeklyWealth({ ...state, player }, rng, ctx);
   let next: GameState = {
     ...state,
-    player,
+    player: wealthStep.state.player,
+    finance: wealthStep.state.finance,
     calendar,
     cups: cupsProgress.cups,
     week: state.week + 1,
@@ -111,5 +116,8 @@ export function advanceWeek(
   };
   // Il mercato della settimana nuova; a stagione finita ci pensa endSeason.
   if (!isSeasonOver(next, ctx)) next = refreshMarket(next, ctx);
-  return { state: next, report: { week: state.week, results, cupResults, finance } };
+  return {
+    state: next,
+    report: { week: state.week, results, cupResults, finance, wealth: wealthStep.wealth },
+  };
 }

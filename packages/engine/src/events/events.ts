@@ -6,6 +6,7 @@ import {
   type GameEvent,
   type StatPath,
 } from '@outstanding/content';
+import { mainBusiness, shiftMainBusiness } from '../finance/finance';
 import { defaultContext, type GameContext } from '../context';
 import { computeOvr } from '../player/ratings';
 import { Rng } from '../rng';
@@ -41,7 +42,8 @@ export type EventChange =
   | { kind: 'scheduled'; eventId: string; atWeek: number }
   | { kind: 'transferRequest'; to: TransferRequest['to'] }
   | { kind: 'injury'; injuryType: string; weeks: number }
-  | { kind: 'trait'; traitId: string; action: 'add' | 'remove' };
+  | { kind: 'trait'; traitId: string; action: 'add' | 'remove' }
+  | { kind: 'business'; name: string; before: number; after: number };
 
 export interface EventReport {
   eventId: string;
@@ -89,6 +91,7 @@ export function checkConditions(
     return false;
   }
   if (c.seasonWeek && !inRange(weekOfSeason(state.week, cal), c.seasonWeek)) return false;
+  if (c.business !== undefined && Boolean(mainBusiness(state)) !== c.business) return false;
   if (c.level || c.professional !== undefined || c.coachRelationship) {
     if (!club) return false;
     const { league } = getGroup(state.world, club.groupId);
@@ -191,6 +194,8 @@ function eventParams(state: GameState): Record<string, string> {
   }
   const agent = p.agentId ? state.world.npcs.find((n) => n.id === p.agentId) : undefined;
   if (agent) params['agent'] = `${agent.firstName} ${agent.lastName}`;
+  const business = mainBusiness(state);
+  if (business) params['business'] = business.name;
   return params;
 }
 
@@ -305,6 +310,14 @@ function applyEffects(
           };
         } else break;
         changes.push({ kind: 'trait', traitId: effect.traitId, action: effect.action });
+        break;
+      }
+      case 'business': {
+        const main = mainBusiness(s);
+        if (!main) break;
+        s = shiftMainBusiness(s, effect.health);
+        const after = mainBusiness(s)!.health;
+        changes.push({ kind: 'business', name: main.name, before: main.health, after });
         break;
       }
       case 'chance': {

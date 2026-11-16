@@ -3,6 +3,7 @@ import { createPlayer, type NewPlayerOptions } from './player/create';
 import { Rng } from './rng';
 import { CURRENT_SAVE_VERSION } from './save/serialize';
 import { setupSeasonCups } from './cups/cups';
+import { createFinance } from './finance/finance';
 import { buildSeasonCalendar } from './season/schedule';
 import type { Difficulty, GameState, Player, World } from './types';
 import { generateWorld, groupId, IdGen } from './world/generate';
@@ -115,5 +116,6 @@ export function newCareer(
     marketWeek: -1,
     nextId: ids.next,
     difficulty: options.difficulty ?? ctx.config.difficulty.default,
+    finance: createFinance(ctx),
   };
 }

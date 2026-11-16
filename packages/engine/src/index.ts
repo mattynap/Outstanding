@@ -20,6 +20,30 @@ export {
   type AppearancePart,
 } from './player/look';
 export { TATTOO_ZONES } from '@outstanding/content';
+export {
+  annuityPayment,
+  applyWeeklyWealth,
+  businessValue,
+  buyInstrument,
+  buyProperty,
+  createFinance,
+  depositCash,
+  financeOf,
+  loanQuote,
+  mainBusiness,
+  netWorth,
+  openBusiness,
+  repayLoan,
+  sellBusiness,
+  sellInstrument,
+  sellProperty,
+  takePersonalLoan,
+  updateMarket,
+  withdrawCash,
+  type LoanKind,
+  type LoanQuote,
+  type WealthWeek,
+} from './finance/finance';
 export { DIFFICULTIES } from '@outstanding/config';
 export {
   careerScore,

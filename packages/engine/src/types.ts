@@ -446,4 +446,65 @@ export interface GameState {
   edits?: WorldEdits;
   /** Difficoltà scelta alla creazione (assente nei salvataggi precedenti: vale quella predefinita). */
   difficulty?: Difficulty;
+  /** Patrimonio: deposito, investimenti, beni, attività e prestiti (assente nei salvataggi vecchi). */
+  finance?: Finance;
+}
+
+/** Quote di un titolo o di una moneta possedute e quanto sono costate in tutto. */
+export interface Holding {
+  units: number;
+  invested: number;
+}
+
+/** Un bene comprato dal catalogo (casa, auto, barca...). */
+export interface OwnedProperty {
+  id: string;
+  catalogId: string;
+  boughtWeek: number;
+  /** Prezzo pagato. */
+  price: number;
+  /** Valore di mercato attuale. */
+  value: number;
+}
+
+/** Mutuo (legato a un immobile) o prestito personale, rimborsato a rate settimanali. */
+export interface Loan {
+  id: string;
+  kind: 'mortgage' | 'personal';
+  /** Immobile del mutuo. */
+  propertyId?: string;
+  principal: number;
+  /** Debito residuo. */
+  remaining: number;
+  weeklyPayment: number;
+  weeklyRate: number;
+  weeksLeft: number;
+  /** Rate non pagate di fila. */
+  missed: number;
+}
+
+/** Attività aperta dal giocatore (ristorante, marchio...). */
+export interface Business {
+  id: string;
+  catalogId: string;
+  /** Nome scelto dal giocatore. */
+  name: string;
+  openedWeek: number;
+  cost: number;
+  /** Andamento 0–100: sotto la soglia di pareggio perde soldi, quasi a zero chiude. */
+  health: number;
+  lastResult: number;
+  totalResult: number;
+}
+
+export interface Finance {
+  /** Saldo del conto deposito. */
+  deposit: number;
+  /** Prezzo attuale e storico recente di ogni titolo (uguali per tutti: è il mercato). */
+  prices: Record<string, number>;
+  history: Record<string, number[]>;
+  holdings: Record<string, Holding>;
+  properties: OwnedProperty[];
+  businesses: Business[];
+  loans: Loan[];
 }

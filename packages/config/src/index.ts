@@ -4,6 +4,7 @@ import careerJson from '../data/career.json';
 import cupsJson from '../data/cups.json';
 import difficultyJson from '../data/difficulty.json';
 import editorJson from '../data/editor.json';
+import financeJson from '../data/finance.json';
 import lookJson from '../data/look.json';
 import economyJson from '../data/economy.json';
 import eventsJson from '../data/events.json';
@@ -20,6 +21,7 @@ import {
   economySchema,
   editorSchema,
   lookSchema,
+  financeSchema,
   eventsConfigSchema,
   matchSchema,
   playerConfigSchema,
@@ -33,6 +35,7 @@ import {
   type EconomyConfig,
   type EditorConfig,
   type LookConfig,
+  type FinanceConfig,
   type EventsConfig,
   type MatchConfig,
   type PlayerConfig,
@@ -57,6 +60,7 @@ export const configSchema = {
   editor: editorSchema,
   difficulty: difficultySchema,
   look: lookSchema,
+  finance: financeSchema,
 } as const;
 
 export interface GameConfig {
@@ -73,6 +77,7 @@ export interface GameConfig {
   editor: EditorConfig;
   difficulty: DifficultyConfig;
   look: LookConfig;
+  finance: FinanceConfig;
 }
 
 /** Oggetti di configurazione grezzi (non validati), uno per file JSON. */
@@ -175,6 +180,7 @@ export const rawDefaultConfig: RawConfig = {
   editor: editorJson,
   difficulty: difficultyJson,
   look: lookJson,
+  finance: financeJson,
 };
 
 /** Configurazione predefinita distribuita con il gioco. */

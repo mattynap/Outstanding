@@ -1,0 +1,156 @@
+{
+  "deposit": { "annualRate": 0.02 },
+  "market": {
+    "historyWeeks": 52,
+    "tradeFee": 0.01,
+    "minPrice": 1,
+    "instruments": [
+      {
+        "id": "fondo_quieto",
+        "kind": "fund",
+        "startPrice": 100,
+        "driftPerSeason": 0.04,
+        "volatilityWeekly": 0.008,
+        "crashChance": 0.002,
+        "crashDrop": [0.04, 0.1],
+        "boomChance": 0.002,
+        "boomRise": [0.03, 0.06]
+      },
+      {
+        "id": "azioni_penisola",
+        "kind": "stocks",
+        "startPrice": 100,
+        "driftPerSeason": 0.07,
+        "volatilityWeekly": 0.025,
+        "crashChance": 0.006,
+        "crashDrop": [0.1, 0.25],
+        "boomChance": 0.006,
+        "boomRise": [0.06, 0.15]
+      },
+      {
+        "id": "lirabit",
+        "kind": "crypto",
+        "startPrice": 100,
+        "driftPerSeason": 0.1,
+        "volatilityWeekly": 0.07,
+        "crashChance": 0.015,
+        "crashDrop": [0.25, 0.55],
+        "boomChance": 0.015,
+        "boomRise": [0.2, 0.6]
+      }
+    ]
+  },
+  "properties": {
+    "sellFee": 0.05,
+    "maxHappinessPerWeek": 1,
+    "catalog": [
+      {
+        "id": "monolocale",
+        "category": "home",
+        "price": 45000,
+        "upkeepWeekly": 40,
+        "happinessPerWeek": 0.1,
+        "popularityOnBuy": 0,
+        "valuePerSeason": 0.02,
+        "mortgage": true
+      },
+      {
+        "id": "appartamento",
+        "category": "home",
+        "price": 220000,
+        "upkeepWeekly": 140,
+        "happinessPerWeek": 0.2,
+        "popularityOnBuy": 1,
+        "valuePerSeason": 0.025,
+        "mortgage": true
+      },
+      {
+        "id": "villa",
+        "category": "villa",
+        "price": 950000,
+        "upkeepWeekly": 650,
+        "happinessPerWeek": 0.35,
+        "popularityOnBuy": 3,
+        "valuePerSeason": 0.03,
+        "mortgage": true
+      },
+      {
+        "id": "palazzo",
+        "category": "palace",
+        "price": 4200000,
+        "upkeepWeekly": 2600,
+        "happinessPerWeek": 0.5,
+        "popularityOnBuy": 5,
+        "valuePerSeason": 0.035,
+        "mortgage": true
+      },
+      {
+        "id": "utilitaria",
+        "category": "car",
+        "price": 14000,
+        "upkeepWeekly": 25,
+        "happinessPerWeek": 0.05,
+        "popularityOnBuy": 0,
+        "valuePerSeason": -0.15,
+        "mortgage": false
+      },
+      {
+        "id": "sportiva",
+        "category": "car",
+        "price": 160000,
+        "upkeepWeekly": 160,
+        "happinessPerWeek": 0.2,
+        "popularityOnBuy": 2,
+        "valuePerSeason": -0.12,
+        "mortgage": false
+      },
+      {
+        "id": "motoscafo",
+        "category": "boat",
+        "price": 380000,
+        "upkeepWeekly": 700,
+        "happinessPerWeek": 0.25,
+        "popularityOnBuy": 2,
+        "valuePerSeason": -0.08,
+        "mortgage": false
+      },
+      {
+        "id": "yacht",
+        "category": "yacht",
+        "price": 3200000,
+        "upkeepWeekly": 6500,
+        "happinessPerWeek": 0.5,
+        "popularityOnBuy": 6,
+        "valuePerSeason": -0.06,
+        "mortgage": false
+      }
+    ]
+  },
+  "businesses": {
+    "healthStart": 60,
+    "healthTarget": 55,
+    "healthDrift": 0.05,
+    "healthNoise": 4,
+    "breakEvenHealth": 35,
+    "healthScale": 50,
+    "incomeNoise": 0.3,
+    "closeBelowHealth": 5,
+    "saleShare": 0.6,
+    "maxOpen": 3,
+    "catalog": [
+      { "id": "bar", "cost": 35000, "baseWeekly": 300, "popularityBonus": 0.01 },
+      { "id": "scuola_calcio", "cost": 90000, "baseWeekly": 600, "popularityBonus": 0.012 },
+      { "id": "ristorante", "cost": 160000, "baseWeekly": 1200, "popularityBonus": 0.015 },
+      { "id": "palestra", "cost": 280000, "baseWeekly": 1800, "popularityBonus": 0.012 },
+      { "id": "marchio", "cost": 650000, "baseWeekly": 3600, "popularityBonus": 0.025 }
+    ]
+  },
+  "loans": {
+    "missedToDefault": 4,
+    "missedHappiness": -2,
+    "missedMorale": -3,
+    "maxPaymentShareOfSalary": 0.4,
+    "mortgage": { "downPayment": 0.2, "annualRate": 0.04, "seasons": [5, 10, 15] },
+    "personal": { "annualRate": 0.12, "seasons": [1, 2, 3], "maxWeeksOfSalary": 20 }
+  }
+}

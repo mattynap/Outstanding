@@ -133,6 +133,9 @@ function checkEvents(content: GameContent, errors: string[]): void {
       }
       for (const [, name] of text.matchAll(/\{(\w+)\}/g)) {
         if (!allowed.has(name!)) errors.push(`${where}: unknown placeholder {${name}} in "${key}"`);
+        if (name === 'business' && e.conditions?.business !== true) {
+          errors.push(`${where}: {business} needs the condition "business": true`);
+        }
       }
     }
     const traitRefs = [...(e.conditions?.traits ?? []), ...(e.conditions?.traitsNot ?? [])];

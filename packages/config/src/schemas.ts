@@ -801,3 +801,106 @@ export const lookSchema = z.object({
   tattooRemovalCost: z.number().int().nonnegative(),
 });
 export type LookConfig = z.infer<typeof lookSchema>;
+
+const pair = z
+  .tuple([z.number().nonnegative(), z.number().nonnegative()])
+  .refine(([a, b]) => a <= b, { message: 'min must be <= max' });
+export const INSTRUMENT_KINDS = ['fund', 'stocks', 'crypto'] as const;
+export const PROPERTY_CATEGORIES = ['home', 'villa', 'palace', 'car', 'boat', 'yacht'] as const;
+
+/**
+ * Finanze personali: conto deposito, mercato di titoli e monete inventati (prezzi settimanali),
+ * beni con mantenimento e valore che cambia, attività con rendita, mutui e prestiti.
+ */
+export const financeSchema = z.object({
+  deposit: z.object({ annualRate: z.number().min(0).max(0.5) }),
+  market: z.object({
+    /** Settimane di prezzi conservate per i grafici. */
+    historyWeeks: z.number().int().min(4),
+    /** Commissione su ogni acquisto o vendita. */
+    tradeFee: share,
+    minPrice: z.number().positive(),
+    instruments: z
+      .array(
+        z.object({
+          id: z.string().regex(/^[a-z0-9_]+$/),
+          kind: z.enum(INSTRUMENT_KINDS),
+          startPrice: z.number().positive(),
+          driftPerSeason: z.number().min(-1).max(1),
+          volatilityWeekly: z.number().min(0).max(0.5),
+          crashChance: share,
+          crashDrop: pair,
+          boomChance: share,
+          boomRise: pair,
+        }),
+      )
+      .min(1),
+  }),
+  properties: z.object({
+    sellFee: share,
+    /** Felicità settimanale massima che i beni possono dare tutti insieme. */
+    maxHappinessPerWeek: z.number().nonnegative(),
+    catalog: z
+      .array(
+        z.object({
+          id: z.string().regex(/^[a-z0-9_]+$/),
+          category: z.enum(PROPERTY_CATEGORIES),
+          price: z.number().int().positive(),
+          upkeepWeekly: z.number().int().nonnegative(),
+          happinessPerWeek: z.number().nonnegative(),
+          popularityOnBuy: z.number().nonnegative(),
+          /** Variazione di valore in una stagione (negativa = svalutazione). */
+          valuePerSeason: z.number().min(-1).max(1),
+          /** Si può comprare con il mutuo (solo immobili). */
+          mortgage: z.boolean(),
+        }),
+      )
+      .min(1),
+  }),
+  businesses: z.object({
+    healthStart: z.number().min(0).max(100),
+    healthTarget: z.number().min(0).max(100),
+    healthDrift: share,
+    healthNoise: z.number().nonnegative(),
+    /** Salute a cui l'attività non guadagna né perde. */
+    breakEvenHealth: z.number().min(0).max(100),
+    /** Punti di salute sopra il pareggio per rendere quanto la rendita base. */
+    healthScale: z.number().positive(),
+    incomeNoise: z.number().min(0).max(1),
+    closeBelowHealth: z.number().min(0).max(100),
+    /** Quota del costo recuperata vendendo un'attività in piena salute. */
+    saleShare: share,
+    maxOpen: z.number().int().positive(),
+    catalog: z
+      .array(
+        z.object({
+          id: z.string().regex(/^[a-z0-9_]+$/),
+          cost: z.number().int().positive(),
+          baseWeekly: z.number().int().positive(),
+          /** Rendita in più per ogni punto di popolarità del giocatore. */
+          popularityBonus: z.number().nonnegative(),
+        }),
+      )
+      .min(1),
+  }),
+  loans: z.object({
+    /** Rate non pagate prima del pignoramento. */
+    missedToDefault: z.number().int().positive(),
+    missedHappiness: z.number(),
+    missedMorale: z.number(),
+    /** Le rate settimanali di tutti i prestiti non superano questa quota dello stipendio. */
+    maxPaymentShareOfSalary: share,
+    mortgage: z.object({
+      downPayment: share,
+      annualRate: z.number().min(0).max(0.5),
+      seasons: z.array(z.number().int().positive()).min(1),
+    }),
+    personal: z.object({
+      annualRate: z.number().min(0).max(0.5),
+      seasons: z.array(z.number().int().positive()).min(1),
+      /** Importo massimo in settimane di stipendio. */
+      maxWeeksOfSalary: z.number().positive(),
+    }),
+  }),
+});
+export type FinanceConfig = z.infer<typeof financeSchema>;

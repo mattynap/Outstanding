@@ -133,6 +133,14 @@ export {
 } from './events/events';
 export { getStat } from './events/stats';
 export {
+  fastForward,
+  prudentChoice,
+  repeatPlan,
+  type FastForwardReport,
+  type FastForwardStop,
+  type FastForwardTarget,
+} from './season/fastForward';
+export {
   getWeekOptions,
   planWeek,
   skipToNextMatch,

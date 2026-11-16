@@ -432,6 +432,8 @@ export interface GameState {
   transferRequests: TransferRequest[];
   /** Settimana per cui le azioni sono già state scelte (-1 = mai). */
   plannedWeek: number;
+  /** Ultimo piano settimanale scelto: l'app lo ripropone, l'avanti veloce lo ripete. */
+  lastPlan?: { actionId: string; focus?: Skill }[];
   offers: ContractOffer[];
   sponsorOffers: SponsorOffer[];
   /** Settimana in cui il mercato è già stato aggiornato (-1 = mai). */

@@ -180,7 +180,13 @@ export function planWeek(
   }
 
   return {
-    state: { ...next, plannedWeek: state.week, rngState: rng.getState() },
+    state: {
+      ...next,
+      plannedWeek: state.week,
+      rngState: rng.getState(),
+      // Le settimane senza azioni (saltate) non cancellano il piano da ricordare.
+      ...(choices.length > 0 ? { lastPlan: choices.map((c) => ({ ...c })) } : {}),
+    },
     report: {
       choices: [...choices],
       gains,
@@ -214,7 +220,8 @@ export function skipToNextMatch(
       const plan = ctx.config.progression.skipWeekPlan
         .filter((id) => available.has(id))
         .map((actionId) => ({ actionId }));
-      s = planWeek(s, plan, ctx).state;
+      // Il piano automatico non sostituisce quello scelto dal giocatore.
+      s = { ...planWeek(s, plan, ctx).state, lastPlan: s.lastPlan };
     }
     s = advanceWeek(s, ctx).state;
     weeks++;

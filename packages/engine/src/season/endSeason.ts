@@ -1,6 +1,7 @@
 import type { LevelConfig } from '@outstanding/config';
 import { defaultContext, type GameContext } from '../context';
 import { emptySeasonStats } from '../player/create';
+import { applyDecline } from '../player/progression';
 import { computeOvr } from '../player/ratings';
 import { Rng } from '../rng';
 import { ageAt } from '../time';
@@ -233,7 +234,7 @@ export function endSeason(
     world,
     calendar,
     player: {
-      ...p,
+      ...applyDecline(p, record.age, ctx),
       ...(contract ? { contract } : {}),
       seasonStats: emptySeasonStats(),
       history: [...p.history, record],

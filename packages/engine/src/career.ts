@@ -98,6 +98,7 @@ export function newCareer(
     pendingEvents: [],
     eventsWeek: -1,
     transferRequests: [],
+    plannedWeek: -1,
     nextId: ids.next,
   };
 }

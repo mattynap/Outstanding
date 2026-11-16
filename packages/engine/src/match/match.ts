@@ -1,4 +1,5 @@
 import { defaultContext, type GameContext } from '../context';
+import { applyMatchAftermath } from '../player/condition';
 import { computeOvr } from '../player/ratings';
 import { Rng } from '../rng';
 import { expectedGoals } from '../season/quickSim';
@@ -41,6 +42,8 @@ export interface MatchReport {
   goals: number;
   assists: number;
   cleanSheet: boolean;
+  /** Infortunio subito durante la partita. */
+  injury?: { type: string; weeksLeft: number };
 }
 
 /** Passo della partita: un momento chiave da decidere oppure la partita finita. */
@@ -230,10 +233,21 @@ function finishMatch(
       ratingCount: s.ratingCount + (rating === null ? 0 : 1),
     },
   };
+  const coachId = state.player.clubId
+    ? getClub(state.world, state.player.clubId).coachId
+    : undefined;
+  const after = applyMatchAftermath(
+    player,
+    coachId,
+    { selection: m.selection, minutesPlayed, rating, result },
+    state.week,
+    rng,
+    ctx,
+  );
   const { currentMatch: _done, ...rest } = state;
   const next: GameState = {
     ...rest,
-    player,
+    player: after.player,
     calendar: state.calendar.map((f) =>
       f.id === m.fixtureId ? { ...f, result: { ...m.score } } : f,
     ),
@@ -255,6 +269,7 @@ function finishMatch(
       goals: m.goals,
       assists: m.assists,
       cleanSheet,
+      ...(after.injured && after.player.injury ? { injury: { ...after.player.injury } } : {}),
     },
   };
 }

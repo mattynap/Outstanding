@@ -10,7 +10,7 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
 
 ## Stato al 2026-11-16
 
-- M0–M5 completate e pushate sul branch `dev`.
+- M0–M6 completate e pushate sul branch `dev`.
 - M4: modulo `engine/src/match/`, parametri in `config/match.json`. Bilanciamento indicativo
   (prima stagione, scelte casuali): ATT ~15 gol in 30 partite, 2,8–3 gol a partita. Da rivedere
   con il simulatore in M8. La partita non tocca ancora forma/energia/morale/fiducia (M6).
@@ -20,7 +20,15 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
 - Rimandati a milestone successive: effetto `relationship` con `target: agent` non fa nulla finché
   non c'è il procuratore (M7); `transferRequests` saranno consumate dal mercato (M7); le regole
   complete degli infortuni (rischio, ricadute) arrivano in M6.
-- Prossimo passo: M6 (progressione). Contenuti: arrivare a 100 eventi in parallelo da qui in poi.
+- M6: `engine/src/player/progression.ts` (crescita, declino, infortuni), `player/condition.ts`
+  (dopo-partita, recupero settimanale), `season/plan.ts` (`planWeek`, `skipToNextMatch`), config in
+  `config/progression.json`. Flusso settimana: `planWeek` → `drawWeekEvents`/`resolveEvent` →
+  `playMatch` → `advanceWeek` (planWeek facoltativo: senza piano non si cresce).
+- Taratura M6 (8 carriere, 20 stagioni, piano allenamento+riposo): OVR medio 45 a 17 anni, 72 a 25,
+  picco 74 fino a 31, 68 a 36; ~8 infortuni a carriera. Con allenamento intenso+normale si arriva al
+  potenziale ~2 anni prima ma ~40 infortuni a carriera: compromesso voluto, da rivedere in M8.
+- Il ritiro non esiste ancora: da definire (probabilmente con M7 o con la schermata fine carriera).
+- Prossimo passo: M7 (economia e mercato). Contenuti: arrivare a 100 eventi in parallelo.
 
 ## Decisioni prese dall'utente (2026-11-16)
 

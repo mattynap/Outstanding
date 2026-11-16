@@ -2,6 +2,7 @@ import { defaultContext, type GameContext } from '../context';
 import { Rng } from '../rng';
 import { seasonStartWeek, weekOfSeason } from '../time';
 import type { Fixture, GameState } from '../types';
+import { weeklyRecovery } from '../player/condition';
 import { quickResult } from './quickSim';
 
 export type TransferWindow = 'summer' | 'winter';
@@ -67,14 +68,7 @@ export function advanceWeek(
 
   const groupId = state.world.clubs.find((c) => c.id === state.player.clubId)?.groupId;
   const results = calendar.filter((f) => f.week === state.week && f.groupId === groupId);
-  // Recupero dagli infortuni: una settimana in meno (le regole complete arrivano in M6).
-  const injury = state.player.injury;
-  const player =
-    injury && injury.weeksLeft > 1
-      ? { ...state.player, injury: { ...injury, weeksLeft: injury.weeksLeft - 1 } }
-      : injury
-        ? (({ injury: _healed, ...rest }) => rest)(state.player)
-        : state.player;
+  const player = weeklyRecovery(state.player, ctx);
   return {
     state: { ...state, player, calendar, week: state.week + 1, rngState: rng.getState() },
     report: { week: state.week, results },

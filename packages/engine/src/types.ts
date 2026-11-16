@@ -265,6 +265,8 @@ export interface GameState {
   /** Settimana per cui gli eventi sono già stati estratti (-1 = mai). */
   eventsWeek: number;
   transferRequests: TransferRequest[];
+  /** Settimana per cui le azioni sono già state scelte (-1 = mai). */
+  plannedWeek: number;
   /** Contatore crescente usato per creare id univoci. */
   nextId: number;
   /** Partita del giocatore iniziata e non ancora finita. */

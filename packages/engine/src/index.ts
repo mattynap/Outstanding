@@ -38,6 +38,15 @@ export {
   type EventView,
 } from './events/events';
 export { getStat } from './events/stats';
+export {
+  getWeekOptions,
+  planWeek,
+  skipToNextMatch,
+  type WeekChoice,
+  type WeekOption,
+  type WeekPlanReport,
+} from './season/plan';
+export { applyGrowth, applyDecline, growthMultiplier } from './player/progression';
 export { getClub, getGroup, getLeagueByLevel, playerClub } from './world/queries';
 export {
   serialize,

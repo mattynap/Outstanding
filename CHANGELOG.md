@@ -90,3 +90,21 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
 - Le richieste di trasferimento nate dagli eventi vengono salvate in `GameState.transferRequests`
   per il mercato (M7).
 - Guida di stile dei contenuti completa del formato degli eventi.
+
+### M6 – Progressione
+
+- Piano della settimana (`getWeekOptions`, `planWeek`): 2 azioni a scelta tra allenamento,
+  allenamento intenso, allenamento mirato su un'abilità, riposo, fisioterapia, svago e famiglia.
+  Da infortunati gli allenamenti non sono disponibili.
+- Crescita delle abilità (con decimali) da allenamenti e minuti giocati, modulata da età,
+  distanza dal potenziale nascosto, disciplina ed energia; tetto per singola abilità.
+- Declino di fine stagione dopo i 31 anni, più rapido per velocità e fisico, attenuato dalla
+  disciplina.
+- Condizione: la partita consuma energia e cambia forma, morale e fiducia del mister in base a voto,
+  convocazione e risultato; a fine settimana energia, forma, morale e rischio tornano verso i valori
+  di riferimento.
+- Infortuni in partita e negli allenamenti intensi, con probabilità legata a rischio accumulato ed
+  energia; sei tipi con durate diverse; la fisioterapia può accorciare lo stop.
+- `skipToNextMatch`: salta le settimane senza partite con un piano automatico.
+- Tutti i parametri in `config/progression.json`. Curva verificata su carriere complete: potenziale
+  raggiunto verso i 25–26 anni, picco fino ai 30–31, declino dai 32.

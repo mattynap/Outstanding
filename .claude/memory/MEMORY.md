@@ -17,3 +17,4 @@ Indice delle note di progetto. Questa cartella è versionata in git.
 - [Editor](editor-design.md) — correzioni per carriera, tavolozza, valori originali, formato file
 - [Idee utente M13–M17](user-ideas-roadmap.md) — basi, personaggio, finanze, vita privata, media; vignette SVG, PEGI 12
 - [Build Android](android-build.md) — SDK e JDK 21 su questa macchina, comando per l'APK, icona, insidie
+- [Nomi storpiati](naming-policy.md) — dal 2026-11-17 nomi alterati per club e giocatori, sponsor inventati, rischio accettato

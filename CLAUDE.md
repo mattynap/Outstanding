@@ -45,15 +45,15 @@ Gioco mobile (Android, poi iOS) che simula la carriera di un calciatore italiano
 - Il giocatore controlla **una persona**, non un club. Sessioni brevi (5–15 minuti).
 
 ### Vincoli non negoziabili
-- **Nessun nome reale**: club, giocatori, campionati, coppe, sponsor, marchi sono tutti inventati. Città italiane vere sì, nomi dei club no.
+- **Nessun nome reale scritto esatto**: club, giocatori, campionati e coppe usano **nomi storpiati** (riconoscibili ma alterati, es. "Erlin Holland") o inventati. Sponsor e marchi commerciali restano solo inventati. Città italiane vere sì. Decisione dell'utente del 2026-11-17, che accetta il rischio legale (vedi `.claude/memory/naming-policy.md`).
 - **Niente gioco d'azzardo**: nessuna meccanica di casinò o scommessa, nessuna cassa premio casuale a pagamento.
 - **Nessun "pay to win"**: gli acquisti non comprano progressione.
 - Gioco **offline**: salvataggi locali, nessun server obbligatorio.
 
 ### Nomi reali ed editor
-- Il gioco viene distribuito **solo con nomi inventati**. Nel repository, negli asset, nei testi, negli screenshot e nei materiali promozionali non devono comparire nomi, stemmi o maglie reali.
+- Il gioco viene distribuito con **nomi storpiati o inventati**, mai con nomi reali scritti esatti. Nel repository, negli asset, nei testi, negli screenshot e nei materiali promozionali non devono comparire stemmi, loghi, maglie o volti reali, né copie riconoscibili di essi: stemmi, maglie e avatar restano generati dal codice.
 - È previsto un **editor** con cui il giocatore può rinominare club, giocatori e competizioni, cambiarne i colori ed esportare/importare le proprie modifiche come file JSON. Le personalizzazioni restano sul dispositivo dell'utente.
-- Il formato del file dell'editor è documentato e validato (Zod), ma **non** si forniscono, ospitano o linkano file con nomi reali.
+- Il formato del file dell'editor è documentato e validato (Zod), ma **non** si forniscono, ospitano o linkano file con nomi reali esatti.
 - I nomi reali dei calciatori potranno arrivare solo in futuro, tramite licenza FIFPRO e su decisione esplicita dell'utente.
 
 ---
@@ -285,7 +285,7 @@ Ogni milestone è finita quando: build ok, lint ok, test verdi, `CHANGELOG.md` a
 - **M16 – Vita privata:** incontri, relazioni, tradimenti, matrimonio, figli, feste e vita fuori dal campo, con vignette illustrate. Tono allusivo, obiettivo PEGI 12.
 - **M17 – Media:** social del calciatore, interviste e conferenze stampa.
 - Le vignette sono SVG piatti disegnati dal codice, nello stile di stemmi e avatar. M13–M17 vengono prima di M12.
-- **M12 – Pubblicazione Android:** icona, splash, build firmata, checklist per Google Play; controllo che i nomi inventati (club, leghe, coppe, testate) non coincidano con società o marchi esistenti (registri pubblici e banche dati dei marchi), eventuale parere legale sulla proprietà intellettuale.
+- **M12 – Pubblicazione Android:** icona, splash, build firmata, checklist per Google Play; controllo che nessun nome storpiato coincida con un nome reale o un marchio registrato (registri pubblici e banche dati dei marchi), parere legale consigliato sui nomi storpiati e sulla proprietà intellettuale.
 - **Contenuti (in parallelo da M5):** 100 eventi per la versione di prova, poi 300 per la completa.
 - **Fase 2:** solo dopo approvazione esplicita dell'utente.
 
@@ -310,7 +310,7 @@ File di impostazioni di Claude Code (forniti insieme a questo file):
 ---
 
 ## 13. Cose da non fare
-- Non usare nomi, stemmi o marchi reali, nemmeno come esempi nei test o nei file dell'editor.
+- Non usare nomi reali scritti esatti, stemmi, loghi, maglie o marchi reali, nemmeno come esempi nei test o nei file dell'editor. I nomi storpiati sono ammessi (sezione 2).
 - Non usare `Math.random()`, `Date.now()` o API del browser nel motore.
 - Non scrivere numeri di bilanciamento nel codice.
 - Non chiedere il permesso per comandi da terminale già consentiti: procedi.

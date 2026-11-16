@@ -71,6 +71,8 @@ Tema: scuro predefinito; il chiaro si attiva con `data-theme="light"` su `<html>
 | `<app-avatar>`                                                         | Avatar "figurina" a mezzo busto (`Player.appearance` + maglia del club) |
 | `<app-tab-bar>`                                                        | Navigazione in basso: Settimana, Profilo, Mercato, Classifica, Carriera |
 | `<app-tip>`                                                            | Nota del caporedattore della settimana guidata                          |
+| `<app-vignette>`                                                       | Vignetta piatta di un bene o di un'attività (id del catalogo)           |
+| `<app-price-chart>`                                                    | Andamento di un prezzo: una linea, area leggera, punto finale, tocco    |
 
 Correzioni dell'editor ("Redazione"): il nome originale resta sopra quello nuovo, piccolo e barrato
 con una riga rossa (`--o-headline-red`), più il segno ✎ a destra della riga; i colori si scelgono
@@ -81,6 +83,11 @@ graffetta, leggermente ruotato, con il filo rosso (`--o-headline-red`) a sinistr
 "Nota del caporedattore · n di 10". Una sola nota per schermata; "Capito" a destra, "Salta la guida"
 come link. Le scelte di difficoltà mostrano tre tacche crescenti; gli interruttori sì/no usano un
 cursore giallo (`--o-accent`) dentro una `.o-choice`.
+
+Vignette (M15): scene 160×96 in colori fissi da illustrazione (cielo `#BFD9DE`, prato, mare o
+strada), oggetti piatti senza contorni con un dettaglio d'accento; sempre accanto al nome, mai da
+sole. Grafico dei prezzi: una sola serie in `--o-accent`, nessun asse, riferimento tratteggiato
+(prezzo medio di acquisto o primo valore), variazione scritta con segno oltre che colorata.
 
 Simboli degli stemmi: `packages/app/src/app/ui/symbols.ts`, uno per ogni id di
 `content/data/clubs.json`. Avatar "figurina" (stile scelto dall'utente in M14): mezzo busto vettoriale su fondo `--o-surface`,

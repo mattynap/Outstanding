@@ -53,6 +53,10 @@ mondo generato: corregge crescita (sessioni di allenamento e partita), probabili
 offerte e stipendi del mercato e la probabilità dei momenti chiave (`optionChance`, entro i limiti
 min/max).
 
+Il patrimonio (`engine/src/finance`) si aggiorna in `advanceWeek` dopo stipendio e spese. I prezzi
+del mercato usano un `Rng` ricavato da seme e settimana, così investire o no non cambia il resto
+della carriera; il caso delle attività usa il generatore della carriera solo se ce ne sono.
+
 Le funzioni pubbliche ricevono un `GameContext` opzionale (config + contenuti); se assente si usa
 quello predefinito dei pacchetti `config` e `content`. Nei test si può iniettare un contesto
 modificato.

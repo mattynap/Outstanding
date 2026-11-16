@@ -29,6 +29,12 @@ Decisioni dell'utente:
 - **M14 (fatta):** avatar stile "figurina" (vettoriale con ombre morbide); tatuaggi in parte da
   subito, in parte sbloccati (età, presenze, massima serie, trofeo) e fatti dal "Barbiere e
   tatuatore" a pagamento. Parti fisse alla nascita: carnagione, viso, occhi, naso, corporatura.
+- **M15 (decisioni 2026-11-16):** investimenti con **prezzi settimanali** (fondo, azioni, cripto
+  inventati, rialzi e crolli; conto deposito a interesse fisso); beni con **status + costi**
+  (felicità, popolarità, mantenimento, valore che cambia, rivendibili, vignetta); attività con
+  **rendita + notizie** (rendita da popolarità e caso, possono chiudere, eventi con scelte); **mutuo**
+  per gli immobili + **prestito personale**, concessi in base a stipendio e contratto, pignoramento
+  se non si pagano le rate.
 - **Immagini:** vignette SVG piatte disegnate dal codice (stesso stile di stemmi e avatar), niente
   asset esterni.
 - **Tono:** allusivo, obiettivo **PEGI 12**: tradimenti, gossip, feste e alcol con ironia e senza

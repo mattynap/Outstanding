@@ -288,3 +288,24 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
   nuove non consumano estrazioni casuali, quindi lo stesso seme dà ancora lo stesso mondo.
 - App: editor dell'aspetto a gruppi nella creazione e nuova schermata "Barbiere e tatuatore"
   (dal profilo, "Cambia look") con anteprima prima/dopo e conto.
+
+### M15 – Finanze
+
+- Patrimonio (`GameState.finance`, motore in `engine/src/finance/finance.ts`, parametri in
+  `config/data/finance.json`), con le decisioni dell'utente:
+  - conto deposito a interesse fisso;
+  - mercato con prezzi settimanali di tre titoli inventati (Fondo Quieto, Indice Penisola,
+    Lirabit) a rischio crescente, con crolli e rialzi improvvisi; commissione su ogni operazione;
+  - otto beni (dal monolocale allo yacht) con mantenimento settimanale, felicità, popolarità
+    all'acquisto e valore che si rivaluta (immobili) o si svaluta (auto e barche); rivendibili;
+  - cinque attività (bar, scuola calcio, ristorante, palestra, marchio di abbigliamento) con nome
+    scelto dal giocatore, andamento 0–100, rendita legata alla popolarità, perdite e chiusura;
+  - mutuo per gli immobili e prestito personale, concessi solo con contratto e rate entro il 40%
+    dello stipendio; dopo quattro rate saltate la banca pignora.
+- Il mercato usa un generatore ricavato da seme e settimana: non tocca il resto della carriera
+  (simulatore invariato: massima serie 61,9%, leggende 3,1%).
+- Eventi: nuova categoria "Affari", condizione `business`, segnaposto `{business}`, effetto
+  `business` sull'andamento dell'attività principale; cinque notizie nuove.
+- App: schermata "Patrimonio" (da Finanze e vita) con riepilogo, deposito, mercati con grafico
+  dei prezzi toccabile, beni e attività con vignette illustrate disegnate dal codice, banca. Il
+  saldo della settimana comprende rendite, mantenimento e rate.

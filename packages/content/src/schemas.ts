@@ -59,6 +59,17 @@ export const foreignCountrySchema = z.object({
 export const foreignSchema = z.array(foreignCountrySchema).min(1);
 export type ForeignCountry = z.infer<typeof foreignCountrySchema>;
 
+/** Parti dell'avatar del giocatore: colori in esadecimale, forme come id (testi in `avatar.*`). */
+const hex = z.string().regex(/^#[0-9A-Fa-f]{6}$/);
+export const avatarSchema = z.object({
+  skinTones: z.array(hex).min(2),
+  hairColors: z.array(hex).min(2),
+  hairStyles: z.array(id).min(2),
+  faceShapes: z.array(id).min(1),
+  beards: z.array(id).min(1),
+});
+export type AvatarParts = z.infer<typeof avatarSchema>;
+
 /** Marchio inventato di uno sponsor (mai marchi reali). */
 export const sponsorSchema = z.object({
   id,

@@ -1,6 +1,6 @@
 import type { GameContext } from '../context';
 import type { Rng } from '../rng';
-import type { Player, Role, SeasonStats, Skills } from '../types';
+import type { Appearance, Player, Role, SeasonStats, Skills } from '../types';
 import { clamp } from '../util';
 import { SKILLS } from './ratings';
 
@@ -12,6 +12,20 @@ export interface NewPlayerOptions {
   role: Role;
   /** Id dei tratti scelti alla creazione (al massimo `config.player.maxTraitsAtCreation`). */
   traits?: string[];
+  /** Aspetto dell'avatar; le parti mancanti vengono estratte a caso. */
+  appearance?: Partial<Appearance>;
+}
+
+/** Numero di varianti disponibili per ogni parte dell'avatar. */
+function appearanceSizes(ctx: GameContext): Record<keyof Appearance, number> {
+  const a = ctx.content.avatar;
+  return {
+    skin: a.skinTones.length,
+    hairColor: a.hairColors.length,
+    hairStyle: a.hairStyles.length,
+    face: a.faceShapes.length,
+    beard: a.beards.length,
+  };
 }
 
 export const emptySeasonStats = (): SeasonStats => ({
@@ -36,6 +50,14 @@ export function validateNewPlayerOptions(opts: NewPlayerOptions, ctx: GameContex
     throw new Error(`At most ${ctx.config.player.maxTraitsAtCreation} traits at creation`);
   }
   if (new Set(traits).size !== traits.length) throw new Error('Duplicate traits');
+  const sizes = appearanceSizes(ctx);
+  for (const [part, value] of Object.entries(opts.appearance ?? {})) {
+    const size = sizes[part as keyof Appearance];
+    if (size === undefined) throw new Error(`Unknown appearance part "${part}"`);
+    if (!Number.isInteger(value) || value < 0 || value >= size) {
+      throw new Error(`Invalid appearance ${part}: ${value}`);
+    }
+  }
   for (const id of traits) {
     const trait = ctx.content.traits.find((t) => t.id === id);
     if (!trait) throw new Error(`Unknown trait "${id}"`);
@@ -67,6 +89,13 @@ export function createPlayer(
   const p = cfg.potential;
   const potential = Math.round(clamp(rng.normal(p.mean, p.sd), p.min, p.max));
 
+  // L'aspetto si estrae per ultimo, così non cambia il resto della generazione.
+  const sizes = appearanceSizes(ctx);
+  const appearance = {} as Appearance;
+  for (const part of Object.keys(sizes) as (keyof Appearance)[]) {
+    appearance[part] = opts.appearance?.[part] ?? rng.int(0, sizes[part] - 1);
+  }
+
   const init = cfg.initial;
   return {
     id,
@@ -75,6 +104,7 @@ export function createPlayer(
     birthWeek: -(cfg.startAge * weeksPerYear) - rng.int(0, weeksPerYear - 1),
     hometown: opts.hometown.trim(),
     role: opts.role,
+    appearance,
     skills,
     potential,
     condition: { ...init.condition },

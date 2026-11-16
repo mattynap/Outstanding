@@ -49,6 +49,15 @@ export interface SeasonRecord {
   trophies: string[];
 }
 
+/** Aspetto dell'avatar: indici nelle tavolozze di content/avatar.json. */
+export interface Appearance {
+  skin: number;
+  hairColor: number;
+  hairStyle: number;
+  face: number;
+  beard: number;
+}
+
 export interface Player {
   id: string;
   firstName: string;
@@ -58,6 +67,7 @@ export interface Player {
   /** Città italiana reale. */
   hometown: string;
   role: Role;
+  appearance: Appearance;
   skills: Skills;
   /** Tetto nascosto della crescita (60–95). Mai mostrato direttamente al giocatore. */
   potential: number;

@@ -92,3 +92,18 @@ describe('save', () => {
     expect(() => migrate({ saveVersion: 1 }, 4, table)).toThrow(/No migration/);
   });
 });
+
+describe('aspetto del giocatore', () => {
+  it('usa le parti scelte e completa a caso le altre, entro le tavolozze', () => {
+    const s = newCareer({ ...baseOptions, appearance: { skin: 2, beard: 0 } }, 9);
+    const a = defaultContext.content.avatar;
+    expect(s.player.appearance.skin).toBe(2);
+    expect(s.player.appearance.beard).toBe(0);
+    expect(s.player.appearance.hairStyle).toBeLessThan(a.hairStyles.length);
+    expect(s.player.appearance.hairColor).toBeLessThan(a.hairColors.length);
+  });
+
+  it('rifiuta parti fuori dalle tavolozze', () => {
+    expect(() => newCareer({ ...baseOptions, appearance: { skin: 99 } }, 9)).toThrow(/appearance/);
+  });
+});

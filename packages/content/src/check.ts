@@ -70,6 +70,20 @@ export function checkContent(content: GameContent): string[] {
     content.foreign.flatMap((c) => c.cities.flatMap((city) => city.epithets)),
   );
 
+  const av = content.avatar;
+  for (const [kind, ids] of [
+    ['hairStyles', av.hairStyles],
+    ['faceShapes', av.faceShapes],
+    ['beards', av.beards],
+  ] as const) {
+    dupes(`avatar.${kind}`, [...ids]);
+    for (const part of ids) {
+      if (!(`avatar.${kind}.${part}` in t)) {
+        errors.push(`avatar: missing text key "avatar.${kind}.${part}"`);
+      }
+    }
+  }
+
   dupes(
     'sponsors',
     content.sponsors.map((s) => s.id),

@@ -1,16 +1,19 @@
 /** Contenuti di gioco (nomi, città, club, tratti, testi) validati con Zod. */
 import type { z } from 'zod';
 import citiesJson from '../data/cities.json';
+import avatarJson from '../data/avatar.json';
 import clubsJson from '../data/clubs.json';
 import foreignJson from '../data/foreign.json';
 import itJson from '../data/i18n/it.json';
 import itEventsJson from '../data/i18n/it.events.json';
+import itUiJson from '../data/i18n/it.ui.json';
 import { rawEvents } from './eventFiles';
 import { eventsSchema, type GameEvent } from './events';
 import namesJson from '../data/names.json';
 import sponsorsJson from '../data/sponsors.json';
 import traitsJson from '../data/traits.json';
 import {
+  avatarSchema,
   citiesSchema,
   clubsDataSchema,
   foreignSchema,
@@ -18,6 +21,7 @@ import {
   sponsorsSchema,
   traitsSchema,
   translationsSchema,
+  type AvatarParts,
   type City,
   type ClubsData,
   type ForeignCountry,
@@ -36,6 +40,7 @@ export interface GameContent {
   traits: Trait[];
   cities: City[];
   clubs: ClubsData;
+  avatar: AvatarParts;
   /** Paesi stranieri per i club delle coppe europee. */
   foreign: ForeignCountry[];
   sponsors: Sponsor[];
@@ -49,6 +54,7 @@ export interface RawContent {
   cities: unknown;
   clubs: unknown;
   foreign: unknown;
+  avatar: unknown;
   sponsors: unknown;
   /** Un array di eventi per file, con il nome del file per i messaggi di errore. */
   events: { file: string; data: unknown }[];
@@ -85,6 +91,7 @@ export function parseContent(raw: RawContent): GameContent {
     cities: parse('cities.json', citiesSchema, raw.cities),
     clubs: parse('clubs.json', clubsDataSchema, raw.clubs),
     foreign: parse('foreign.json', foreignSchema, raw.foreign),
+    avatar: parse('avatar.json', avatarSchema, raw.avatar),
     sponsors: parse('sponsors.json', sponsorsSchema, raw.sponsors),
     events: raw.events.flatMap((f) => parse(f.file, eventsSchema, f.data)),
     i18n: { it: mergeTranslations(raw.i18n.it) },
@@ -98,12 +105,14 @@ export const rawDefaultContent: RawContent = {
   cities: citiesJson,
   clubs: clubsJson,
   foreign: foreignJson,
+  avatar: avatarJson,
   sponsors: sponsorsJson,
   events: rawEvents,
   i18n: {
     it: [
       { file: 'i18n/it.json', data: itJson },
       { file: 'i18n/it.events.json', data: itEventsJson },
+      { file: 'i18n/it.ui.json', data: itUiJson },
     ],
   },
 };

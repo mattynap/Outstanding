@@ -1,0 +1,7 @@
+{
+  "skinTones": ["#F3D2B5", "#E2AE86", "#C98E66", "#A06A47", "#7A4B31", "#4E3022"],
+  "hairColors": ["#17110D", "#3B2A1E", "#6B4A2F", "#A0703F", "#D9B46C", "#B5452A", "#9A9A9A"],
+  "hairStyles": ["corti", "rasati", "ricci", "lunghi", "cresta", "codino", "calvo"],
+  "faceShapes": ["ovale", "squadrato", "tondo"],
+  "beards": ["nessuna", "accenno", "pizzetto", "barba"]
+}

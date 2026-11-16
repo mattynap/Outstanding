@@ -71,6 +71,7 @@ export {
 } from './market/offers';
 export {
   acceptSponsor,
+  applyWeeklyFinances,
   fireAgent,
   getAgentCandidates,
   getSponsorOffers,

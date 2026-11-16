@@ -8,8 +8,8 @@ const CREST_SHAPES: readonly CrestShape[] = ['shield', 'circle', 'oval'];
 const KIT_PATTERNS: readonly KitPattern[] = ['solid', 'vstripes', 'hstripes', 'sash'];
 
 /**
- * Procedural crest and kit, fully determined by the club seed and the content palette.
- * The app turns this data into SVG.
+ * Stemma e maglia procedurali, interamente determinati dal seme del club e dalla tavolozza dei
+ * contenuti. L'app trasforma questi dati in SVG.
  */
 export function clubVisuals(
   seed: number,
@@ -29,7 +29,7 @@ export function clubVisuals(
   };
 }
 
-/** Builds a unique invented club name from a prefix and one of the city's epithets. */
+/** Compone un nome di club inventato e unico da un prefisso e da uno degli epiteti della città. */
 export function pickClubName(
   city: City,
   clubs: ClubsData,
@@ -51,7 +51,7 @@ export function pickClubName(
   return { name, shortName, initials };
 }
 
-/** Generates a compact roster around a target strength. */
+/** Genera una rosa compatta attorno a una forza obiettivo. */
 export function generateRoster(
   target: number,
   cfg: WorldConfig,
@@ -80,7 +80,7 @@ export function generateRoster(
   return roster;
 }
 
-/** Club strength: average OVR of the best eleven according to the formation. */
+/** Forza del club: OVR medio dei migliori undici secondo il modulo. */
 export function clubRatingFromRoster(
   roster: readonly RosterPlayer[],
   formation: Record<Role, number>,

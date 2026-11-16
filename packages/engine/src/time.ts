@@ -1,16 +1,16 @@
 import type { CalendarConfig } from '@outstanding/config';
 
-/** Age in whole years at an absolute week. */
+/** Età in anni compiuti a una settimana assoluta. */
 export function ageAt(birthWeek: number, week: number, cal: CalendarConfig): number {
   return Math.floor((week - birthWeek) / cal.weeksPerSeason);
 }
 
-/** First absolute week of a season (seasons start at 1). */
+/** Prima settimana assoluta di una stagione (le stagioni partono da 1). */
 export function seasonStartWeek(season: number, cal: CalendarConfig): number {
   return (season - 1) * cal.weeksPerSeason;
 }
 
-/** Week number inside the current season (0-based). */
+/** Numero della settimana all'interno della stagione (da 0). */
 export function weekOfSeason(week: number, cal: CalendarConfig): number {
   return ((week % cal.weeksPerSeason) + cal.weeksPerSeason) % cal.weeksPerSeason;
 }

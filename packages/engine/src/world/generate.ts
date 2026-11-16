@@ -21,7 +21,7 @@ export const COMPETITIONS: readonly Competition[] = [
   },
 ];
 
-/** Monotonic id generator backed by GameState.nextId. */
+/** Generatore di id crescenti basato su GameState.nextId. */
 export class IdGen {
   constructor(public next: number) {}
   make(prefix: string): string {
@@ -30,8 +30,8 @@ export class IdGen {
 }
 
 /**
- * Generates the fictional Italian football pyramid: leagues, groups by area, clubs with real cities
- * and invented names, rosters, coaches and agents.
+ * Genera la piramide calcistica italiana fittizia: campionati, gironi per area, club con città reali
+ * e nomi inventati, rose, allenatori e procuratori.
  */
 export function generateWorld(rng: Rng, ids: IdGen, week: number, ctx: GameContext): World {
   const { world: cfg, calendar } = ctx.config;

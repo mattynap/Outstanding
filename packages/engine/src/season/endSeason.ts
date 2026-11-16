@@ -21,21 +21,21 @@ export interface ClubMovement {
 
 export interface SeasonReport {
   season: number;
-  /** The player's season, also appended to player.history. */
+  /** La stagione del giocatore, aggiunta anche a player.history. */
   record: SeasonRecord;
-  /** Final table of the player's group (empty if the player had no club). */
+  /** Classifica finale del girone del giocatore (vuota se il giocatore era senza club). */
   standings: StandingRow[];
-  /** Winner of every group. */
+  /** Vincitrice di ogni girone. */
   champions: { leagueId: string; groupId: string; clubId: string }[];
   movements: ClubMovement[];
 }
 
-/** Areas ordered by geographic proximity, used when a group is full. */
+/** Aree ordinate per vicinanza geografica, usate quando un girone è pieno. */
 const AREA_ORDER: readonly Area[] = ['N', 'C', 'S'];
 
 /**
- * Splits the clubs of a level into its groups: clubs that stay keep their group, the others go to
- * the group of their area or, if full, to the nearest group with room.
+ * Suddivide i club di un livello nei suoi gironi: chi resta mantiene il proprio girone, gli altri
+ * vanno nel girone della propria area o, se pieno, nel girone più vicino con posti liberi.
  */
 function assignGroups(
   league: League,
@@ -63,7 +63,7 @@ function assignGroups(
   return result;
 }
 
-/** Ages NPC rosters: growth/decline by age, retirements replaced by youngsters, pull to level. */
+/** Invecchia le rose: crescita/declino per età, ritirati sostituiti da giovani, avvicinamento al livello. */
 function evolveRoster(
   club: Club,
   levelCfg: LevelConfig,
@@ -99,8 +99,8 @@ function evolveRoster(
 }
 
 /**
- * Closes the season: final tables, promotions and relegations, roster evolution, player history,
- * and the calendar of the next season.
+ * Chiude la stagione: classifiche finali, promozioni e retrocessioni, evoluzione delle rose,
+ * storico del giocatore e calendario della stagione successiva.
  */
 export function endSeason(
   state: GameState,
@@ -113,7 +113,7 @@ export function endSeason(
   const clubsById = new Map(state.world.clubs.map((c) => [c.id, c]));
   const seasonFixtures = state.calendar.filter((f) => f.season === state.season);
 
-  // 1. Final tables.
+  // 1. Classifiche finali.
   const tables = new Map<string, StandingRow[]>();
   const champions: SeasonReport['champions'] = [];
   for (const league of state.world.leagues) {
@@ -128,9 +128,9 @@ export function endSeason(
     }
   }
 
-  // 2. Promotions and relegations.
+  // 2. Promozioni e retrocessioni.
   const movements: ClubMovement[] = [];
-  const moving = new Map<string, number>(); // clubId -> new level
+  const moving = new Map<string, number>(); // clubId -> nuovo livello
   for (const league of state.world.leagues) {
     const levelCfg = cfg.world.levels.find((l) => l.level === league.level)!;
     for (const group of league.groups) {
@@ -158,7 +158,7 @@ export function endSeason(
     }
   }
 
-  // 3. New group composition, level by level.
+  // 3. Nuova composizione dei gironi, livello per livello.
   const newGroupOf = new Map<string, string>();
   for (const league of state.world.leagues) {
     const levelCfg = cfg.world.levels.find((l) => l.level === league.level)!;
@@ -184,14 +184,14 @@ export function endSeason(
   }));
   const levelOfGroup = new Map(leagues.flatMap((l) => l.groups.map((g) => [g.id, l.level])));
 
-  // 4. Rosters evolve over the summer.
+  // 4. Le rose cambiano durante l'estate.
   const clubs = state.world.clubs.map((club) => {
     const gid = newGroupOf.get(club.id)!;
     const levelCfg = cfg.world.levels.find((l) => l.level === levelOfGroup.get(gid))!;
     return evolveRoster({ ...club, groupId: gid }, levelCfg, state.week, rng, ids, ctx);
   });
 
-  // 5. The player's season record.
+  // 5. Riepilogo stagionale del giocatore.
   const p = state.player;
   const oldClub = p.clubId ? clubsById.get(p.clubId) : undefined;
   const oldTable = oldClub ? tables.get(oldClub.groupId) : undefined;
@@ -211,7 +211,7 @@ export function endSeason(
     promoted: move?.kind === 'promoted',
     relegated: move?.kind === 'relegated',
   };
-  // Temporary rule until contracts are negotiated (M7): expiring contracts renew automatically.
+  // Regola temporanea finché i contratti non si negoziano (M7): quelli in scadenza si rinnovano da soli.
   let contract = p.contract;
   if (contract && p.clubId) {
     const newLevel = levelOfGroup.get(newGroupOf.get(p.clubId)!)!;

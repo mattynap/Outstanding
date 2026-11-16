@@ -1,4 +1,4 @@
-/** Balancing parameters (JSON validated with Zod). */
+/** Parametri di bilanciamento (JSON validati con Zod). */
 import calendarJson from '../data/calendar.json';
 import economyJson from '../data/economy.json';
 import matchJson from '../data/match.json';
@@ -40,10 +40,10 @@ export interface GameConfig {
   match: MatchConfig;
 }
 
-/** Raw (unvalidated) config objects, one per JSON file. */
+/** Oggetti di configurazione grezzi (non validati), uno per file JSON. */
 export type RawConfig = Record<keyof GameConfig, unknown>;
 
-/** Parses raw JSON objects into a validated config; throws a readable error on failure. */
+/** Converte gli oggetti JSON grezzi in configurazione validata; in caso di errore lancia un messaggio leggibile. */
 export function parseConfig(raw: RawConfig): GameConfig {
   const out: Partial<GameConfig> = {};
   for (const key of Object.keys(configSchema) as (keyof GameConfig)[]) {
@@ -56,7 +56,7 @@ export function parseConfig(raw: RawConfig): GameConfig {
   return out as GameConfig;
 }
 
-/** The JSON files shipped with the game, before validation. */
+/** I file JSON distribuiti con il gioco, prima della validazione. */
 export const rawDefaultConfig: RawConfig = {
   ratings: ratingsJson,
   player: playerJson,
@@ -66,5 +66,5 @@ export const rawDefaultConfig: RawConfig = {
   match: matchJson,
 };
 
-/** Default config shipped with the game. */
+/** Configurazione predefinita distribuita con il gioco. */
 export const defaultConfig: GameConfig = parseConfig(rawDefaultConfig);

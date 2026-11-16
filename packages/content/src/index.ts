@@ -1,4 +1,4 @@
-/** Game content (names, cities, clubs, traits, texts) validated with Zod. */
+/** Contenuti di gioco (nomi, città, club, tratti, testi) validati con Zod. */
 import type { z } from 'zod';
 import citiesJson from '../data/cities.json';
 import clubsJson from '../data/clubs.json';
@@ -45,7 +45,7 @@ function parse<S extends z.ZodType>(name: string, schema: S, raw: unknown): z.in
   return result.data;
 }
 
-/** Parses raw JSON objects into validated content; throws a readable error on failure. */
+/** Converte gli oggetti JSON grezzi in contenuti validati; in caso di errore lancia un messaggio leggibile. */
 export function parseContent(raw: RawContent): GameContent {
   return {
     names: parse('names.json', namesSchema, raw.names),
@@ -56,7 +56,7 @@ export function parseContent(raw: RawContent): GameContent {
   };
 }
 
-/** The JSON files shipped with the game, before validation. */
+/** I file JSON distribuiti con il gioco, prima della validazione. */
 export const rawDefaultContent: RawContent = {
   names: namesJson,
   traits: traitsJson,
@@ -65,5 +65,5 @@ export const rawDefaultContent: RawContent = {
   i18n: { it: itJson },
 };
 
-/** Default content shipped with the game. */
+/** Contenuti predefiniti distribuiti con il gioco. */
 export const defaultContent: GameContent = parseContent(rawDefaultContent);

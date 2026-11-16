@@ -7,18 +7,18 @@ import { quickResult } from './quickSim';
 export type TransferWindow = 'summer' | 'winter';
 
 export interface WeekReport {
-  /** The week that was just played. */
+  /** La settimana appena giocata. */
   week: number;
-  /** Results of the week in the player's group. */
+  /** Risultati della settimana nel girone del giocatore. */
   results: Fixture[];
 }
 
-/** True when every week of the current season has been played: call endSeason next. */
+/** Vero quando tutte le settimane della stagione sono state giocate: poi va chiamato endSeason. */
 export function isSeasonOver(state: GameState, ctx: GameContext = defaultContext): boolean {
   return state.week >= seasonStartWeek(state.season + 1, ctx.config.calendar);
 }
 
-/** Open transfer window in the current week, if any. */
+/** Finestra di mercato aperta nella settimana corrente, se c'è. */
 export function getTransferWindow(
   state: GameState,
   ctx: GameContext = defaultContext,
@@ -30,7 +30,7 @@ export function getTransferWindow(
   return null;
 }
 
-/** The player's club fixture in the current week, if any. */
+/** La partita del club del giocatore nella settimana corrente, se c'è. */
 export function playerFixture(state: GameState): Fixture | undefined {
   const clubId = state.player.clubId;
   if (!clubId) return undefined;
@@ -40,8 +40,8 @@ export function playerFixture(state: GameState): Fixture | undefined {
 }
 
 /**
- * Closes the current week: simulates every unplayed fixture of the week and moves to the next one.
- * If the player's club plays this week, its match must be played first with playMatch.
+ * Chiude la settimana corrente: simula tutte le partite non giocate e passa alla successiva.
+ * Se il club del giocatore gioca questa settimana, la sua partita va prima giocata con playMatch.
  */
 export function advanceWeek(
   state: GameState,

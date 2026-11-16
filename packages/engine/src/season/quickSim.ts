@@ -1,7 +1,7 @@
 import type { MatchConfig } from '@outstanding/config';
 import type { Rng } from '../rng';
 
-/** Expected goals of both sides from club ratings (shared by quick and detailed simulation). */
+/** Gol attesi delle due squadre dai rating dei club (comune a simulazione rapida e dettagliata). */
 export function expectedGoals(
   homeRating: number,
   awayRating: number,
@@ -14,7 +14,7 @@ export function expectedGoals(
   };
 }
 
-/** Fast result for matches that do not involve the human player. */
+/** Risultato rapido per le partite che non coinvolgono il giocatore. */
 export function quickResult(
   homeRating: number,
   awayRating: number,

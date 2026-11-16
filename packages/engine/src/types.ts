@@ -16,12 +16,12 @@ export type Skills = Record<Skill, number>;
 export interface Contract {
   clubId: string;
   salaryWeekly: number;
-  /** Season number (inclusive) in which the contract expires. */
+  /** Numero della stagione (inclusa) in cui scade il contratto. */
   untilSeason: number;
   amateur: boolean;
 }
 
-/** Statistics of one season (or of the season in progress). */
+/** Statistiche di una stagione (o di quella in corso). */
 export interface SeasonStats {
   appearances: number;
   starts: number;
@@ -29,7 +29,7 @@ export interface SeasonStats {
   goals: number;
   assists: number;
   cleanSheets: number;
-  /** Sum and count of match ratings, for the average (matches "senza voto" are excluded). */
+  /** Somma e numero dei voti in pagella, per la media (le partite "senza voto" sono escluse). */
   ratingSum: number;
   ratingCount: number;
 }
@@ -41,7 +41,7 @@ export interface SeasonRecord {
   leagueLevel: number | null;
   ovr: number;
   stats: SeasonStats;
-  /** Final league position of the player's club, if any. */
+  /** Posizione finale in campionato del club del giocatore, se presente. */
   leaguePosition: number | null;
   promoted: boolean;
   relegated: boolean;
@@ -51,19 +51,19 @@ export interface Player {
   id: string;
   firstName: string;
   lastName: string;
-  /** Absolute week of birth (can be negative: week 0 is the start of the first season). */
+  /** Settimana assoluta di nascita (può essere negativa: la settimana 0 è l'inizio della prima stagione). */
   birthWeek: number;
-  /** Real Italian city. */
+  /** Città italiana reale. */
   hometown: string;
   role: Role;
   skills: Skills;
-  /** Hidden ceiling for growth (60–95). Never shown directly to the player. */
+  /** Tetto nascosto della crescita (60–95). Mai mostrato direttamente al giocatore. */
   potential: number;
   condition: { form: number; energy: number; morale: number; injuryRisk: number };
   persona: { discipline: number; temperament: number; happiness: number };
   image: { popularity: number; reputation: number; followers: number };
   money: { cash: number; salaryWeekly: number; assets: number };
-  /** Trait ids from content/traits.json. */
+  /** Id dei tratti da content/traits.json. */
   traits: string[];
   injury?: { type: string; weeksLeft: number };
   contract?: Contract;
@@ -78,7 +78,7 @@ export interface Player {
 export type CrestShape = 'shield' | 'circle' | 'oval';
 export type KitPattern = 'solid' | 'vstripes' | 'hstripes' | 'sash';
 
-/** Data needed to draw the club crest as SVG. */
+/** Dati per disegnare lo stemma del club in SVG. */
 export interface Crest {
   shape: CrestShape;
   primary: string;
@@ -87,14 +87,14 @@ export interface Crest {
   initials: string;
 }
 
-/** Data needed to draw the club kit as SVG. */
+/** Dati per disegnare la maglia del club in SVG. */
 export interface Kit {
   primary: string;
   secondary: string;
   pattern: KitPattern;
 }
 
-/** A non-playable footballer in a club roster (compact on purpose: there are thousands). */
+/** Un calciatore non giocabile nella rosa di un club (compatto apposta: sono migliaia). */
 export interface RosterPlayer {
   id: string;
   firstName: string;
@@ -112,21 +112,21 @@ export interface Club {
   shortName: string;
   city: string;
   area: Area;
-  /** Deterministic seed for procedural graphics. */
+  /** Seme deterministico per la grafica procedurale. */
   seed: number;
   crest: Crest;
   kit: Kit;
-  /** Team strength 0–100, derived from the roster. */
+  /** Forza della squadra 0–100, ricavata dalla rosa. */
   rating: number;
   roster: RosterPlayer[];
   coachId: string;
-  /** Current league group id. */
+  /** Id del girone di campionato attuale. */
   groupId: string;
 }
 
 export interface LeagueGroup {
   id: string;
-  /** Group name text key (e.g. "Girone A"). */
+  /** Chiave di testo del nome del girone (es. "Girone A"). */
   nameKey: string;
   area: Area | null;
   clubIds: string[];
@@ -134,7 +134,7 @@ export interface LeagueGroup {
 
 export interface League {
   id: string;
-  /** 1 = top flight. */
+  /** 1 = massima serie. */
   level: number;
   nameKey: string;
   professional: boolean;
@@ -160,7 +160,7 @@ export interface Npc {
 export interface Fixture {
   id: string;
   season: number;
-  /** Absolute week. */
+  /** Settimana assoluta. */
   week: number;
   matchday: number;
   leagueId: string;
@@ -181,18 +181,18 @@ export interface GameState {
   saveVersion: number;
   seed: number;
   rngState: RngState;
-  /** Absolute week (0 = first week of the first season). */
+  /** Settimana assoluta (0 = prima settimana della prima stagione). */
   week: number;
-  /** Current season number, starting at 1. */
+  /** Numero della stagione corrente, a partire da 1. */
   season: number;
   player: Player;
   world: World;
   calendar: Fixture[];
   eventLog: { eventId: string; week: number; choice: number }[];
-  /** eventId -> absolute week when the event becomes available again. */
+  /** eventId -> settimana assoluta in cui l'evento torna disponibile. */
   cooldowns: Record<string, number>;
-  /** Event chains. */
+  /** Catene di eventi. */
   scheduled: { eventId: string; atWeek: number }[];
-  /** Monotonic counter used to build unique ids. */
+  /** Contatore crescente usato per creare id univoci. */
   nextId: number;
 }

@@ -4,8 +4,8 @@ import { seasonStartWeek } from '../time';
 import type { Fixture, World } from '../types';
 
 /**
- * Single round robin with the circle method: n-1 rounds of n/2 [home, away] pairs.
- * Home/away of the fixed team alternates to keep home games balanced.
+ * Girone di sola andata con il metodo del cerchio: n-1 giornate di n/2 coppie [casa, trasferta].
+ * La squadra fissa alterna casa e trasferta per bilanciare le partite in casa.
  */
 export function roundRobin(ids: readonly string[]): [string, string][][] {
   const n = ids.length;
@@ -19,8 +19,8 @@ export function roundRobin(ids: readonly string[]): [string, string][][] {
     for (let i = 0; i < n / 2; i++) {
       const a = lineup[i]!;
       const b = lineup[n - 1 - i]!;
-      // The fixed team alternates home and away; the others are home when in the top row,
-      // which every rotating team occupies about half of the time.
+      // La squadra fissa alterna casa e trasferta; le altre giocano in casa quando sono nella riga
+      // superiore, che ogni squadra che ruota occupa circa metà delle volte.
       pairs.push(i > 0 || r % 2 === 0 ? [a, b] : [b, a]);
     }
     rounds.push(pairs);
@@ -29,7 +29,7 @@ export function roundRobin(ids: readonly string[]): [string, string][][] {
   return rounds;
 }
 
-/** Absolute weeks of the given number of matchdays, skipping the winter break. */
+/** Settimane assolute per il numero di giornate dato, saltando la sosta invernale. */
 export function matchdayWeeks(count: number, season: number, cal: CalendarConfig): number[] {
   const start = seasonStartWeek(season, cal);
   const weeks: number[] = [];
@@ -42,7 +42,7 @@ export function matchdayWeeks(count: number, season: number, cal: CalendarConfig
   return weeks;
 }
 
-/** Double round robin (andata e ritorno) for every group of every league. */
+/** Calendario di andata e ritorno per ogni girone di ogni campionato. */
 export function buildSeasonCalendar(
   world: World,
   season: number,

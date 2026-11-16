@@ -1,14 +1,14 @@
 import type { GameState } from '../types';
 
-/** Current save format version. Bump it and add a migration whenever GameState changes shape. */
+/** Versione corrente del formato di salvataggio. Va incrementata, con una migrazione, a ogni cambio di forma di GameState. */
 export const CURRENT_SAVE_VERSION = 1;
 
-/** A migration upgrades a raw save object from version N to version N + 1. */
+/** Una migrazione aggiorna un salvataggio grezzo dalla versione N alla versione N + 1. */
 export type Migration = (raw: Record<string, unknown>) => Record<string, unknown>;
 
 /**
- * migrations[n] upgrades a save from version n to n + 1.
- * Example for a future version 2:  `1: (raw) => ({ ...raw, newField: default, saveVersion: 2 })`.
+ * migrations[n] aggiorna un salvataggio dalla versione n alla n + 1.
+ * Esempio per una futura versione 2:  `1: (raw) => ({ ...raw, newField: default, saveVersion: 2 })`.
  */
 export const migrations: Record<number, Migration> = {};
 
@@ -16,7 +16,7 @@ export function serialize(state: GameState): string {
   return JSON.stringify(state);
 }
 
-/** Applies all migrations needed to bring `raw` to `target` version. */
+/** Applica tutte le migrazioni necessarie per portare `raw` alla versione `target`. */
 export function migrate(
   raw: Record<string, unknown>,
   target = CURRENT_SAVE_VERSION,

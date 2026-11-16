@@ -23,10 +23,10 @@ const pctRange = z
   .tuple([pct, pct])
   .refine(([a, b]) => a <= b, { message: 'range min must be <= max' });
 
-/** A record with exactly one entry per skill. */
+/** Un record con esattamente una voce per abilità. */
 const perSkill = <T extends z.ZodTypeAny>(value: T) =>
   z.object(Object.fromEntries(SKILLS.map((s) => [s, value])) as Record<(typeof SKILLS)[number], T>);
-/** A record with exactly one entry per role. */
+/** Un record con esattamente una voce per ruolo. */
 const perRole = <T extends z.ZodTypeAny>(value: T) =>
   z.object(Object.fromEntries(ROLES.map((r) => [r, value])) as Record<(typeof ROLES)[number], T>);
 
@@ -89,7 +89,7 @@ const levelSchema = z
     level: z.number().int().min(1),
     professional: z.boolean(),
     groups: z.number().int().min(1),
-    /** One area per group; empty for a single national group. */
+    /** Un'area per girone; vuoto per un girone unico nazionale. */
     areas: z.array(areaSchema),
     clubsPerGroup: z
       .number()
@@ -99,7 +99,7 @@ const levelSchema = z
     promotePerGroup: z.number().int().min(0),
     relegatePerGroup: z.number().int().min(0),
     ratingRange: pctRange,
-    /** Weight of a city being picked, indexed by city size 1..4. */
+    /** Peso di estrazione di una città, indicizzato per dimensione 1..4. */
     citySizeWeights: z.tuple([z.number(), z.number(), z.number(), z.number()]),
   })
   .refine((l) => l.areas.length === l.groups || (l.groups === 1 && l.areas.length === 0), {
@@ -126,9 +126,9 @@ export const worldSchema = z
     agents: z.number().int().min(1),
     maxClubsPerCityPerGroup: z.number().int().min(1),
     points: z.object({ win: z.number().int().min(1), draw: z.number().int().min(0) }),
-    /** End-of-season evolution of NPC rosters. */
+    /** Evoluzione di fine stagione delle rose dei club controllati dal computer. */
     rosterAging: z.object({
-      /** OVR change per season by age band (first band whose maxAge >= age). */
+      /** Variazione di OVR per stagione per fascia d'età (prima fascia con maxAge >= età). */
       growthByAge: z
         .array(z.object({ maxAge: z.number().int(), delta: z.number() }))
         .min(1)
@@ -138,7 +138,7 @@ export const worldSchema = z
       noise: z.number().min(0),
       retireAge: z.number().int(),
       youthAgeRange: z.tuple([z.number().int(), z.number().int()]),
-      /** Fraction of the gap to the level's mid rating closed each season (transfers, budgets). */
+      /** Frazione del distacco dal rating medio del livello recuperata ogni stagione (mercato, budget). */
       levelPull: z.number().min(0).max(1),
     }),
   })
@@ -187,7 +187,7 @@ export const economySchema = z.object({
 });
 
 export const matchSchema = z.object({
-  /** Fast simulation of matches not involving the human player. */
+  /** Simulazione rapida delle partite che non coinvolgono il giocatore. */
   quickSim: z.object({
     baseGoals: z.number().positive(),
     homeAdvantage: z.number(),

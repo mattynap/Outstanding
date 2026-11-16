@@ -7,10 +7,10 @@ import { SKILLS } from './ratings';
 export interface NewPlayerOptions {
   firstName: string;
   lastName: string;
-  /** Real Italian city. */
+  /** Città italiana reale. */
   hometown: string;
   role: Role;
-  /** Trait ids chosen at creation (max `config.player.maxTraitsAtCreation`). */
+  /** Id dei tratti scelti alla creazione (al massimo `config.player.maxTraitsAtCreation`). */
   traits?: string[];
 }
 
@@ -25,7 +25,7 @@ export const emptySeasonStats = (): SeasonStats => ({
   ratingCount: 0,
 });
 
-/** Throws if the creation options are not valid for the given content/config. */
+/** Lancia un errore se le opzioni di creazione non sono valide per i contenuti/configurazione dati. */
 export function validateNewPlayerOptions(opts: NewPlayerOptions, ctx: GameContext): void {
   if (!opts.firstName.trim() || !opts.lastName.trim()) {
     throw new Error('Player first and last name are required');
@@ -46,7 +46,7 @@ export function validateNewPlayerOptions(opts: NewPlayerOptions, ctx: GameContex
   }
 }
 
-/** Creates the human player at the start of a career (week 0). */
+/** Crea il giocatore umano all'inizio della carriera (settimana 0). */
 export function createPlayer(
   opts: NewPlayerOptions,
   id: string,

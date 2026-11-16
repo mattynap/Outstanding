@@ -20,12 +20,12 @@ export function getLeagueByLevel(world: World, level: number): League {
   return league;
 }
 
-/** The club of the human player, if under contract. */
+/** Il club del giocatore umano, se sotto contratto. */
 export function playerClub(state: GameState): Club | undefined {
   return state.player.clubId ? getClub(state.world, state.player.clubId) : undefined;
 }
 
-/** Replaces one club immutably. */
+/** Sostituisce un club senza mutare lo stato. */
 export function updateClub(world: World, clubId: string, fn: (c: Club) => Club): World {
   return { ...world, clubs: world.clubs.map((c) => (c.id === clubId ? fn(c) : c)) };
 }

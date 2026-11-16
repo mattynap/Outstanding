@@ -14,7 +14,7 @@ export const SKILLS: readonly Skill[] = [
 
 export const ROLES: readonly Role[] = ['GK', 'DEF', 'MID', 'ATT'];
 
-/** Overall rating: skills weighted by role (weights in config/ratings.json), rounded. */
+/** Valutazione complessiva (OVR): abilità pesate per ruolo (pesi in config/ratings.json), arrotondata. */
 export function computeOvr(skills: Skills, role: Role, ratings: RatingsConfig): number {
   const weights = ratings.roleWeights[role];
   let total = 0;

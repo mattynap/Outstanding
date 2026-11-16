@@ -1,4 +1,4 @@
-/** Content validator: `pnpm content:check`. Schema errors throw while loading the content. */
+/** Validatore dei contenuti: `pnpm content:check`. Gli errori di schema vengono lanciati al caricamento. */
 import { checkContent, defaultContent } from '../src/index';
 
 const errors = checkContent(defaultContent);

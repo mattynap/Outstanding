@@ -13,8 +13,8 @@ export interface StandingRow {
 }
 
 /**
- * League table of a group from its played fixtures.
- * Order: points, goal difference, goals scored, then club id (stable and deterministic).
+ * Classifica di un girone a partire dalle partite giocate.
+ * Ordine: punti, differenza reti, gol fatti, poi id del club (stabile e deterministico).
  */
 export function computeStandings(
   fixtures: readonly Fixture[],

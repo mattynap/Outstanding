@@ -18,14 +18,14 @@ export const traitSchema = z.object({
 });
 export const traitsSchema = z.array(traitSchema);
 
-/** A real Italian city; clubs get invented names built from its epithets. */
+/** Una città italiana reale; i club ricevono nomi inventati costruiti dai suoi epiteti. */
 export const citySchema = z.object({
   name: z.string().min(2),
   region: z.string().min(2),
   area: areaSchema,
-  /** 1 = small town ... 4 = metropolis. */
+  /** 1 = piccolo centro ... 4 = metropoli. */
   size: z.number().int().min(1).max(4),
-  /** Invented or poetic names used to build club names (never real club names). */
+  /** Nomi inventati o poetici usati per comporre i nomi dei club (mai nomi di club reali). */
   epithets: z.array(z.string().min(2)).min(1),
 });
 export const citiesSchema = z.array(citySchema).min(10);
@@ -36,7 +36,7 @@ export const clubsDataSchema = z.object({
   symbols: z.array(id).min(4),
 });
 
-/** Flat translation table: "dotted.key" -> text. */
+/** Tabella di traduzioni piatta: "chiave.puntata" -> testo. */
 export const translationsSchema = z.record(z.string(), z.string().min(1));
 
 export type Names = z.infer<typeof namesSchema>;

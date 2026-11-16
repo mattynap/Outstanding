@@ -51,7 +51,7 @@ describe('world generation', () => {
       expect(club.roster).toHaveLength(size);
       expect(world.npcs.find((n) => n.id === club.coachId)?.role).toBe('coach');
     }
-    // Higher levels are stronger on average.
+    // I livelli più alti sono in media più forti.
     for (let i = 1; i < avgByLevel.length; i++) {
       expect(avgByLevel[i - 1]!).toBeGreaterThan(avgByLevel[i]!);
     }
@@ -92,7 +92,7 @@ describe('world generation', () => {
 describe('career start', () => {
   it('signs the player with a club of the start level in his area', () => {
     const club = world.clubs.find((c) => c.id === state.player.clubId)!;
-    expect(club.groupId).toBe(`L${ctx.config.world.defaultStartLevel}N`); // Bergamo is in the north
+    expect(club.groupId).toBe(`L${ctx.config.world.defaultStartLevel}N`); // Bergamo è al Nord
     expect(state.player.contract?.clubId).toBe(club.id);
     expect(state.player.contract?.amateur).toBe(true);
     expect(state.player.relationships[club.coachId]).toBeDefined();

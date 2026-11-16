@@ -21,7 +21,7 @@ import { baseOptions } from './fixtures';
 const ctx = defaultContext;
 const cal = ctx.config.calendar;
 
-/** Plays weeks until the season is over; the player's own fixtures get a fixed 1-1. */
+/** Gioca le settimane fino a fine stagione; le partite del giocatore finiscono sempre 1-1. */
 function playSeason(state: GameState): GameState {
   let s = state;
   while (!isSeasonOver(s)) {

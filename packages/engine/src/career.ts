@@ -8,11 +8,11 @@ import { generateWorld, groupId, IdGen } from './world/generate';
 import { getGroup } from './world/queries';
 
 export interface NewCareerOptions extends NewPlayerOptions {
-  /** League level where the career starts (one of `config.world.startLevels`). */
+  /** Livello di campionato in cui inizia la carriera (uno di `config.world.startLevels`). */
   startLevel?: number;
 }
 
-/** Finds the content city matching the player's hometown (case-insensitive). */
+/** Trova la città dei contenuti corrispondente a quella natale del giocatore (senza distinguere maiuscole). */
 function resolveHometown(hometown: string, ctx: GameContext) {
   const wanted = hometown.trim().toLocaleLowerCase('it');
   const city = ctx.content.cities.find((c) => c.name.toLocaleLowerCase('it') === wanted);
@@ -21,8 +21,8 @@ function resolveHometown(hometown: string, ctx: GameContext) {
 }
 
 /**
- * Picks the first club: a team of the start level in the player's area, preferably from the
- * hometown itself.
+ * Sceglie il primo club: una squadra del livello iniziale nell'area del giocatore, preferibilmente
+ * della sua stessa città natale.
  */
 function signFirstClub(
   player: Player,
@@ -61,7 +61,7 @@ function signFirstClub(
   };
 }
 
-/** Starts a new career. Same options + same seed always produce the same state. */
+/** Avvia una nuova carriera. Stesse opzioni + stesso seme producono sempre lo stesso stato. */
 export function newCareer(
   options: NewCareerOptions,
   seed: number,

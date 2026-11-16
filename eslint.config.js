@@ -29,7 +29,7 @@ export default tseslint.config(
     },
   },
   {
-    // The engine must stay pure, deterministic and UI-agnostic.
+    // Il motore deve restare puro, deterministico e indipendente dalla UI.
     files: ['packages/engine/src/**/*.ts'],
     languageOptions: {
       globals: {},

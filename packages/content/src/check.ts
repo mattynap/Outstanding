@@ -1,8 +1,8 @@
 import type { GameContent } from './index';
 
 /**
- * Cross-file content checks that a schema alone cannot express.
- * Returns a list of human-readable problems (empty when everything is fine).
+ * Controlli incrociati tra file che uno schema da solo non può esprimere.
+ * Restituisce un elenco di problemi leggibili (vuoto se è tutto a posto).
  */
 export function checkContent(content: GameContent): string[] {
   const errors: string[] = [];

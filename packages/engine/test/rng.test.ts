@@ -15,7 +15,7 @@ describe('Rng', () => {
   it('matches a frozen reference sequence (guards against accidental changes)', () => {
     const rng = Rng.fromSeed(12345);
     const seq = take(rng, 5);
-    // If this fails, saved games would replay differently: only change it on purpose.
+    // Se fallisce, i salvataggi verrebbero rigiocati diversamente: cambiarlo solo di proposito.
     expect(seq).toMatchInlineSnapshot(`
       [
         518667457,

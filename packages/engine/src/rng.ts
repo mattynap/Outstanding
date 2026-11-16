@@ -1,13 +1,13 @@
 /**
- * Seeded pseudo-random number generator (xoshiro128**).
+ * Generatore di numeri pseudo-casuali con seme (xoshiro128**).
  *
- * The engine never uses Math.random: every random draw goes through an Rng whose 4-word state is
- * stored in GameState.rngState, so a career is fully reproducible from its seed and choices.
- * Only integer ops are used for the core generator, so sequences are identical on every JS engine.
+ * Il motore non usa mai Math.random: ogni estrazione passa da un Rng il cui stato (4 parole) è
+ * salvato in GameState.rngState, così una carriera è interamente riproducibile da seme e scelte.
+ * Il generatore usa solo operazioni intere, quindi le sequenze sono identiche su ogni motore JS.
  */
 export type RngState = [number, number, number, number];
 
-/** splitmix32: expands a 32-bit seed into well-mixed state words. */
+/** splitmix32: espande un seme a 32 bit in parole di stato ben mescolate. */
 function splitmix32(seed: number): () => number {
   let s = seed >>> 0;
   return () => {
@@ -26,27 +26,27 @@ export class Rng {
 
   private constructor(state: RngState) {
     this.s = [...state] as RngState;
-    if (this.s.every((w) => w === 0)) this.s[0] = 1; // xoshiro must not be all zero
+    if (this.s.every((w) => w === 0)) this.s[0] = 1; // lo stato di xoshiro non può essere tutto zero
   }
 
-  /** Creates a generator from an integer seed. */
+  /** Crea un generatore da un seme intero. */
   static fromSeed(seed: number): Rng {
     const next = splitmix32(seed);
     return new Rng([next(), next(), next(), next()]);
   }
 
-  /** Restores a generator from a saved state. */
+  /** Ripristina un generatore da uno stato salvato. */
   static fromState(state: readonly number[]): Rng {
     if (state.length !== 4) throw new Error('Rng state must have 4 words');
     return new Rng(state.map((w) => w >>> 0) as RngState);
   }
 
-  /** Current state, to be stored back into GameState. */
+  /** Stato corrente, da risalvare in GameState. */
   getState(): RngState {
     return [...this.s] as RngState;
   }
 
-  /** Derives an independent generator (e.g. one per club) without disturbing sequences much. */
+  /** Deriva un generatore indipendente (es. uno per club) senza alterare troppo le sequenze. */
   fork(): Rng {
     return Rng.fromSeed(this.nextUint32());
   }
@@ -64,41 +64,41 @@ export class Rng {
     return result;
   }
 
-  /** Float in [0, 1). */
+  /** Numero decimale in [0, 1). */
   next(): number {
     return this.nextUint32() / 4294967296;
   }
 
-  /** Integer in [min, max] (both inclusive). */
+  /** Intero in [min, max] (estremi inclusi). */
   int(min: number, max: number): number {
     if (max < min) throw new Error(`Rng.int: max (${max}) < min (${min})`);
     return min + Math.floor(this.next() * (max - min + 1));
   }
 
-  /** Float in [min, max). */
+  /** Numero decimale in [min, max). */
   float(min: number, max: number): number {
     return min + this.next() * (max - min);
   }
 
-  /** True with probability p. */
+  /** Vero con probabilità p. */
   chance(p: number): boolean {
     return this.next() < p;
   }
 
-  /** Approximately normal value (Irwin–Hall with 12 uniforms: no transcendental functions). */
+  /** Valore approssimativamente normale (Irwin–Hall con 12 uniformi: nessuna funzione trascendente). */
   normal(mean = 0, sd = 1): number {
     let sum = 0;
     for (let i = 0; i < 12; i++) sum += this.next();
     return mean + (sum - 6) * sd;
   }
 
-  /** Random element of a non-empty array. */
+  /** Elemento casuale di un array non vuoto. */
   pick<T>(items: readonly T[]): T {
     if (items.length === 0) throw new Error('Rng.pick: empty array');
     return items[this.int(0, items.length - 1)] as T;
   }
 
-  /** Weighted pick; items with weight <= 0 are never chosen. */
+  /** Scelta pesata; gli elementi con peso <= 0 non vengono mai scelti. */
   weighted<T>(items: readonly T[], weight: (item: T) => number): T {
     let total = 0;
     for (const it of items) total += Math.max(0, weight(it));
@@ -109,14 +109,14 @@ export class Rng {
       if (r < w) return it;
       r -= w;
     }
-    // Floating point fallback: last item with positive weight.
+    // Ripiego per errori di arrotondamento: ultimo elemento con peso positivo.
     for (let i = items.length - 1; i >= 0; i--) {
       if (weight(items[i] as T) > 0) return items[i] as T;
     }
     throw new Error('unreachable');
   }
 
-  /** Returns a shuffled copy (Fisher–Yates). */
+  /** Restituisce una copia mescolata (Fisher–Yates). */
   shuffle<T>(items: readonly T[]): T[] {
     const out = [...items];
     for (let i = out.length - 1; i > 0; i--) {
@@ -126,7 +126,7 @@ export class Rng {
     return out;
   }
 
-  /** Poisson-distributed integer (Knuth; fine for the small lambdas used in match simulation). */
+  /** Intero con distribuzione di Poisson (Knuth; adatto ai lambda piccoli della simulazione partite). */
   poisson(lambda: number): number {
     if (lambda <= 0) return 0;
     const limit = Math.exp(-lambda);
@@ -140,7 +140,7 @@ export class Rng {
   }
 }
 
-/** Runs `fn` with an Rng restored from `state` and returns its result plus the new state. */
+/** Esegue `fn` con un Rng ripristinato da `state` e restituisce il risultato più il nuovo stato. */
 export function withRng<T>(state: readonly number[], fn: (rng: Rng) => T): [T, RngState] {
   const rng = Rng.fromState(state);
   const value = fn(rng);

@@ -1,0 +1,57 @@
+{
+  "startAge": 16,
+  "skillRanges": {
+    "GK": {
+      "pace": [25, 40],
+      "shooting": [8, 20],
+      "passing": [25, 40],
+      "dribbling": [12, 25],
+      "defending": [20, 35],
+      "physical": [32, 46],
+      "vision": [28, 42],
+      "goalkeeping": [36, 48]
+    },
+    "DEF": {
+      "pace": [32, 46],
+      "shooting": [18, 32],
+      "passing": [28, 42],
+      "dribbling": [22, 36],
+      "defending": [36, 48],
+      "physical": [34, 48],
+      "vision": [24, 38],
+      "goalkeeping": [3, 10]
+    },
+    "MID": {
+      "pace": [32, 46],
+      "shooting": [26, 40],
+      "passing": [36, 48],
+      "dribbling": [32, 46],
+      "defending": [26, 40],
+      "physical": [28, 42],
+      "vision": [34, 48],
+      "goalkeeping": [3, 10]
+    },
+    "ATT": {
+      "pace": [36, 50],
+      "shooting": [36, 48],
+      "passing": [26, 40],
+      "dribbling": [34, 48],
+      "defending": [12, 26],
+      "physical": [28, 44],
+      "vision": [26, 40],
+      "goalkeeping": [3, 10]
+    }
+  },
+  "potential": { "min": 60, "max": 95, "mean": 73, "sd": 8 },
+  "initial": {
+    "condition": { "form": 50, "energy": 85, "morale": 60, "injuryRisk": 10 },
+    "persona": {
+      "discipline": [35, 70],
+      "temperament": [30, 70],
+      "happiness": 65
+    },
+    "image": { "popularity": 2, "reputation": 10, "followers": [40, 400] },
+    "money": { "cash": 300, "salaryWeekly": 0, "assets": 0 }
+  },
+  "maxTraitsAtCreation": 2
+}

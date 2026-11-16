@@ -5,3 +5,4 @@ Indice delle note di progetto. Questa cartella è versionata in git.
 - Decisioni iniziali: vedi CLAUDE.md (stack, architettura, vincoli, milestone).
 - [Tooling](tooling.md) — versioni, TypeScript 6 fissato, pacchetti senza build
 - [Setup del repository](repo-setup.md) — remote GitHub, memoria locale, PDF non versionato
+- [Design del motore](engine-design.md) — Rng, GameContext, saveVersion, tempo, nomi

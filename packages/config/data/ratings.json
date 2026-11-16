@@ -1,0 +1,44 @@
+{
+  "roleWeights": {
+    "GK": {
+      "pace": 0.03,
+      "shooting": 0,
+      "passing": 0.05,
+      "dribbling": 0,
+      "defending": 0.04,
+      "physical": 0.1,
+      "vision": 0.08,
+      "goalkeeping": 0.7
+    },
+    "DEF": {
+      "pace": 0.14,
+      "shooting": 0.02,
+      "passing": 0.12,
+      "dribbling": 0.05,
+      "defending": 0.4,
+      "physical": 0.2,
+      "vision": 0.07,
+      "goalkeeping": 0
+    },
+    "MID": {
+      "pace": 0.1,
+      "shooting": 0.1,
+      "passing": 0.28,
+      "dribbling": 0.14,
+      "defending": 0.1,
+      "physical": 0.1,
+      "vision": 0.18,
+      "goalkeeping": 0
+    },
+    "ATT": {
+      "pace": 0.18,
+      "shooting": 0.36,
+      "passing": 0.08,
+      "dribbling": 0.18,
+      "defending": 0.02,
+      "physical": 0.1,
+      "vision": 0.08,
+      "goalkeeping": 0
+    }
+  }
+}

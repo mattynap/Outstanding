@@ -1,0 +1,50 @@
+[
+  {
+    "id": "leader",
+    "selectableAtCreation": true,
+    "modifiers": [{ "target": "match.all", "value": 0.01 }]
+  },
+  {
+    "id": "testa_calda",
+    "selectableAtCreation": true,
+    "modifiers": [
+      { "target": "match.tag.duel", "value": 0.04 },
+      { "target": "match.tag.composure", "value": -0.04 }
+    ]
+  },
+  {
+    "id": "bomber_area",
+    "selectableAtCreation": true,
+    "roles": ["ATT", "MID"],
+    "modifiers": [{ "target": "match.tag.finishing", "value": 0.06 }]
+  },
+  {
+    "id": "professionista",
+    "selectableAtCreation": true,
+    "modifiers": [{ "target": "match.tag.composure", "value": 0.03 }]
+  },
+  {
+    "id": "fantasista",
+    "selectableAtCreation": true,
+    "roles": ["MID", "ATT"],
+    "modifiers": [{ "target": "match.tag.dribble", "value": 0.05 }]
+  },
+  {
+    "id": "muro",
+    "selectableAtCreation": true,
+    "roles": ["DEF", "MID"],
+    "modifiers": [{ "target": "match.tag.tackle", "value": 0.05 }]
+  },
+  {
+    "id": "para_rigori",
+    "selectableAtCreation": true,
+    "roles": ["GK"],
+    "modifiers": [{ "target": "match.tag.penalty", "value": 0.08 }]
+  },
+  {
+    "id": "regista",
+    "selectableAtCreation": true,
+    "roles": ["MID", "DEF"],
+    "modifiers": [{ "target": "match.tag.passing", "value": 0.05 }]
+  }
+]

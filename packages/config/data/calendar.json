@@ -1,0 +1,9 @@
+{
+  "weeksPerSeason": 52,
+  "firstMatchWeek": 6,
+  "winterBreakWeeks": [25, 26],
+  "transferWindows": {
+    "summer": { "fromWeek": 0, "toWeek": 7 },
+    "winter": { "fromWeek": 25, "toWeek": 28 }
+  }
+}

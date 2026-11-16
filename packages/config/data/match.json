@@ -37,15 +37,15 @@
   },
   "moments": {
     "countByRole": {
-      "GK": [3, 4],
-      "DEF": [3, 5],
-      "MID": [3, 5],
-      "ATT": [3, 5]
+      "GK": [2, 3],
+      "DEF": [2, 4],
+      "MID": [2, 4],
+      "ATT": [2, 4]
     },
     "minMinutesForMoment": 8,
     "logisticScale": 10,
     "minChance": 0.05,
-    "maxChance": 0.95,
+    "maxChance": 0.9,
     "formWeight": 0.08,
     "moraleWeight": 0.04,
     "energyWeight": 0.05,
@@ -211,7 +211,7 @@
             "difficulty": 15,
             "tag": "penalty",
             "success": {
-              "rating": 1.5
+              "rating": 1.75
             },
             "failure": {
               "rating": 0,
@@ -236,7 +236,7 @@
             "difficulty": 4,
             "tag": "passing",
             "success": {
-              "rating": 0.5,
+              "rating": 0.25,
               "goalFor": 0.12,
               "by": "assist"
             },
@@ -253,7 +253,7 @@
             "difficulty": -6,
             "tag": "composure",
             "success": {
-              "rating": 0.25
+              "rating": 0.5
             },
             "failure": {
               "rating": -1,
@@ -278,7 +278,7 @@
             "difficulty": 2,
             "tag": "tackle",
             "success": {
-              "rating": 0.5
+              "rating": 0.75
             },
             "failure": {
               "rating": -1,
@@ -381,7 +381,7 @@
             "tag": "finishing",
             "success": {
               "rating": 0.25,
-              "goalFor": 1,
+              "goalFor": 0.5,
               "by": "self"
             },
             "failure": {
@@ -481,7 +481,7 @@
             "difficulty": 5,
             "tag": "passing",
             "success": {
-              "rating": 0.5,
+              "rating": 0.25,
               "goalFor": 0.5,
               "by": "assist"
             },
@@ -516,8 +516,8 @@
             "difficulty": 12,
             "tag": "finishing",
             "success": {
-              "rating": 0.25,
-              "goalFor": 0.75,
+              "rating": 0.5,
+              "goalFor": 0.5,
               "by": "self"
             },
             "failure": {
@@ -542,8 +542,8 @@
             "difficulty": 16,
             "tag": "finishing",
             "success": {
-              "rating": 0.5,
-              "goalFor": 1,
+              "rating": 0.25,
+              "goalFor": 0.5,
               "by": "self"
             },
             "failure": {
@@ -559,7 +559,7 @@
             "difficulty": 3,
             "tag": "passing",
             "success": {
-              "rating": 0.25,
+              "rating": 0,
               "goalFor": 0.3,
               "by": "assist"
             },
@@ -576,7 +576,7 @@
             "difficulty": -8,
             "tag": "composure",
             "success": {
-              "rating": 0
+              "rating": 0.25
             },
             "failure": {
               "rating": -0.5,
@@ -621,7 +621,7 @@
             "difficulty": 4,
             "tag": "tackle",
             "success": {
-              "rating": 0.5
+              "rating": 0.75
             },
             "failure": {
               "rating": -0.75,
@@ -723,8 +723,8 @@
             "difficulty": 11,
             "tag": "finishing",
             "success": {
-              "rating": 0.25,
-              "goalFor": 1,
+              "rating": 0.5,
+              "goalFor": 0.6,
               "by": "self"
             },
             "failure": {
@@ -742,7 +742,7 @@
             "tag": "finishing",
             "success": {
               "rating": 0.25,
-              "goalFor": 1,
+              "goalFor": 0.65,
               "by": "self"
             },
             "failure": {
@@ -759,8 +759,8 @@
             "difficulty": 14,
             "tag": "dribble",
             "success": {
-              "rating": 0.75,
-              "goalFor": 1,
+              "rating": 1,
+              "goalFor": 0.8,
               "by": "self"
             },
             "failure": {
@@ -776,7 +776,7 @@
             "difficulty": -4,
             "tag": "passing",
             "success": {
-              "rating": 0.25,
+              "rating": 0,
               "goalFor": 0.45,
               "by": "assist"
             },
@@ -802,8 +802,8 @@
             "difficulty": 11,
             "tag": "finishing",
             "success": {
-              "rating": 0.25,
-              "goalFor": 1,
+              "rating": 0.5,
+              "goalFor": 0.6,
               "by": "self"
             },
             "failure": {
@@ -837,7 +837,7 @@
             "tag": "dribble",
             "success": {
               "rating": 0.5,
-              "goalFor": 0.8,
+              "goalFor": 0.5,
               "by": "self"
             },
             "failure": {
@@ -862,8 +862,8 @@
             "difficulty": -12,
             "tag": "composure",
             "success": {
-              "rating": 0,
-              "goalFor": 1,
+              "rating": 0.25,
+              "goalFor": 0.85,
               "by": "self"
             },
             "failure": {
@@ -879,8 +879,8 @@
             "difficulty": -10,
             "tag": "composure",
             "success": {
-              "rating": 0,
-              "goalFor": 1,
+              "rating": 0.25,
+              "goalFor": 0.85,
               "by": "self"
             },
             "failure": {
@@ -896,8 +896,8 @@
             "difficulty": -5,
             "tag": "composure",
             "success": {
-              "rating": 1,
-              "goalFor": 1,
+              "rating": 0.5,
+              "goalFor": 0.8,
               "by": "self"
             },
             "failure": {
@@ -922,7 +922,7 @@
             "difficulty": 3,
             "tag": "dribble",
             "success": {
-              "rating": 0.5,
+              "rating": 0.25,
               "goalFor": 0.3,
               "by": "assist"
             },
@@ -982,8 +982,8 @@
             "difficulty": 12,
             "tag": "duel",
             "success": {
-              "rating": 0.5,
-              "goalFor": 0.6,
+              "rating": 0.25,
+              "goalFor": 0.45,
               "by": "self"
             },
             "failure": {
@@ -999,7 +999,7 @@
             "difficulty": -2,
             "tag": "composure",
             "success": {
-              "rating": 0.25
+              "rating": 0.5
             },
             "failure": {
               "rating": 0
@@ -1023,14 +1023,14 @@
       "loss": -0.25
     },
     "cleanSheet": {
-      "GK": 0.5,
+      "GK": 0.75,
       "DEF": 0.5,
       "MID": 0,
       "ATT": 0
     },
     "cleanSheetMinMinutes": 60,
     "concededPerGoal": {
-      "GK": -0.25,
+      "GK": -0.1,
       "DEF": -0.15,
       "MID": 0,
       "ATT": 0

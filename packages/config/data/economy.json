@@ -106,7 +106,7 @@
     "salaryNoise": 0.1,
     "signingBonusWeeks": [0, 4],
     "agePenaltyFromAge": 30,
-    "agePenaltyPerYear": 1.5
+    "agePenaltyPerYear": 3
   },
   "negotiation": {
     "roomMin": 0.05,

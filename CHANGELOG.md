@@ -71,3 +71,22 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
   varianti, cronaca con marcatori e assist, statistiche stagionali (presenze, minuti, gol, assist,
   porte inviolate, media voto).
 - Tutti i parametri in `config/match.json` validati con Zod; testi italiani di momenti e commenti.
+
+### M5 – Eventi
+
+- Schema Zod degli eventi (`content/src/events.ts`): condizioni (età, statistiche, finestra di
+  mercato, flag, ruoli, livello, tratti, infortunio, rapporto con il mister, settimana della
+  stagione), effetti `stat`, `money`, `flag`, `relationship`, `schedule`, `startTransfer`,
+  `injury`, `trait` e `chance` (esito incerto, annidabile).
+- 22 eventi in 6 categorie (spogliatoio, allenamento, media, vita, famiglia, mercato), con varianti
+  di testo e tre catene; testi in `i18n/it.events.json`.
+- Validatore ampliato (`pnpm content:check`): chiavi di testo, segnaposto ammessi, catene verso
+  eventi esistenti, eventi in catena mai attivati, tratti citati, id e chiavi duplicati.
+- Motore: `drawWeekEvents` (eventi in catena in scadenza più estrazione pesata, cooldown, eventi
+  unici, massimo per settimana e per categoria da `config/events.json`), `getPendingEvents`,
+  `resolveEvent` con resoconto delle modifiche. Settimana e partita restano bloccate finché gli
+  eventi non hanno risposta.
+- Gli infortuni calano di una settimana a ogni `advanceWeek`.
+- Le richieste di trasferimento nate dagli eventi vengono salvate in `GameState.transferRequests`
+  per il mercato (M7).
+- Guida di stile dei contenuti completa del formato degli eventi.

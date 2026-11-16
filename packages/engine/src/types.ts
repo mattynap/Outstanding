@@ -224,6 +224,19 @@ export interface MatchState {
   assists: number;
 }
 
+/** Evento estratto per la settimana, in attesa della scelta del giocatore. */
+export interface PendingEvent {
+  eventId: string;
+  /** Variante di testo, da 1. */
+  textVariant: number;
+}
+
+/** Richiesta di trasferimento nata da un evento; la gestisce il mercato (M7). */
+export interface TransferRequest {
+  to: 'higher_level' | 'same_level' | 'lower_level';
+  week: number;
+}
+
 export interface World {
   clubs: Club[];
   leagues: League[];
@@ -247,6 +260,11 @@ export interface GameState {
   cooldowns: Record<string, number>;
   /** Catene di eventi. */
   scheduled: { eventId: string; atWeek: number }[];
+  /** Eventi della settimana in attesa di risposta. */
+  pendingEvents: PendingEvent[];
+  /** Settimana per cui gli eventi sono già stati estratti (-1 = mai). */
+  eventsWeek: number;
+  transferRequests: TransferRequest[];
   /** Contatore crescente usato per creare id univoci. */
   nextId: number;
   /** Partita del giocatore iniziata e non ancora finita. */

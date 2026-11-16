@@ -28,6 +28,16 @@ export {
   type MatchStep,
 } from './match/match';
 export { optionChance, type KeyMoment, type KeyMomentOption } from './match/moments';
+export {
+  checkConditions,
+  drawWeekEvents,
+  getPendingEvents,
+  resolveEvent,
+  type EventChange,
+  type EventReport,
+  type EventView,
+} from './events/events';
+export { getStat } from './events/stats';
 export { getClub, getGroup, getLeagueByLevel, playerClub } from './world/queries';
 export {
   serialize,

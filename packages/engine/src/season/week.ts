@@ -49,6 +49,7 @@ export function advanceWeek(
 ): { state: GameState; report: WeekReport } {
   if (isSeasonOver(state, ctx)) throw new Error('Season is over: call endSeason');
   const own = playerFixture(state);
+  if (state.pendingEvents.length > 0) throw new Error('Pending events: call resolveEvent');
   if (own && !own.result) throw new Error('The player has a match this week: call playMatch');
 
   const rng = Rng.fromState(state.rngState);
@@ -66,8 +67,16 @@ export function advanceWeek(
 
   const groupId = state.world.clubs.find((c) => c.id === state.player.clubId)?.groupId;
   const results = calendar.filter((f) => f.week === state.week && f.groupId === groupId);
+  // Recupero dagli infortuni: una settimana in meno (le regole complete arrivano in M6).
+  const injury = state.player.injury;
+  const player =
+    injury && injury.weeksLeft > 1
+      ? { ...state.player, injury: { ...injury, weeksLeft: injury.weeksLeft - 1 } }
+      : injury
+        ? (({ injury: _healed, ...rest }) => rest)(state.player)
+        : state.player;
   return {
-    state: { ...state, calendar, week: state.week + 1, rngState: rng.getState() },
+    state: { ...state, player, calendar, week: state.week + 1, rngState: rng.getState() },
     report: { week: state.week, results },
   };
 }

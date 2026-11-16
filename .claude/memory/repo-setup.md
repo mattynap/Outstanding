@@ -1,6 +1,6 @@
 ---
 name: repo-setup
-description: Remote git reale, memoria locale corretta, PDF del documento di progetto non versionato
+description: Remote git reale, memoria locale corretta, PDF del documento di progetto versionato
 metadata:
   type: project
 ---

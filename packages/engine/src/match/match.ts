@@ -307,6 +307,7 @@ export function beginMatch(
   ctx: GameContext = defaultContext,
 ): { state: GameState; step: MatchStep } {
   if (state.currentMatch) throw new Error('A match is already in progress');
+  if (state.pendingEvents.length > 0) throw new Error('Resolve the pending events first');
   const fixture = playerFixture(state);
   if (!fixture) throw new Error('The player has no match this week');
   if (fixture.result) throw new Error('The match of this week has already been played');

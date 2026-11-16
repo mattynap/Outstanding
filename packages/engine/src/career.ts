@@ -95,6 +95,9 @@ export function newCareer(
     eventLog: [],
     cooldowns: {},
     scheduled: [],
+    pendingEvents: [],
+    eventsWeek: -1,
+    transferRequests: [],
     nextId: ids.next,
   };
 }

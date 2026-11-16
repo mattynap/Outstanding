@@ -2,7 +2,11 @@
 
 export type TextParams = Record<string, string | number>;
 
-/** Testo tradotto con i segnaposto `{nome}` sostituiti; una chiave mancante resta visibile. */
+/**
+ * Testo tradotto con i segnaposto `{nome}` sostituiti; una chiave mancante resta visibile.
+ * Singolare e plurale: `{n|offerta|offerte}` sceglie la prima forma se `n` vale 1 (le forme possono
+ * contenere a loro volta segnaposto semplici).
+ */
 export function translate(
   table: Readonly<Record<string, string>>,
   key: string,
@@ -10,9 +14,15 @@ export function translate(
 ): string {
   const text = table[key];
   if (text === undefined) return key;
-  return text.replace(/\{(\w+)\}/g, (match, name: string) =>
-    name in params ? String(params[name]) : match,
-  );
+  return text
+    .replace(
+      /\{(\w+)\|([^|{}]*(?:\{\w+\}[^|{}]*)*)\|([^|{}]*(?:\{\w+\}[^|{}]*)*)\}/g,
+      (match, name: string, one: string, many: string) =>
+        name in params ? (Number(params[name]) === 1 ? one : many) : match,
+    )
+    .replace(/\{(\w+)\}/g, (match, name: string) =>
+      name in params ? String(params[name]) : match,
+    );
 }
 
 const integer = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 0 });

@@ -104,6 +104,11 @@ describe('formattazione', () => {
   it('sostituisce i segnaposto e lascia visibili le chiavi mancanti', () => {
     expect(translate({ a: 'Ciao {name}' }, 'a', { name: 'Tommaso' })).toBe('Ciao Tommaso');
     expect(translate({}, 'x.y')).toBe('x.y');
+    const t = { o: '{n} {n|offerta|offerte}', r: '{n|Un altro|Altri {n}} risultati' };
+    expect(translate(t, 'o', { n: 1 })).toBe('1 offerta');
+    expect(translate(t, 'o', { n: 3 })).toBe('3 offerte');
+    expect(translate(t, 'r', { n: 1 })).toBe('Un altro risultati');
+    expect(translate(t, 'r', { n: 4 })).toBe('Altri 4 risultati');
     expect(chanceTone(0.7)).toBe('pos');
     expect(chanceTone(0.2)).toBe('neg');
   });

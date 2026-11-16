@@ -337,3 +337,26 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
   dell'orientamento in creazione e nelle impostazioni; avvisi di gossip e multa dopo la serata.
 - Simulatore (prudente, 1000 carriere, seme 42): massima serie 61,2% (prima 61,9%), leggende 3,0%
   (prima 3,1%): cambia solo l'estrazione delle notizie.
+
+### M17 – Media
+
+- Media (`GameState.media`, motore in `engine/src/media/media.ts`, parametri in
+  `config/data/media.json`, nomi utente e varianti in `content/data/media.json`), con le decisioni
+  dell'utente:
+  - follower che seguono la popolarità, crescono con i post e calano con gli scandali; **valgono
+    soldi**: sponsor più frequenti e meglio pagati, più clienti per le attività;
+  - un post a settimana (allenamento, vita privata, beneficenza, provocazione); la provocazione
+    porta molti follower ma può finire in polemica;
+  - feed con i commenti dei tifosi (risultato, gossip, nascite, trasferimenti), i propri post e i
+    titoli del giornale; usa un generatore suo e non cambia il resto della carriera;
+  - intervista facoltativa dopo le partite giocate di persona: una domanda legata a risultato e
+    voto, tre toni (umile, sicuro, polemico) o "nessun commento";
+  - conferenza stampa prima di semifinali e finali di coppa, derby e scontri al vertice, e alla
+    presentazione nel nuovo club: le risposte toccano morale, allenatore e immagine e, prima di una
+    partita, le probabilità dei momenti chiave (al massimo ±5%).
+- App: schermata "Social" (icona nella settimana o follower del profilo), schermata "Conferenza
+  stampa" con una domanda alla volta, intervista nella pagella di fine partita.
+- Testi: singolare e plurale con `{n|offerta|offerte}`; corretti "1 offerte", "1 settimane" e
+  simili.
+- Simulatore (prudente, 1000 carriere, seme 42): massima serie 61,1%, leggende 2,5% (prima 3,0%):
+  gli sponsor ora dipendono dai follower e cambiano la sequenza del caso; differenza nel rumore.

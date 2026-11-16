@@ -81,7 +81,11 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
   (incontro, proposta, crisi, divorzio con alert, notizia "Cuori", impostazioni). Lo stato di prova
   si inietta con `ng.getComponent(document.querySelector('app-private')).game.commit(...)` (solo in
   sviluppo). Simulatore quasi invariato (61,2% / 3,0%).
-- Prossimo passo: **M17 (media: social, interviste, conferenze stampa)**, poi M12.
+- M17 (media, 2026-11-16): decisioni in [[user-ideas-roadmap]]; provato nel browser (post,
+  presentazione in conferenza, partita giocata con intervista, feed). Aggiunti i plurali nei testi
+  (`{n|uno|tanti}` in `translate`). Simulatore: 61,1% / 2,5%.
+- Prossimo passo: **M12 (pubblicazione Android)**; prima, se l'utente vuole, i contenuti verso i
+  100 eventi (ora 46) e il tempo di gioco (3–7 h contro 2–4 h).
   Nota M15: i prezzi dei beni sono alti rispetto agli stipendi dei dilettanti (si compra davvero
   solo dalla Serie Bronzo in su), ed è voluto. Piano e decisioni in [[user-ideas-roadmap]]. Ancora aperto: tempo di gioco. Contenuti:
   arrivare a 100 eventi in parallelo.

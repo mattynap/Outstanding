@@ -65,6 +65,13 @@ e i suoi rischi si calcolano in `planWeek`. Quando succede qualcosa (tradimento 
 partner che se ne va) il motore mette in coda per la settimana dopo l'evento con il `trigger`
 corrispondente.
 
+I media (`engine/src/media`) si aggiornano in `advanceWeek` dopo la vita privata: follower verso il
+valore naturale per la popolarità e commenti dei tifosi, con un `Rng` ricavato da seme e settimana
+(non tocca il generatore della carriera). `finishMatch` ricorda la partita per l'intervista;
+`acceptOffer` (trasferimento o prestito) apre la conferenza di presentazione. L'effetto della
+conferenza sulle partite passa da `pressBonus`, sommato al bonus della difficoltà in `optionChance`.
+`followersBonus` alza frequenza e compenso degli sponsor e la rendita delle attività.
+
 Le funzioni pubbliche ricevono un `GameContext` opzionale (config + contenuti); se assente si usa
 quello predefinito dei pacchetti `config` e `content`. Nei test si può iniettare un contesto
 modificato.

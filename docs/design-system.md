@@ -101,6 +101,15 @@ in grigio con il motivo in corsivo, quelle fuori luogo per la situazione non si 
 nuove: notte di città (incontri, proposta), stanza calda (appuntamento, cena, regalo, figlio),
 spiaggia (vacanza), arco di fiori (matrimonio), parco (figli).
 
+Media (M17): il social è un feed a bolle (`.o-card` con angolo in basso stretto: a sinistra i
+tifosi, a destra con bordo `--o-accent` i propri post), nome utente in `--o-accent-fg`, cuore e
+numero dei "mi piace" in rosa; i titoli di giornale nel feed sono strisce di carta (`.o-paper`) con
+il titolo in `--o-font-display`. I post si scelgono da una griglia 2×2 con icona, nome e
+descrizione. Intervista e conferenza stampa usano la carta: domanda tra virgolette in
+`o-headline`, risposte con il tono in maiuscoletto rosso (`--o-headline-red`); "Nessun commento" è
+un link sottolineato. La conferenza ha una fila di cinque microfoni (quello centrale in giallo) e
+una domanda alla volta.
+
 Simboli degli stemmi: `packages/app/src/app/ui/symbols.ts`, uno per ogni id di
 `content/data/clubs.json`. Avatar "figurina" (stile scelto dall'utente in M14): mezzo busto vettoriale su fondo `--o-surface`,
 ombre morbide (marrone al 16%) sul lato destro del viso, sul collo e sulle braccia, occhi con

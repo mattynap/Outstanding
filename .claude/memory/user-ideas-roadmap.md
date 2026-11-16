@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: ba3e7028-a690-4902-a1e6-0b641b622f63
-  modified: 2026-11-16T18:56:06.726Z
+  modified: 2026-11-16T19:28:50.928Z
 ---
 
 Il 2026-11-16 l'utente ha mandato la lista integrata delle idee (docs/TODO.txt, numerata 1–10, il 5
@@ -42,6 +42,12 @@ Decisioni dell'utente:
   matrimonio, divorzio con quota del patrimonio liquido + assegno settimanale se ci sono figli;
   "serata/festa" come azione del piano settimanale (felicità/popolarità su, energia/forma giù,
   rischio gossip o multa vicino alla partita) + inviti esclusivi via evento.
+- **M17 (decisioni 2026-11-16):** social con **feed** di commenti generati e **un post a settimana**
+  scelto (allenamento, vita privata, beneficenza, provocazione); **intervista facoltativa** dopo le
+  partite giocate (una domanda, toni umile/sicuro/polemico, "nessun commento"); **conferenze
+  stampa** prima delle grandi partite (finali, derby, scontri al vertice) e alla presentazione nel
+  nuovo club, con piccolo effetto sui momenti chiave di quella partita; i **follower contano nei
+  soldi** (sponsor e attività) e si perdono con scandali e post sbagliati.
 - **Immagini:** vignette SVG piatte disegnate dal codice (stesso stile di stemmi e avatar), niente
   asset esterni.
 - **Tono:** allusivo, obiettivo **PEGI 12**: tradimenti, gossip, feste e alcol con ironia e senza

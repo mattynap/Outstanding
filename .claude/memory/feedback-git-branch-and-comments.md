@@ -14,4 +14,7 @@ metadata:
 
 **How to apply:** `git push origin dev`; nuovi commenti e JSDoc in italiano.
 
+- Nei commit aggiungere **percorsi espliciti**, non `git add -A`: l'utente può creare file suoi
+  nel repo (es. `docs/TODO.txt`, finito per errore nel commit di M7 il 2026-11-16).
+
 Collegato: [[repo-setup]]

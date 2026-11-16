@@ -40,6 +40,12 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
   da stipendi di massima serie fino a 60.000/settimana.
 - Prossimo passo: M7b (coppe), poi M8 (simulatore). Contenuti: arrivare a 100 eventi in parallelo.
 
+## Idee dell'utente da pianificare (docs/TODO.txt)
+
+Personalizzazione del personaggio, finanze personali, investimenti con immagini, vita affettiva,
+feste private, difficoltà iniziale (facile/normale/difficile), impostazione "solo testo o altro".
+Chiesto all'utente il 2026-11-16 in quali milestone inserirle.
+
 ## Decisioni prese dall'utente (2026-11-16)
 
 - Coppe: decide lo sviluppatore → nuova milestone **M7b – Coppe** (dopo M7, prima del simulatore,

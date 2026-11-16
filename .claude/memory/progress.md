@@ -19,11 +19,12 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
   è compito di M6 (progressione).
 - Come concordato, dopo M4 ci si **ferma** per la revisione dell'utente prima di M5.
 
-## Decisioni aperte da chiedere all'utente a fine M4
+## Decisioni prese dall'utente (2026-11-16)
 
-- Coppe (nazionale ed europee): definite ma non giocate; in quale milestone?
-- Fuori stagione: 12 settimane senza partite per stagione rendono lunga la carriera (2–4 ore
-  obiettivo): valutare di comprimere le settimane senza partite.
-- PDF del documento di progetto: versionarlo o ignorarlo?
+- Coppe: decide lo sviluppatore → nuova milestone **M7b – Coppe** (dopo M7, prima del simulatore,
+  così il simulatore conta anche i trofei). Annotata in CLAUDE.md.
+- Settimane senza partite: restano **giocabili oppure saltabili a scelta del giocatore**
+  (serve una funzione tipo "salta alla prossima partita" quando arriva planWeek in M6).
+- PDF del documento di progetto: **versionato** nel repository.
 
 Collegato: [[world-design]], [[engine-design]], [[feedback-no-permission-prompts]]

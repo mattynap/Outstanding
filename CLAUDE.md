@@ -273,6 +273,7 @@ Ogni milestone è finita quando: build ok, lint ok, test verdi, `CHANGELOG.md` a
 - **M5 – Eventi:** schema, validatore, selezione pesata, catene, 20 eventi di esempio scritti con la guida di stile.
 - **M6 – Progressione:** allenamento, crescita per età e potenziale, forma/energia/morale, infortuni, declino.
 - **M7 – Economia e mercato:** contratti, procuratore, offerte, trattative, prestiti, sponsor, spese.
+- **M7b – Coppe:** coppa nazionale a eliminazione diretta (tutti i livelli professionistici più le migliori dilettanti) e le due coppe europee per le prime classificate della massima serie, inserite nel calendario nelle settimane infrasettimanali; trofei nello storico.
 - **M8 – Simulatore:** CLI con strategie, report delle metriche (sezione 9).
 - **M9 – App (UI):** design system + tutte le schermate della sezione 10, usando `frontend-design`.
 - **M10 – Salvataggi:** salvataggio automatico ogni settimana, più slot, migrazioni.

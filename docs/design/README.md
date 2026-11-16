@@ -12,6 +12,8 @@ Sintesi del documento di progetto. In caso di conflitto vale `CLAUDE.md`.
 ## Ciclo di gioco
 
 - **Settimana:** 2–3 azioni (allenamento, riposo, svago, sponsor, famiglia), poi 0–2 eventi, poi la partita.
+- **Settimane senza partite** (pausa estiva e invernale): giocabili come le altre (allenamento,
+  eventi, mercato) oppure saltabili, a scelta del giocatore.
 - **Stagione:** campionato con classifica, riepilogo finale, premi, mercato (estivo e invernale).
 - **Carriera:** punteggio finale (trofei, presenze, gol, patrimonio, felicità, eredità).
 
@@ -34,7 +36,7 @@ Sintesi del documento di progetto. In caso di conflitto vale `CLAUDE.md`.
 Piramide di sei livelli: due dilettantistici, un livello interregionale (equivalente alla quarta
 serie), terza, seconda e massima serie. I livelli inferiori sono divisi in gironi per area
 geografica (Nord, Centro, Sud). Una coppa nazionale e due coppe europee con nomi propri
-(il gioco delle coppe arriverà in una milestone successiva).
+(il gioco delle coppe arriva nella milestone M7b, prima del simulatore).
 
 ## Vincoli
 

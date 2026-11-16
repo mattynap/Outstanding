@@ -5,6 +5,7 @@ import {
   advanceWeek,
   beginMatch,
   careerDifficulty,
+  changeLook,
   careerScore,
   computeOvr,
   decideMoment,
@@ -34,6 +35,7 @@ import {
   setLifestyle,
   simulateMatch,
   skipToNextMatch,
+  type Appearance,
   type ClubLook,
   type EventReport,
   type GameState,
@@ -294,6 +296,13 @@ export class GameService {
 
   async fireAgent(): Promise<void> {
     await this.commit(fireAgent(this.require()));
+  }
+
+  /** Barbiere, accessori e tatuatore: cambia l'aspetto e restituisce quanto è costato. */
+  async changeLook(next: Appearance): Promise<number> {
+    const { state, cost } = changeLook(this.require(), next, this.ctx);
+    await this.commit(state);
+    return cost;
   }
 
   async setLifestyle(id: string): Promise<void> {

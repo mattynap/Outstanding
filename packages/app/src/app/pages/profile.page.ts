@@ -30,7 +30,18 @@ import { TabBarComponent } from '../ui/tab-bar.component';
       @if (view(); as v) {
         <section class="hero">
           <span class="ghost-number" aria-hidden="true">{{ v.ovr }}</span>
-          <app-avatar [appearance]="v.appearance" [kit]="v.kit" [size]="112" [label]="v.name" />
+          <a class="look-link" routerLink="/aspetto" [attr.aria-label]="'ui.look.open' | t">
+            <app-avatar
+              [appearance]="v.appearance"
+              [kit]="v.kit"
+              [age]="v.age"
+              [size]="112"
+              [label]="v.name"
+            />
+            @if (!retired()) {
+              <span class="look-badge">{{ 'ui.look.change' | t }}</span>
+            }
+          </a>
           <div class="hero-text">
             <span class="o-label soft"
               >{{ 'roles.' + v.role | t }} · {{ 'ui.common.years' | t: { n: v.age } }}</span
@@ -203,6 +214,30 @@ import { TabBarComponent } from '../ui/tab-bar.component';
       padding: 20px 16px 16px;
       background: linear-gradient(180deg, var(--o-surface-raised) 0%, var(--o-bg) 100%);
     }
+    .look-link {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      flex: 0 0 auto;
+      text-decoration: none;
+      border-radius: 16px;
+    }
+    .look-badge {
+      position: absolute;
+      left: 50%;
+      bottom: -8px;
+      transform: translateX(-50%);
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--o-accent);
+      color: var(--o-accent-ink);
+      font-family: var(--o-font-display);
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
     .ghost-number {
       position: absolute;
       right: -6px;
@@ -306,6 +341,8 @@ import { TabBarComponent } from '../ui/tab-bar.component';
 })
 export class ProfilePage {
   private readonly game = inject(GameService);
+
+  protected readonly retired = computed(() => !!this.game.state()?.retired);
 
   protected readonly view = computed(() => {
     const s = this.game.state();

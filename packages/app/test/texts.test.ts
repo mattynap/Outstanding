@@ -3,7 +3,13 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { defaultConfig } from '@outstanding/config';
 import { defaultContent, STAT_PATHS, EVENT_CATEGORIES } from '@outstanding/content';
-import { DIFFICULTIES, KIT_PATTERNS, ROLES } from '@outstanding/engine';
+import {
+  APPEARANCE_PARTS,
+  DIFFICULTIES,
+  KIT_PATTERNS,
+  ROLES,
+  TATTOO_ZONES,
+} from '@outstanding/engine';
 import { PLAY_MODES } from '../src/app/core/play-mode';
 import { TIP_IDS } from '../src/app/core/tutorial';
 import {
@@ -52,6 +58,13 @@ describe("testi dell'interfaccia", () => {
       ...['primary', 'secondary'].map((x) => `ui.editor.club.${x}`),
       ...KIT_PATTERNS.map((x) => `ui.editor.patterns.${x}`),
       ...defaultContent.clubs.colors.map((c) => `ui.editor.colors.${c.id}`),
+      ...APPEARANCE_PARTS.map((p) => `ui.look.parts.${p}`),
+      ...['body', 'face', 'hair', 'extras', 'tattoos'].map((g) => `ui.look.groups.${g}`),
+      ...TATTOO_ZONES.map((z) => `avatar.zones.${z}`),
+      ...defaultContent.avatar.tattoos.flatMap((tt) => [
+        `avatar.tattoos.${tt.id}`,
+        ...(tt.unlock ? [`avatar.unlock.${tt.unlock.type}`] : []),
+      ]),
       ...DIFFICULTIES.flatMap((d) => [`difficulty.${d}.name`, `difficulty.${d}.hint`]),
       ...PLAY_MODES.flatMap((m) => [`ui.settings.modes.${m}`, `ui.settings.modes.${m}Hint`]),
       ...TIP_IDS.flatMap((id) => [`ui.tutorial.tips.${id}.title`, `ui.tutorial.tips.${id}.text`]),

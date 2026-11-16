@@ -2,10 +2,11 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { chevronBack, chevronForward, shuffleOutline } from 'ionicons/icons';
+import { chevronBack, shuffleOutline } from 'ionicons/icons';
 import {
   DIFFICULTIES,
   ROLES,
+  completeAppearance,
   type Appearance,
   type Difficulty,
   type Role,
@@ -15,13 +16,12 @@ import { I18nService, TranslatePipe } from '../core/i18n.service';
 import { ToastService } from '../core/toast.service';
 import { TutorialService } from '../core/tutorial.service';
 import { AvatarComponent } from '../ui/avatar.component';
-
-type Part = keyof Appearance;
+import { LookEditorComponent } from '../ui/look-editor.component';
 
 /** Creazione del giocatore: nome, città, ruolo, tratti, livello di partenza e aspetto. */
 @Component({
   selector: 'app-create',
-  imports: [IonContent, IonIcon, RouterLink, TranslatePipe, AvatarComponent],
+  imports: [IonContent, IonIcon, RouterLink, TranslatePipe, AvatarComponent, LookEditorComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ion-content class="o-page">
@@ -36,37 +36,18 @@ type Part = keyof Appearance;
         <h1 class="o-display title">{{ 'ui.create.title' | t }}</h1>
 
         <section class="o-card look" [attr.aria-label]="'ui.create.look' | t">
-          <app-avatar [appearance]="appearance()" [size]="120" [label]="'ui.create.look' | t" />
-          <div class="parts">
-            @for (p of parts; track p.part) {
-              <div class="part">
-                <button
-                  class="o-icon-btn"
-                  type="button"
-                  (click)="cycle(p.part, -1)"
-                  [attr.aria-label]="('ui.create.prev' | t) + ' ' + (p.label | t)"
-                >
-                  <ion-icon name="chevron-back" aria-hidden="true"></ion-icon>
-                </button>
-                <span class="part-label">
-                  <span class="o-label">{{ p.label | t }}</span>
-                  @if (partColor(p.part); as color) {
-                    <span class="swatch" [style.background]="color"></span>
-                  } @else {
-                    <span>{{ partValue(p.part) }}</span>
-                  }
-                </span>
-                <button
-                  class="o-icon-btn"
-                  type="button"
-                  (click)="cycle(p.part, 1)"
-                  [attr.aria-label]="('ui.create.next' | t) + ' ' + (p.label | t)"
-                >
-                  <ion-icon name="chevron-forward" aria-hidden="true"></ion-icon>
-                </button>
-              </div>
-            }
+          <div class="mirror">
+            <app-avatar [appearance]="appearance()" [size]="132" [label]="'ui.create.look' | t" />
+            <button class="o-chip" type="button" (click)="randomLook()">
+              <ion-icon name="shuffle-outline" aria-hidden="true"></ion-icon
+              >{{ 'ui.create.random' | t }}
+            </button>
           </div>
+          <app-look-editor
+            class="editor"
+            [value]="appearance()"
+            (changed)="appearance.set($event)"
+          />
         </section>
 
         <section class="o-card">
@@ -258,42 +239,13 @@ type Part = keyof Appearance;
       font-size: 40px;
     }
     .look {
-      flex-direction: row;
-      align-items: center;
       gap: var(--o-space-4);
     }
-    .parts {
-      flex: 1 1 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      min-width: 0;
-    }
-    .part {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .part .o-icon-btn {
-      width: 36px;
-      height: 36px;
-    }
-    .part-label {
-      flex: 1 1 auto;
+    .mirror {
       display: flex;
       flex-direction: column;
       align-items: center;
-      font-size: 13px;
-      font-weight: 600;
-      min-width: 0;
-    }
-    .part-label .o-label {
-      font-size: 10px;
-    }
-    .swatch {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
+      gap: 10px;
     }
     .grid2 {
       display: grid;
@@ -425,25 +377,11 @@ export class CreatePage {
   protected readonly role = signal<Role>('ATT');
   protected readonly traits = signal<string[]>([]);
   protected readonly startLevel = signal(this.game.ctx.config.world.defaultStartLevel);
-  protected readonly appearance = signal<Appearance>({
-    skin: 1,
-    hairColor: 1,
-    hairStyle: 0,
-    face: 0,
-    beard: 0,
-  });
+  protected readonly appearance = signal<Appearance>(completeAppearance({}));
   protected readonly busy = signal(false);
   protected readonly difficulty = signal<Difficulty>(this.game.ctx.config.difficulty.default);
   /** Settimana guidata: proposta in automatico se non c'è ancora nessuna carriera salvata. */
   protected readonly guided = signal(this.game.slots().every((v) => v.summary === null));
-
-  protected readonly parts: { part: Part; label: string }[] = [
-    { part: 'skin', label: 'ui.create.parts.skin' },
-    { part: 'hairStyle', label: 'ui.create.parts.hairStyle' },
-    { part: 'hairColor', label: 'ui.create.parts.hairColor' },
-    { part: 'face', label: 'ui.create.parts.face' },
-    { part: 'beard', label: 'ui.create.parts.beard' },
-  ];
 
   protected readonly availableTraits = computed(() =>
     this.content.traits.filter(
@@ -460,52 +398,13 @@ export class CreatePage {
   );
 
   constructor() {
-    addIcons({ chevronBack, chevronForward, shuffleOutline });
+    addIcons({ chevronBack, shuffleOutline });
     this.randomName();
     this.randomLook();
   }
 
   protected value(e: Event): string {
     return (e.target as HTMLInputElement).value;
-  }
-
-  private sizes(): Record<Part, number> {
-    const a = this.content.avatar;
-    return {
-      skin: a.skinTones.length,
-      hairColor: a.hairColors.length,
-      hairStyle: a.hairStyles.length,
-      face: a.faceShapes.length,
-      beard: a.beards.length,
-    };
-  }
-
-  protected cycle(part: Part, step: number): void {
-    const n = this.sizes()[part];
-    this.appearance.update((a) => ({ ...a, [part]: (a[part] + step + n) % n }));
-  }
-
-  protected partColor(part: Part): string | null {
-    const a = this.content.avatar;
-    const i = this.appearance()[part];
-    if (part === 'skin') return a.skinTones[i] ?? null;
-    if (part === 'hairColor') return a.hairColors[i] ?? null;
-    return null;
-  }
-
-  protected partValue(part: Part): string {
-    const a = this.content.avatar;
-    const i = this.appearance()[part];
-    switch (part) {
-      case 'hairStyle':
-        return this.i18n.t(`avatar.hairStyles.${a.hairStyles[i]}`);
-      case 'face':
-        return this.i18n.t(`avatar.faceShapes.${a.faceShapes[i]}`);
-      case 'beard':
-        return this.i18n.t(`avatar.beards.${a.beards[i]}`);
-      default:
-        return `${i + 1} / ${this.sizes()[part]}`;
-    }
   }
 
   protected setRole(r: Role): void {
@@ -528,15 +427,21 @@ export class CreatePage {
     if (!this.hometown()) this.hometown.set(pick(this.cities));
   }
 
-  private randomLook(): void {
-    const s = this.sizes();
-    this.appearance.set({
-      skin: randInt(s.skin),
-      hairColor: randInt(s.hairColor),
-      hairStyle: randInt(s.hairStyle),
-      face: randInt(s.face),
-      beard: randInt(s.beard),
-    });
+  protected randomLook(): void {
+    const a = this.content.avatar;
+    this.appearance.update((cur) => ({
+      ...cur,
+      skin: randInt(a.skinTones.length),
+      hairColor: randInt(a.hairColors.length),
+      hairStyle: randInt(a.hairStyles.length),
+      face: randInt(a.faceShapes.length),
+      beard: randInt(a.beards.length),
+      body: randInt(a.bodies.length),
+      eyes: randInt(a.eyeShapes.length),
+      eyeColor: randInt(a.eyeColors.length),
+      brows: randInt(a.brows.length),
+      nose: randInt(a.noses.length),
+    }));
   }
 
   protected async start(): Promise<void> {

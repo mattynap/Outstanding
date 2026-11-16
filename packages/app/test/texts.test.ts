@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { defaultConfig } from '@outstanding/config';
 import { defaultContent, STAT_PATHS, EVENT_CATEGORIES } from '@outstanding/content';
-import { ROLES } from '@outstanding/engine';
+import { KIT_PATTERNS, ROLES } from '@outstanding/engine';
 import {
   chanceTone,
   formatDelta,
@@ -44,6 +44,15 @@ describe("testi dell'interfaccia", () => {
       ...['summer', 'winter', 'closed'].map((w) => `ui.market.window.${w}`),
       ...['dark', 'light'].map((th) => `ui.settings.themes.${th}`),
       ...['purchased', 'cancelled', 'failed'].map((r) => `ui.settings.full.result.${r}`),
+      ...['clubs', 'people', 'competitions', 'file'].map((x) => `ui.editor.tabs.${x}`),
+      ...['team', 'coach', 'agent'].map((x) => `ui.editor.scopes.${x}`),
+      ...['player', 'coach', 'agent'].map((x) => `ui.editor.kinds.${x}`),
+      ...['primary', 'secondary'].map((x) => `ui.editor.club.${x}`),
+      ...KIT_PATTERNS.map((x) => `ui.editor.patterns.${x}`),
+      ...defaultContent.clubs.colors.map((c) => `ui.editor.colors.${c.id}`),
+      ...['tooLarge', 'notJson', 'invalid', 'newerVersion'].map(
+        (x) => `ui.editor.file.errors.${x}`,
+      ),
     ];
     expect(need.filter((k) => !(k in t))).toEqual([]);
   });

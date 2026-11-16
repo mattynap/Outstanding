@@ -9,6 +9,8 @@ import {
   decideMoment,
   defaultContext,
   drawWeekEvents,
+  editClub,
+  editPerson,
   endSeason,
   fireAgent,
   getPendingEvents,
@@ -19,23 +21,33 @@ import {
   newCareer,
   planWeek,
   playerFixture,
+  pruneEdits,
   rejectOffer,
   rejectSponsor,
+  resetAllEdits,
+  resetClub,
+  resetPerson,
   resolveEvent,
   retire,
+  setCompetitionName,
   setLifestyle,
   simulateMatch,
   skipToNextMatch,
+  type ClubLook,
   type EventReport,
   type GameState,
   type MatchReport,
   type MatchStep,
   type NegotiationResult,
   type NewCareerOptions,
+  type PersonName,
   type SeasonReport,
   type WeekChoice,
   type WeekReport,
 } from '@outstanding/engine';
+import { trophyKey } from './career-view';
+import { exportEdits, importEdits, type EditsFile, type ImportResult } from './editor/edits-file';
+import { I18nService } from './i18n.service';
 import { CapacitorSaveBackend } from './saves/capacitor-backend';
 import { SlotStore, type SlotView } from './saves/slots';
 import { PlatformService } from './services/platform.service';
@@ -53,6 +65,7 @@ export type NextStep =
 export class GameService {
   readonly ctx = defaultContext;
   private readonly platform = inject(PlatformService);
+  private readonly i18n = inject(I18nService);
   private readonly store = new SlotStore(new CapacitorSaveBackend(), this.ctx);
 
   /** Slot della carriera caricata e riepilogo di tutti gli slot. */
@@ -117,7 +130,7 @@ export class GameService {
     if (!state) throw new Error(`Slot ${slot} is empty`);
     this.resetReports();
     this.slot.set(slot);
-    this._state.set(state);
+    this.setState(state);
   }
 
   /** Primo slot libero per una nuova carriera. */
@@ -144,7 +157,7 @@ export class GameService {
     await this.store.remove(slot);
     if (this.slot() === slot) {
       this.slot.set(null);
-      this._state.set(null);
+      this.setState(null);
       this.resetReports();
     }
     await this.refreshSlots();
@@ -183,7 +196,8 @@ export class GameService {
   async closeSeason(): Promise<SeasonReport> {
     const { state, seasonReport } = endSeason(this.require(), this.ctx);
     this.lastSeason.set(seasonReport);
-    await this.commit(state);
+    // Le modifiche di calciatori ritirati non servono più.
+    await this.commit(pruneEdits(state));
     const r = seasonReport.record;
     this.platform.track({
       name: 'season_end',
@@ -285,6 +299,43 @@ export class GameService {
     this.trackRetirement(state);
   }
 
+  // --- Editor ------------------------------------------------------------------------------
+
+  async editClub(clubId: string, changes: Partial<ClubLook>): Promise<void> {
+    await this.commit(editClub(this.require(), clubId, changes, this.ctx));
+  }
+
+  async resetClub(clubId: string): Promise<void> {
+    await this.commit(resetClub(this.require(), clubId));
+  }
+
+  async editPerson(personId: string, name: PersonName): Promise<void> {
+    await this.commit(editPerson(this.require(), personId, name, this.ctx));
+  }
+
+  async resetPerson(personId: string): Promise<void> {
+    await this.commit(resetPerson(this.require(), personId));
+  }
+
+  async setCompetitionName(competitionId: string, name: string | null): Promise<void> {
+    await this.commit(setCompetitionName(this.require(), competitionId, name, this.ctx));
+  }
+
+  async resetEdits(): Promise<void> {
+    await this.commit(resetAllEdits(this.require()));
+  }
+
+  exportEdits(): EditsFile {
+    return exportEdits(this.require(), this.ctx);
+  }
+
+  /** Importa un file di modifiche. Lancia `EditsFileError` se il file non è utilizzabile. */
+  async importEdits(text: string): Promise<Omit<ImportResult, 'state'>> {
+    const { state, applied, skipped } = importEdits(this.require(), text, this.ctx);
+    await this.commit(state);
+    return { applied, skipped };
+  }
+
   // --- Interni -----------------------------------------------------------------------------
 
   private require(): GameState {
@@ -295,11 +346,20 @@ export class GameService {
 
   /** Aggiorna lo stato subito e mette in coda il salvataggio automatico dello slot. */
   private async commit(state: GameState): Promise<void> {
-    this._state.set(state);
+    this.setState(state);
     const slot = this.slot();
     if (slot === null) return;
     this.pending = { slot, state };
     this.writing ??= this.drain();
+  }
+
+  /** Nuovo stato, con i nomi delle competizioni scelti nell'editor passati ai testi. */
+  private setState(state: GameState | null): void {
+    this._state.set(state);
+    const names = state?.edits?.competitions ?? {};
+    this.i18n.setOverrides(
+      Object.fromEntries(Object.entries(names).map(([id, name]) => [trophyKey(id), name])),
+    );
   }
 
   private async drain(): Promise<void> {

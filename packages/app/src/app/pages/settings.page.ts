@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Location } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AlertController, IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { chevronBack } from 'ionicons/icons';
@@ -14,7 +14,7 @@ import { ToastService } from '../core/toast.service';
 /** Impostazioni: tema, carriera salvata, informazioni e licenze. */
 @Component({
   selector: 'app-settings',
-  imports: [IonContent, IonIcon, TranslatePipe],
+  imports: [IonContent, IonIcon, RouterLink, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ion-content class="o-page">
@@ -58,6 +58,14 @@ import { ToastService } from '../core/toast.service';
             <button class="o-btn o-btn--danger o-btn--small" type="button" (click)="deleteCareer()">
               {{ 'ui.settings.delete' | t }}
             </button>
+          </section>
+
+          <section class="o-card">
+            <h2 class="o-section-title">{{ 'ui.editor.title' | t }}</h2>
+            <p class="small o-muted none">{{ 'ui.settings.editorText' | t }}</p>
+            <a class="o-btn o-btn--small" routerLink="/editor">{{
+              'ui.settings.editorOpen' | t
+            }}</a>
           </section>
         }
 
@@ -134,6 +142,9 @@ import { ToastService } from '../core/toast.service';
     }
     .none {
       margin: 0;
+    }
+    a.o-btn {
+      text-decoration: none;
     }
   `,
 })

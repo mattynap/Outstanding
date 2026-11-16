@@ -46,6 +46,11 @@ export const routes: Routes = [
     canActivate: [needsGame],
   },
   {
+    path: 'editor',
+    loadComponent: () => import('./pages/editor.page').then((m) => m.EditorPage),
+    canActivate: [needsGame],
+  },
+  {
     path: 'impostazioni',
     loadComponent: () => import('./pages/settings.page').then((m) => m.SettingsPage),
   },

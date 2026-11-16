@@ -10,7 +10,7 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
 
 ## Stato al 2026-11-16
 
-- M0–M7 completate e pushate sul branch `dev`.
+- M0–M7 e M7b completate e pushate sul branch `dev`.
 - M4: modulo `engine/src/match/`, parametri in `config/match.json`. Bilanciamento indicativo
   (prima stagione, scelte casuali): ATT ~15 gol in 30 partite, 2,8–3 gol a partita. Da rivedere
   con il simulatore in M8. La partita non tocca ancora forma/energia/morale/fiducia (M6).
@@ -38,7 +38,12 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
   serie, esordio 22–26 anni, ritiro 33–39. Da tarare in M8: i potenziali altissimi (90+) si fermano
   a ~80 (la crescita satura con `potentialGapScale`); i guadagni in carriera (3–36 milioni) dipendono
   da stipendi di massima serie fino a 60.000/settimana.
-- Prossimo passo: M7b (coppe), poi M8 (simulatore). Contenuti: arrivare a 100 eventi in parallelo.
+- M7b (coppe, 2026-11-16): modulo `engine/src/cups/cups.ts`, club stranieri in
+  `engine/src/world/foreign.ts`, config `config/cups.json`, contenuti `content/data/foreign.json`.
+  Decisioni in [[cups-design]]. Flusso settimana invariato, ma possono esserci **due partite**:
+  `while (playerFixture(s)) playMatch(...)` prima di `advanceWeek`.
+- Prossimo passo: M8 (simulatore), che deve contare anche i trofei (`SeasonRecord.trophies`).
+  Contenuti: arrivare a 100 eventi in parallelo.
 
 ## Idee dell'utente (docs/TODO.txt) — NON ancora pianificate
 
@@ -53,7 +58,8 @@ idee. Non inserirle in CLAUDE.md né nelle milestone finché l'utente non lo con
 1. Chiedere all'utente la lista integrata delle idee (docs/TODO.txt aggiornato) e concordare dove
    inserirle; poi aggiornare CLAUDE.md (sezione 11) e la memoria.
 2. Chiedere se tenere `docs/TODO.txt` versionato (finito per errore nel commit di M7).
-3. Poi proseguire con M7b (coppe), salvo diverse priorità dell'utente.
+3. M7b fatta (2026-11-16, l'utente ha chiesto di rimandare le idee a dopo M7b): ora M8, salvo
+   diverse priorità dell'utente. Le idee di docs/TODO.txt restano da discutere.
 - Stato git: tutto committato e pushato su `origin/dev` (main fermo a M2).
 
 ## Decisioni prese dall'utente (2026-11-16)
@@ -64,4 +70,4 @@ idee. Non inserirle in CLAUDE.md né nelle milestone finché l'utente non lo con
   (serve una funzione tipo "salta alla prossima partita" quando arriva planWeek in M6).
 - PDF del documento di progetto: **versionato** nel repository.
 
-Collegato: [[world-design]], [[engine-design]], [[feedback-no-permission-prompts]]
+Collegato: [[world-design]], [[engine-design]], [[cups-design]], [[feedback-no-permission-prompts]]

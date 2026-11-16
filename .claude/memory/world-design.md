@@ -13,7 +13,8 @@ metadata:
 - Nomi dei club = prefisso (`content/data/clubs.json`) + epiteto della città; mai "<città> Calcio"
   o simili (alto rischio di coincidere con club reali). Epiteti ripuliti da nomi di club reali.
 - Rating del club = media dei migliori 11 della rosa: risulta ~4 punti sopra `ratingRange`.
-- Salvataggio iniziale ~600 KB (rose + calendario): da comprimere/ottimizzare in M10.
-- Coppe: definite nel mondo ma non giocate; da pianificare (chiedere all'utente in quale milestone).
+- Salvataggio iniziale ~1,3 MB dopo M7b (rose ~555 KB, calendario ~560 KB, club stranieri ~145 KB):
+  da comprimere/ottimizzare in M10.
+- Coppe giocate da M7b: vedi [[cups-design]].
 
 Collegato: [[engine-design]]

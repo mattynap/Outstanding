@@ -130,3 +130,27 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
 - Gli aumenti di abilità dati dagli eventi rispettano ora il potenziale nascosto.
 - Verifica su 12 carriere complete: 10 arrivano in massima serie (non quelle con potenziale ~60),
   ritiro tra 33 e 39 anni.
+
+### M7b – Coppe
+
+- Coppa Tricolore: 100 club professionistici più i 28 più forti della Lega Interzonale, 8 turni a
+  gara secca; le squadre più deboli entrano per prime, la massima serie dal terzo turno; gioca in
+  casa la squadra di categoria inferiore; finale in campo neutro.
+- Coppa Europa Maior (1ª–4ª della massima serie) e Minor (5ª–6ª più la vincitrice della Coppa
+  Tricolore, o la prima non qualificata): 32 squadre, 8 gironi da 4 con andata e ritorno, poi
+  ottavi, quarti e semifinali andata e ritorno e finale secca in campo neutro. Nella prima stagione
+  si qualificano i club più forti.
+- 66 club stranieri inventati in 6 paesi (`content/data/foreign.json`): città europee reali, nomi
+  dei club da affisso del paese + epiteto inventato, rose con nomi del paese, stemmi e maglie
+  procedurali, due fasce di forza. Stanno in `world.foreignClubs`, fuori dalla piramide e dal mercato.
+- Sorteggi deterministici: gironi per fasce senza due club dello stesso paese, prime dei gironi
+  contro seconde di un altro girone (ritorno in casa delle prime).
+- Supplementari e rigori nelle gare decisive in parità (anche nella partita del giocatore).
+- Partite infrasettimanali: nella stessa settimana il club può giocare campionato e coppa;
+  `playerFixture` restituisce la prossima partita non giocata, `playerFixtures` tutte.
+- Trofei nello storico (`SeasonRecord.trophies`: campionato vinto e coppe), vincitrici nel
+  riepilogo di fine stagione, classifiche dei gironi (`cupGroupTables`).
+- Parametri in `config/cups.json` con controlli incrociati su calendario e piramide.
+- Verifica su 60 stagioni: la Coppa Tricolore la vince quasi sempre un club di massima serie; le
+  italiane vincono la Maior nel 5% dei casi e la Minor nel 20%. Salvataggio iniziale ~1,3 MB
+  (da ottimizzare in M10).

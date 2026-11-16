@@ -35,8 +35,11 @@ Sintesi del documento di progetto. In caso di conflitto vale `CLAUDE.md`.
 
 Piramide di sei livelli: due dilettantistici, un livello interregionale (equivalente alla quarta
 serie), terza, seconda e massima serie. I livelli inferiori sono divisi in gironi per area
-geografica (Nord, Centro, Sud). Una coppa nazionale e due coppe europee con nomi propri
-(il gioco delle coppe arriva nella milestone M7b, prima del simulatore).
+geografica (Nord, Centro, Sud).
+
+Coppe (M7b): la Coppa Tricolore a eliminazione diretta (professionisti più le migliori della Lega
+Interzonale) e due coppe europee, Coppa Europa Maior e Minor, con gironi ed eliminazione diretta,
+contro club stranieri inventati di città europee reali. Le partite di coppa sono infrasettimanali.
 
 ## Vincoli
 

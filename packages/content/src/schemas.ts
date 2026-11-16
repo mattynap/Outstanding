@@ -36,6 +36,29 @@ export const clubsDataSchema = z.object({
   symbols: z.array(id).min(4),
 });
 
+/** Un paese straniero con città reali e materiale per comporre club e calciatori inventati. */
+export const foreignCountrySchema = z.object({
+  id,
+  /** "prefix": affisso prima dell'epiteto (Estrella Turia); "suffix": dopo (Thames Rovers). */
+  nameFormat: z.enum(['prefix', 'suffix']),
+  affixes: z.array(z.object({ name: z.string().min(2), short: z.string().min(1) })).min(2),
+  cities: z
+    .array(
+      z.object({
+        /** Nome della città in italiano. */
+        name: z.string().min(2),
+        size: z.number().int().min(1).max(4),
+        /** Nomi inventati o poetici legati alla città (mai nomi di club reali). */
+        epithets: z.array(z.string().min(2)).min(1),
+      }),
+    )
+    .min(1),
+  firstNames: z.array(z.string().min(2)).min(10),
+  lastNames: z.array(z.string().min(2)).min(10),
+});
+export const foreignSchema = z.array(foreignCountrySchema).min(1);
+export type ForeignCountry = z.infer<typeof foreignCountrySchema>;
+
 /** Marchio inventato di uno sponsor (mai marchi reali). */
 export const sponsorSchema = z.object({
   id,

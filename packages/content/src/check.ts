@@ -46,6 +46,31 @@ export function checkContent(content: GameContent): string[] {
   }
 
   dupes(
+    'foreign',
+    content.foreign.map((c) => c.id),
+  );
+  for (const country of content.foreign) {
+    const label = `foreign.${country.id}`;
+    if (!(`countries.${country.id}.name` in t)) {
+      errors.push(`${label}: missing text key "countries.${country.id}.name"`);
+    }
+    dupes(
+      `${label}.cities`,
+      country.cities.map((c) => c.name),
+    );
+    dupes(
+      `${label}.affixes`,
+      country.affixes.map((a) => a.name),
+    );
+    dupes(`${label}.firstNames`, country.firstNames);
+    dupes(`${label}.lastNames`, country.lastNames);
+  }
+  dupes(
+    'foreign epithets',
+    content.foreign.flatMap((c) => c.cities.flatMap((city) => city.epithets)),
+  );
+
+  dupes(
     'sponsors',
     content.sponsors.map((s) => s.id),
   );

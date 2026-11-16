@@ -44,7 +44,31 @@ export {
   type LoanQuote,
   type WealthWeek,
 } from './finance/finance';
-export { DIFFICULTIES, INTERESTS } from '@outstanding/config';
+export { DIFFICULTIES, INTERESTS, TONES } from '@outstanding/config';
+export {
+  answerInterview,
+  answerPress,
+  applyWeeklyMedia,
+  bigMatchKind,
+  createMedia,
+  followersBonus,
+  getInterview,
+  getPostOptions,
+  getPressConference,
+  interviewContext,
+  mediaOf,
+  naturalFollowers,
+  pressBonus,
+  publishPost,
+  type InterviewView,
+  type MediaWeek,
+  type PostOption,
+  type PostReport,
+  type PressKind,
+  type PressReport,
+  type PressView,
+  type Tone,
+} from './media/media';
 export {
   applyParty,
   applyWeeklyPrivate,

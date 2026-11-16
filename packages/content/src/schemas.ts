@@ -141,6 +141,38 @@ export const privateContentSchema = z.object({
 });
 export type PrivateContent = z.infer<typeof privateContentSchema>;
 
+/** Contesti dei commenti dei tifosi nel feed social. */
+export const FAN_CONTEXTS = [
+  'win',
+  'draw',
+  'loss',
+  'quiet',
+  'star',
+  'gossip',
+  'born',
+  'transfer',
+] as const;
+export type FanContext = (typeof FAN_CONTEXTS)[number];
+
+/**
+ * Materiale per i media: nomi utente dei tifosi (inventati) e numero di varianti dei testi
+ * (`media.fans.<contesto>.<n>`, `media.interview.<contesto>.q.<n>`, `media.press.<tipo>.q<n>`,
+ * `media.posts.<id>.caption.<n>`).
+ */
+export const mediaContentSchema = z.object({
+  handles: z.array(z.string().regex(/^[a-z0-9_.]+$/)).min(5),
+  fanComments: z.object(
+    Object.fromEntries(FAN_CONTEXTS.map((c) => [c, z.number().int().min(1)])) as Record<
+      FanContext,
+      z.ZodNumber
+    >,
+  ),
+  interviewQuestions: z.number().int().min(1),
+  pressQuestions: z.number().int().min(1),
+  postCaptions: z.number().int().min(1),
+});
+export type MediaContent = z.infer<typeof mediaContentSchema>;
+
 /** Tabella di traduzioni piatta: "chiave.puntata" -> testo. */
 export const translationsSchema = z.record(z.string(), z.string().min(1));
 

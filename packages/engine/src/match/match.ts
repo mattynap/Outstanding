@@ -16,6 +16,7 @@ import type {
 } from '../types';
 import { clamp, roundTo } from '../util';
 import { settleKnockout } from '../cups/cups';
+import { interviewContext, pressBonus, recordMatchForMedia } from '../media/media';
 import { clubRatings, getAnyClub, getClub } from '../world/queries';
 import {
   getMomentType,
@@ -182,7 +183,7 @@ function describeMoment(state: GameState, m: MatchState, ctx: GameContext): KeyM
         o,
         opponent.rating,
         ctx,
-        difficultyMods(state, ctx).matchChance,
+        difficultyMods(state, ctx).matchChance + pressBonus(state, m.fixtureId),
       ),
     })),
   };
@@ -272,11 +273,19 @@ function finishMatch(
     rng,
     ctx,
   );
-  const next: GameState = {
-    ...rest,
-    player: after.player,
-    calendar: state.calendar.map((f) => (f.id === m.fixtureId ? settled : f)),
-  };
+  const next: GameState = recordMatchForMedia(
+    {
+      ...rest,
+      player: after.player,
+      calendar: state.calendar.map((f) => (f.id === m.fixtureId ? settled : f)),
+    },
+    {
+      fixtureId: m.fixtureId,
+      week: state.week,
+      context: interviewContext(result, minutesPlayed, rating, ctx),
+      opponent: getAnyClub(state.world, m.opponentId).shortName,
+    },
+  );
   return {
     state: next,
     report: {
@@ -416,7 +425,7 @@ export function decideMoment(
       option,
       opponent.rating,
       ctx,
-      difficultyMods(state, ctx).matchChance,
+      difficultyMods(state, ctx).matchChance + pressBonus(state, m.fixtureId),
     ),
   );
   const outcome = success ? option.success : option.failure;

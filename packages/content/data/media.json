@@ -1,0 +1,33 @@
+{
+  "handles": [
+    "curva_e_basta",
+    "ultra.del.lunedi",
+    "nonna_tifosa",
+    "fuorigioco_sempre",
+    "il_mister_del_bar",
+    "maglia_numero_12",
+    "tribuna_ovest",
+    "pallone_e_pizza",
+    "terzino_mancato",
+    "la_vecchia_sciarpa",
+    "abbonato_dal_98",
+    "gol_in_rovesciata",
+    "fischietto_amaro",
+    "panchina_calda",
+    "zona_cesarini",
+    "calcio_e_caffe"
+  ],
+  "fanComments": {
+    "win": 4,
+    "draw": 3,
+    "loss": 4,
+    "quiet": 3,
+    "star": 3,
+    "gossip": 3,
+    "born": 2,
+    "transfer": 2
+  },
+  "interviewQuestions": 2,
+  "pressQuestions": 3,
+  "postCaptions": 2
+}

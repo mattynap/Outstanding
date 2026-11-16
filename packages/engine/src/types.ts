@@ -1,8 +1,8 @@
-import type { Difficulty, Interest } from '@outstanding/config';
+import type { Difficulty, Interest, InterviewContext } from '@outstanding/config';
 import type { PartnerHair, TattooZone } from '@outstanding/content';
 import type { RngState } from './rng';
 
-export type { Difficulty, Interest, PartnerHair, TattooZone };
+export type { Difficulty, Interest, InterviewContext, PartnerHair, TattooZone };
 
 export type Role = 'GK' | 'DEF' | 'MID' | 'ATT';
 export type Skill =
@@ -450,6 +450,44 @@ export interface GameState {
   finance?: Finance;
   /** Vita privata: relazione, figli, ex (assente nei salvataggi vecchi). */
   privateLife?: PrivateLife;
+  /** Social, interviste e conferenze stampa (assente nei salvataggi vecchi). */
+  media?: MediaState;
+}
+
+/** Una voce del feed social: commento di un tifoso, post del giocatore o titolo di giornale. */
+export interface FeedItem {
+  week: number;
+  kind: 'fan' | 'post' | 'press';
+  /** Nome utente del tifoso (solo commenti). */
+  author?: string;
+  textKey: string;
+  params: Record<string, string>;
+  likes: number;
+  tone: 'pos' | 'neg' | 'neutral';
+}
+
+/** La partita appena giocata, per l'intervista. */
+export interface MatchMedia {
+  fixtureId: string;
+  week: number;
+  context: InterviewContext;
+  opponent: string;
+}
+
+export interface MediaState {
+  /** Dal più recente. */
+  feed: FeedItem[];
+  /** Settimana dell'ultimo post (-1 = mai). */
+  postWeek: number;
+  lastMatch?: MatchMedia;
+  /** Partita dell'ultima intervista già fatta. */
+  interviewed?: string;
+  /** Club in cui il giocatore va presentato in conferenza stampa. */
+  presentation?: string;
+  /** Conferenze già fatte (chiavi delle partite e delle presentazioni, le più recenti). */
+  pressDone: string[];
+  /** Effetto della conferenza sui momenti chiave di una partita. */
+  boost?: { fixtureId: string; chance: number };
 }
 
 export type Gender = 'f' | 'm';

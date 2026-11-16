@@ -1028,3 +1028,125 @@ export const privateSchema = z.object({
 });
 export type PrivateConfig = z.infer<typeof privateSchema>;
 export type PrivateActionConfig = PrivateConfig['actions'][number];
+
+export const TONES = ['humble', 'confident', 'polemic'] as const;
+export type Tone = (typeof TONES)[number];
+export const INTERVIEW_CONTEXTS = [
+  'win_hero',
+  'win',
+  'draw',
+  'loss',
+  'loss_flop',
+  'bench',
+] as const;
+export type InterviewContext = (typeof INTERVIEW_CONTEXTS)[number];
+
+/** Effetti di una risposta ai giornalisti; `followers` è una quota (0.01 = +1%). */
+const mediaDelta = z
+  .object({
+    coach: z.number(),
+    morale: z.number(),
+    popularity: z.number(),
+    reputation: z.number(),
+    followers: z.number().min(-1).max(1),
+  })
+  .partial();
+const toneEffects = z.object({ humble: mediaDelta, confident: mediaDelta, polemic: mediaDelta });
+
+/**
+ * Media: follower (che valgono soldi), commenti dei tifosi, un post a settimana, intervista dopo
+ * la partita, conferenze stampa prima delle grandi partite e alla presentazione nel nuovo club.
+ */
+export const mediaSchema = z.object({
+  /** Voci del feed conservate. */
+  feedSize: z.number().int().positive(),
+  followers: z.object({
+    /** Follower "naturali" a popolarità zero; ogni punto di popolarità li moltiplica. */
+    base: z.number().positive(),
+    growthPerPopularity: z.number().min(1),
+    /** Quota della distanza dal valore naturale recuperata ogni settimana. */
+    driftPerWeek: share,
+    /** Quota persa con uno scandalo (storia segreta scoperta, partner che se ne va). */
+    scandalLoss: share,
+    /** Quanto valgono i follower: un bonus per ogni decina di volte sopra `reference`. */
+    value: z.object({
+      reference: z.number().positive(),
+      perDecade: z.number().nonnegative(),
+      max: z.number().nonnegative(),
+      sponsorChanceShare: z.number().nonnegative(),
+      sponsorIncomeShare: z.number().nonnegative(),
+      businessShare: z.number().nonnegative(),
+    }),
+  }),
+  fans: z.object({
+    commentsPerWeek: z
+      .tuple([z.number().int().nonnegative(), z.number().int().nonnegative()])
+      .refine(([a, b]) => a <= b, { message: 'min must be <= max' }),
+    likesPerFollower: z.number().nonnegative(),
+  }),
+  posts: z
+    .array(
+      z.object({
+        id: z.string().regex(/^[a-z0-9_]+$/),
+        /** Crescita dei follower (quota). */
+        followers: z.number().min(-1).max(1),
+        cost: scaledCost,
+        effects: z
+          .object({
+            popularity: z.number(),
+            reputation: z.number(),
+            happiness: z.number(),
+            discipline: z.number(),
+          })
+          .partial(),
+        /** Intesa con il partner (solo se c'è). */
+        affinity: z.number().optional(),
+        /** "Mi piace" rispetto alla media. */
+        likeRate: z.number().nonnegative(),
+        /** Rischio di polemica: se scatta, questi effetti al posto della crescita. */
+        backlash: z
+          .object({
+            chance: share,
+            followers: z.number().min(-1).max(1),
+            reputation: z.number(),
+            coach: z.number(),
+            likeRate: z.number().nonnegative(),
+          })
+          .optional(),
+      }),
+    )
+    .min(1),
+  interview: z.object({
+    heroRating: z.number(),
+    flopRating: z.number(),
+    effects: z.object({
+      win_hero: toneEffects,
+      win: toneEffects,
+      draw: toneEffects,
+      loss: toneEffects,
+      loss_flop: toneEffects,
+      bench: toneEffects,
+    }),
+  }),
+  press: z.object({
+    /** Domande per conferenza. */
+    questions: z.number().int().positive(),
+    /** Scontro al vertice: entrambe le squadre in queste prime posizioni... */
+    topPlaces: z.number().int().positive(),
+    /** ...da questa giornata in poi. */
+    topFromMatchday: z.number().int().positive(),
+    /** Fasi di coppa che valgono una conferenza. */
+    finalStages: z.array(
+      z.enum(['r1', 'r2', 'r3', 'group', 'last32', 'last16', 'qf', 'sf', 'final']),
+    ),
+    /** Limite (in più o in meno) all'effetto sulle probabilità dei momenti chiave. */
+    maxBoost: z.number().min(0).max(0.3),
+    effects: z.object({
+      humble: mediaDelta.extend({ chance: z.number().optional() }),
+      confident: mediaDelta.extend({ chance: z.number().optional() }),
+      polemic: mediaDelta.extend({ chance: z.number().optional() }),
+    }),
+  }),
+});
+export type MediaConfig = z.infer<typeof mediaSchema>;
+export type PostConfig = MediaConfig['posts'][number];

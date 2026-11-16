@@ -116,6 +116,7 @@ export function checkContent(content: GameContent): string[] {
       }
     }
   }
+  checkMedia(content, errors);
   checkEvents(content, errors);
   return errors;
 }
@@ -180,5 +181,41 @@ function checkEvents(content: GameContent, errors: string[]): void {
     if (e.chainOnly && !e.trigger && !scheduled.has(e.id)) {
       errors.push(`events.${e.id}: chainOnly event is never scheduled`);
     }
+  }
+}
+
+/** Ogni variante dichiarata in content/media.json deve avere il suo testo. */
+function checkMedia(content: GameContent, errors: string[]): void {
+  const t = content.i18n.it;
+  const m = content.media;
+  const need = (key: string) => {
+    if (!(key in t)) errors.push(`media: missing text key "${key}"`);
+  };
+  dupesOf('media.handles', m.handles, errors);
+  for (const [ctx, n] of Object.entries(m.fanComments)) {
+    for (let i = 1; i <= n; i++) need(`media.fans.${ctx}.${i}`);
+  }
+  for (const c of ['win_hero', 'win', 'draw', 'loss', 'loss_flop', 'bench']) {
+    for (let i = 1; i <= m.interviewQuestions; i++) need(`media.interview.${c}.q.${i}`);
+    for (const tone of ['humble', 'confident', 'polemic']) need(`media.interview.${c}.${tone}`);
+  }
+  for (const kind of ['cup', 'derby', 'top', 'presentation']) {
+    for (let i = 1; i <= m.pressQuestions; i++) {
+      need(`media.press.${kind}.q${i}`);
+      for (const tone of ['humble', 'confident', 'polemic'])
+        need(`media.press.${kind}.q${i}.${tone}`);
+    }
+  }
+  for (const id of ['training', 'private', 'charity', 'provocation']) {
+    need(`media.posts.${id}.name`);
+    for (let i = 1; i <= m.postCaptions; i++) need(`media.posts.${id}.caption.${i}`);
+  }
+}
+
+function dupesOf(label: string, values: readonly string[], errors: string[]): void {
+  const seen = new Set<string>();
+  for (const v of values) {
+    if (seen.has(v)) errors.push(`${label}: duplicate "${v}"`);
+    seen.add(v);
   }
 }

@@ -4,6 +4,7 @@ import { seasonStartWeek, weekOfSeason } from '../time';
 import type { Fixture, GameState } from '../types';
 import { applyWeeklyWealth, type WealthWeek } from '../finance/finance';
 import { applyWeeklyPrivate, type PrivateWeek } from '../private/private';
+import { applyWeeklyMedia, type MediaWeek } from '../media/media';
 import { applyWeeklyFinances, type WeekFinance } from '../market/life';
 import { refreshMarket } from '../market/offers';
 import { weeklyRecovery } from '../player/condition';
@@ -26,6 +27,8 @@ export interface WeekReport {
   wealth: WealthWeek;
   /** Vita privata: spese per i figli, assegni, nascite, separazioni. */
   private: PrivateWeek;
+  /** Follower guadagnati o persi e commenti dei tifosi. */
+  media: MediaWeek;
 }
 
 /** Vero quando tutte le settimane della stagione sono state giocate: poi va chiamato endSeason. */
@@ -109,8 +112,9 @@ export function advanceWeek(
   );
   const wealthStep = applyWeeklyWealth({ ...state, player }, rng, ctx);
   const privateStep = applyWeeklyPrivate(wealthStep.state, rng, ctx);
+  const mediaStep = applyWeeklyMedia({ ...privateStep.state, calendar }, privateStep.week, ctx);
   let next: GameState = {
-    ...privateStep.state,
+    ...mediaStep.state,
     calendar,
     cups: cupsProgress.cups,
     week: state.week + 1,
@@ -127,6 +131,7 @@ export function advanceWeek(
       finance,
       wealth: wealthStep.wealth,
       private: privateStep.week,
+      media: mediaStep.week,
     },
   };
 }

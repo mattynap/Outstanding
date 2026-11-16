@@ -1,0 +1,113 @@
+{
+  "feedSize": 24,
+  "followers": {
+    "base": 300,
+    "growthPerPopularity": 1.09,
+    "driftPerWeek": 0.04,
+    "scandalLoss": 0.06,
+    "value": {
+      "reference": 1000,
+      "perDecade": 0.25,
+      "max": 1,
+      "sponsorChanceShare": 1,
+      "sponsorIncomeShare": 1,
+      "businessShare": 0.5
+    }
+  },
+  "fans": {
+    "commentsPerWeek": [1, 2],
+    "likesPerFollower": 0.04
+  },
+  "posts": [
+    {
+      "id": "training",
+      "followers": 0.01,
+      "cost": { "min": 0, "salaryWeeks": 0 },
+      "effects": { "popularity": 0.5, "reputation": 0.5, "discipline": 1 },
+      "likeRate": 0.6
+    },
+    {
+      "id": "private",
+      "followers": 0.03,
+      "cost": { "min": 0, "salaryWeeks": 0 },
+      "effects": { "popularity": 1, "happiness": 1 },
+      "affinity": 2,
+      "likeRate": 1.2
+    },
+    {
+      "id": "charity",
+      "followers": 0.015,
+      "cost": { "min": 50, "salaryWeeks": 0.3 },
+      "effects": { "popularity": 0.5, "reputation": 2, "happiness": 2 },
+      "likeRate": 0.9
+    },
+    {
+      "id": "provocation",
+      "followers": 0.06,
+      "cost": { "min": 0, "salaryWeeks": 0 },
+      "effects": { "popularity": 2, "reputation": -1 },
+      "likeRate": 1.6,
+      "backlash": {
+        "chance": 0.35,
+        "followers": -0.05,
+        "reputation": -4,
+        "coach": -4,
+        "likeRate": 0.5
+      }
+    }
+  ],
+  "interview": {
+    "heroRating": 7.5,
+    "flopRating": 5.5,
+    "effects": {
+      "win_hero": {
+        "humble": { "coach": 3, "reputation": 2, "popularity": 1 },
+        "confident": { "popularity": 3, "reputation": 1, "followers": 0.01 },
+        "polemic": { "popularity": 3, "reputation": -2, "coach": -2, "followers": 0.02 }
+      },
+      "win": {
+        "humble": { "coach": 2, "reputation": 1 },
+        "confident": { "popularity": 2, "morale": 2 },
+        "polemic": { "popularity": 2, "reputation": -2, "followers": 0.01 }
+      },
+      "draw": {
+        "humble": { "coach": 2, "reputation": 1 },
+        "confident": { "morale": 3, "popularity": 1 },
+        "polemic": { "popularity": 2, "reputation": -3, "coach": -3 }
+      },
+      "loss": {
+        "humble": { "coach": 3, "reputation": 2, "morale": -1 },
+        "confident": { "morale": 2, "reputation": -1 },
+        "polemic": { "popularity": 2, "reputation": -4, "coach": -5, "followers": 0.01 }
+      },
+      "loss_flop": {
+        "humble": { "coach": 3, "reputation": 2 },
+        "confident": { "reputation": -3, "popularity": -1 },
+        "polemic": { "popularity": 1, "reputation": -5, "coach": -6 }
+      },
+      "bench": {
+        "humble": { "coach": 4, "reputation": 1 },
+        "confident": { "morale": 2, "coach": -1 },
+        "polemic": { "popularity": 2, "reputation": -2, "coach": -8, "followers": 0.01 }
+      }
+    }
+  },
+  "press": {
+    "questions": 2,
+    "topPlaces": 3,
+    "topFromMatchday": 6,
+    "finalStages": ["sf", "final"],
+    "maxBoost": 0.05,
+    "effects": {
+      "humble": { "coach": 2, "reputation": 1, "chance": 0.01 },
+      "confident": { "morale": 3, "popularity": 1, "chance": 0.02 },
+      "polemic": {
+        "popularity": 3,
+        "reputation": -2,
+        "coach": -2,
+        "chance": -0.01,
+        "followers": 0.01
+      }
+    }
+  }
+}

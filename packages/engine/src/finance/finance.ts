@@ -4,6 +4,7 @@ import { Rng } from '../rng';
 import type { Business, Finance, GameState, Loan, OwnedProperty, Player } from '../types';
 import { clamp } from '../util';
 import { IdGen } from '../world/generate';
+import { followersBonus } from '../media/media';
 
 type PropertyItem = FinanceConfig['properties']['catalog'][number];
 type BusinessItem = FinanceConfig['businesses']['catalog'][number];
@@ -488,6 +489,8 @@ export function applyWeeklyWealth(
     const result = money(
       ((item.baseWeekly * (health - b.breakEvenHealth)) / b.healthScale) *
         (1 + p.image.popularity * item.popularityBonus) *
+        (1 +
+          followersBonus(p.image.followers, ctx) * ctx.config.media.followers.value.businessShare) *
         (1 + rng.normal(0, b.incomeNoise)),
     );
     w.businessIncome += result;

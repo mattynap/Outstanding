@@ -5,6 +5,7 @@ import { CURRENT_SAVE_VERSION } from './save/serialize';
 import { setupSeasonCups } from './cups/cups';
 import { createFinance } from './finance/finance';
 import { createPrivateLife } from './private/private';
+import { createMedia } from './media/media';
 import { buildSeasonCalendar } from './season/schedule';
 import type { Difficulty, GameState, Interest, Player, World } from './types';
 import { generateWorld, groupId, IdGen } from './world/generate';
@@ -121,5 +122,6 @@ export function newCareer(
     difficulty: options.difficulty ?? ctx.config.difficulty.default,
     finance: createFinance(ctx),
     privateLife: createPrivateLife(options.interest, ctx),
+    media: createMedia(),
   };
 }

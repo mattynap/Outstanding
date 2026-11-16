@@ -1,3 +1,4 @@
+import { followersBonus, welcomeToClub } from '../media/media';
 import { defaultContext, type GameContext } from '../context';
 import { difficultyMods } from '../difficulty';
 import { computeOvr } from '../player/ratings';
@@ -305,11 +306,14 @@ export function refreshMarket(state: GameState, ctx: GameContext = defaultContex
   const sp = e.sponsors;
   const used = new Set([...p.sponsors, ...s.sponsorOffers].map((x) => x.sponsorId));
   const free = ctx.content.sponsors.filter((x) => !used.has(x.id));
+  // I follower valgono soldi: sponsor più frequenti e meglio pagati.
+  const fans = followersBonus(p.image.followers, ctx);
+  const fv = ctx.config.media.followers.value;
   if (
     p.image.popularity >= sp.minPopularity &&
     p.sponsors.length + s.sponsorOffers.length < sp.max &&
     free.length > 0 &&
-    rng.chance(sp.weeklyChance)
+    rng.chance(Math.min(1, sp.weeklyChance * (1 + fans * fv.sponsorChanceShare)))
   ) {
     const sponsor = rng.pick(free);
     s = {
@@ -320,7 +324,8 @@ export function refreshMarket(state: GameState, ctx: GameContext = defaultContex
           id: ids.make('s'),
           sponsorId: sponsor.id,
           weeklyIncome: Math.round(
-            sp.baseWeekly + (p.image.popularity - sp.minPopularity) * sp.perPopularityPoint,
+            (sp.baseWeekly + (p.image.popularity - sp.minPopularity) * sp.perPopularityPoint) *
+              (1 + fans * fv.sponsorIncomeShare),
           ),
           untilSeason: state.season + rng.int(sp.seasons[0], sp.seasons[1]) - 1,
           expiresWeek: state.week + sp.lifetimeWeeks - 1,
@@ -471,7 +476,8 @@ export function acceptOffer(
       relationships: coachTrust,
     };
   }
-  return { ...state, player, offers: [] };
+  // Nuovo club: benvenuto dei tifosi e conferenza stampa di presentazione.
+  return welcomeToClub({ ...state, player, offers: [] }, club.id, ctx);
 }
 
 export { retirePlayer };

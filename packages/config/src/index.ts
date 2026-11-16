@@ -7,6 +7,7 @@ import editorJson from '../data/editor.json';
 import financeJson from '../data/finance.json';
 import lookJson from '../data/look.json';
 import privateJson from '../data/private.json';
+import mediaJson from '../data/media.json';
 import economyJson from '../data/economy.json';
 import eventsJson from '../data/events.json';
 import matchJson from '../data/match.json';
@@ -24,6 +25,7 @@ import {
   lookSchema,
   financeSchema,
   privateSchema,
+  mediaSchema,
   eventsConfigSchema,
   matchSchema,
   playerConfigSchema,
@@ -39,6 +41,7 @@ import {
   type LookConfig,
   type FinanceConfig,
   type PrivateConfig,
+  type MediaConfig,
   type EventsConfig,
   type MatchConfig,
   type PlayerConfig,
@@ -65,6 +68,7 @@ export const configSchema = {
   look: lookSchema,
   finance: financeSchema,
   private: privateSchema,
+  media: mediaSchema,
 } as const;
 
 export interface GameConfig {
@@ -83,6 +87,7 @@ export interface GameConfig {
   look: LookConfig;
   finance: FinanceConfig;
   private: PrivateConfig;
+  media: MediaConfig;
 }
 
 /** Oggetti di configurazione grezzi (non validati), uno per file JSON. */
@@ -194,6 +199,7 @@ export const rawDefaultConfig: RawConfig = {
   look: lookJson,
   finance: financeJson,
   private: privateJson,
+  media: mediaJson,
 };
 
 /** Configurazione predefinita distribuita con il gioco. */

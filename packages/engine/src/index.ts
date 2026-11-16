@@ -5,6 +5,13 @@ export type * from './types';
 export { Rng, type RngState } from './rng';
 export { defaultContext, type GameContext } from './context';
 export { newCareer, type NewCareerOptions } from './career';
+export {
+  careerScore,
+  careerTotals,
+  isLegend,
+  type CareerScore,
+  type CareerTotals,
+} from './career/score';
 export { computeOvr, SKILLS, ROLES } from './player/ratings';
 export { ageAt, weekOfSeason, seasonStartWeek } from './time';
 export { computeStandings, type StandingRow } from './season/standings';

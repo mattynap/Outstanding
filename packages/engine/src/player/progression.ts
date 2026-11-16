@@ -14,14 +14,14 @@ function band(bands: ProgressionConfig['growth']['ageMultipliers'], age: number)
 }
 
 /**
- * Moltiplicatore della crescita: età, distanza dal potenziale (vicino al tetto si cresce poco),
- * disciplina ed energia.
+ * Moltiplicatore della crescita: età, distanza dal potenziale (lontano dal tetto si cresce più in
+ * fretta, fino a `maxGapFactor`; vicino al tetto poco), disciplina ed energia.
  */
 export function growthMultiplier(player: Player, week: number, ctx: GameContext): number {
   const g = ctx.config.progression.growth;
   const age = ageAt(player.birthWeek, week, ctx.config.calendar);
   const ovr = computeOvr(player.skills, player.role, ctx.config.ratings);
-  const gap = clamp((player.potential - ovr) / g.potentialGapScale, 0, 1);
+  const gap = clamp((player.potential - ovr) / g.potentialGapScale, 0, g.maxGapFactor);
   const d = g.disciplineFactor;
   const discipline = d.min + ((d.max - d.min) * player.persona.discipline) / 100;
   const energy = player.condition.energy < g.lowEnergyThreshold ? g.lowEnergyFactor : 1;

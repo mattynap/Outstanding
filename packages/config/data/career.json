@@ -2,13 +2,55 @@
   "score": {
     "baseRating": 6,
     "perLevel": [
-      { "appearance": 3, "goal": 4, "assist": 2.5, "cleanSheet": 2, "ratingPoint": 6 },
-      { "appearance": 1.5, "goal": 2, "assist": 1.2, "cleanSheet": 1, "ratingPoint": 3 },
-      { "appearance": 0.8, "goal": 1, "assist": 0.6, "cleanSheet": 0.5, "ratingPoint": 1.5 },
-      { "appearance": 0.4, "goal": 0.5, "assist": 0.3, "cleanSheet": 0.25, "ratingPoint": 0.8 },
-      { "appearance": 0.2, "goal": 0.25, "assist": 0.15, "cleanSheet": 0.12, "ratingPoint": 0.4 },
-      { "appearance": 0.1, "goal": 0.12, "assist": 0.08, "cleanSheet": 0.06, "ratingPoint": 0.2 }
+      {
+        "appearance": 3,
+        "goal": 4,
+        "assist": 2.5,
+        "cleanSheet": 2,
+        "ratingPoint": 6
+      },
+      {
+        "appearance": 1.5,
+        "goal": 2,
+        "assist": 1.2,
+        "cleanSheet": 1,
+        "ratingPoint": 3
+      },
+      {
+        "appearance": 0.8,
+        "goal": 1,
+        "assist": 0.6,
+        "cleanSheet": 0.5,
+        "ratingPoint": 1.5
+      },
+      {
+        "appearance": 0.4,
+        "goal": 0.5,
+        "assist": 0.3,
+        "cleanSheet": 0.25,
+        "ratingPoint": 0.8
+      },
+      {
+        "appearance": 0.2,
+        "goal": 0.25,
+        "assist": 0.15,
+        "cleanSheet": 0.12,
+        "ratingPoint": 0.4
+      },
+      {
+        "appearance": 0.1,
+        "goal": 0.12,
+        "assist": 0.08,
+        "cleanSheet": 0.06,
+        "ratingPoint": 0.2
+      }
     ],
+    "roleFactors": {
+      "GK": 2.45,
+      "DEF": 1.3,
+      "MID": 1,
+      "ATT": 0.62
+    },
     "trophies": {
       "L1": 200,
       "L2": 60,
@@ -22,10 +64,25 @@
     }
   },
   "tiers": [
-    { "id": "anonima", "min": 0 },
-    { "id": "discreta", "min": 300 },
-    { "id": "buona", "min": 900 },
-    { "id": "grande", "min": 2000 },
-    { "id": "leggenda", "min": 3500 }
+    {
+      "id": "anonima",
+      "min": 0
+    },
+    {
+      "id": "discreta",
+      "min": 750
+    },
+    {
+      "id": "buona",
+      "min": 1300
+    },
+    {
+      "id": "grande",
+      "min": 2000
+    },
+    {
+      "id": "leggenda",
+      "min": 4200
+    }
   ]
 }

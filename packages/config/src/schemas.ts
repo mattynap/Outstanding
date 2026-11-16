@@ -519,6 +519,8 @@ export const progressionSchema = z
       ageMultipliers: ageBands,
       /** Distacco OVR–potenziale sotto il quale la crescita rallenta. */
       potentialGapScale: z.number().positive(),
+      /** Moltiplicatore massimo della crescita per chi è lontano dal potenziale (i talenti crescono più in fretta). */
+      maxGapFactor: z.number().min(1),
       skillCapOverPotential: z.number().min(0),
       skillMax: z.number().max(100),
       disciplineFactor: z.object({ min: z.number().min(0), max: z.number().min(0) }),
@@ -713,6 +715,11 @@ export const careerSchema = z
           }),
         )
         .min(1),
+      /**
+       * Moltiplicatore per ruolo dei punti di rendimento (non dei trofei): ogni ruolo deve poter
+       * diventare leggenda con una frequenza simile.
+       */
+      roleFactors: perRole(z.number().positive()),
       /** Punti per trofeo: id del campionato (L1, L2, ...) o della coppa. */
       trophies: z.record(z.string(), z.number().min(0)),
     }),

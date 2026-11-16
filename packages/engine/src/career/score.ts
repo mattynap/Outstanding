@@ -1,5 +1,5 @@
 import { defaultContext, type GameContext } from '../context';
-import type { SeasonRecord } from '../types';
+import type { Role, SeasonRecord } from '../types';
 
 /** Punteggio di carriera diviso per voce, per mostrarlo a fine carriera. */
 export interface CareerScore {
@@ -66,24 +66,28 @@ export function careerTotals(history: readonly SeasonRecord[]): CareerTotals {
 
 /**
  * Punteggio di fine carriera: presenze, gol, assist, porte inviolate e voti valgono di più nei
- * campionati più alti; i trofei hanno un valore fisso. Pesi e fasce in config/career.json.
+ * campionati più alti e sono corretti per ruolo; i trofei hanno un valore fisso. Pesi e fasce in
+ * config/career.json.
  */
 export function careerScore(
   history: readonly SeasonRecord[],
+  role: Role,
   ctx: GameContext = defaultContext,
 ): CareerScore {
   const cfg = ctx.config.career;
+  const roleFactor = cfg.score.roleFactors[role];
   const parts = { appearances: 0, goals: 0, assists: 0, cleanSheets: 0, ratings: 0, trophies: 0 };
   for (const r of history) {
     for (const id of r.trophies) parts.trophies += cfg.score.trophies[id] ?? 0;
     if (r.leagueLevel === null) continue;
     const w = cfg.score.perLevel[r.leagueLevel - 1] ?? cfg.score.perLevel.at(-1)!;
     const s = r.stats;
-    parts.appearances += s.appearances * w.appearance;
-    parts.goals += s.goals * w.goal;
-    parts.assists += s.assists * w.assist;
-    parts.cleanSheets += s.cleanSheets * w.cleanSheet;
-    parts.ratings += (s.ratingSum - cfg.score.baseRating * s.ratingCount) * w.ratingPoint;
+    parts.appearances += s.appearances * w.appearance * roleFactor;
+    parts.goals += s.goals * w.goal * roleFactor;
+    parts.assists += s.assists * w.assist * roleFactor;
+    parts.cleanSheets += s.cleanSheets * w.cleanSheet * roleFactor;
+    parts.ratings +=
+      (s.ratingSum - cfg.score.baseRating * s.ratingCount) * w.ratingPoint * roleFactor;
   }
   for (const k of Object.keys(parts) as (keyof typeof parts)[]) parts[k] = Math.round(parts[k]);
   const total = Math.max(

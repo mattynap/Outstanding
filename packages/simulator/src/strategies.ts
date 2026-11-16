@@ -7,6 +7,7 @@ import {
   type GameState,
   type KeyMoment,
   type OfferView,
+  type Fixture,
   type Rng,
   type Skill,
   type WeekChoice,
@@ -20,6 +21,11 @@ export interface Strategy {
   id: StrategyId;
   planWeek(state: GameState, rng: Rng, ctx: GameContext): WeekChoice[];
   decideMoment(moment: KeyMoment, rng: Rng): number;
+  /**
+   * Vero se la partita si gioca di persona (momenti chiave decisi dalla strategia), falso se si
+   * simula (momenti con la scelta automatica prudente del motore).
+   */
+  playsManually(state: GameState, fixture: Fixture, rng: Rng): boolean;
   /** Scelta di un evento: nessuna strategia "sa" quale sia la migliore, quindi è casuale. */
   chooseEvent(choices: number, rng: Rng): number;
   /** Offerta da firmare tra quelle aperte (undefined = nessuna per ora). */
@@ -33,6 +39,8 @@ export interface Strategy {
 
 /** Soglia di energia sotto la quale anche la strategia aggressiva si riposa. */
 const LOW_ENERGY = 35;
+/** Probabilità che la strategia casuale giochi di persona una partita. */
+const RANDOM_MANUAL_CHANCE = 0.5;
 /** Probabilità settimanale con cui la strategia casuale firma un'offerta aperta. */
 const RANDOM_SIGN_CHANCE = 0.3;
 
@@ -59,6 +67,20 @@ function feasible(state: GameState, wanted: WeekChoice[], ctx: GameContext): Wee
     .slice(0, ctx.config.progression.actionsPerWeek);
 }
 
+/**
+ * Un giocatore attento gioca di persona le partite che contano: le coppe e quelle contro avversari
+ * forti almeno quanto la propria squadra. Le altre le simula.
+ */
+function bigMatch(state: GameState, fixture: Fixture): boolean {
+  if (fixture.cup) return true;
+  const ratings = new Map(
+    [...state.world.clubs, ...state.world.foreignClubs].map((c) => [c.id, c.rating]),
+  );
+  const own = state.player.clubId!;
+  const opponent = fixture.homeId === own ? fixture.awayId : fixture.homeId;
+  return (ratings.get(opponent) ?? 0) >= (ratings.get(own) ?? 0);
+}
+
 const injured = (s: GameState) => Boolean(s.player.injury && s.player.injury.weeksLeft > 0);
 const level = (state: GameState, ctx: GameContext) => {
   const clubId = state.player.clubId;
@@ -77,6 +99,7 @@ const bestFirst = (offers: OfferView[]) =>
  */
 const cautious: Strategy = {
   id: 'cautious',
+  playsManually: (state, fixture) => bigMatch(state, fixture),
   planWeek(state, _rng, ctx) {
     if (injured(state)) return feasible(state, [{ actionId: 'physio' }, { actionId: 'rest' }], ctx);
     return feasible(state, [{ actionId: 'train_normal' }, { actionId: 'rest' }], ctx);
@@ -108,6 +131,7 @@ const cautious: Strategy = {
  */
 const aggressive: Strategy = {
   id: 'aggressive',
+  playsManually: (state, fixture) => bigMatch(state, fixture),
   planWeek(state, _rng, ctx) {
     if (injured(state)) return feasible(state, [{ actionId: 'physio' }, { actionId: 'rest' }], ctx);
     const focus: WeekChoice = { actionId: 'train_focus', focus: keySkill(state, ctx) };
@@ -136,6 +160,7 @@ const aggressive: Strategy = {
 /** Casuale: azioni, opzioni e offerte scelte a caso (ma sempre legali). */
 const random: Strategy = {
   id: 'random',
+  playsManually: (_state, _fixture, rng) => rng.chance(RANDOM_MANUAL_CHANCE),
   planWeek(state, rng, ctx) {
     const ids = rng.shuffle([...available(state, ctx)]);
     const actions = ctx.config.progression.actions;

@@ -77,7 +77,7 @@
   ],
   "skipWeekPlan": ["train_normal", "rest"],
   "growth": {
-    "basePerSession": 0.05,
+    "basePerSession": 0.035,
     "focusMultiplier": 3,
     "minWeightShare": 0.5,
     "matchPer90": 0.6,
@@ -111,7 +111,8 @@
         "value": 0
       }
     ],
-    "potentialGapScale": 8,
+    "potentialGapScale": 10,
+    "maxGapFactor": 2.5,
     "skillCapOverPotential": 12,
     "skillMax": 99,
     "disciplineFactor": {

@@ -1,0 +1,33 @@
+# Architettura
+
+## Pacchetti e dipendenze
+
+```
+app ───────┐
+           ├──► engine ──► config, content
+simulator ─┘
+```
+
+- `engine`: TypeScript puro. Non importa mai `app`, Angular, Ionic, Phaser, Capacitor, API del
+  browser o di Node. Le regole ESLint e il `tsconfig` (nessuna `lib` DOM, nessun tipo Node) lo
+  impongono.
+- `config`: file JSON di bilanciamento in `data/`, validati con Zod all'importazione.
+- `content`: dati di contenuto (città, nomi, club, tratti, testi, eventi) in `data/`, validati con
+  Zod; `pnpm content:check` esegue i controlli incrociati.
+- `simulator`: CLI Node.js che usa il motore senza interfaccia.
+
+I pacchetti espongono direttamente i sorgenti TypeScript (`exports: ./src/index.ts`): niente passo
+di build intermedio; `pnpm typecheck` controlla i tipi di tutti i pacchetti.
+
+## Principi del motore
+
+1. **Stato immutabile, funzioni pure:** `(stato, comando) => { stato, report }`.
+2. **Determinismo:** solo la classe `Rng` con seme; il suo stato è salvato in `GameState.rngState`.
+   Stesso seme + stesse scelte = stessa carriera.
+3. **Nessun numero magico:** ogni costante di gioco sta in `packages/config/data/*.json`.
+4. **Contenuti come dati:** in `packages/content/data/`.
+5. **Salvataggi versionati:** `GameState.saveVersion` + migrazioni in `engine/src/save`.
+
+Le funzioni pubbliche ricevono un `GameContext` opzionale (config + contenuti); se assente si usa
+quello predefinito dei pacchetti `config` e `content`. Nei test si può iniettare un contesto
+modificato.

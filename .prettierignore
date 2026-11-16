@@ -1,0 +1,10 @@
+node_modules
+dist
+www
+coverage
+.angular
+pnpm-lock.yaml
+*.pdf
+sim-output
+CLAUDE.md
+.claude

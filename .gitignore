@@ -1,0 +1,11 @@
+node_modules/
+dist/
+www/
+coverage/
+.angular/
+android/app/build/
+ios/App/build/
+.env
+.env.*
+.claude/settings.local.json
+# NON ignorare .claude/memory/

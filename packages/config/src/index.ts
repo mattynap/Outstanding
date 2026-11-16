@@ -4,6 +4,7 @@ import economyJson from '../data/economy.json';
 import eventsJson from '../data/events.json';
 import matchJson from '../data/match.json';
 import playerJson from '../data/player.json';
+import progressionJson from '../data/progression.json';
 import ratingsJson from '../data/ratings.json';
 import worldJson from '../data/world.json';
 import {
@@ -12,6 +13,7 @@ import {
   eventsConfigSchema,
   matchSchema,
   playerConfigSchema,
+  progressionSchema,
   ratingsSchema,
   worldSchema,
   type CalendarConfig,
@@ -19,6 +21,7 @@ import {
   type EventsConfig,
   type MatchConfig,
   type PlayerConfig,
+  type ProgressionConfig,
   type RatingsConfig,
   type WorldConfig,
 } from './schemas';
@@ -33,6 +36,7 @@ export const configSchema = {
   economy: economySchema,
   match: matchSchema,
   events: eventsConfigSchema,
+  progression: progressionSchema,
 } as const;
 
 export interface GameConfig {
@@ -43,6 +47,7 @@ export interface GameConfig {
   economy: EconomyConfig;
   match: MatchConfig;
   events: EventsConfig;
+  progression: ProgressionConfig;
 }
 
 /** Oggetti di configurazione grezzi (non validati), uno per file JSON. */
@@ -70,6 +75,7 @@ export const rawDefaultConfig: RawConfig = {
   economy: economyJson,
   match: matchJson,
   events: eventsJson,
+  progression: progressionJson,
 };
 
 /** Configurazione predefinita distribuita con il gioco. */

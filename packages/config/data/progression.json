@@ -1,0 +1,196 @@
+{
+  "actionsPerWeek": 2,
+  "actions": [
+    {
+      "id": "train_normal",
+      "kind": "training",
+      "intensity": 1,
+      "effects": {
+        "energy": -8,
+        "injuryRisk": 1
+      }
+    },
+    {
+      "id": "train_intense",
+      "kind": "training",
+      "intensity": 1.6,
+      "injuryChance": 0.008,
+      "effects": {
+        "energy": -12,
+        "injuryRisk": 3
+      }
+    },
+    {
+      "id": "train_focus",
+      "kind": "training",
+      "intensity": 1,
+      "focus": true,
+      "effects": {
+        "energy": -10,
+        "injuryRisk": 2
+      }
+    },
+    {
+      "id": "rest",
+      "kind": "rest",
+      "effects": {
+        "energy": 18,
+        "injuryRisk": -4
+      }
+    },
+    {
+      "id": "physio",
+      "kind": "recovery",
+      "healChance": 0.5,
+      "effects": {
+        "energy": 8,
+        "injuryRisk": -8
+      }
+    },
+    {
+      "id": "leisure",
+      "kind": "leisure",
+      "effects": {
+        "energy": -4,
+        "morale": 4,
+        "happiness": 5,
+        "discipline": -1
+      }
+    },
+    {
+      "id": "family",
+      "kind": "leisure",
+      "effects": {
+        "morale": 2,
+        "happiness": 4
+      }
+    }
+  ],
+  "skipWeekPlan": ["train_normal", "rest"],
+  "growth": {
+    "basePerSession": 0.05,
+    "focusMultiplier": 3,
+    "minWeightShare": 0.5,
+    "matchPer90": 0.6,
+    "ageMultipliers": [
+      {
+        "maxAge": 17,
+        "value": 1.3
+      },
+      {
+        "maxAge": 19,
+        "value": 1.2
+      },
+      {
+        "maxAge": 21,
+        "value": 1
+      },
+      {
+        "maxAge": 23,
+        "value": 0.8
+      },
+      {
+        "maxAge": 26,
+        "value": 0.45
+      },
+      {
+        "maxAge": 29,
+        "value": 0.2
+      },
+      {
+        "maxAge": 99,
+        "value": 0
+      }
+    ],
+    "potentialGapScale": 8,
+    "skillCapOverPotential": 12,
+    "skillMax": 99,
+    "disciplineFactor": {
+      "min": 0.75,
+      "max": 1.25
+    },
+    "lowEnergyThreshold": 30,
+    "lowEnergyFactor": 0.6
+  },
+  "decline": {
+    "startAge": 31,
+    "basePerSeason": 1.5,
+    "extraPerYear": 0.7,
+    "skillMultipliers": {
+      "pace": 1.6,
+      "shooting": 0.8,
+      "passing": 0.5,
+      "dribbling": 1,
+      "defending": 0.8,
+      "physical": 1.4,
+      "vision": 0.3,
+      "goalkeeping": 0.8
+    },
+    "disciplineMitigation": 0.4
+  },
+  "condition": {
+    "energyRecoveryPerWeek": 10,
+    "energyPer90": 22,
+    "formTarget": 50,
+    "formDriftPerWeek": 0.15,
+    "formPerRatingPoint": 6,
+    "formNotPlaying": -2,
+    "moraleTarget": 60,
+    "moraleDriftPerWeek": 0.1,
+    "moraleBySelection": {
+      "starter": 1,
+      "bench": -2,
+      "out": -4
+    },
+    "moraleByResult": {
+      "win": 3,
+      "draw": 0,
+      "loss": -3
+    },
+    "moralePerRatingPoint": 2,
+    "trustPerRatingPoint": 2,
+    "trustNotSelected": -1,
+    "injuryRiskTarget": 10,
+    "injuryRiskDriftPerWeek": 0.2,
+    "lowEnergyInjuryRisk": 3
+  },
+  "injuries": {
+    "matchChancePer90": 0.025,
+    "riskPerPoint": 0.03,
+    "lowEnergyMultiplier": 1.8,
+    "formOnInjury": -8,
+    "moraleOnInjury": -6,
+    "types": [
+      {
+        "id": "affaticamento",
+        "weeks": [1, 2],
+        "weight": 5
+      },
+      {
+        "id": "contusione",
+        "weeks": [1, 3],
+        "weight": 4
+      },
+      {
+        "id": "distorsione",
+        "weeks": [2, 4],
+        "weight": 3
+      },
+      {
+        "id": "stiramento",
+        "weeks": [3, 6],
+        "weight": 2
+      },
+      {
+        "id": "frattura",
+        "weeks": [8, 14],
+        "weight": 0.3
+      },
+      {
+        "id": "legamenti",
+        "weeks": [20, 32],
+        "weight": 0.1
+      }
+    ]
+  }
+}

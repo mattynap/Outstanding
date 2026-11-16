@@ -65,6 +65,20 @@ describe("testi dell'interfaccia", () => {
         `avatar.tattoos.${tt.id}`,
         ...(tt.unlock ? [`avatar.unlock.${tt.unlock.type}`] : []),
       ]),
+      ...['summary', 'markets', 'assets', 'business', 'bank'].map((x) => `ui.wealth.tabs.${x}`),
+      ...['cash', 'deposit', 'investments', 'properties', 'businesses', 'debts'].map(
+        (x) => `ui.wealth.parts.${x}`,
+      ),
+      ...['noContract', 'tooMuch', 'badTerm'].map((x) => `ui.wealth.refusal.${x}`),
+      ...['mortgage', 'personal'].map((x) => `ui.wealth.loanKinds.${x}`),
+      ...defaultConfig.finance.market.instruments.flatMap((i) => [
+        `finance.instruments.${i.id}.name`,
+        `finance.instruments.${i.id}.desc`,
+      ]),
+      ...defaultConfig.finance.properties.catalog.map((p) => `finance.properties.${p.id}`),
+      ...defaultConfig.finance.businesses.catalog.flatMap((b) =>
+        ['name', 'desc', 'default'].map((x) => `finance.businesses.${b.id}.${x}`),
+      ),
       ...DIFFICULTIES.flatMap((d) => [`difficulty.${d}.name`, `difficulty.${d}.hint`]),
       ...PLAY_MODES.flatMap((m) => [`ui.settings.modes.${m}`, `ui.settings.modes.${m}Hint`]),
       ...TIP_IDS.flatMap((id) => [`ui.tutorial.tips.${id}.title`, `ui.tutorial.tips.${id}.text`]),

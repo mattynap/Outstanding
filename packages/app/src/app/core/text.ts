@@ -63,3 +63,19 @@ export function levelTone(value: number): 'pos' | 'neg' | 'mid' {
   if (value < 35) return 'neg';
   return 'mid';
 }
+
+/** Saldo di cassa di una settimana: stipendio e sponsor, meno spese, più o meno il patrimonio. */
+export function weekBalance(r: {
+  finance: { salary: number; sponsors: number; commission: number; expenses: number };
+  wealth?: { upkeep: number; loanPayments: number; businessIncome: number };
+}): number {
+  const f = r.finance;
+  const w = r.wealth;
+  return (
+    f.salary +
+    f.sponsors -
+    f.commission -
+    f.expenses +
+    (w ? w.businessIncome - w.upkeep - w.loanPayments : 0)
+  );
+}

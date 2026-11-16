@@ -26,6 +26,7 @@ export const routes: Routes = [
   game('mercato', () => import('./pages/market.page').then((m) => m.MarketPage)),
   game('vita', () => import('./pages/life.page').then((m) => m.LifePage)),
   game('aspetto', () => import('./pages/look.page').then((m) => m.LookPage)),
+  game('patrimonio', () => import('./pages/wealth.page').then((m) => m.WealthPage)),
   {
     path: 'profilo',
     loadComponent: () => import('./pages/profile.page').then((m) => m.ProfilePage),

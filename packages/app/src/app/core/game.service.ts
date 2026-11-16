@@ -4,7 +4,17 @@ import {
   acceptSponsor,
   advanceWeek,
   beginMatch,
+  buyInstrument,
+  buyProperty,
   careerDifficulty,
+  depositCash,
+  openBusiness,
+  repayLoan,
+  sellBusiness,
+  sellInstrument,
+  sellProperty,
+  takePersonalLoan,
+  withdrawCash,
   changeLook,
   careerScore,
   computeOvr,
@@ -296,6 +306,54 @@ export class GameService {
 
   async fireAgent(): Promise<void> {
     await this.commit(fireAgent(this.require()));
+  }
+
+  // --- Patrimonio ------------------------------------------------------------------------------
+
+  async deposit(amount: number): Promise<void> {
+    await this.commit(depositCash(this.require(), amount, this.ctx));
+  }
+
+  async withdraw(amount: number): Promise<void> {
+    await this.commit(withdrawCash(this.require(), amount, this.ctx));
+  }
+
+  async buyInstrument(id: string, amount: number): Promise<void> {
+    await this.commit(buyInstrument(this.require(), id, amount, this.ctx));
+  }
+
+  async sellInstrument(id: string, units?: number): Promise<number> {
+    const r = sellInstrument(this.require(), id, units, this.ctx);
+    await this.commit(r.state);
+    return r.proceeds;
+  }
+
+  async buyProperty(id: string, mortgageSeasons: number | null): Promise<void> {
+    await this.commit(buyProperty(this.require(), id, mortgageSeasons, this.ctx));
+  }
+
+  async sellProperty(id: string): Promise<number> {
+    const r = sellProperty(this.require(), id, this.ctx);
+    await this.commit(r.state);
+    return r.proceeds;
+  }
+
+  async takeLoan(amount: number, seasons: number): Promise<void> {
+    await this.commit(takePersonalLoan(this.require(), amount, seasons, this.ctx));
+  }
+
+  async repayLoan(id: string): Promise<void> {
+    await this.commit(repayLoan(this.require(), id, this.ctx));
+  }
+
+  async openBusiness(id: string, name: string): Promise<void> {
+    await this.commit(openBusiness(this.require(), id, name, this.ctx));
+  }
+
+  async sellBusiness(id: string): Promise<number> {
+    const r = sellBusiness(this.require(), id, this.ctx);
+    await this.commit(r.state);
+    return r.proceeds;
   }
 
   /** Barbiere, accessori e tatuatore: cambia l'aspetto e restituisce quanto è costato. */

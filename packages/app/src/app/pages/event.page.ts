@@ -278,6 +278,15 @@ export class EventPage {
         case 'transferRequest':
           lines.push({ text: t('ui.event.change.transferRequest'), tone: 'none' });
           break;
+        case 'business': {
+          const d = c.after - c.before;
+          if (Math.abs(d) < 0.5) break;
+          lines.push({
+            text: `${t('ui.event.change.business', { name: c.name })} ${formatDelta(d)}`,
+            tone: d > 0 ? 'pos' : 'neg',
+          });
+          break;
+        }
         default:
           break;
       }

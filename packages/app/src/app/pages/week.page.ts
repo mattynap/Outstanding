@@ -13,7 +13,7 @@ import {
 } from '@outstanding/engine';
 import { GameService } from '../core/game.service';
 import { I18nService, TranslatePipe } from '../core/i18n.service';
-import { formatMoney, ordinal } from '../core/text';
+import { formatMoney, ordinal, weekBalance } from '../core/text';
 import { ToastService } from '../core/toast.service';
 import { clubInfo, fixtureView, playerAge, seasonWeekNumber, upcomingFixture } from '../core/views';
 import { CrestComponent } from '../ui/crest.component';
@@ -496,8 +496,7 @@ export class WeekPage {
   protected readonly lastWeek = computed(() => {
     const r = this.game.lastWeek();
     if (!r) return null;
-    const f = r.finance;
-    return formatMoney(f.salary + f.sponsors - f.commission - f.expenses);
+    return formatMoney(weekBalance(r));
   });
 
   protected readonly ctaKey = computed(() => {
@@ -586,11 +585,8 @@ export class WeekPage {
             await this.router.navigateByUrl('/fine');
             return;
           }
-          const f = report.finance;
           await this.toast.show(
-            this.i18n.t('ui.week.closed', {
-              amount: formatMoney(f.salary + f.sponsors - f.commission - f.expenses),
-            }),
+            this.i18n.t('ui.week.closed', { amount: formatMoney(weekBalance(report)) }),
           );
         }
       }

@@ -3,7 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { AlertController, IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { chevronBack } from 'ionicons/icons';
-import { applyWeeklyFinances } from '@outstanding/engine';
+import { applyWeeklyFinances, netWorth } from '@outstanding/engine';
 import { GameService } from '../core/game.service';
 import { I18nService, TranslatePipe } from '../core/i18n.service';
 import { formatMoney } from '../core/text';
@@ -34,6 +34,14 @@ import { StatBarComponent } from '../ui/stat-bar.component';
               <span class="small o-neg">{{ 'ui.life.debt' | t }}</span>
             }
           </section>
+
+          <a class="o-card wealth-link" routerLink="/patrimonio">
+            <span class="grow">
+              <span class="o-section-title">{{ 'ui.wealth.title' | t }}</span>
+              <span class="small soft">{{ 'ui.wealth.linkText' | t }}</span>
+            </span>
+            <span class="o-number worth">{{ v.worth }}</span>
+          </a>
 
           <section class="o-card">
             <h2 class="o-section-title">{{ 'ui.life.weekly' | t }}</h2>
@@ -122,6 +130,25 @@ import { StatBarComponent } from '../ui/stat-bar.component';
     .title {
       font-size: 32px;
     }
+    .wealth-link {
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--o-text);
+      border-color: var(--o-accent);
+    }
+    .wealth-link .grow {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .wealth-link .worth {
+      font-size: 22px;
+      color: var(--o-accent-fg);
+    }
     .bank {
       align-items: flex-start;
       gap: 4px;
@@ -180,6 +207,7 @@ export class LifePage {
     return {
       cashValue: p.money.cash,
       cash: formatMoney(p.money.cash),
+      worth: formatMoney(netWorth(s, this.game.ctx).total),
       salary: formatMoney(salary),
       sponsors: formatMoney(sponsors),
       commission: formatMoney(-commission),

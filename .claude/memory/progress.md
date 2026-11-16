@@ -10,7 +10,7 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
 
 ## Stato al 2026-11-16
 
-- M0–M8 (con M7b) completate e pushate sul branch `dev`.
+- M0–M9 (con M7b) completate e pushate sul branch `dev`.
 - M4: modulo `engine/src/match/`, parametri in `config/match.json`. Bilanciamento indicativo
   (prima stagione, scelte casuali): ATT ~15 gol in 30 partite, 2,8–3 gol a partita. Da rivedere
   con il simulatore in M8. La partita non tocca ancora forma/energia/morale/fiducia (M6).
@@ -52,7 +52,11 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
   giocate, piano settimanale ripetuto in automatico). Strategia aggressiva peggiore (voto 5,75):
   il rischio paga solo contro avversari più deboli, coerente col design. I centrocampisti prudenti
   non segnano mai (tutte le opzioni da gol sono rischiose). Trofei europei rari (0,01 a carriera).
-- Prossimo passo: M9 (app), salvo diverse priorità; prima discutere idee di docs/TODO.txt.
+- M9 (app, 2026-11-16): vedi [[app-design]]. Verificata nel browser con Playwright (giro completo
+  creazione → settimana → notizie → partita → pagella → tutte le schede, tema chiaro), nessun
+  errore in console. Avvio: `pnpm --filter @outstanding/app start` (porta 4200).
+- Prossimo passo: M10 (salvataggi: più slot, migrazioni, compressione del JSON da ~1,3 MB), salvo
+  diverse priorità. Ancora da discutere: idee di docs/TODO.txt e tempo di gioco.
   Contenuti: arrivare a 100 eventi in parallelo.
 
 ## Idee dell'utente (docs/TODO.txt) — NON ancora pianificate

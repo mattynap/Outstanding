@@ -3,7 +3,7 @@
 Indice delle note di progetto. Questa cartella è versionata in git.
 
 - Decisioni iniziali: vedi CLAUDE.md (stack, architettura, vincoli, milestone).
-- [Avanzamento](progress.md) — M0–M8 e taratura fatte, tempo di gioco ancora aperto, idee utente in sospeso, da dove riprendere
+- [Avanzamento](progress.md) — M0–M9 fatte, tempo di gioco e idee utente ancora aperti, idee utente in sospeso, da dove riprendere
 - [Tooling](tooling.md) — versioni, TypeScript 6 fissato, pacchetti senza build
 - [Setup del repository](repo-setup.md) — remote GitHub, memoria locale, PDF versionato
 - [Design del motore](engine-design.md) — Rng, GameContext, saveVersion, tempo, nomi
@@ -13,3 +13,4 @@ Indice delle note di progetto. Questa cartella è versionata in git.
 - [Anteprima grafica approvata](design-preview.md) — colori, font e stile da usare in M9
 - [Coppe](cups-design.md) — formato, qualificazioni, club stranieri, due partite a settimana
 - [Simulatore](simulator-design.md) — strategie, punteggio di carriera/leggenda, tempi, output
+- [App](app-design.md) — struttura dell'app, versioni Angular/Ionic, insidie trovate in M9

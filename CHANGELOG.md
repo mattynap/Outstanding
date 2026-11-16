@@ -192,3 +192,22 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
   3%, esordio 25,5 / 23,1 / 28,8 anni, leggende 2,7% / 0,5% / 0% (prudente: 2,3–3,6% per ruolo),
   ritiro 37 / 37,6 / 36,9 anni, media voto 6,23 / 5,75 / 6,18. Tempo di gioco stimato: ~3 ore
   simulando tutte le partite, ~6 giocando quelle importanti, ~7 giocandole tutte.
+
+### M9 – App (UI)
+
+- App Angular 22 + Ionic 9 + Capacitor 8 in `packages/app` (componenti standalone, segnali),
+  collegata al motore tramite `GameService`, che salva in automatico dopo ogni azione (un solo slot,
+  Capacitor Preferences; slot multipli e migrazioni in M10).
+- Design system (`docs/design-system.md`, `src/theme/tokens.css`, `src/theme/components.css`):
+  campo verde scuro, carta di giornale per notizie e pagelle, accento oro, Barlow Condensed + Inter
+  inclusi nell'app; tema scuro predefinito e tema chiaro.
+- Grafica dal codice: stemmi SVG (forma, colori, 16 simboli, iniziali), maglie, avatar componibile.
+- Aspetto del giocatore nel motore (`Player.appearance`: carnagione, capelli, colore, viso, barba)
+  con le parti in `content/data/avatar.json`.
+- Schermate: inizio, creazione giocatore, settimana (piano, prossima partita, notizie, salta alla
+  partita), evento come notizia con conseguenze, partita (gioca o simula, momenti chiave con
+  probabilità, pagella e tabellino), fine stagione, profilo (abilità, tratti, crescita, contratto),
+  mercato (offerte, trattativa, procuratore, sponsor), finanze e vita (tenore di vita, ritiro),
+  classifica e coppe, carriera (punteggio, bacheca, stagioni), fine carriera, impostazioni.
+- Testi dell'interfaccia in `content/data/i18n/it.ui.json`; test che verifica ogni chiave usata.
+- Il motore esporta anche `applyWeeklyFinances` (anteprima delle finanze settimanali).

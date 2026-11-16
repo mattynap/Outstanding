@@ -19,6 +19,14 @@ simulator ─┘
   (`worker_threads`), e scrive un riepilogo delle metriche in `sim-output/` (non versionata).
   Le scelte delle strategie usano un `Rng` separato: i risultati dipendono solo dal seme.
 
+- `app`: Angular 22 + Ionic 9 + Capacitor 8, componenti standalone con segnali. Struttura:
+  `src/app/core` (servizi e funzioni pure: `GameService` unico punto di contatto con il motore,
+  salvataggio automatico, traduzioni, viste di sola lettura in `views.ts`), `src/app/ui`
+  (stemma, maglia, avatar, barre, navigazione), `src/app/pages` (una schermata per file, caricata
+  su richiesta), `src/theme` (design system). L'app non contiene regole di gioco: chiama le
+  funzioni del motore e mostra il risultato. I sorgenti di `engine`, `content` e `config` sono
+  inclusi con i `paths` di `tsconfig.json`.
+
 I pacchetti espongono direttamente i sorgenti TypeScript (`exports: ./src/index.ts`): niente passo
 di build intermedio; `pnpm typecheck` controlla i tipi di tutti i pacchetti.
 

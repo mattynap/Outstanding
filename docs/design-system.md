@@ -68,7 +68,7 @@ Tema: scuro predefinito; il chiaro si attiva con `data-theme="light"` su `<html>
 | `.o-lines`, `.o-line`                                                  | Righe di tabellini e riepiloghi                                         |
 | `<app-crest>`                                                          | Stemma SVG dal motore (`Club.crest`): forma, colori, simbolo, iniziali  |
 | `<app-kit>`                                                            | Maglia SVG (`Club.kit`): tinta unita, strisce, banda                    |
-| `<app-avatar>`                                                         | Avatar componibile (`Player.appearance` + maglia del club)              |
+| `<app-avatar>`                                                         | Avatar "figurina" a mezzo busto (`Player.appearance` + maglia del club) |
 | `<app-tab-bar>`                                                        | Navigazione in basso: Settimana, Profilo, Mercato, Classifica, Carriera |
 | `<app-tip>`                                                            | Nota del caporedattore della settimana guidata                          |
 
@@ -83,8 +83,13 @@ come link. Le scelte di difficoltà mostrano tre tacche crescenti; gli interrutt
 cursore giallo (`--o-accent`) dentro una `.o-choice`.
 
 Simboli degli stemmi: `packages/app/src/app/ui/symbols.ts`, uno per ogni id di
-`content/data/clubs.json`. Parti dell'avatar: `content/data/avatar.json` (colori e id) e tracciati in
-`avatar.component.ts`.
+`content/data/clubs.json`. Avatar "figurina" (stile scelto dall'utente in M14): mezzo busto vettoriale su fondo `--o-surface`,
+ombre morbide (marrone al 16%) sul lato destro del viso, sul collo e sulle braccia, occhi con
+bianco, iride e riflesso. Braccia scoperte sotto le maniche della maglia per i tatuaggi (inchiostro
+`#22344A` all'82%, rosa e foglia a colori). Parti in `content/data/avatar.json` (colori e id, nuove
+voci sempre in fondo) e forme in `ui/avatar-art.ts`. Editor dell'aspetto
+(`<app-look-editor>`): gruppi a chip (Corpo, Viso, Capelli, Accessori, Tatuaggi), frecce per le
+parti, una zona di tatuaggio alla volta, tatuaggi bloccati elencati con il requisito.
 
 ## Testi
 

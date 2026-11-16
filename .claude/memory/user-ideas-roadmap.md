@@ -26,6 +26,9 @@ Decisioni dell'utente:
   dei momenti chiave; il tutorial è una **settimana guidata** vera (note del caporedattore fino alla
   prima partita, poi "tengo / ricomincio"). Stato della guida nelle Preferences
   (`outstanding.tutorial`), non nel salvataggio.
+- **M14 (fatta):** avatar stile "figurina" (vettoriale con ombre morbide); tatuaggi in parte da
+  subito, in parte sbloccati (età, presenze, massima serie, trofeo) e fatti dal "Barbiere e
+  tatuatore" a pagamento. Parti fisse alla nascita: carnagione, viso, occhi, naso, corporatura.
 - **Immagini:** vignette SVG piatte disegnate dal codice (stesso stile di stemmi e avatar), niente
   asset esterni.
 - **Tono:** allusivo, obiettivo **PEGI 12**: tradimenti, gossip, feste e alcol con ironia e senza

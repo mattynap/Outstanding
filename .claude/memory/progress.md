@@ -72,8 +72,11 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
 - M13 (basi, 2026-11-16): difficoltà (decisione utente: tocca anche le partite), settimana guidata
   (decisione utente: vera prima settimana con note), modalità di gioco solo testuale. Numeri in
   CHANGELOG. Provato nel browser con Playwright (guida completa, impostazioni), nessun errore.
-- Prossimo passo: **M14 (personaggio: avatar più umano, tatuaggi)**, poi M15–M17 e solo dopo
-  M12. Piano e decisioni in [[user-ideas-roadmap]]. Ancora aperto: tempo di gioco. Contenuti:
+- M14 (personaggio, 2026-11-16): avatar stile "figurina" (scelta utente tra 3 proposte, anteprima
+  https://claude.ai/artifact/4DQJgFiTwGngiFBVhLBAUi), tatuaggi base + sblocchi in carriera (scelta
+  utente). Provato nel browser con Playwright.
+- Prossimo passo: **M15 (finanze: conto, investimenti, mutui, beni, attività)**, poi M16–M17 e
+  solo dopo M12. Piano e decisioni in [[user-ideas-roadmap]]. Ancora aperto: tempo di gioco. Contenuti:
   arrivare a 100 eventi in parallelo.
 - `docs/TODO.txt` lo modifica l'utente: non includerlo nei commit.
 - Stato git: tutto committato e pushato su `origin/dev` (main fermo a M2).

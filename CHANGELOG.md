@@ -272,3 +272,19 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
   riattivare dalle impostazioni.
 - Impostazioni: modalità di gioco (testuale; "partite animate" visibile ma disattivata fino alla
   fase 2) e difficoltà della carriera.
+
+### M14 – Personaggio
+
+- Nuovo avatar in stile "figurina" (scelto dall'utente tra tre proposte): mezzo busto con braccia,
+  corporatura (snella, atletica, robusta), forma e colore degli occhi, sopracciglia, naso, baffi,
+  tre nuovi tagli (raccolti, con la riga, treccine), orecchini, catenina, fascia.
+- Tatuaggi per zona (braccio sinistro, braccio destro, collo): sei motivi da subito, altri quattro
+  sbloccati in carriera (età, presenze, esordio in massima serie, primo trofeo; decisione
+  dell'utente). Catalogo e condizioni in `content/data/avatar.json`.
+- Invecchiamento visibile facoltativo: capelli e barba ingrigiscono, poi la fronte si stempia.
+- Motore: `engine/src/player/look.ts` (`changeLook`, `lookChangeCost`, `tattooUnlocked`); le parti
+  fisse (carnagione, viso, occhi, naso, corporatura) non cambiano in carriera. Costi in
+  `config/data/look.json`. I salvataggi precedenti si completano con valori predefiniti; le parti
+  nuove non consumano estrazioni casuali, quindi lo stesso seme dà ancora lo stesso mondo.
+- App: editor dell'aspetto a gruppi nella creazione e nuova schermata "Barbiere e tatuatore"
+  (dal profilo, "Cambia look") con anteprima prima/dopo e conto.

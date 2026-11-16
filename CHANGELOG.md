@@ -172,3 +172,23 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
   a 26,6 anni), 9,8% leggende quasi tutte attaccanti, ritiro a 38,6 anni, ~10 ore di gioco stimate;
   aggressiva 70% in massima serie ma media voto 5,4 e nessuna leggenda; casuale 3,5% in massima
   serie. Problemi di bilanciamento da tarare insieme all'utente (vedi memoria `progress`).
+
+### Taratura dopo M8
+
+- Partita simulata (`simulateMatch`): il giocatore sceglie per ogni partita se giocarla o
+  simularla; nella simulata i momenti chiave usano la scelta automatica prudente (`autoDecider`).
+  Il simulatore gioca di persona coppe e partite contro avversari forti almeno quanto la propria
+  squadra.
+- Momenti chiave: un tiro riuscito non è più un gol sicuro (il portiere può parare), tetto delle
+  probabilità al 90%, 2–4 momenti per partita; il valore atteso delle opzioni di ogni momento è
+  pareggiato a un livello tipico, così il rischio conviene solo a chi è più forte dell'avversario.
+- Voti dei portieri: meno penalità per gol subito, più premio per la porta inviolata.
+- Eventi: circa 12 a stagione invece di 32.
+- Crescita: chi è lontano dal proprio potenziale cresce più in fretta (`maxGapFactor`); i talenti
+  da 85–90 arrivano a OVR 80–83 invece di fermarsi a ~70.
+- Mercato: penalità d'età delle offerte raddoppiata dopo i 30 anni (ritiro medio a 37 anni).
+- Punteggio di carriera con fattori per ruolo (`roleFactors`) e fasce ritarate.
+- Risultati (5000 carriere, seme 42), prudente / aggressiva / casuale: massima serie 61% / 62% /
+  3%, esordio 25,5 / 23,1 / 28,8 anni, leggende 2,7% / 0,5% / 0% (prudente: 2,3–3,6% per ruolo),
+  ritiro 37 / 37,6 / 36,9 anni, media voto 6,23 / 5,75 / 6,18. Tempo di gioco stimato: ~3 ore
+  simulando tutte le partite, ~6 giocando quelle importanti, ~7 giocandole tutte.

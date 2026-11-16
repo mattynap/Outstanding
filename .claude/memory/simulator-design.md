@@ -22,4 +22,13 @@ metadata:
   (la macchina dell'utente ha 32 core). I worker caricano `worker.ts` grazie a tsx (execArgv ereditato).
 - Output in `sim-output/` (in .gitignore). `--details` aggiunge i risultati di ogni carriera.
 
+Decisioni di taratura dell'utente (2026-11-16):
+- Partite: **sceglie il giocatore** per ogni partita se giocarla (momenti chiave) o simularla.
+- Eventi: **circa 12 a stagione** (prima ~32).
+- Ritiro: **età media 36–38 anni**.
+- Punteggio: **pesi per ruolo**, ogni ruolo può diventare leggenda con frequenza simile;
+  obiettivo 2–5% di leggende con gioco prudente.
+- Decisi da me (regole di CLAUDE.md): niente opzione dominante nei momenti chiave, trofei europei
+  rari ma possibili, potenziali alti oltre OVR 80.
+
 Collegato: [[progress]], [[cups-design]]

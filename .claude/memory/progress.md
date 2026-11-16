@@ -45,15 +45,14 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
 - M8 (simulatore, 2026-11-16): vedi [[simulator-design]]. Prima misurazione, 5000 carriere, seme 42
   (prudente / aggressiva / casuale): massima serie 70% / 70% / 3,5%; leggende 9,8% / 0% / 0%;
   ritiro 38,6 / 39,6 / 38 anni; tempo stimato ~10 h / ~10 h / ~10 h.
-- Problemi di bilanciamento emersi in M8, **da discutere con l'utente prima di toccare config/**:
-  1. Momenti chiave: l'opzione più probabile è spesso anche quella che vale il gol (attaccante
-     prudente ~450 gol in carriera, 0,75 a partita; prima della correzione della strategia 1,3).
-     Viola "nessuna scelta sempre giusta". 2. Quasi nessuno si ritira prima dei 38–40 anni: il
-     mercato offre sempre un contratto. 3. Tempo di gioco ~10 h contro l'obiettivo di 2–4 h
-     (soprattutto i momenti chiave di ~700 partite). 4. Punteggio sbilanciato per ruolo: leggende
-     quasi solo attaccanti, portieri e difensori mai. 5. Trofei europei quasi assenti (0,03 a
-     carriera). 6. Potenziali alti si fermano a OVR ~80 (già notato in M7).
-- Prossimo passo: concordare con l'utente la taratura (punti sopra), poi M9 (app).
+- Taratura fatta il 2026-11-16 (decisioni in [[simulator-design]]). Risultati prudente: massima
+  serie 61%, esordio 25,5, leggende 2,7% (2,3–3,6% per ruolo), ritiro 37, media voto 6,23.
+- Aperto: **tempo di gioco** ~3 h (tutte simulate) / ~6 h (giocate le importanti) / ~7 h (tutte
+  giocate) contro l'obiettivo 2–4 h: da ridiscutere con l'utente (es. meno momenti nelle partite
+  giocate, piano settimanale ripetuto in automatico). Strategia aggressiva peggiore (voto 5,75):
+  il rischio paga solo contro avversari più deboli, coerente col design. I centrocampisti prudenti
+  non segnano mai (tutte le opzioni da gol sono rischiose). Trofei europei rari (0,01 a carriera).
+- Prossimo passo: M9 (app), salvo diverse priorità; prima discutere idee di docs/TODO.txt.
   Contenuti: arrivare a 100 eventi in parallelo.
 
 ## Idee dell'utente (docs/TODO.txt) — NON ancora pianificate

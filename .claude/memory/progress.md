@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: ba3e7028-a690-4902-a1e6-0b641b622f63
-  modified: 2026-11-16T17:04:07.616Z
+  modified: 2026-11-16T20:38:42.992Z
 ---
 
 Obiettivo concordato (2026-11-16): sviluppare M0→M4 in autonomia, commit + CHANGELOG + memoria a fine
@@ -97,11 +97,25 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
   nomi). Package id deciso: `it.outstanding.calcio`.
 - Strumenti di questa macchina (installati con il permesso dell'utente, fuori dal repo):
   `C:\Users\User\tools\android-sdk` (SDK) e `C:\Users\User\tools\jdk-21.0.13+9` (JAVA_HOME per
-  Gradle; il JDK 17 e il 25 non vanno bene).
-  Nota M15: i prezzi dei beni sono alti rispetto agli stipendi dei dilettanti (si compra davvero
-  solo dalla Serie Bronzo in su), ed è voluto. Piano e decisioni in [[user-ideas-roadmap]]. Ancora aperto: tempo di gioco. Contenuti:
-  arrivare a 100 eventi in parallelo.
-- `docs/TODO.txt` lo modifica l'utente: non includerlo nei commit.
+  Gradle; il JDK 17 e il 25 non vanno bene). Dettagli e insidie in [[android-build]].
+- Nota M15: i prezzi dei beni sono alti rispetto agli stipendi dei dilettanti (si compra davvero
+  solo dalla Serie Bronzo in su), ed è voluto.
+- **Stato al 2026-11-16 (fine sessione):** M0–M17 + M12 prima parte fatte; 101 eventi; 239 test.
+  APK di debug copiato sul desktop dell'utente come `C:\Users\User\Desktop\Outstanding.apk`
+  (va ricopiato dopo ogni nuova build se l'utente lo chiede). L'utente deve ancora provarlo sul
+  telefono: nessuna prova su dispositivo o emulatore finora.
+- **Prossimi passi possibili (da proporre, non decisi):**
+  - correggere ciò che l'utente trova provando l'APK sul telefono;
+  - 2–3 alternative per l'icona (offerte: stemma con la "O", figurina del calciatore, prima pagina
+    di giornale), se l'utente le vuole;
+  - emulatore Android per provare io l'app (~2 GB, serve virtualizzazione: chiedere prima);
+  - pubblicazione (firma, AAB, scheda Play, verifica nomi) solo quando l'utente lo chiede;
+  - eventi della versione completa (verso 300), da marcare per l'entitlement `full`;
+  - eventuale ritocco del tempo di gioco (meno momenti chiave) se dopo le prove serve ancora.
+- Ritratto partner (M16): i capelli ricci femminili sulla fronte sembrano un cerchietto; segnalato
+  all'utente, nessuna richiesta di modifica.
+- `docs/TODO.txt` lo modifica l'utente: non includerlo nei commit. Anche
+  `packages/app/src/app/ui/tip.component.ts` risulta modificato solo per gli a capo: non toccarlo.
 - Stato git: tutto committato e pushato su `origin/dev` (main fermo a M2).
 
 ## Decisioni prese dall'utente (2026-11-16)

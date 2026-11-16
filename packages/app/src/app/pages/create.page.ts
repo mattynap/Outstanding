@@ -9,6 +9,8 @@ import {
   completeAppearance,
   type Appearance,
   type Difficulty,
+  type Interest,
+  INTERESTS,
   type Role,
 } from '@outstanding/engine';
 import { GameService } from '../core/game.service';
@@ -191,6 +193,29 @@ import { LookEditorComponent } from '../ui/look-editor.component';
           </div>
         </section>
 
+        <section class="o-card">
+          <h2 class="o-section-title">{{ 'ui.create.interest' | t }}</h2>
+          <p class="hint">{{ 'ui.create.interestHint' | t }}</p>
+          <div
+            class="o-row interest"
+            role="radiogroup"
+            [attr.aria-label]="'ui.create.interest' | t"
+          >
+            @for (i of interests; track i) {
+              <button
+                class="o-chip"
+                type="button"
+                role="radio"
+                [class.o-chip--accent]="interest() === i"
+                [attr.aria-checked]="interest() === i"
+                (click)="interest.set(i)"
+              >
+                {{ 'ui.interest.' + i | t }}
+              </button>
+            }
+          </div>
+        </section>
+
         <section class="o-card guide">
           <button
             class="o-choice"
@@ -281,6 +306,15 @@ import { LookEditorComponent } from '../ui/look-editor.component';
       flex-direction: row;
       align-items: center;
       gap: 14px;
+    }
+    .hint {
+      margin: 0;
+      font-size: 13px;
+      color: var(--o-text-soft);
+    }
+    .interest {
+      flex-wrap: wrap;
+      gap: 8px;
     }
     .pips {
       display: flex;
@@ -380,6 +414,8 @@ export class CreatePage {
   protected readonly appearance = signal<Appearance>(completeAppearance({}));
   protected readonly busy = signal(false);
   protected readonly difficulty = signal<Difficulty>(this.game.ctx.config.difficulty.default);
+  protected readonly interests = INTERESTS;
+  protected readonly interest = signal<Interest>(this.game.ctx.config.private.defaultInterest);
   /** Settimana guidata: proposta in automatico se non c'è ancora nessuna carriera salvata. */
   protected readonly guided = signal(this.game.slots().every((v) => v.summary === null));
 
@@ -459,6 +495,7 @@ export class CreatePage {
           startLevel: this.startLevel(),
           appearance: this.appearance(),
           difficulty: this.difficulty(),
+          interest: this.interest(),
         },
         seed,
         this.targetSlot()!,

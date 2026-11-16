@@ -15,6 +15,10 @@ import {
   sellProperty,
   takePersonalLoan,
   withdrawCash,
+  breakUp,
+  doPrivateAction,
+  endAffair,
+  setInterest,
   changeLook,
   careerScore,
   computeOvr,
@@ -48,7 +52,11 @@ import {
   type Appearance,
   type ClubLook,
   type EventReport,
+  type BreakupReport,
   type GameState,
+  type Interest,
+  type PartyReport,
+  type PrivateActionReport,
   type MatchReport,
   type MatchStep,
   type NegotiationResult,
@@ -189,12 +197,15 @@ export class GameService {
 
   // --- Settimana ---------------------------------------------------------------------------
 
-  /** Conferma il piano e pesca le notizie della settimana. Restituisce quante notizie ci sono. */
-  async plan(choices: WeekChoice[]): Promise<number> {
-    const planned = planWeek(this.require(), choices, this.ctx).state;
-    const drawn = drawWeekEvents(planned, this.ctx);
+  /** Conferma il piano e pesca le notizie della settimana: quante notizie ci sono e com'è andata la serata. */
+  async plan(choices: WeekChoice[]): Promise<{ news: number; party?: PartyReport }> {
+    const planned = planWeek(this.require(), choices, this.ctx);
+    const drawn = drawWeekEvents(planned.state, this.ctx);
     await this.commit(drawn.state);
-    return drawn.events.length;
+    return {
+      news: drawn.events.length,
+      ...(planned.report.party ? { party: planned.report.party } : {}),
+    };
   }
 
   /** Salta le settimane senza partite con il piano automatico. */
@@ -361,6 +372,28 @@ export class GameService {
     const { state, cost } = changeLook(this.require(), next, this.ctx);
     await this.commit(state);
     return cost;
+  }
+
+  // --- Vita privata ------------------------------------------------------------------------
+
+  async privateAction(id: string): Promise<PrivateActionReport> {
+    const { state, report } = doPrivateAction(this.require(), id, this.ctx);
+    await this.commit(state);
+    return report;
+  }
+
+  async breakUp(): Promise<BreakupReport> {
+    const { state, report } = breakUp(this.require(), this.ctx);
+    await this.commit(state);
+    return report;
+  }
+
+  async endAffair(): Promise<void> {
+    await this.commit(endAffair(this.require(), this.ctx));
+  }
+
+  async setInterest(interest: Interest): Promise<void> {
+    await this.commit(setInterest(this.require(), interest, this.ctx));
   }
 
   async setLifestyle(id: string): Promise<void> {

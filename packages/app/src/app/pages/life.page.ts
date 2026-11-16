@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { Router, RouterLink } from '@angular/router';
 import { AlertController, IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { chevronBack } from 'ionicons/icons';
-import { applyWeeklyFinances, netWorth } from '@outstanding/engine';
+import { chevronBack, heart } from 'ionicons/icons';
+import { applyWeeklyFinances, netWorth, privateOf } from '@outstanding/engine';
 import { GameService } from '../core/game.service';
 import { I18nService, TranslatePipe } from '../core/i18n.service';
 import { formatMoney } from '../core/text';
@@ -41,6 +41,14 @@ import { StatBarComponent } from '../ui/stat-bar.component';
               <span class="small soft">{{ 'ui.wealth.linkText' | t }}</span>
             </span>
             <span class="o-number worth">{{ v.worth }}</span>
+          </a>
+
+          <a class="o-card wealth-link heart-link" routerLink="/vita-privata">
+            <span class="grow">
+              <span class="o-section-title">{{ 'ui.private.title' | t }}</span>
+              <span class="small soft">{{ v.privateLine.key | t: v.privateLine.params }}</span>
+            </span>
+            <ion-icon name="heart" class="heart" aria-hidden="true"></ion-icon>
           </a>
 
           <section class="o-card">
@@ -149,6 +157,14 @@ import { StatBarComponent } from '../ui/stat-bar.component';
       font-size: 22px;
       color: var(--o-accent-fg);
     }
+    .heart-link {
+      border-color: #c2304a;
+    }
+    .heart {
+      font-size: 26px;
+      color: #c2304a;
+      flex: none;
+    }
     .bank {
       align-items: flex-start;
       gap: 4px;
@@ -219,11 +235,35 @@ export class LifePage {
       happiness: p.persona.happiness,
       morale: p.condition.morale,
       canRetire: playerAge(s, ctx) >= this.minAge && !s.currentMatch,
+      privateLine: this.privateLine(s),
     };
   });
 
+  /** Una riga sulla vita privata per il collegamento: chi c'è, o che si è single. */
+  private privateLine(s: Parameters<typeof privateOf>[0]): {
+    key: string;
+    params: Record<string, string | number>;
+  } {
+    const life = privateOf(s, this.game.ctx);
+    const kids = life.children.length;
+    if (life.partner) {
+      return {
+        key: kids > 0 ? 'ui.private.linkFamily' : 'ui.private.linkPartner',
+        params: {
+          name: life.partner.firstName,
+          stage: this.i18n.t('ui.private.stage.' + life.partner.stage),
+          n: kids,
+        },
+      };
+    }
+    return {
+      key: kids > 0 ? 'ui.private.linkSingleKids' : 'ui.private.linkSingle',
+      params: { n: kids },
+    };
+  }
+
   constructor() {
-    addIcons({ chevronBack });
+    addIcons({ chevronBack, heart });
   }
 
   protected async setLifestyle(id: string): Promise<void> {

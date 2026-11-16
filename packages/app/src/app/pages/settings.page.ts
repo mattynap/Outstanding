@@ -4,7 +4,13 @@ import { Router, RouterLink } from '@angular/router';
 import { AlertController, IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { chevronBack } from 'ionicons/icons';
-import { careerDifficulty, ENGINE_VERSION } from '@outstanding/engine';
+import {
+  careerDifficulty,
+  ENGINE_VERSION,
+  INTERESTS,
+  privateOf,
+  type Interest,
+} from '@outstanding/engine';
 import { GameService } from '../core/game.service';
 import { I18nService, TranslatePipe } from '../core/i18n.service';
 import { AVAILABLE_PLAY_MODES, PLAY_MODES, type PlayMode } from '../core/play-mode';
@@ -82,6 +88,27 @@ import { TutorialService } from '../core/tutorial.service';
             <p class="small o-muted none">
               {{ 'ui.settings.difficulty' | t: { level: (difficultyKey() | t) } }}
             </p>
+            @if (interest(); as current) {
+              <span class="o-label">{{ 'ui.create.interest' | t }}</span>
+              <div
+                class="o-row interest"
+                role="radiogroup"
+                [attr.aria-label]="'ui.create.interest' | t"
+              >
+                @for (i of interests; track i) {
+                  <button
+                    class="o-chip"
+                    type="button"
+                    role="radio"
+                    [class.o-chip--accent]="current === i"
+                    [attr.aria-checked]="current === i"
+                    (click)="setInterest(i)"
+                  >
+                    {{ 'ui.interest.' + i | t }}
+                  </button>
+                }
+              </div>
+            }
             <button class="o-btn o-btn--danger o-btn--small" type="button" (click)="deleteCareer()">
               {{ 'ui.settings.delete' | t }}
             </button>
@@ -188,6 +215,10 @@ import { TutorialService } from '../core/tutorial.service';
     .none {
       margin: 0;
     }
+    .interest {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
     .modes {
       display: flex;
       flex-direction: column;
@@ -218,6 +249,16 @@ export class SettingsPage {
     const s = this.game.state();
     return s ? `difficulty.${careerDifficulty(s, this.game.ctx)}.name` : '';
   });
+  protected readonly interests = INTERESTS;
+  protected readonly interest = computed(() => {
+    const s = this.game.state();
+    return s && !s.retired ? privateOf(s, this.game.ctx).interest : null;
+  });
+
+  protected async setInterest(interest: Interest): Promise<void> {
+    await this.game.setInterest(interest);
+  }
+
   protected readonly guideOn = computed(() => {
     const slot = this.game.slot();
     return slot !== null && this.tutorial.slot() === slot;

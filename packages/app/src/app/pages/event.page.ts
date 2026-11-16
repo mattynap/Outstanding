@@ -278,6 +278,38 @@ export class EventPage {
         case 'transferRequest':
           lines.push({ text: t('ui.event.change.transferRequest'), tone: 'none' });
           break;
+        case 'partner': {
+          const d = c.after - c.before;
+          if (Math.abs(d) < 0.5) break;
+          lines.push({
+            text: `${t('ui.event.change.partner', { name: c.name })} ${formatDelta(d)}`,
+            tone: d > 0 ? 'pos' : 'neg',
+          });
+          break;
+        }
+        case 'meet':
+          lines.push({ text: t('ui.event.change.meet', { name: c.name }), tone: 'pos' });
+          break;
+        case 'affair':
+          lines.push({
+            text: t(
+              c.action === 'start' ? 'ui.event.change.affairStart' : 'ui.event.change.affairEnd',
+            ),
+            tone: 'none',
+          });
+          break;
+        case 'breakup':
+          lines.push({ text: t('ui.event.change.breakup', { name: c.name }), tone: 'neg' });
+          if (c.settlement > 0) {
+            lines.push({
+              text: t('ui.event.change.settlement', {
+                name: c.name,
+                amount: formatMoney(c.settlement),
+              }),
+              tone: 'neg',
+            });
+          }
+          break;
         case 'business': {
           const d = c.after - c.before;
           if (Math.abs(d) < 0.5) break;

@@ -27,6 +27,7 @@ export const routes: Routes = [
   game('vita', () => import('./pages/life.page').then((m) => m.LifePage)),
   game('aspetto', () => import('./pages/look.page').then((m) => m.LookPage)),
   game('patrimonio', () => import('./pages/wealth.page').then((m) => m.WealthPage)),
+  game('vita-privata', () => import('./pages/private.page').then((m) => m.PrivatePage)),
   {
     path: 'profilo',
     loadComponent: () => import('./pages/profile.page').then((m) => m.ProfilePage),

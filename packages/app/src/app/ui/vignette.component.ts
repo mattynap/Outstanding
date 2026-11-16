@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 /**
- * Vignetta piatta disegnata dal codice per beni e attività del giocatore (stesso stile di stemmi e
+ * Vignetta piatta disegnata dal codice per beni, attività e vita privata del giocatore (stesso stile di stemmi e
  * avatar). Una scena per id del catalogo; gli id sconosciuti mostrano solo cielo e terreno.
  */
 @Component({
@@ -38,6 +38,42 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
             stroke-width="2.5"
           />
         }
+        @case ('night') {
+          <rect width="160" height="96" fill="#1F2A44" />
+          <circle cx="132" cy="18" r="8" fill="#F3E9C6" />
+          <circle cx="135" cy="16" r="7" fill="#1F2A44" />
+          @for (st of stars; track $index) {
+            <circle [attr.cx]="st[0]" [attr.cy]="st[1]" r="0.9" fill="#F3E9C6" />
+          }
+          <rect y="78" width="160" height="18" fill="#2B3550" />
+        }
+        @case ('room') {
+          <rect width="160" height="96" fill="#E9D8BE" />
+          <rect y="70" width="160" height="26" fill="#B98A5E" />
+          <rect y="70" width="160" height="3" fill="#A07650" />
+          <rect
+            x="18"
+            y="16"
+            width="30"
+            height="34"
+            fill="#F6EAD2"
+            stroke="#C9A97F"
+            stroke-width="2"
+          />
+          <path d="M33 16 V50 M18 33 H48" stroke="#C9A97F" stroke-width="1.5" />
+        }
+        @case ('beach') {
+          <rect width="160" height="96" fill="#BFE0E8" />
+          <circle cx="126" cy="22" r="10" fill="#F6C85F" />
+          <rect y="48" width="160" height="22" fill="#3C8FB0" />
+          <path
+            d="M0 52 Q20 48 40 52 T80 52 T120 52 T160 52"
+            stroke="#9FD0E0"
+            stroke-width="2"
+            fill="none"
+          />
+          <path d="M0 70 Q40 62 80 68 T160 64 V96 H0Z" fill="#EBD3A0" />
+        }
         @case ('pitch') {
           <rect width="160" height="96" fill="#BFD9DE" />
           <rect y="44" width="160" height="52" fill="#3E8A55" />
@@ -52,6 +88,120 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       }
 
       @switch (id()) {
+        @case ('meet') {
+          @for (b of skyline; track $index) {
+            <rect
+              [attr.x]="b[0]"
+              [attr.y]="b[1]"
+              [attr.width]="b[2]"
+              [attr.height]="78 - b[1]"
+              fill="#151D33"
+            />
+          }
+          @for (w of windows; track $index) {
+            <rect [attr.x]="w[0]" [attr.y]="w[1]" width="3" height="4" fill="#F2C76B" />
+          }
+          <path d="M0 40 Q40 52 80 42 T160 40" stroke="#5B6789" stroke-width="0.8" fill="none" />
+          @for (l of bulbs; track $index) {
+            <circle [attr.cx]="l[0]" [attr.cy]="l[1]" r="2" [attr.fill]="l[2]" />
+          }
+          <circle cx="66" cy="62" r="5" fill="#E2B48C" />
+          <path d="M60 78 V70 Q66 64 72 70 V78Z" fill="#C8553D" />
+          <circle cx="94" cy="62" r="5" fill="#C99470" />
+          <path d="M88 78 V70 Q94 64 100 70 V78Z" fill="#3D6E8C" />
+          <path d="M80 54 c-2 -3 -6 -1 -4 2 l4 4 l4 -4 c2 -3 -2 -5 -4 -2z" fill="#E86A6A" />
+        }
+        @case ('ask_out') {
+          <rect x="44" y="54" width="72" height="5" rx="2" fill="#6B3E2A" />
+          <path d="M62 59 V78 M98 59 V78" stroke="#6B3E2A" stroke-width="3" />
+          <path
+            d="M60 44 h12 v8 a6 6 0 0 1 -12 0z M88 44 h12 v8 a6 6 0 0 1 -12 0z"
+            fill="#FAF6EA"
+            stroke="#B98A5E"
+            stroke-width="1"
+          />
+          <path
+            d="M64 40 q2 -4 0 -7 M92 40 q2 -4 0 -7"
+            stroke="#B9A88F"
+            stroke-width="1.2"
+            fill="none"
+          />
+          <path
+            d="M80 30 c-2.5 -3.5 -7.5 -1 -5 2.5 l5 5 l5 -5 c2.5 -3.5 -2.5 -6 -5 -2.5z"
+            fill="#E86A6A"
+          />
+        }
+        @case ('dinner') {
+          <rect x="34" y="54" width="92" height="6" rx="2" fill="#FAF6EA" />
+          <path d="M34 60 h92 l-6 18 h-80z" fill="#C8553D" />
+          <rect x="76" y="38" width="8" height="16" rx="1" fill="#F6EAD2" />
+          <path d="M80 30 q4 4 0 8 q-4 -4 0 -8z" fill="#F6B23D" />
+          <circle cx="56" cy="52" r="6" fill="#FAF6EA" stroke="#D9C9AE" stroke-width="1" />
+          <circle cx="104" cy="52" r="6" fill="#FAF6EA" stroke="#D9C9AE" stroke-width="1" />
+          <path
+            d="M66 40 v10 M64 40 h4 l-1 6 h-2z M94 40 v10 M92 40 h4 l-1 6 h-2z"
+            stroke="#8C3B2E"
+            stroke-width="1.2"
+            fill="#8C3B2E"
+          />
+        }
+        @case ('gift') {
+          <rect x="56" y="44" width="48" height="32" fill="#3D6E8C" />
+          <rect x="52" y="36" width="56" height="10" fill="#2F5A74" />
+          <rect x="76" y="36" width="8" height="40" fill="#F2C76B" />
+          <path d="M80 36 C70 22 58 28 66 36Z M80 36 C90 22 102 28 94 36Z" fill="#F2C76B" />
+        }
+        @case ('holiday') {
+          <path d="M46 70 L52 34" stroke="#8C6A4A" stroke-width="2.5" />
+          <path d="M28 40 Q50 18 74 32Z" fill="#E8564A" />
+          <path d="M40 36 Q50 22 58 34" stroke="#F6EAD2" stroke-width="3" fill="none" />
+          <rect x="70" y="66" width="34" height="6" rx="2" fill="#F2C76B" />
+          <rect x="108" y="66" width="30" height="6" rx="2" fill="#5BB6D6" />
+          <path d="M12 20 q4 -3 8 0 q4 -3 8 0" stroke="#4A6A7A" stroke-width="1.2" fill="none" />
+        }
+        @case ('propose') {
+          <path d="M54 70 h52 v-14 q-26 -10 -52 0z" fill="#8E1F3A" />
+          <path d="M54 56 q26 -24 52 0" fill="#A3284A" />
+          <rect x="54" y="68" width="52" height="8" fill="#6E1830" />
+          <circle cx="80" cy="54" r="8" fill="none" stroke="#E9C46A" stroke-width="3" />
+          <path d="M80 42 l4 4 l-4 4 l-4 -4z" fill="#DDEFF6" />
+          @for (sp of sparkles; track $index) {
+            <path [attr.d]="sparkle(sp[0], sp[1])" fill="#F3E9C6" />
+          }
+        }
+        @case ('wedding') {
+          <path d="M44 78 V44 Q80 8 116 44 V78" fill="none" stroke="#FAF6EA" stroke-width="6" />
+          @for (f of flowers; track $index) {
+            <circle [attr.cx]="f[0]" [attr.cy]="f[1]" r="3.2" [attr.fill]="f[2]" />
+          }
+          <circle cx="74" cy="56" r="7" fill="none" stroke="#E9C46A" stroke-width="2.5" />
+          <circle cx="86" cy="56" r="7" fill="none" stroke="#E9C46A" stroke-width="2.5" />
+        }
+        @case ('child') {
+          <path d="M50 52 h52 a26 26 0 0 1 -52 0z" fill="#9CC7D6" />
+          <path d="M50 52 a26 26 0 0 1 26 -26 v26z" fill="#7FB0C4" />
+          <circle cx="60" cy="80" r="5" fill="#2B2F36" />
+          <circle cx="94" cy="80" r="5" fill="#2B2F36" />
+          <path d="M102 52 l12 -12" stroke="#2B2F36" stroke-width="2.5" stroke-linecap="round" />
+          <path
+            d="M120 24 c-2.5 -3.5 -7.5 -1 -5 2.5 l5 5 l5 -5 c2.5 -3.5 -2.5 -6 -5 -2.5z"
+            fill="#E86A6A"
+          />
+        }
+        @case ('kids_time') {
+          <path
+            d="M30 78 L40 30 L50 78 M110 78 L120 30 L130 78 M38 32 H122"
+            stroke="#C8553D"
+            stroke-width="3"
+            fill="none"
+          />
+          <path d="M70 32 V58 M90 32 V58" stroke="#6B6B6B" stroke-width="1.2" />
+          <rect x="66" y="58" width="28" height="4" rx="1" fill="#6B3E2A" />
+          <circle cx="80" cy="50" r="5" fill="#E2B48C" />
+          <path d="M74 58 Q80 52 86 58" fill="#F2C76B" />
+          <path d="M140 20 q-6 0 -6 7 q0 6 6 8 q6 -2 6 -8 q0 -7 -6 -7z" fill="#E8564A" />
+          <path d="M140 35 q-2 10 2 22" stroke="#6B6B6B" stroke-width="0.8" fill="none" />
+        }
         @case ('monolocale') {
           <rect x="54" y="30" width="52" height="46" fill="#D9A27A" />
           <rect x="50" y="26" width="60" height="6" fill="#A8694A" />
@@ -216,8 +366,71 @@ export class VignetteComponent {
   readonly id = input.required<string>();
   readonly label = input('');
 
-  protected scene(): 'sea' | 'road' | 'pitch' | 'land' {
+  protected readonly stars: readonly (readonly [number, number])[] = [
+    [12, 10],
+    [30, 22],
+    [48, 8],
+    [70, 16],
+    [92, 6],
+    [108, 24],
+    [150, 34],
+    [20, 34],
+  ];
+  protected readonly skyline: readonly (readonly [number, number, number])[] = [
+    [0, 46, 22],
+    [24, 34, 18],
+    [44, 52, 16],
+    [108, 40, 20],
+    [130, 30, 14],
+    [146, 48, 14],
+  ];
+  protected readonly windows: readonly (readonly [number, number])[] = [
+    [6, 52],
+    [14, 60],
+    [28, 40],
+    [34, 52],
+    [48, 58],
+    [114, 46],
+    [120, 58],
+    [134, 36],
+    [150, 54],
+  ];
+  protected readonly bulbs: readonly (readonly [number, number, string])[] = [
+    [14, 44, '#F2C76B'],
+    [34, 48, '#E8564A'],
+    [54, 49, '#7FC8A9'],
+    [74, 45, '#F2C76B'],
+    [96, 43, '#E8564A'],
+    [118, 42, '#7FC8A9'],
+    [140, 40, '#F2C76B'],
+  ];
+  protected readonly sparkles: readonly (readonly [number, number])[] = [
+    [60, 28],
+    [100, 30],
+    [112, 46],
+    [46, 44],
+  ];
+  protected readonly flowers: readonly (readonly [number, number, string])[] = [
+    [46, 46, '#E86A6A'],
+    [52, 34, '#F6EAD2'],
+    [62, 24, '#E86A6A'],
+    [74, 18, '#F2C76B'],
+    [86, 18, '#E86A6A'],
+    [98, 24, '#F6EAD2'],
+    [108, 34, '#E86A6A'],
+    [114, 46, '#F2C76B'],
+  ];
+
+  /** Stellina a quattro punte centrata in alto su (x, y). */
+  protected sparkle(x: number, y: number): string {
+    return `M${x} ${y} l1.5 3 l3 1.5 l-3 1.5 l-1.5 3 l-1.5 -3 l-3 -1.5 l3 -1.5z`;
+  }
+
+  protected scene(): 'sea' | 'road' | 'pitch' | 'land' | 'night' | 'room' | 'beach' {
     const id = this.id();
+    if (id === 'meet' || id === 'propose') return 'night';
+    if (id === 'ask_out' || id === 'dinner' || id === 'gift' || id === 'child') return 'room';
+    if (id === 'holiday') return 'beach';
     if (id === 'motoscafo' || id === 'yacht') return 'sea';
     if (id === 'utilitaria' || id === 'sportiva') return 'road';
     if (id === 'scuola_calcio') return 'pitch';

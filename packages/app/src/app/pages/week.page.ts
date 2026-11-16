@@ -559,9 +559,17 @@ export class WeekPage {
           const plan: WeekChoice[] = this.choices().map((actionId) =>
             focusIds.has(actionId) ? { actionId, focus: this.focus()! } : { actionId },
           );
-          const news = await this.game.plan(plan);
+          const { news, party } = await this.game.plan(plan);
           this.choices.set([]);
           this.focus.set(null);
+          if (party?.fine) {
+            await this.toast.show(
+              this.i18n.t('private.party.fine', { amount: formatMoney(party.fine) }),
+              'error',
+            );
+          } else if (party?.gossip) {
+            await this.toast.show(this.i18n.t('private.party.gossip'));
+          }
           if (news > 0) await this.router.navigateByUrl('/evento');
           break;
         }

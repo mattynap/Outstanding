@@ -68,14 +68,17 @@ export function levelTone(value: number): 'pos' | 'neg' | 'mid' {
 export function weekBalance(r: {
   finance: { salary: number; sponsors: number; commission: number; expenses: number };
   wealth?: { upkeep: number; loanPayments: number; businessIncome: number };
+  private?: { childCosts: number; alimony: number; settlement: number };
 }): number {
   const f = r.finance;
   const w = r.wealth;
+  const p = r.private;
   return (
     f.salary +
     f.sponsors -
     f.commission -
     f.expenses +
-    (w ? w.businessIncome - w.upkeep - w.loanPayments : 0)
+    (w ? w.businessIncome - w.upkeep - w.loanPayments : 0) -
+    (p ? p.childCosts + p.alimony + p.settlement : 0)
   );
 }

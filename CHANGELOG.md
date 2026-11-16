@@ -154,3 +154,21 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
 - Verifica su 60 stagioni: la Coppa Tricolore la vince quasi sempre un club di massima serie; le
   italiane vincono la Maior nel 5% dei casi e la Minor nel 20%. Salvataggio iniziale ~1,3 MB
   (da ottimizzare in M10).
+
+### M8 – Simulatore
+
+- `pnpm sim --careers N --strategy cautious|aggressive|random|all --seed S [--workers N]
+[--out dir] [--details]`: gioca carriere complete senza interfaccia, in parallelo su più thread,
+  stampa una tabella e scrive un riepilogo JSON in `sim-output/`.
+- Strategie: prudente (allenamento normale, opzione più sicura, un livello alla volta), aggressiva
+  (allenamento intenso e mirato, opzione più rischiosa, sempre il livello più alto), casuale.
+- Metriche, in totale e per ruolo: % in massima serie, età di esordio, stagioni in massima serie,
+  presenze, gol, assist, media voto, OVR massimo, trofei per tipo, età e motivo del ritiro,
+  punteggio, fasce di giudizio, % leggende, tempo di gioco stimato.
+- Punteggio di carriera nel motore (`careerScore`, `careerTotals`, `isLegend`): presenze, gol,
+  assist, porte inviolate e voti pesati per livello, più i trofei; cinque fasce, l'ultima è la
+  "leggenda". Parametri in `config/career.json`.
+- Prima misurazione (5000 carriere per strategia, seme 42): prudente 70% in massima serie (esordio
+  a 26,6 anni), 9,8% leggende quasi tutte attaccanti, ritiro a 38,6 anni, ~10 ore di gioco stimate;
+  aggressiva 70% in massima serie ma media voto 5,4 e nessuna leggenda; casuale 3,5% in massima
+  serie. Problemi di bilanciamento da tarare insieme all'utente (vedi memoria `progress`).

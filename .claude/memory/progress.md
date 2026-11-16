@@ -10,7 +10,7 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
 
 ## Stato al 2026-11-16
 
-- M0–M7 e M7b completate e pushate sul branch `dev`.
+- M0–M8 (con M7b) completate e pushate sul branch `dev`.
 - M4: modulo `engine/src/match/`, parametri in `config/match.json`. Bilanciamento indicativo
   (prima stagione, scelte casuali): ATT ~15 gol in 30 partite, 2,8–3 gol a partita. Da rivedere
   con il simulatore in M8. La partita non tocca ancora forma/energia/morale/fiducia (M6).
@@ -42,7 +42,18 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
   `engine/src/world/foreign.ts`, config `config/cups.json`, contenuti `content/data/foreign.json`.
   Decisioni in [[cups-design]]. Flusso settimana invariato, ma possono esserci **due partite**:
   `while (playerFixture(s)) playMatch(...)` prima di `advanceWeek`.
-- Prossimo passo: M8 (simulatore), che deve contare anche i trofei (`SeasonRecord.trophies`).
+- M8 (simulatore, 2026-11-16): vedi [[simulator-design]]. Prima misurazione, 5000 carriere, seme 42
+  (prudente / aggressiva / casuale): massima serie 70% / 70% / 3,5%; leggende 9,8% / 0% / 0%;
+  ritiro 38,6 / 39,6 / 38 anni; tempo stimato ~10 h / ~10 h / ~10 h.
+- Problemi di bilanciamento emersi in M8, **da discutere con l'utente prima di toccare config/**:
+  1. Momenti chiave: l'opzione più probabile è spesso anche quella che vale il gol (attaccante
+     prudente ~450 gol in carriera, 0,75 a partita; prima della correzione della strategia 1,3).
+     Viola "nessuna scelta sempre giusta". 2. Quasi nessuno si ritira prima dei 38–40 anni: il
+     mercato offre sempre un contratto. 3. Tempo di gioco ~10 h contro l'obiettivo di 2–4 h
+     (soprattutto i momenti chiave di ~700 partite). 4. Punteggio sbilanciato per ruolo: leggende
+     quasi solo attaccanti, portieri e difensori mai. 5. Trofei europei quasi assenti (0,03 a
+     carriera). 6. Potenziali alti si fermano a OVR ~80 (già notato in M7).
+- Prossimo passo: concordare con l'utente la taratura (punti sopra), poi M9 (app).
   Contenuti: arrivare a 100 eventi in parallelo.
 
 ## Idee dell'utente (docs/TODO.txt) — NON ancora pianificate
@@ -58,8 +69,8 @@ idee. Non inserirle in CLAUDE.md né nelle milestone finché l'utente non lo con
 1. Chiedere all'utente la lista integrata delle idee (docs/TODO.txt aggiornato) e concordare dove
    inserirle; poi aggiornare CLAUDE.md (sezione 11) e la memoria.
 2. Chiedere se tenere `docs/TODO.txt` versionato (finito per errore nel commit di M7).
-3. M7b fatta (2026-11-16, l'utente ha chiesto di rimandare le idee a dopo M7b): ora M8, salvo
-   diverse priorità dell'utente. Le idee di docs/TODO.txt restano da discutere.
+3. M7b e M8 fatte (2026-11-16; l'utente ha chiesto due volte di rimandare le idee). Le idee di
+   docs/TODO.txt restano da discutere, insieme alla taratura del bilanciamento.
 - Stato git: tutto committato e pushato su `origin/dev` (main fermo a M2).
 
 ## Decisioni prese dall'utente (2026-11-16)

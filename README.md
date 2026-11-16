@@ -18,7 +18,7 @@ pnpm typecheck          # controllo dei tipi di tutti i pacchetti
 pnpm lint               # ESLint + Prettier
 pnpm format             # formatta il codice con Prettier
 pnpm content:check      # valida contenuti e testi
-pnpm sim --careers 1000 --strategy cautious --seed 42
+pnpm sim --careers 1000 --strategy cautious --seed 42   # oppure --strategy all, --workers N, --details
 ```
 
 ## Struttura

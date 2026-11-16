@@ -14,7 +14,10 @@ simulator ─┘
 - `config`: file JSON di bilanciamento in `data/`, validati con Zod all'importazione.
 - `content`: dati di contenuto (città, nomi, club, tratti, testi, eventi) in `data/`, validati con
   Zod; `pnpm content:check` esegue i controlli incrociati.
-- `simulator`: CLI Node.js che usa il motore senza interfaccia.
+- `simulator`: CLI Node.js che usa il motore senza interfaccia. Gioca carriere complete con una
+  strategia (`cautious`, `aggressive`, `random`) al posto del giocatore, in parallelo su più thread
+  (`worker_threads`), e scrive un riepilogo delle metriche in `sim-output/` (non versionata).
+  Le scelte delle strategie usano un `Rng` separato: i risultati dipendono solo dal seme.
 
 I pacchetti espongono direttamente i sorgenti TypeScript (`exports: ./src/index.ts`): niente passo
 di build intermedio; `pnpm typecheck` controlla i tipi di tutti i pacchetti.

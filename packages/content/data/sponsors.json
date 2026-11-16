@@ -1,0 +1,14 @@
+[
+  { "id": "scarpini_volpe_rossa", "name": "Scarpini Volpe Rossa", "category": "sport" },
+  { "id": "calzature_brezza", "name": "Calzature Brezza", "category": "sport" },
+  { "id": "guanti_nibbio", "name": "Guanti Nibbio", "category": "sport" },
+  { "id": "acqua_fonte_cervina", "name": "Acqua Fonte Cervina", "category": "food" },
+  { "id": "pastificio_tre_spighe", "name": "Pastificio Tre Spighe", "category": "food" },
+  { "id": "biscotti_merlino", "name": "Biscotti Merlino", "category": "food" },
+  { "id": "gelati_polaretto", "name": "Gelati Polaretto", "category": "food" },
+  { "id": "telefonia_ponteradio", "name": "Ponteradio Telefonia", "category": "tech" },
+  { "id": "cuffie_eco_sonico", "name": "Cuffie Ecosonico", "category": "tech" },
+  { "id": "auto_saetta_motori", "name": "Saetta Motori", "category": "cars" },
+  { "id": "occhiali_lince", "name": "Occhiali Lince Blu", "category": "fashion" },
+  { "id": "jeans_cardo", "name": "Jeans Cardo", "category": "fashion" }
+]

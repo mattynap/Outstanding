@@ -64,6 +64,15 @@
         "morale": 2,
         "happiness": 4
       }
+    },
+    {
+      "id": "sponsor_shoot",
+      "kind": "sponsor",
+      "effects": {
+        "energy": -5,
+        "popularity": 1,
+        "discipline": -1
+      }
     }
   ],
   "skipWeekPlan": ["train_normal", "rest"],

@@ -36,6 +36,15 @@ export const clubsDataSchema = z.object({
   symbols: z.array(id).min(4),
 });
 
+/** Marchio inventato di uno sponsor (mai marchi reali). */
+export const sponsorSchema = z.object({
+  id,
+  name: z.string().min(2),
+  category: z.enum(['sport', 'food', 'tech', 'cars', 'fashion']),
+});
+export const sponsorsSchema = z.array(sponsorSchema).min(4);
+export type Sponsor = z.infer<typeof sponsorSchema>;
+
 /** Tabella di traduzioni piatta: "chiave.puntata" -> testo. */
 export const translationsSchema = z.record(z.string(), z.string().min(1));
 

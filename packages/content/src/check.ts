@@ -45,6 +45,15 @@ export function checkContent(content: GameContent): string[] {
     }
   }
 
+  dupes(
+    'sponsors',
+    content.sponsors.map((s) => s.id),
+  );
+  for (const cat of new Set(content.sponsors.map((s) => s.category))) {
+    if (!(`sponsors.categories.${cat}` in t)) {
+      errors.push(`sponsors: missing text key "sponsors.categories.${cat}"`);
+    }
+  }
   checkEvents(content, errors);
   return errors;
 }

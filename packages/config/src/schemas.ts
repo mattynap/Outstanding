@@ -178,13 +178,131 @@ export const worldSchema = z
     }
   });
 
-export const economySchema = z.object({
-  startContract: z.object({
-    salaryWeekly: z.tuple([z.number().min(0), z.number().min(0)]),
-    seasons: z.number().int().min(1),
-  }),
-  initialCoachRelationship: z.number().min(-100).max(100),
-});
+const intRange = z
+  .tuple([z.number().int().min(0), z.number().int().min(0)])
+  .refine(([a, b]) => a <= b, { message: 'range min must be <= max' });
+const share = z.number().min(0).max(1);
+
+export const economySchema = z
+  .object({
+    startContract: z.object({
+      salaryWeekly: z.tuple([z.number().min(0), z.number().min(0)]),
+      seasons: z.number().int().min(1),
+    }),
+    initialCoachRelationship: z.number().min(-100).max(100),
+    /** Stipendio settimanale offerto per livello, dal giocatore più debole al più forte del livello. */
+    salaryByLevel: z.array(
+      z.object({ level: z.number().int().min(1), min: z.number().min(0), max: z.number().min(0) }),
+    ),
+    salaryRound: z.number().int().min(1),
+    lifestyles: z
+      .array(
+        z.object({
+          id: z.string().regex(/^[a-z0-9_]+$/),
+          weeklyCost: z.number().min(0),
+          happinessPerWeek: z.number(),
+        }),
+      )
+      .min(1),
+    defaultLifestyle: z.string(),
+    /** Effetti settimanali quando i soldi in cassa sono negativi. */
+    debt: z.object({ happinessPerWeek: z.number(), moralePerWeek: z.number() }),
+    agents: z.object({
+      qualityRange: intRange,
+      /** Commissione per qualità (indice 0 = qualità 1). */
+      commissionByQuality: z.array(share).min(1),
+      /** Reputazione minima per ogni stella di qualità del procuratore. */
+      reputationPerQuality: z.number().min(0),
+      offerChanceBonusPerQuality: z.number().min(0),
+      negotiationRoomPerQuality: z.number().min(0),
+      initialRelationship: z.number().min(-100).max(100),
+      candidates: z.number().int().min(1),
+    }),
+    offers: z.object({
+      weeklyChance: share,
+      freeAgentWeeklyChance: share,
+      popularityFactor: z.number().min(0),
+      formFactor: z.number().min(0),
+      maxOpen: z.number().int().min(1),
+      lifetimeWeeks: z.number().int().min(1),
+      /** Differenza ammessa tra OVR percepito del giocatore e rating del club. */
+      minFit: z.number(),
+      maxFit: z.number(),
+      youthBonusPerYear: z.number().min(0),
+      youthBonusUntilAge: z.number().int(),
+      /** Dopo questa età gli osservatori scontano l'OVR percepito ogni anno. */
+      agePenaltyFromAge: z.number().int(),
+      agePenaltyPerYear: z.number().min(0),
+      maxLevelsUp: z.number().int().min(0),
+      maxLevelsDown: z.number().int().min(0),
+      levelWeights: z.object({
+        higher: z.number().min(0),
+        same: z.number().min(0),
+        lower: z.number().min(0),
+      }),
+      seasonsByAge: z
+        .array(
+          z.object({
+            maxAge: z.number().int(),
+            min: z.number().int().min(1),
+            max: z.number().int().min(1),
+          }),
+        )
+        .min(1),
+      salaryNoise: share,
+      signingBonusWeeks: intRange,
+    }),
+    negotiation: z.object({
+      roomMin: z.number().min(0),
+      roomMax: z.number().min(0),
+      rounds: z.number().int().min(0),
+      maxSeasons: z.number().int().min(1),
+    }),
+    renewal: z.object({
+      fromSeasonWeek: z.number().int().min(0),
+      minFit: z.number(),
+      /** Bonus sulla valutazione per ogni punto di fiducia dell'allenatore. */
+      trustBonusPerPoint: z.number().min(0),
+      raise: z.number(),
+    }),
+    loans: z.object({
+      maxAge: z.number().int(),
+      gapBelowClub: z.number(),
+      weeklyChance: share,
+      minFit: z.number(),
+      maxFit: z.number(),
+    }),
+    sponsors: z.object({
+      minPopularity: pct,
+      weeklyChance: share,
+      max: z.number().int().min(0),
+      baseWeekly: z.number().min(0),
+      perPopularityPoint: z.number().min(0),
+      seasons: intRange,
+      lifetimeWeeks: z.number().int().min(1),
+      /** Settimane di compenso extra per un servizio fotografico. */
+      shootBonusWeeks: z.number().min(0),
+    }),
+    retirement: z.object({ minAge: z.number().int(), maxAge: z.number().int() }),
+  })
+  .superRefine((e, ctx) => {
+    if (!e.lifestyles.some((l) => l.id === e.defaultLifestyle)) {
+      ctx.addIssue({ code: 'custom', message: 'defaultLifestyle must be one of lifestyles' });
+    }
+    const [qMin, qMax] = e.agents.qualityRange;
+    if (qMin < 1 || e.agents.commissionByQuality.length < qMax) {
+      ctx.addIssue({ code: 'custom', message: 'commissionByQuality must cover every quality' });
+    }
+    if (e.offers.minFit > e.offers.maxFit || e.loans.minFit > e.loans.maxFit) {
+      ctx.addIssue({ code: 'custom', message: 'minFit must be <= maxFit' });
+    }
+    if (e.negotiation.roomMin > e.negotiation.roomMax) {
+      ctx.addIssue({ code: 'custom', message: 'roomMin must be <= roomMax' });
+    }
+    if (e.retirement.minAge > e.retirement.maxAge) {
+      ctx.addIssue({ code: 'custom', message: 'retirement minAge must be <= maxAge' });
+    }
+  });
 
 const prob = z.number().min(0).max(1);
 const minuteRange = z
@@ -359,12 +477,13 @@ const conditionDelta = z
     happiness: z.number(),
     discipline: z.number(),
     injuryRisk: z.number(),
+    popularity: z.number(),
   })
   .partial();
 
 const weekAction = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/),
-  kind: z.enum(['training', 'rest', 'recovery', 'leisure']),
+  kind: z.enum(['training', 'rest', 'recovery', 'leisure', 'sponsor']),
   /** Moltiplicatore della crescita per gli allenamenti. */
   intensity: z.number().positive().optional(),
   /** L'allenamento si concentra su un'abilità scelta dal giocatore. */

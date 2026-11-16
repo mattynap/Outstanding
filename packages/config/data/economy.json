@@ -3,5 +3,142 @@
     "salaryWeekly": [30, 80],
     "seasons": 1
   },
-  "initialCoachRelationship": 0
+  "initialCoachRelationship": 0,
+  "salaryByLevel": [
+    {
+      "level": 1,
+      "min": 8000,
+      "max": 60000
+    },
+    {
+      "level": 2,
+      "min": 2500,
+      "max": 9000
+    },
+    {
+      "level": 3,
+      "min": 600,
+      "max": 2500
+    },
+    {
+      "level": 4,
+      "min": 150,
+      "max": 600
+    },
+    {
+      "level": 5,
+      "min": 60,
+      "max": 180
+    },
+    {
+      "level": 6,
+      "min": 30,
+      "max": 80
+    }
+  ],
+  "salaryRound": 10,
+  "lifestyles": [
+    {
+      "id": "basic",
+      "weeklyCost": 20,
+      "happinessPerWeek": 0
+    },
+    {
+      "id": "comfort",
+      "weeklyCost": 150,
+      "happinessPerWeek": 0.5
+    },
+    {
+      "id": "luxury",
+      "weeklyCost": 1500,
+      "happinessPerWeek": 1
+    }
+  ],
+  "defaultLifestyle": "basic",
+  "debt": {
+    "happinessPerWeek": -2,
+    "moralePerWeek": -1
+  },
+  "agents": {
+    "qualityRange": [1, 5],
+    "commissionByQuality": [0.03, 0.04, 0.05, 0.07, 0.09],
+    "reputationPerQuality": 12,
+    "offerChanceBonusPerQuality": 0.12,
+    "negotiationRoomPerQuality": 0.03,
+    "initialRelationship": 20,
+    "candidates": 3
+  },
+  "offers": {
+    "weeklyChance": 0.3,
+    "freeAgentWeeklyChance": 0.6,
+    "popularityFactor": 0.01,
+    "formFactor": 0.01,
+    "maxOpen": 3,
+    "lifetimeWeeks": 2,
+    "minFit": -3,
+    "maxFit": 18,
+    "youthBonusPerYear": 1.5,
+    "youthBonusUntilAge": 21,
+    "maxLevelsUp": 2,
+    "maxLevelsDown": 1,
+    "levelWeights": {
+      "higher": 2.5,
+      "same": 1,
+      "lower": 0.35
+    },
+    "seasonsByAge": [
+      {
+        "maxAge": 22,
+        "min": 2,
+        "max": 4
+      },
+      {
+        "maxAge": 29,
+        "min": 2,
+        "max": 3
+      },
+      {
+        "maxAge": 99,
+        "min": 1,
+        "max": 2
+      }
+    ],
+    "salaryNoise": 0.1,
+    "signingBonusWeeks": [0, 4],
+    "agePenaltyFromAge": 30,
+    "agePenaltyPerYear": 1.5
+  },
+  "negotiation": {
+    "roomMin": 0.05,
+    "roomMax": 0.25,
+    "rounds": 2,
+    "maxSeasons": 5
+  },
+  "renewal": {
+    "fromSeasonWeek": 30,
+    "minFit": -3,
+    "trustBonusPerPoint": 0.05,
+    "raise": 0.1
+  },
+  "loans": {
+    "maxAge": 22,
+    "gapBelowClub": 4,
+    "weeklyChance": 0.4,
+    "minFit": -2,
+    "maxFit": 8
+  },
+  "sponsors": {
+    "minPopularity": 25,
+    "weeklyChance": 0.08,
+    "max": 2,
+    "baseWeekly": 50,
+    "perPopularityPoint": 12,
+    "seasons": [1, 2],
+    "lifetimeWeeks": 3,
+    "shootBonusWeeks": 1
+  },
+  "retirement": {
+    "minAge": 33,
+    "maxAge": 40
+  }
 }

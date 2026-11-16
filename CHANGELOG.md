@@ -369,3 +369,16 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
 - Guida di stile aggiornata con categorie, condizioni, effetti e segnaposto arrivati in M15–M17.
 - Simulatore (prudente, 1000 carriere, seme 42): massima serie 60,6%, leggende 3,2%, tempo di
   gioco invariato (le notizie a settimana non aumentano).
+
+### Tempo di gioco
+
+- Piano ricordato: `planWeek` salva l'ultimo piano scelto (`GameState.lastPlan`) e la settimana lo
+  ripropone già selezionato; i piani automatici (settimane saltate, avanti veloce) non lo
+  sostituiscono.
+- Avanti veloce (`fastForward`, `engine/src/season/fastForward.ts`): fino alla prossima partita
+  importante (le stesse delle conferenze stampa) o a fine stagione. Ripete il piano senza le
+  serate, sceglie la risposta più prudente alle notizie (`prudentChoice`), simula le partite. Si
+  ferma per offerte che contano (rinnovo, categoria superiore, giocatore senza squadra), per le
+  notizie personali (tradimento scoperto, nascita, partner che se ne va) e a fine carriera.
+- Stima: il piano ricordato toglie circa metà del tempo della pianificazione (~35 min a carriera);
+  l'avanti veloce dipende da quanto lo si usa (una stagione intera in pochi secondi).

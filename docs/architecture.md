@@ -72,6 +72,10 @@ valore naturale per la popolarità e commenti dei tifosi, con un `Rng` ricavato 
 conferenza sulle partite passa da `pressBonus`, sommato al bonus della difficoltà in `optionChance`.
 `followersBonus` alza frequenza e compenso degli sponsor e la rendita delle attività.
 
+`fastForward` (in `engine/src/season`) usa solo le funzioni pubbliche della settimana (`planWeek`,
+`drawWeekEvents`, `resolveEvent`, `simulateMatch`, `advanceWeek`): è deterministico come il resto e
+il simulatore non lo usa (ha le sue strategie).
+
 Le funzioni pubbliche ricevono un `GameContext` opzionale (config + contenuti); se assente si usa
 quello predefinito dei pacchetti `config` e `content`. Nei test si può iniettare un contesto
 modificato.

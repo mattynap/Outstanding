@@ -84,17 +84,31 @@ import { LookEditorComponent } from '../ui/look-editor.component';
             <span class="o-label">{{ 'ui.create.hometown' | t }}</span>
             <input
               class="o-input"
-              list="cities"
               [value]="hometown()"
               (input)="hometown.set(value($event))"
+              (focus)="cityFocus.set(true)"
+              (blur)="cityFocus.set(false)"
               autocomplete="off"
+              autocorrect="off"
+              spellcheck="false"
             />
-            <datalist id="cities">
-              @for (c of cities; track c) {
-                <option [value]="c"></option>
-              }
-            </datalist>
-            @if (hometown() && !cityValid()) {
+            @if (citySuggestions().length > 0) {
+              <!-- mousedown.preventDefault: il tocco non toglie il focus prima della scelta -->
+              <ul class="suggest" role="listbox">
+                @for (c of citySuggestions(); track c) {
+                  <li>
+                    <button
+                      type="button"
+                      role="option"
+                      (mousedown)="$event.preventDefault()"
+                      (click)="pickCity(c)"
+                    >
+                      {{ c }}
+                    </button>
+                  </li>
+                }
+              </ul>
+            } @else if (hometown() && !cityValid() && !cityFocus()) {
               <span class="error">{{ 'ui.create.unknownCity' | t }}</span>
             }
           </label>
@@ -288,6 +302,28 @@ import { LookEditorComponent } from '../ui/look-editor.component';
     .small {
       font-size: var(--o-text-sm);
     }
+    .suggest {
+      list-style: none;
+      margin: 6px 0 0;
+      padding: 4px;
+      border: 1px solid var(--o-border-strong);
+      border-radius: var(--o-radius-md);
+      background: var(--o-surface-raised);
+    }
+    .suggest button {
+      width: 100%;
+      min-height: var(--o-touch);
+      padding: 0 var(--o-space-3);
+      border: 0;
+      border-radius: var(--o-radius-sm);
+      background: transparent;
+      color: var(--o-text);
+      font: inherit;
+      text-align: left;
+    }
+    .suggest button:active {
+      background: var(--o-accent-soft);
+    }
     .error {
       font-size: var(--o-text-sm);
       color: var(--o-negative);
@@ -424,9 +460,20 @@ export class CreatePage {
       (t) => t.selectableAtCreation && (!t.roles || t.roles.includes(this.role())),
     ),
   );
-  protected readonly cityValid = computed(() => {
-    const wanted = this.hometown().trim().toLocaleLowerCase('it');
-    return this.cities.some((c) => c.toLocaleLowerCase('it') === wanted);
+  protected readonly cityFocus = signal(false);
+  /** Nome ufficiale della città scritta, ignorando maiuscole e accenti; null se non esiste. */
+  private readonly canonicalCity = computed(() => {
+    const wanted = norm(this.hometown());
+    return this.cities.find((c) => norm(c) === wanted) ?? null;
+  });
+  protected readonly cityValid = computed(() => this.canonicalCity() !== null);
+  /** Suggerimenti: prima le città che iniziano col testo, poi quelle che lo contengono. */
+  protected readonly citySuggestions = computed(() => {
+    const q = norm(this.hometown());
+    if (!this.cityFocus() || q.length === 0 || this.cityValid()) return [];
+    const starts = this.cities.filter((c) => norm(c).startsWith(q));
+    const contains = this.cities.filter((c) => !norm(c).startsWith(q) && norm(c).includes(q));
+    return [...starts, ...contains].slice(0, 6);
   });
   protected readonly valid = computed(
     () =>
@@ -437,6 +484,10 @@ export class CreatePage {
     addIcons({ chevronBack, shuffleOutline });
     this.randomName();
     this.randomLook();
+  }
+
+  protected pickCity(c: string): void {
+    this.hometown.set(c);
   }
 
   protected value(e: Event): string {
@@ -489,7 +540,7 @@ export class CreatePage {
         {
           firstName: this.firstName(),
           lastName: this.lastName(),
-          hometown: this.hometown(),
+          hometown: this.canonicalCity() ?? this.hometown(),
           role: this.role(),
           traits: this.traits(),
           startLevel: this.startLevel(),
@@ -512,4 +563,13 @@ export class CreatePage {
 
 // Fuori dal motore il caso non deve essere riproducibile: qui basta Math.random.
 const randInt = (n: number) => Math.floor(Math.random() * n);
+/** Testo confrontabile: minuscolo, senza accenti e spazi doppi. */
+const norm = (s: string): string =>
+  s
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('it')
+    .replace(/\s+/g, ' ')
+    .trim();
+
 const pick = <T>(items: readonly T[]): T => items[randInt(items.length)]!;

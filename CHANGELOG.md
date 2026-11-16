@@ -240,3 +240,18 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
 - Acquisti: un solo prodotto, "Versione completa" (non consumabile, ripristinabile), senza
   vantaggi in carriera. Il blocco dei contenuti tra prova e completa arriverà con i 100 eventi.
 - Pubblicità a premio: solo interfaccia, nessun premio nel gioco (decisione dell'utente).
+
+### M11b – Editor
+
+- Motore (`engine/src/world/edits.ts`): nome, nome breve, iniziali, colori e motivo della maglia
+  dei club (italiani e stranieri); nome di calciatori delle rose, allenatori e procuratori; nome di
+  campionati e coppe. Valori originali conservati in `GameState.edits`, ripristinabili uno per uno
+  o tutti insieme; colori solo dalla tavolozza del gioco. Limiti in `config/data/editor.json`.
+- Le correzioni valgono per la carriera (decisione dell'utente) e si salvano con lo slot.
+- App: schermata "Redazione" (da Impostazioni) con schede Club, Persone, Competizioni e File;
+  anteprima dal vivo di stemma e maglia; correzioni mostrate come su una bozza (nome originale
+  barrato in rosso). I nomi delle competizioni sostituiscono le traduzioni in tutta l'app.
+- File delle correzioni in JSON validato con Zod (`docs/editor-format.md`): esportazione con il
+  menu di condivisione sul telefono o scaricamento nel browser; importazione che applica solo le
+  voci con id e nome originale corrispondenti alla carriera.
+- Nuova dipendenza: `@capacitor/share` (MIT).

@@ -71,6 +71,10 @@ Tema: scuro predefinito; il chiaro si attiva con `data-theme="light"` su `<html>
 | `<app-avatar>`                                                         | Avatar componibile (`Player.appearance` + maglia del club)              |
 | `<app-tab-bar>`                                                        | Navigazione in basso: Settimana, Profilo, Mercato, Classifica, Carriera |
 
+Correzioni dell'editor ("Redazione"): il nome originale resta sopra quello nuovo, piccolo e barrato
+con una riga rossa (`--o-headline-red`), più il segno ✎ a destra della riga; i colori si scelgono
+da cerchi della tavolozza (44 px di area tattile), il motivo da miniature della maglia.
+
 Simboli degli stemmi: `packages/app/src/app/ui/symbols.ts`, uno per ogni id di
 `content/data/clubs.json`. Parti dell'avatar: `content/data/avatar.json` (colori e id) e tracciati in
 `avatar.component.ts`.

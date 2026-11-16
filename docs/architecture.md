@@ -30,7 +30,10 @@ simulator ─┘
   `SaveBackend`, in memoria nei test), `capacitor-backend.ts` (Filesystem + Preferences).
   Servizi esterni (`src/app/core/services`): `services.ts` (interfacce e implementazioni finte,
   senza Angular) e `platform.service.ts` (le collega all'app; per gli SDK reali si cambiano solo le
-  implementazioni create lì). I sorgenti di `engine`, `content` e `config` sono
+  implementazioni create lì). Editor (`src/app/core/editor`): `edits-file.ts` (formato del file
+  delle correzioni, Zod; vedi `docs/editor-format.md`) e `file-transfer.ts` (condivisione o
+  scaricamento); le regole delle modifiche stanno nel motore (`engine/src/world/edits.ts`).
+  I sorgenti di `engine`, `content` e `config` sono
   inclusi con i `paths` di `tsconfig.json`.
 
 I pacchetti espongono direttamente i sorgenti TypeScript (`exports: ./src/index.ts`): niente passo

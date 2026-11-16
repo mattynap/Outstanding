@@ -22,6 +22,10 @@ manca) e ha approvato questo ordine, **prima** di M12 (pubblicazione):
 - **M17 – Media:** social del calciatore, interviste e conferenze stampa.
 
 Decisioni dell'utente:
+- **M13 (fatta):** la difficoltà cambia crescita, infortuni, offerte, stipendi **e** le probabilità
+  dei momenti chiave; il tutorial è una **settimana guidata** vera (note del caporedattore fino alla
+  prima partita, poi "tengo / ricomincio"). Stato della guida nelle Preferences
+  (`outstanding.tutorial`), non nel salvataggio.
 - **Immagini:** vignette SVG piatte disegnate dal codice (stesso stile di stemmi e avatar), niente
   asset esterni.
 - **Tono:** allusivo, obiettivo **PEGI 12**: tradimenti, gossip, feste e alcol con ironia e senza

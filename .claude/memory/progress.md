@@ -69,7 +69,10 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
   marcare gli eventi della versione completa e filtrarli senza l'entitlement.
 - M11b (editor, 2026-11-16): vedi [[editor-design]]. Provato nel browser con Playwright (club,
   persone, competizioni, esporta → annulla tutto → importa, nomi visibili in classifica).
-- Prossimo passo: **M13 (basi: difficoltà, tutorial, modalità di gioco)**, poi M14–M17 e solo dopo
+- M13 (basi, 2026-11-16): difficoltà (decisione utente: tocca anche le partite), settimana guidata
+  (decisione utente: vera prima settimana con note), modalità di gioco solo testuale. Numeri in
+  CHANGELOG. Provato nel browser con Playwright (guida completa, impostazioni), nessun errore.
+- Prossimo passo: **M14 (personaggio: avatar più umano, tatuaggi)**, poi M15–M17 e solo dopo
   M12. Piano e decisioni in [[user-ideas-roadmap]]. Ancora aperto: tempo di gioco. Contenuti:
   arrivare a 100 eventi in parallelo.
 - `docs/TODO.txt` lo modifica l'utente: non includerlo nei commit.

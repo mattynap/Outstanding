@@ -48,6 +48,11 @@ di build intermedio; `pnpm typecheck` controlla i tipi di tutti i pacchetti.
 4. **Contenuti come dati:** in `packages/content/data/`.
 5. **Salvataggi versionati:** `GameState.saveVersion` + migrazioni in `engine/src/save`.
 
+La difficoltà della carriera (`GameState.difficulty`, letta con `difficultyMods`) non cambia il
+mondo generato: corregge crescita (sessioni di allenamento e partita), probabilità di infortunio,
+offerte e stipendi del mercato e la probabilità dei momenti chiave (`optionChance`, entro i limiti
+min/max).
+
 Le funzioni pubbliche ricevono un `GameContext` opzionale (config + contenuti); se assente si usa
 quello predefinito dei pacchetti `config` e `content`. Nei test si può iniettare un contesto
 modificato.

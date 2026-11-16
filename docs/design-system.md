@@ -70,10 +70,17 @@ Tema: scuro predefinito; il chiaro si attiva con `data-theme="light"` su `<html>
 | `<app-kit>`                                                            | Maglia SVG (`Club.kit`): tinta unita, strisce, banda                    |
 | `<app-avatar>`                                                         | Avatar componibile (`Player.appearance` + maglia del club)              |
 | `<app-tab-bar>`                                                        | Navigazione in basso: Settimana, Profilo, Mercato, Classifica, Carriera |
+| `<app-tip>`                                                            | Nota del caporedattore della settimana guidata                          |
 
 Correzioni dell'editor ("Redazione"): il nome originale resta sopra quello nuovo, piccolo e barrato
 con una riga rossa (`--o-headline-red`), più il segno ✎ a destra della riga; i colori si scelgono
 da cerchi della tavolozza (44 px di area tattile), il motivo da miniature della maglia.
+
+Settimana guidata: ogni nota è un foglio di carta (`--o-paper`, `--o-ink`) appuntato con una
+graffetta, leggermente ruotato, con il filo rosso (`--o-headline-red`) a sinistra e l'occhiello
+"Nota del caporedattore · n di 10". Una sola nota per schermata; "Capito" a destra, "Salta la guida"
+come link. Le scelte di difficoltà mostrano tre tacche crescenti; gli interruttori sì/no usano un
+cursore giallo (`--o-accent`) dentro una `.o-choice`.
 
 Simboli degli stemmi: `packages/app/src/app/ui/symbols.ts`, uno per ogni id di
 `content/data/clubs.json`. Parti dell'avatar: `content/data/avatar.json` (colori e id) e tracciati in

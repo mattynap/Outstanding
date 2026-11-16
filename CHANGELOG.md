@@ -255,3 +255,20 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
   menu di condivisione sul telefono o scaricamento nel browser; importazione che applica solo le
   voci con id e nome originale corrispondenti alla carriera.
 - Nuova dipendenza: `@capacitor/share` (MIT).
+
+### M13 – Basi (difficoltà, settimana guidata, modalità di gioco)
+
+- Difficoltà facile / normale / difficile scelta alla creazione (`GameState.difficulty`, assente
+  nei vecchi salvataggi = normale). Parametri in `config/data/difficulty.json`: crescita,
+  infortuni, frequenza delle offerte, stipendi offerti e bonus sulle probabilità dei momenti
+  chiave (decisione dell'utente: la difficoltà tocca anche le partite). Modulo
+  `engine/src/difficulty.ts`.
+- Simulatore: opzione `--difficulty`. Prudente, 1000 carriere, seme 42 (facile / normale /
+  difficile): massima serie 71% / 62% / 52%, leggende 13% / 3,1% / 0,1%, media voto 6,37 / 6,24 /
+  6,11. Normale invariata rispetto alla taratura di M8.
+- Settimana guidata (decisione dell'utente): proposta in creazione quando non ci sono carriere
+  salvate; dieci note del caporedattore sulle schermate (settimana, notizie, partita, pagella) fino
+  alla prima partita, poi la scelta tra tenere la carriera o ricominciare. Si può saltare e
+  riattivare dalle impostazioni.
+- Impostazioni: modalità di gioco (testuale; "partite animate" visibile ma disattivata fino alla
+  fase 2) e difficoltà della carriera.

@@ -298,7 +298,7 @@ pnpm install
 pnpm test               # tutti i test
 pnpm lint
 pnpm content:check      # valida eventi e testi
-pnpm sim --careers 1000 --strategy cautious --seed 42
+pnpm sim --careers 1000 --strategy cautious --seed 42 [--difficulty easy|normal|hard]
 pnpm --filter app start # app nel browser
 pnpm --filter app build && npx cap sync android
 ```

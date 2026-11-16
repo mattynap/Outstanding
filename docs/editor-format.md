@@ -45,7 +45,12 @@ Schema Zod in `packages/app/src/app/core/editor/edits-file.ts`. Esempio (nomi in
     }
   ],
   "people": [
-    { "id": "n251", "original": "Gualtiero Bassotti", "firstName": "Ettore", "lastName": "Fittizio" }
+    {
+      "id": "n251",
+      "original": "Gualtiero Bassotti",
+      "firstName": "Ettore",
+      "lastName": "Fittizio"
+    }
   ],
   "competitions": [{ "id": "L1", "name": "Lega delle Stelle" }]
 }

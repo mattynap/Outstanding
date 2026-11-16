@@ -5,7 +5,7 @@ import type { Crest, CrestShape, Kit, KitPattern, Role, RosterPlayer } from '../
 import { ROLES } from '../player/ratings';
 
 const CREST_SHAPES: readonly CrestShape[] = ['shield', 'circle', 'oval'];
-const KIT_PATTERNS: readonly KitPattern[] = ['solid', 'vstripes', 'hstripes', 'sash'];
+export const KIT_PATTERNS: readonly KitPattern[] = ['solid', 'vstripes', 'hstripes', 'sash'];
 
 /**
  * Stemma e maglia procedurali, interamente determinati dal seme del club e dalla tavolozza dei

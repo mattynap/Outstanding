@@ -746,3 +746,18 @@ export type EconomyConfig = z.infer<typeof economySchema>;
 export type RatingsConfig = z.infer<typeof ratingsSchema>;
 export type PlayerConfig = z.infer<typeof playerConfigSchema>;
 export type CalendarConfig = z.infer<typeof calendarSchema>;
+
+/** Editor del giocatore: lunghezze massime dei nomi e versione del file di esportazione. */
+export const editorSchema = z.object({
+  limits: z.object({
+    clubName: z.number().int().positive(),
+    shortName: z.number().int().positive(),
+    initials: z.number().int().positive(),
+    personName: z.number().int().positive(),
+    competitionName: z.number().int().positive(),
+  }),
+  fileVersion: z.number().int().positive(),
+  /** Dimensione massima del file da importare, in byte. */
+  maxFileBytes: z.number().int().positive(),
+});
+export type EditorConfig = z.infer<typeof editorSchema>;

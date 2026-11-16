@@ -99,6 +99,25 @@ export {
   playerClub,
 } from './world/queries';
 export {
+  clubLook,
+  competitionIds,
+  editClub,
+  editCount,
+  editPerson,
+  emptyEdits,
+  originalClubLook,
+  originalPersonName,
+  pruneEdits,
+  resetAllEdits,
+  resetClub,
+  resetPerson,
+  setCompetitionName,
+  worldPeople,
+  type PersonKind,
+  type PersonRef,
+} from './world/edits';
+export { KIT_PATTERNS } from './world/club';
+export {
   serialize,
   deserialize,
   migrate,

@@ -1,0 +1,11 @@
+{
+  "limits": {
+    "clubName": 32,
+    "shortName": 18,
+    "initials": 3,
+    "personName": 24,
+    "competitionName": 32
+  },
+  "fileVersion": 1,
+  "maxFileBytes": 2000000
+}

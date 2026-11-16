@@ -358,6 +358,35 @@ export interface World {
   npcs: Npc[];
 }
 
+/** Aspetto di un club modificabile dall'editor. */
+export interface ClubLook {
+  name: string;
+  shortName: string;
+  initials: string;
+  primary: string;
+  secondary: string;
+  pattern: KitPattern;
+}
+
+export interface PersonName {
+  firstName: string;
+  lastName: string;
+}
+
+/**
+ * Modifiche dell'editor per questa carriera. Il mondo contiene i valori scelti dal giocatore; qui
+ * restano i valori generati in origine, per ripristinarli e per riconoscere i club e le persone
+ * quando si importa un file di modifiche.
+ */
+export interface WorldEdits {
+  /** clubId -> aspetto generato in origine. */
+  clubs: Record<string, ClubLook>;
+  /** id di un calciatore delle rose, di un allenatore o di un procuratore -> nome originale. */
+  people: Record<string, PersonName>;
+  /** id del campionato (L1…L6) o della coppa -> nome scelto dal giocatore. */
+  competitions: Record<string, string>;
+}
+
 export interface GameState {
   saveVersion: number;
   seed: number;
@@ -393,4 +422,6 @@ export interface GameState {
   nextId: number;
   /** Partita del giocatore iniziata e non ancora finita. */
   currentMatch?: MatchState;
+  /** Modifiche dell'editor (assente finché il giocatore non cambia nulla). */
+  edits?: WorldEdits;
 }

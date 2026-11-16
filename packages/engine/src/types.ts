@@ -170,6 +170,60 @@ export interface Fixture {
   result?: { home: number; away: number };
 }
 
+/** Esito della convocazione: titolare, in panchina o fuori dai convocati. */
+export type Selection = 'starter' | 'bench' | 'out';
+export type Side = 'home' | 'away';
+
+/** Un fatto della cronaca di una partita. */
+export type MatchEvent =
+  | {
+      kind: 'goal';
+      minute: number;
+      side: Side;
+      scorerName: string;
+      assistName?: string;
+      /** Vero se ha segnato il giocatore. */
+      byPlayer: boolean;
+      /** Vero se l'assist è del giocatore. */
+      assistByPlayer: boolean;
+    }
+  | { kind: 'subIn' | 'subOut'; minute: number }
+  | { kind: 'moment'; minute: number; momentId: string; optionId: string; success: boolean };
+
+/** Momento chiave in attesa della scelta del giocatore. */
+export interface PendingMoment {
+  momentId: string;
+  minute: number;
+  /** Variante di testo, da 1. */
+  textVariant: number;
+}
+
+/**
+ * Partita del giocatore in corso. Viene salvata in GameState così si può interrompere e riprendere
+ * a metà (anche durante un momento chiave).
+ */
+export interface MatchState {
+  fixtureId: string;
+  /** Lato del club del giocatore. */
+  side: Side;
+  opponentId: string;
+  selection: Selection;
+  /** Minuto di ingresso (0 per i titolari), null se il giocatore non entra. */
+  minuteIn: number | null;
+  /** Minuto di uscita (fine partita se resta in campo). */
+  minuteOut: number;
+  blocksDone: number;
+  score: { home: number; away: number };
+  events: MatchEvent[];
+  /** Minuti dei momenti chiave ancora da giocare, in ordine. */
+  momentMinutes: number[];
+  pending: PendingMoment | null;
+  /** Somma delle variazioni di voto dovute ai momenti chiave. */
+  ratingDelta: number;
+  goals: number;
+  assists: number;
+}
+
 export interface World {
   clubs: Club[];
   leagues: League[];
@@ -195,4 +249,6 @@ export interface GameState {
   scheduled: { eventId: string; atWeek: number }[];
   /** Contatore crescente usato per creare id univoci. */
   nextId: number;
+  /** Partita del giocatore iniziata e non ancora finita. */
+  currentMatch?: MatchState;
 }

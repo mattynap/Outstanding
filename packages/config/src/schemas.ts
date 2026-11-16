@@ -186,16 +186,162 @@ export const economySchema = z.object({
   initialCoachRelationship: z.number().min(-100).max(100),
 });
 
-export const matchSchema = z.object({
-  /** Simulazione rapida delle partite che non coinvolgono il giocatore. */
-  quickSim: z.object({
-    baseGoals: z.number().positive(),
-    homeAdvantage: z.number(),
-    ratingScale: z.number().positive(),
-  }),
+const prob = z.number().min(0).max(1);
+const minuteRange = z
+  .tuple([z.number().int().min(1), z.number().int().min(1)])
+  .refine(([a, b]) => a <= b, { message: 'range min must be <= max' });
+const momentTag = z.enum([
+  'finishing',
+  'passing',
+  'dribble',
+  'tackle',
+  'duel',
+  'composure',
+  'penalty',
+]);
+
+/** Esito di un'opzione: variazione del voto ed eventuale gol (a favore o contro) con probabilità. */
+const momentOutcome = z.object({
+  rating: z.number(),
+  /** Probabilità che ne nasca un gol della squadra del giocatore. */
+  goalFor: prob.optional(),
+  /** Chi segna il gol a favore: il giocatore, un compagno su suo assist, o un compagno e basta. */
+  by: z.enum(['self', 'assist', 'team']).optional(),
+  /** Probabilità che ne nasca un gol degli avversari. */
+  goalAgainst: prob.optional(),
 });
 
+const momentOption = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  /** Pesi delle abilità usate per calcolare la probabilità di successo. */
+  skills: z
+    .partialRecord(z.enum(SKILLS), z.number().positive())
+    .refine((w) => Object.keys(w).length > 0, { message: 'option needs at least one skill' }),
+  /** Difficoltà relativa alla forza dell'avversario (positiva = più difficile). */
+  difficulty: z.number(),
+  /** Etichetta usata dai modificatori dei tratti (`match.tag.<tag>`). */
+  tag: momentTag.optional(),
+  success: momentOutcome,
+  failure: momentOutcome,
+});
+
+const momentType = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  /** Peso di estrazione del momento per ciascun ruolo (ruoli assenti = mai). */
+  weights: z.partialRecord(roleSchema, z.number().positive()),
+  /** Numero di varianti di testo (`match.moments.<id>.text.<n>`, da 1). */
+  textVariants: z.number().int().min(1),
+  options: z.array(momentOption).min(2).max(4),
+});
+
+export const matchSchema = z
+  .object({
+    /** Simulazione rapida delle partite che non coinvolgono il giocatore. */
+    quickSim: z.object({
+      baseGoals: z.number().positive(),
+      homeAdvantage: z.number(),
+      ratingScale: z.number().positive(),
+    }),
+    blocks: z.number().int().min(1),
+    minutesPerBlock: z.number().int().min(1),
+    /** Quota del distacco tra OVR del giocatore e rating del club che pesa sulla forza della squadra. */
+    playerImpact: z.number().min(0).max(1),
+    /** Gol attesi moltiplicati mentre il giocatore è in campo (i momenti chiave aggiungono i loro). */
+    xgScaleWhileOnPitch: z.object({ for: z.number().positive(), against: z.number().positive() }),
+    /** Peso dei ruoli nella scelta del marcatore per i gol dei compagni e degli avversari. */
+    scorerWeights: perRole(z.number().min(0)),
+    selection: z.object({
+      formWeight: z.number().min(0),
+      moraleWeight: z.number().min(0),
+      relationshipWeight: z.number().min(0),
+      noise: z.number().min(0),
+      benchPerRole: perRole(z.number().int().min(0)),
+    }),
+    substitutions: z.object({
+      subOffChance: prob,
+      subOffMinute: minuteRange,
+      subOnChance: prob,
+      subOnMinute: minuteRange,
+    }),
+    moments: z.object({
+      countByRole: perRole(
+        z
+          .tuple([z.number().int().min(0), z.number().int().min(0)])
+          .refine(([a, b]) => a <= b, { message: 'range min must be <= max' }),
+      ),
+      minMinutesForMoment: z.number().int().min(0),
+      logisticScale: z.number().positive(),
+      minChance: prob,
+      maxChance: prob,
+      formWeight: z.number().min(0),
+      moraleWeight: z.number().min(0),
+      energyWeight: z.number().min(0),
+      types: z.array(momentType).min(1),
+    }),
+    rating: z.object({
+      base: z.number(),
+      min: z.number(),
+      max: z.number(),
+      step: z.number().positive(),
+      /** Sotto questi minuti il giocatore è "senza voto" (salvo gol o assist). */
+      minMinutes: z.number().int().min(0),
+      goal: z.number(),
+      assist: z.number(),
+      result: z.object({ win: z.number(), draw: z.number(), loss: z.number() }),
+      cleanSheet: perRole(z.number()),
+      cleanSheetMinMinutes: z.number().int().min(0),
+      concededPerGoal: perRole(z.number()),
+      noise: z.number().min(0),
+      /** Fasce di commento ordinate per voto massimo (`match.comment.<id>.<n>`). */
+      commentBands: z
+        .array(
+          z.object({
+            upTo: z.number(),
+            id: z.string().regex(/^[a-z0-9_]+$/),
+            variants: z.number().int().min(1),
+          }),
+        )
+        .min(1),
+    }),
+  })
+  .superRefine((m, ctx) => {
+    const bands = m.rating.commentBands;
+    if (bands.some((b, i) => i > 0 && b.upTo <= bands[i - 1]!.upTo)) {
+      ctx.addIssue({ code: 'custom', message: 'comment bands must be sorted by upTo' });
+    }
+    if (bands[bands.length - 1]!.upTo < m.rating.max) {
+      ctx.addIssue({ code: 'custom', message: 'last comment band must cover the max rating' });
+    }
+    if (m.moments.minChance > m.moments.maxChance) {
+      ctx.addIssue({ code: 'custom', message: 'minChance must be <= maxChance' });
+    }
+    const ids = new Set<string>();
+    for (const t of m.moments.types) {
+      if (ids.has(t.id)) ctx.addIssue({ code: 'custom', message: `duplicate moment "${t.id}"` });
+      ids.add(t.id);
+      const optIds = new Set(t.options.map((o) => o.id));
+      if (optIds.size !== t.options.length) {
+        ctx.addIssue({ code: 'custom', message: `duplicate option id in moment "${t.id}"` });
+      }
+      for (const o of t.options) {
+        for (const out of [o.success, o.failure]) {
+          if (out.goalFor !== undefined && !out.by) {
+            ctx.addIssue({ code: 'custom', message: `${t.id}.${o.id}: goalFor needs "by"` });
+          }
+        }
+      }
+    }
+    for (const role of ROLES) {
+      if (m.moments.countByRole[role][1] > 0 && !m.moments.types.some((t) => t.weights[role])) {
+        ctx.addIssue({ code: 'custom', message: `no key moment available for role ${role}` });
+      }
+    }
+  });
+
 export type MatchConfig = z.infer<typeof matchSchema>;
+export type MomentTypeConfig = z.infer<typeof momentType>;
+export type MomentOptionConfig = z.infer<typeof momentOption>;
+export type MomentOutcomeConfig = z.infer<typeof momentOutcome>;
 export type WorldConfig = z.infer<typeof worldSchema>;
 export type LevelConfig = z.infer<typeof levelSchema>;
 export type EconomyConfig = z.infer<typeof economySchema>;

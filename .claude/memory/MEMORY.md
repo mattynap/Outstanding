@@ -3,7 +3,7 @@
 Indice delle note di progetto. Questa cartella è versionata in git.
 
 - Decisioni iniziali: vedi CLAUDE.md (stack, architettura, vincoli, milestone).
-- [Avanzamento](progress.md) — milestone fatte, M3 in corso non committata, da dove riprendere
+- [Avanzamento](progress.md) — milestone fatte (M0–M4), stop per revisione, decisioni aperte
 - [Tooling](tooling.md) — versioni, TypeScript 6 fissato, pacchetti senza build
 - [Setup del repository](repo-setup.md) — remote GitHub, memoria locale, PDF non versionato
 - [Design del motore](engine-design.md) — Rng, GameContext, saveVersion, tempo, nomi

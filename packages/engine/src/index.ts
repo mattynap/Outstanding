@@ -18,6 +18,16 @@ export {
   type WeekReport,
 } from './season/week';
 export { endSeason, type SeasonReport, type ClubMovement } from './season/endSeason';
+export {
+  beginMatch,
+  decideMoment,
+  getPendingMoment,
+  playMatch,
+  type KeyMomentDecider,
+  type MatchReport,
+  type MatchStep,
+} from './match/match';
+export { optionChance, type KeyMoment, type KeyMomentOption } from './match/moments';
 export { getClub, getGroup, getLeagueByLevel, playerClub } from './world/queries';
 export {
   serialize,

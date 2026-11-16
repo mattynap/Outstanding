@@ -55,3 +55,19 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
   evoluzione delle rose (età e ricambio), storico della stagione del giocatore, nuovo calendario.
   Rinnovo automatico temporaneo del contratto in attesa di M7.
 - Verificata la stabilità dei rating medi per livello su 15 stagioni (nessuna deriva).
+
+### M4 – Partita
+
+- Convocazione (titolare / panchina / fuori) da OVR, forma, morale, fiducia dell'allenatore e
+  concorrenza nel ruolo; infortunati sempre fuori. Cambi con minuti di ingresso e uscita.
+- Simulazione a 6 blocchi da 15 minuti basata sul rating dei club, con l'influenza del giocatore
+  quando è in campo.
+- 17 tipi di momento chiave per ruolo (portiere, difensore, centrocampista, attaccante), da 2 a 4
+  opzioni ciascuno. Probabilità di successo logistica (abilità pesate − forza avversaria −
+  difficoltà) con modificatori di forma, morale, energia e tratti, limitata tra 5% e 95%.
+- Partita come macchina a stati salvabile (`GameState.currentMatch`): `beginMatch`,
+  `getPendingMoment`, `decideMoment` e `playMatch(state, decide)` per UI e simulatore.
+- Pagella da 4 a 10 a passi di 0,5 ("senza voto" sotto i minuti minimi), riga di commento con
+  varianti, cronaca con marcatori e assist, statistiche stagionali (presenze, minuti, gol, assist,
+  porte inviolate, media voto).
+- Tutti i parametri in `config/match.json` validati con Zod; testi italiani di momenti e commenti.

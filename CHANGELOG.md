@@ -228,3 +228,15 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
 - Schermata iniziale con le carriere salvate (giocatore, club, stagione, settimana, data), pulsante
   "Continua" sull'ultima giocata, eliminazione con conferma; all'avvio si riapre l'ultimo slot.
 - La creazione della carriera indica lo slot di destinazione e avvisa se ne sostituisce una.
+
+### M11 – Servizi
+
+- Interfacce per statistiche d'uso (`AnalyticsSink`), pubblicità a premio (`RewardedAds`) e
+  acquisti in-app (`Store`) in `packages/app/src/app/core/services`, con implementazioni finte
+  (console, pubblicità non disponibile, negozio senza pagamenti) e un unico punto di sostituzione
+  (`PlatformService`).
+- Statistiche anonime solo con consenso esplicito nelle impostazioni (spente di base): inizio
+  carriera, fine stagione, ritiro, acquisto. Nessun nome né dato personale.
+- Acquisti: un solo prodotto, "Versione completa" (non consumabile, ripristinabile), senza
+  vantaggi in carriera. Il blocco dei contenuti tra prova e completa arriverà con i 100 eventi.
+- Pubblicità a premio: solo interfaccia, nessun premio nel gioco (decisione dell'utente).

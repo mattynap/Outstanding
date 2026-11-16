@@ -27,7 +27,10 @@ simulator ─┘
   funzioni del motore e mostra il risultato.
   Salvataggi (`src/app/core/saves`): `codec.ts` (formato del file: JSON del motore compresso),
   `slots.ts` (slot, indice, scrittura sicura, migrazione del vecchio salvataggio; archivio astratto
-  `SaveBackend`, in memoria nei test), `capacitor-backend.ts` (Filesystem + Preferences). I sorgenti di `engine`, `content` e `config` sono
+  `SaveBackend`, in memoria nei test), `capacitor-backend.ts` (Filesystem + Preferences).
+  Servizi esterni (`src/app/core/services`): `services.ts` (interfacce e implementazioni finte,
+  senza Angular) e `platform.service.ts` (le collega all'app; per gli SDK reali si cambiano solo le
+  implementazioni create lì). I sorgenti di `engine`, `content` e `config` sono
   inclusi con i `paths` di `tsconfig.json`.
 
 I pacchetti espongono direttamente i sorgenti TypeScript (`exports: ./src/index.ts`): niente passo

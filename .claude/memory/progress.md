@@ -10,7 +10,7 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
 
 ## Stato al 2026-11-16
 
-- M0–M10 (con M7b) completate e pushate sul branch `dev`.
+- M0–M11 (con M7b) completate e pushate sul branch `dev`.
 - M4: modulo `engine/src/match/`, parametri in `config/match.json`. Bilanciamento indicativo
   (prima stagione, scelte casuali): ATT ~15 gol in 30 partite, 2,8–3 gol a partita. Da rivedere
   con il simulatore in M8. La partita non tocca ancora forma/energia/morale/fiducia (M6).
@@ -59,8 +59,12 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
   fflate (~215 KB), coda di scrittura, recupero del file temporaneo, migrazione del salvataggio di
   M9. Provato nel browser (ricarica, due carriere, migrazione). `saveVersion` resta 1 fino alla
   pubblicazione (vedi [[engine-design]]).
-- Prossimo passo: M11 (servizi: interfacce analytics, pubblicità a premio, acquisti con
-  implementazioni finte), salvo diverse priorità. Ancora da discutere: idee di docs/TODO.txt
+- M11 (servizi, 2026-11-16). Decisioni utente: pubblicità a premio **nessuna per ora** (solo
+  interfaccia); analytics **solo con consenso**. Acquisti: nessuna preferenza → ho scelto
+  "Versione completa" (un prodotto `full_version`, entitlement `full`, toglie la pubblicità e in
+  futuro sblocca gli eventi oltre i 100 della prova). **Da fare quando ci saranno 100 eventi:**
+  marcare gli eventi della versione completa e filtrarli senza l'entitlement.
+- Prossimo passo: M11b (editor), salvo diverse priorità. Ancora da discutere: idee di docs/TODO.txt
   (l'utente ha aggiunto "vita reale con simulazione" e "tutorial") e tempo di gioco.
   Contenuti: arrivare a 100 eventi in parallelo.
 

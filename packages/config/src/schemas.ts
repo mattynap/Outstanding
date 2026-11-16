@@ -125,6 +125,22 @@ export const worldSchema = z
     }),
     agents: z.number().int().min(1),
     maxClubsPerCityPerGroup: z.number().int().min(1),
+    points: z.object({ win: z.number().int().min(1), draw: z.number().int().min(0) }),
+    /** End-of-season evolution of NPC rosters. */
+    rosterAging: z.object({
+      /** OVR change per season by age band (first band whose maxAge >= age). */
+      growthByAge: z
+        .array(z.object({ maxAge: z.number().int(), delta: z.number() }))
+        .min(1)
+        .refine((bands) => bands.every((b, i) => i === 0 || b.maxAge > bands[i - 1]!.maxAge), {
+          message: 'age bands must be sorted by maxAge',
+        }),
+      noise: z.number().min(0),
+      retireAge: z.number().int(),
+      youthAgeRange: z.tuple([z.number().int(), z.number().int()]),
+      /** Fraction of the gap to the level's mid rating closed each season (transfers, budgets). */
+      levelPull: z.number().min(0).max(1),
+    }),
   })
   .superRefine((w, ctx) => {
     w.levels.forEach((l, i) => {
@@ -170,6 +186,16 @@ export const economySchema = z.object({
   initialCoachRelationship: z.number().min(-100).max(100),
 });
 
+export const matchSchema = z.object({
+  /** Fast simulation of matches not involving the human player. */
+  quickSim: z.object({
+    baseGoals: z.number().positive(),
+    homeAdvantage: z.number(),
+    ratingScale: z.number().positive(),
+  }),
+});
+
+export type MatchConfig = z.infer<typeof matchSchema>;
 export type WorldConfig = z.infer<typeof worldSchema>;
 export type LevelConfig = z.infer<typeof levelSchema>;
 export type EconomyConfig = z.infer<typeof economySchema>;

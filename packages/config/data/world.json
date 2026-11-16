@@ -70,12 +70,59 @@
   "startLevels": [5, 6],
   "defaultStartLevel": 6,
   "roster": {
-    "composition": { "GK": 2, "DEF": 7, "MID": 6, "ATT": 5 },
+    "composition": {
+      "GK": 2,
+      "DEF": 7,
+      "MID": 6,
+      "ATT": 5
+    },
     "ovrSpread": 5,
     "ageRange": [17, 35]
   },
-  "formation": { "GK": 1, "DEF": 4, "MID": 4, "ATT": 2 },
-  "kitPatternWeights": { "solid": 4, "vstripes": 3, "hstripes": 1, "sash": 1 },
+  "formation": {
+    "GK": 1,
+    "DEF": 4,
+    "MID": 4,
+    "ATT": 2
+  },
+  "kitPatternWeights": {
+    "solid": 4,
+    "vstripes": 3,
+    "hstripes": 1,
+    "sash": 1
+  },
   "agents": 12,
-  "maxClubsPerCityPerGroup": 1
+  "maxClubsPerCityPerGroup": 1,
+  "points": {
+    "win": 3,
+    "draw": 1
+  },
+  "rosterAging": {
+    "growthByAge": [
+      {
+        "maxAge": 21,
+        "delta": 3
+      },
+      {
+        "maxAge": 25,
+        "delta": 1.5
+      },
+      {
+        "maxAge": 29,
+        "delta": 0
+      },
+      {
+        "maxAge": 32,
+        "delta": -1.5
+      },
+      {
+        "maxAge": 99,
+        "delta": -3
+      }
+    ],
+    "noise": 2,
+    "retireAge": 35,
+    "youthAgeRange": [17, 20],
+    "levelPull": 0.35
+  }
 }

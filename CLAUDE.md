@@ -13,7 +13,8 @@ Una copia sintetica delle decisioni sta in `docs/design/` (vedi sotto); se c'è 
 - **Nessuna** riga `Co-Authored-By`, nessun `Generated with ...`, nessun `Claude-Session`, nessun link a sessioni.
 - Messaggi di commit in italiano, formato Conventional Commits: `feat(engine): aggiungi calcolo voto in pagella`, `fix(app): ...`, `content: ...`, `test: ...`, `docs: ...`, `chore: ...`.
 - Commit piccoli e coerenti, uno per argomento. Non fare commit di codice che non compila o con test rotti.
-- Repository remoto: Bitbucket. Puoi fare commit e push in autonomia; mai force push né riscrittura della storia già pubblicata.
+- Repository remoto: GitHub (`origin`). Puoi fare commit e push in autonomia; mai force push né riscrittura della storia già pubblicata.
+- **Branch di lavoro: `dev`** (creato da `main`). Commit e push vanno su `dev`; `main` si aggiorna solo su richiesta dell'utente.
 
 ### Autonomia nel terminale
 - **Non chiedere conferma** per i comandi da terminale: installazioni (`pnpm`, `npm`, `npx`), operazioni git (status, add, commit, branch, merge, push), build, test, generatori. Procedi e poi riassumi cosa hai fatto.
@@ -31,7 +32,7 @@ Una copia sintetica delle decisioni sta in `docs/design/` (vedi sotto); se c'è 
 - Lavora **una milestone alla volta** (sezione 11), nell'ordine indicato. A fine milestone: test verdi, breve riepilogo all'utente, aggiornamento di `CHANGELOG.md` e della memoria.
 - Puoi aggiungere le dipendenze che servono senza chiedere: preferisci librerie mantenute e con licenza permissiva (MIT, Apache, BSD), e annota in `.claude/memory/` perché le hai scelte.
 - Non inventare requisiti: se una meccanica non è definita qui o nel documento di progetto, proponi 2 opzioni e chiedi.
-- Lingua: codice, nomi di variabili e commenti in **inglese**; testi visibili al giocatore in **italiano** (tramite file di traduzione); documentazione e commit in **italiano**.
+- Lingua: codice e nomi di variabili in **inglese**; commenti nel codice in **italiano**; testi visibili al giocatore in **italiano** (tramite file di traduzione); documentazione e commit in **italiano**.
 
 ---
 

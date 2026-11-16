@@ -43,3 +43,15 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
   europee) ma non ancora giocate.
 - `newCareer` accetta `startLevel` e firma il primo contratto dilettantistico con un club dell'area
   della città natale (preferibilmente della città stessa).
+
+### M3 – Calendario e stagione
+
+- Calendario andata/ritorno per ogni girone (round robin con alternanza casa/trasferta), giornate
+  distribuite sulle settimane di campionato (`config/calendar.json`).
+- Classifiche con punti, differenza reti e gol fatti (`config/world.json` → `points`).
+- Simulazione rapida delle partite degli altri club basata sul rating (`config/match.json` →
+  `quickSim`), `advanceWeek` settimana per settimana, finestre di mercato estiva e invernale.
+- `endSeason`: classifiche finali, promozioni e retrocessioni, riassegnazione dei gironi per area,
+  evoluzione delle rose (età e ricambio), storico della stagione del giocatore, nuovo calendario.
+  Rinnovo automatico temporaneo del contratto in attesa di M7.
+- Verificata la stabilità dei rating medi per livello su 15 stagioni (nessuna deriva).

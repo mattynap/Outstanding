@@ -1,0 +1,7 @@
+{
+  "quickSim": {
+    "baseGoals": 1.3,
+    "homeAdvantage": 3,
+    "ratingScale": 0.045
+  }
+}

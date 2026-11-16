@@ -3,8 +3,10 @@
 Indice delle note di progetto. Questa cartella è versionata in git.
 
 - Decisioni iniziali: vedi CLAUDE.md (stack, architettura, vincoli, milestone).
+- [Avanzamento](progress.md) — milestone fatte, M3 in corso non committata, da dove riprendere
 - [Tooling](tooling.md) — versioni, TypeScript 6 fissato, pacchetti senza build
 - [Setup del repository](repo-setup.md) — remote GitHub, memoria locale, PDF non versionato
 - [Design del motore](engine-design.md) — Rng, GameContext, saveVersion, tempo, nomi
 - [Niente richieste di permesso](feedback-no-permission-prompts.md) — lavorare solo nel repo, PowerShell consentito
 - [Design del mondo](world-design.md) — piramide, nomi club, limiti noti
+- [Branch dev e commenti in italiano](feedback-git-branch-and-comments.md) — push solo su dev, commenti in italiano

@@ -2,6 +2,7 @@ import { defaultContext, type GameContext } from './context';
 import { createPlayer, type NewPlayerOptions } from './player/create';
 import { Rng } from './rng';
 import { CURRENT_SAVE_VERSION } from './save/serialize';
+import { buildSeasonCalendar } from './season/schedule';
 import type { GameState, Player, World } from './types';
 import { generateWorld, groupId, IdGen } from './world/generate';
 import { getGroup } from './world/queries';
@@ -90,7 +91,7 @@ export function newCareer(
     season,
     player,
     world,
-    calendar: [],
+    calendar: buildSeasonCalendar(world, season, rng, ctx.config.calendar),
     eventLog: [],
     cooldowns: {},
     scheduled: [],

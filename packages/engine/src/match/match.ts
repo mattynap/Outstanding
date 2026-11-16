@@ -434,6 +434,21 @@ export function decideMoment(
   return run(state, cur, rng, ctx);
 }
 
+/**
+ * Decisore delle partite simulate: sceglie sempre l'opzione più probabile. È la scelta prudente:
+ * chi gioca la partita di persona può rischiare di più per ottenere di più.
+ */
+export const autoDecider: KeyMomentDecider = (moment) =>
+  moment.options.reduce((best, o, i, all) => (o.chance > all[best]!.chance ? i : best), 0);
+
+/** Simula la partita della settimana senza chiedere nulla al giocatore (momenti con `autoDecider`). */
+export function simulateMatch(
+  state: GameState,
+  ctx: GameContext = defaultContext,
+): { state: GameState; matchReport: MatchReport } {
+  return playMatch(state, autoDecider, ctx);
+}
+
 /** Gioca l'intera partita della settimana affidando i momenti chiave a `decide`. */
 export function playMatch(
   state: GameState,

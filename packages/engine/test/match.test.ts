@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   advanceWeek,
+  autoDecider,
   beginMatch,
   decideMoment,
   defaultContext,
@@ -12,6 +13,7 @@ import {
   playerFixture,
   playMatch,
   serialize,
+  simulateMatch,
   type GameState,
   type KeyMomentDecider,
   type MatchReport,
@@ -177,5 +179,32 @@ describe('convocazione e pagella', () => {
     const perMatch = total / reports.length;
     expect(perMatch).toBeGreaterThan(1);
     expect(perMatch).toBeLessThan(5);
+  });
+});
+
+describe('partita simulata', () => {
+  it("sceglie sempre l'opzione più probabile", () => {
+    const moment = {
+      momentId: 'x',
+      minute: 10,
+      textKey: 'k',
+      params: {},
+      score: { home: 0, away: 0 },
+      options: [
+        { id: 'a', textKey: 'a', chance: 0.3 },
+        { id: 'b', textKey: 'b', chance: 0.8 },
+        { id: 'c', textKey: 'c', chance: 0.5 },
+      ],
+    };
+    expect(autoDecider(moment, toFirstMatch(newCareer(baseOptions, 3)))).toBe(1);
+  });
+
+  it('equivale a giocare la partita con la scelta automatica', () => {
+    const s = toFirstMatch(newCareer(baseOptions, 3));
+    const simulated = simulateMatch(s);
+    expect(simulated).toEqual(playMatch(s, autoDecider));
+    expect(
+      simulated.state.calendar.find((f) => f.id === simulated.matchReport.fixtureId)!.result,
+    ).toBeDefined();
   });
 });

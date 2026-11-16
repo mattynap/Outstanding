@@ -27,10 +27,12 @@ export {
 } from './season/week';
 export { endSeason, type SeasonReport, type ClubMovement } from './season/endSeason';
 export {
+  autoDecider,
   beginMatch,
   decideMoment,
   getPendingMoment,
   playMatch,
+  simulateMatch,
   type KeyMomentDecider,
   type MatchReport,
   type MatchStep,

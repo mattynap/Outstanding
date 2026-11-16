@@ -22,7 +22,7 @@ export const appConfig: ApplicationConfig = {
       // inject() va chiamato subito, prima di qualsiasi await.
       const settings = inject(SettingsService);
       const game = inject(GameService);
-      return settings.load().then(() => game.load());
+      return settings.load().then(() => game.init());
     }),
   ],
 };

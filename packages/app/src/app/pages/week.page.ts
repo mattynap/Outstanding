@@ -91,6 +91,10 @@ import { TabBarComponent } from '../ui/tab-bar.component';
             </div>
           }
 
+          @if (saveFailed()) {
+            <div class="o-card injury" role="alert">{{ 'ui.week.saveFailed' | t }}</div>
+          }
+
           <section class="o-card condition" [attr.aria-label]="'ui.week.condition' | t">
             <app-stat-bar [label]="'ui.stats.form' | t" [value]="v.condition.form" tone="auto" />
             <app-stat-bar
@@ -434,6 +438,7 @@ export class WeekPage {
   protected readonly skills = SKILLS;
   protected readonly maxActions = this.ctx.config.progression.actionsPerWeek;
   protected readonly step = this.game.nextStep;
+  protected readonly saveFailed = this.game.saveFailed;
   protected readonly busy = signal(false);
   protected readonly choices = signal<string[]>([]);
   protected readonly focus = signal<Skill | null>(null);

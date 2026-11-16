@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
 import {
   acceptOffer,
   acceptSponsor,
@@ -7,7 +7,6 @@ import {
   computeOvr,
   decideMoment,
   defaultContext,
-  deserialize,
   drawWeekEvents,
   endSeason,
   fireAgent,
@@ -23,7 +22,6 @@ import {
   rejectSponsor,
   resolveEvent,
   retire,
-  serialize,
   setLifestyle,
   simulateMatch,
   skipToNextMatch,
@@ -37,9 +35,8 @@ import {
   type WeekChoice,
   type WeekReport,
 } from '@outstanding/engine';
-import { StorageService } from './storage.service';
-
-const SAVE_KEY = 'outstanding.autosave';
+import { CapacitorSaveBackend } from './saves/capacitor-backend';
+import { SlotStore, type SlotView } from './saves/slots';
 
 /** Cosa deve fare il giocatore adesso: guida il pulsante principale della settimana. */
 export type NextStep =
@@ -51,8 +48,18 @@ export type NextStep =
  */
 @Injectable({ providedIn: 'root' })
 export class GameService {
-  private readonly storage = inject(StorageService);
   readonly ctx = defaultContext;
+  private readonly store = new SlotStore(new CapacitorSaveBackend(), this.ctx);
+
+  /** Slot della carriera caricata e riepilogo di tutti gli slot. */
+  readonly slot = signal<number | null>(null);
+  readonly slots = signal<SlotView[]>([]);
+  /** Vero se l'ultimo salvataggio automatico non è riuscito. */
+  readonly saveFailed = signal(false);
+
+  /** Coda di scrittura: si salva sempre l'ultimo stato, una scrittura alla volta. */
+  private pending: { slot: number; state: GameState } | null = null;
+  private writing: Promise<void> | null = null;
 
   private readonly _state = signal<GameState | null>(null);
   readonly state = this._state.asReadonly();
@@ -81,28 +88,61 @@ export class GameService {
     return 'advance';
   });
 
-  /** Carica il salvataggio automatico, se c'è. */
-  async load(): Promise<boolean> {
-    const raw = await this.storage.get(SAVE_KEY);
-    if (!raw) return false;
-    try {
-      this._state.set(deserialize(raw));
-      return true;
-    } catch {
-      // Salvataggio illeggibile: si riparte dal menu senza perdere il file (M10 gestirà i dettagli).
-      return false;
+  /** All'avvio: sposta il vecchio salvataggio unico negli slot e riapre l'ultima carriera. */
+  async init(): Promise<void> {
+    await this.store.migrateLegacy();
+    await this.refreshSlots();
+    const last = await this.store.lastSlot();
+    if (last !== null) {
+      try {
+        await this.loadSlot(last);
+      } catch {
+        // Salvataggio illeggibile: si resta nel menu, dove lo slot risulta rovinato.
+      }
     }
   }
 
-  async newGame(options: NewCareerOptions, seed: number): Promise<void> {
-    this.resetReports();
-    await this.commit(newCareer(options, seed, this.ctx));
+  async refreshSlots(): Promise<void> {
+    this.slots.set(await this.store.list());
   }
 
-  async deleteGame(): Promise<void> {
-    this._state.set(null);
+  /** Apre la carriera di uno slot. Lancia un errore se il salvataggio è illeggibile. */
+  async loadSlot(slot: number): Promise<void> {
+    await this.flush();
+    const state = await this.store.load(slot);
+    if (!state) throw new Error(`Slot ${slot} is empty`);
     this.resetReports();
-    await this.storage.remove(SAVE_KEY);
+    this.slot.set(slot);
+    this._state.set(state);
+  }
+
+  /** Primo slot libero per una nuova carriera. */
+  freeSlot(): number | null {
+    return this.slots().find((s) => !s.summary)?.slot ?? null;
+  }
+
+  async newGame(options: NewCareerOptions, seed: number, slot: number): Promise<void> {
+    await this.flush();
+    this.resetReports();
+    this.slot.set(slot);
+    await this.commit(newCareer(options, seed, this.ctx));
+    await this.flush();
+  }
+
+  async deleteSlot(slot: number): Promise<void> {
+    await this.flush();
+    await this.store.remove(slot);
+    if (this.slot() === slot) {
+      this.slot.set(null);
+      this._state.set(null);
+      this.resetReports();
+    }
+    await this.refreshSlots();
+  }
+
+  /** Attende che i salvataggi in coda siano scritti. */
+  async flush(): Promise<void> {
+    while (this.writing) await this.writing;
   }
 
   // --- Settimana ---------------------------------------------------------------------------
@@ -232,9 +272,32 @@ export class GameService {
     return s;
   }
 
+  /** Aggiorna lo stato subito e mette in coda il salvataggio automatico dello slot. */
   private async commit(state: GameState): Promise<void> {
     this._state.set(state);
-    await this.storage.set(SAVE_KEY, serialize(state));
+    const slot = this.slot();
+    if (slot === null) return;
+    this.pending = { slot, state };
+    this.writing ??= this.drain();
+  }
+
+  private async drain(): Promise<void> {
+    try {
+      while (this.pending) {
+        const { slot, state } = this.pending;
+        this.pending = null;
+        try {
+          const summary = await this.store.save(slot, state);
+          // Riepilogo aggiornato senza rileggere l'indice: nessuna attesa fuori dal ciclo.
+          this.slots.update((list) => list.map((v) => (v.slot === slot ? { slot, summary } : v)));
+          this.saveFailed.set(false);
+        } catch {
+          this.saveFailed.set(true);
+        }
+      }
+    } finally {
+      this.writing = null;
+    }
   }
 
   private resetReports(): void {

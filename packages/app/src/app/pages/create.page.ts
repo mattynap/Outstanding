@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { chevronBack, chevronForward, shuffleOutline } from 'ionicons/icons';
@@ -177,10 +177,19 @@ type Part = keyof Appearance;
           </div>
         </section>
 
-        @if (hasSave()) {
-          <p class="warning">{{ 'ui.create.overwrite' | t }}</p>
+        @if (targetSlot() === null) {
+          <p class="warning">{{ 'ui.create.noSlot' | t }}</p>
+        } @else if (overwrites()) {
+          <p class="warning">{{ 'ui.create.overwrite' | t: { slot: targetSlot()! } }}</p>
+        } @else {
+          <p class="o-muted slot-note">{{ 'ui.create.slot' | t: { slot: targetSlot()! } }}</p>
         }
-        <button class="o-btn" type="button" [disabled]="!valid() || busy()" (click)="start()">
+        <button
+          class="o-btn"
+          type="button"
+          [disabled]="!valid() || busy() || targetSlot() === null"
+          (click)="start()"
+        >
           {{ 'ui.create.start' | t }}
         </button>
       </main>
@@ -256,6 +265,11 @@ type Part = keyof Appearance;
       font-size: var(--o-text-sm);
       color: var(--o-negative);
     }
+    .slot-note {
+      margin: 0;
+      font-size: 13px;
+      text-align: center;
+    }
     .warning {
       margin: 0;
       font-size: 13px;
@@ -279,7 +293,17 @@ export class CreatePage {
     (a, b) => b - a,
   );
   protected readonly maxTraits = this.game.ctx.config.player.maxTraitsAtCreation;
-  protected readonly hasSave = this.game.hasGame;
+  private readonly route = inject(ActivatedRoute);
+  /** Slot di destinazione: quello richiesto, altrimenti il primo libero, altrimenti quello attuale. */
+  protected readonly targetSlot = computed(() => {
+    const asked = Number(this.route.snapshot.queryParamMap.get('slot'));
+    if (Number.isInteger(asked) && this.game.slots().some((v) => v.slot === asked)) return asked;
+    return this.game.freeSlot() ?? this.game.slot();
+  });
+  protected readonly overwrites = computed(() => {
+    const slot = this.targetSlot();
+    return this.game.slots().some((v) => v.slot === slot && v.summary !== null);
+  });
 
   protected readonly firstName = signal('');
   protected readonly lastName = signal('');
@@ -414,6 +438,7 @@ export class CreatePage {
           appearance: this.appearance(),
         },
         seed,
+        this.targetSlot()!,
       );
       await this.router.navigateByUrl('/settimana', { replaceUrl: true });
     } catch {

@@ -50,7 +50,9 @@ import { SettingsService, type Theme } from '../core/settings.service';
         @if (game.hasGame()) {
           <section class="o-card">
             <h2 class="o-section-title">{{ 'ui.settings.career' | t }}</h2>
-            <p class="small o-muted none">{{ 'ui.settings.autosave' | t }}</p>
+            <p class="small o-muted none">
+              {{ 'ui.settings.autosave' | t: { slot: game.slot() ?? '–' } }}
+            </p>
             <button class="o-btn o-btn--danger o-btn--small" type="button" (click)="deleteCareer()">
               {{ 'ui.settings.delete' | t }}
             </button>
@@ -120,7 +122,8 @@ export class SettingsPage {
     await alert.present();
     const { role } = await alert.onDidDismiss();
     if (role !== 'confirm') return;
-    await this.game.deleteGame();
+    const slot = this.game.slot();
+    if (slot !== null) await this.game.deleteSlot(slot);
     await this.router.navigateByUrl('/', { replaceUrl: true });
   }
 }

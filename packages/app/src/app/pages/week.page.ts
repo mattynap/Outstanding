@@ -1,10 +1,18 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { IonContent, IonIcon } from '@ionic/angular';
+import { AlertController, IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
   arrowForward,
   chatbubblesOutline,
+  playForwardOutline,
   medkitOutline,
   micOutline,
   settingsOutline,
@@ -181,6 +189,9 @@ import { TipComponent } from '../ui/tip.component';
                 }}</span>
               </div>
               <app-tip tip="week.plan" />
+              @if (game.state()?.lastPlan?.length) {
+                <p class="o-muted small last-plan">{{ 'ui.week.lastPlanHint' | t }}</p>
+              }
               <div class="actions">
                 @for (o of options(); track o.id) {
                   <button
@@ -251,16 +262,29 @@ import { TipComponent } from '../ui/tip.component';
               {{ ctaKey() | t }}
               <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
             </button>
-            @if (canSkip()) {
-              <button
-                class="o-btn o-btn--ghost o-btn--small"
-                type="button"
-                [disabled]="busy()"
-                (click)="skip()"
-              >
-                {{ 'week.skip' | t }}
-              </button>
-            }
+            <div class="cta-row">
+              @if (canSkip()) {
+                <button
+                  class="o-btn o-btn--ghost o-btn--small"
+                  type="button"
+                  [disabled]="busy()"
+                  (click)="skip()"
+                >
+                  {{ 'week.skip' | t }}
+                </button>
+              }
+              @if (canFastForward()) {
+                <button
+                  class="o-btn o-btn--ghost o-btn--small"
+                  type="button"
+                  [disabled]="busy()"
+                  (click)="fastForward()"
+                >
+                  <ion-icon name="play-forward-outline" aria-hidden="true"></ion-icon>
+                  {{ 'ui.ff.button' | t }}
+                </button>
+              }
+            </div>
           </div>
         </main>
       }
@@ -268,6 +292,16 @@ import { TipComponent } from '../ui/tip.component';
     <app-tab-bar active="week" />
   `,
   styles: `
+    .last-plan {
+      margin: 0;
+    }
+    .cta-row {
+      display: flex;
+      gap: 10px;
+    }
+    .cta-row .o-btn {
+      flex: 1 1 0;
+    }
     .press-call {
       flex-direction: row;
       align-items: center;
@@ -480,11 +514,14 @@ import { TipComponent } from '../ui/tip.component';
   `,
 })
 export class WeekPage {
-  private readonly game = inject(GameService);
+  protected readonly game = inject(GameService);
   private readonly router = inject(Router);
   private readonly i18n = inject(I18nService);
   private readonly toast = inject(ToastService);
+  private readonly alerts = inject(AlertController);
   private readonly ctx = this.game.ctx;
+  /** Settimana per cui il piano ricordato è già stato proposto. */
+  private prefilledWeek = -1;
 
   protected readonly ordinal = ordinal;
   protected readonly skills = SKILLS;
@@ -568,15 +605,36 @@ export class WeekPage {
     () => this.step() !== 'plan' || !this.needsFocus() || this.focus() !== null,
   );
 
+  /** L'avanti veloce si usa dal piano o a settimana conclusa, mai a partita iniziata. */
+  protected readonly canFastForward = computed(() => {
+    const s = this.game.state();
+    return !!s && !s.currentMatch && (this.step() === 'plan' || this.step() === 'advance');
+  });
+
   protected readonly canSkip = computed(() => {
     const s = this.game.state();
     return this.step() === 'plan' && !!s && !playerFixture(s);
   });
 
   constructor() {
+    // Piano ricordato: a ogni settimana nuova si ripropone quello della settimana prima.
+    effect(() => {
+      const s = this.game.state();
+      if (!s || this.step() !== 'plan' || this.prefilledWeek === s.week) return;
+      this.prefilledWeek = s.week;
+      const available = new Set(
+        this.options()
+          .filter((o) => o.available)
+          .map((o) => o.id),
+      );
+      const last = (s.lastPlan ?? []).filter((c) => available.has(c.actionId));
+      this.choices.set(last.map((c) => c.actionId).slice(0, this.maxActions));
+      this.focus.set(last.find((c) => c.focus)?.focus ?? null);
+    });
     addIcons({
       arrowForward,
       chatbubblesOutline,
+      playForwardOutline,
       micOutline,
       settingsOutline,
       walletOutline,
@@ -651,6 +709,40 @@ export class WeekPage {
           );
         }
       }
+    });
+  }
+
+  protected async fastForward(): Promise<void> {
+    const alert = await this.alerts.create({
+      header: this.i18n.t('ui.ff.title'),
+      message: this.i18n.t('ui.ff.text'),
+      buttons: [
+        { text: this.i18n.t('ui.ff.bigMatch'), role: 'bigMatch' },
+        { text: this.i18n.t('ui.ff.seasonEnd'), role: 'seasonEnd' },
+        { text: this.i18n.t('ui.common.cancel'), role: 'cancel' },
+      ],
+    });
+    await alert.present();
+    const { role } = await alert.onDidDismiss();
+    if (role !== 'bigMatch' && role !== 'seasonEnd') return;
+    await this.run(async () => {
+      const r = await this.game.fastForward(role);
+      if (this.game.state()?.retired) {
+        await this.router.navigateByUrl('/fine');
+        return;
+      }
+      this.choices.set([]);
+      this.prefilledWeek = -1;
+      await this.toast.show(
+        this.i18n.t('ui.ff.done', {
+          n: r.weeks,
+          win: r.record.win,
+          draw: r.record.draw,
+          loss: r.record.loss,
+        }) +
+          ' ' +
+          this.i18n.t('ui.ff.stop.' + r.stop),
+      );
     });
   }
 

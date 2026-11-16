@@ -619,5 +619,17 @@
   "ui.press.answers": "Risposte",
   "ui.press.tomorrow": "Il titolo di domani",
   "ui.press.effect": "Effetto sui momenti chiave della partita: {pct}%",
-  "ui.press.none": "Nessuna conferenza stampa in programma."
+  "ui.press.none": "Nessuna conferenza stampa in programma.",
+  "ui.week.lastPlanHint": "Ti riproponiamo il piano della settimana scorsa.",
+  "ui.ff.button": "Avanti veloce",
+  "ui.ff.title": "Avanti veloce",
+  "ui.ff.text": "Il gioco va avanti da solo: ripete il tuo piano, sceglie la risposta più prudente alle notizie e simula le partite. Si ferma se arriva un'offerta importante o una notizia che devi vivere di persona.",
+  "ui.ff.bigMatch": "Fino alla prossima partita importante",
+  "ui.ff.seasonEnd": "Fino a fine stagione",
+  "ui.ff.done": "{n} {n|settimana|settimane} in un lampo: {win} V, {draw} N, {loss} P.",
+  "ui.ff.stop.bigMatch": "Ora c'è una partita importante: giocala tu.",
+  "ui.ff.stop.seasonEnd": "La stagione è finita.",
+  "ui.ff.stop.offers": "C'è un'offerta che merita un'occhiata.",
+  "ui.ff.stop.news": "C'è una notizia che ti riguarda da vicino.",
+  "ui.ff.stop.retired": "La carriera è finita."
 }

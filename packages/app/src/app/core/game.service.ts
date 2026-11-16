@@ -16,6 +16,7 @@ import {
   takePersonalLoan,
   withdrawCash,
   breakUp,
+  fastForward,
   answerInterview,
   answerPress,
   publishPost,
@@ -56,6 +57,8 @@ import {
   type ClubLook,
   type EventReport,
   type BreakupReport,
+  type FastForwardReport,
+  type FastForwardTarget,
   type GameState,
   type Interest,
   type PartyReport,
@@ -219,6 +222,14 @@ export class GameService {
     const { state, weeksSkipped } = skipToNextMatch(this.require(), this.ctx);
     await this.commit(state);
     return weeksSkipped;
+  }
+
+  /** Avanti veloce: settimane automatiche fino alla prossima partita importante o a fine stagione. */
+  async fastForward(target: FastForwardTarget): Promise<FastForwardReport> {
+    const { state, report } = fastForward(this.require(), target, this.ctx);
+    await this.commit(state);
+    this.trackRetirement(state);
+    return report;
   }
 
   async advance(): Promise<WeekReport> {

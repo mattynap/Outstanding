@@ -213,5 +213,241 @@
         ]
       }
     ]
+  },
+  {
+    "id": "famiglia_fratello_01",
+    "category": "family",
+    "weight": 2,
+    "cooldownWeeks": 40,
+    "titleKey": "events.famiglia_fratello_01.title",
+    "textKey": "events.famiglia_fratello_01.text",
+    "choices": [
+      {
+        "textKey": "events.famiglia_fratello_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -4
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 4
+          }
+        ]
+      },
+      {
+        "textKey": "events.famiglia_fratello_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": -1
+          },
+          {
+            "type": "stat",
+            "path": "persona.discipline",
+            "delta": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "famiglia_nonno_01",
+    "category": "family",
+    "weight": 1,
+    "cooldownWeeks": 0,
+    "once": true,
+    "titleKey": "events.famiglia_nonno_01.title",
+    "textKey": "events.famiglia_nonno_01.text",
+    "choices": [
+      {
+        "textKey": "events.famiglia_nonno_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -4
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 6
+          },
+          {
+            "type": "stat",
+            "path": "condition.morale",
+            "delta": 2
+          }
+        ]
+      },
+      {
+        "textKey": "events.famiglia_nonno_01.c2",
+        "effects": [
+          {
+            "type": "money",
+            "delta": -40
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "famiglia_tetto_01",
+    "category": "family",
+    "weight": 1,
+    "cooldownWeeks": 0,
+    "once": true,
+    "conditions": {
+      "stats": [
+        {
+          "path": "money.cash",
+          "gte": 20000
+        }
+      ]
+    },
+    "titleKey": "events.famiglia_tetto_01.title",
+    "textKey": "events.famiglia_tetto_01.text",
+    "choices": [
+      {
+        "textKey": "events.famiglia_tetto_01.c1",
+        "effects": [
+          {
+            "type": "money",
+            "delta": -8000
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 5
+          }
+        ]
+      },
+      {
+        "textKey": "events.famiglia_tetto_01.c2",
+        "effects": [
+          {
+            "type": "money",
+            "delta": -4000
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 2
+          }
+        ]
+      },
+      {
+        "textKey": "events.famiglia_tetto_01.c3",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": -5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "famiglia_matrimonio_cugino_01",
+    "category": "family",
+    "weight": 2,
+    "cooldownWeeks": 40,
+    "titleKey": "events.famiglia_matrimonio_cugino_01.title",
+    "textKey": "events.famiglia_matrimonio_cugino_01.text",
+    "choices": [
+      {
+        "textKey": "events.famiglia_matrimonio_cugino_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -6
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 4
+          },
+          {
+            "type": "chance",
+            "p": 0.3,
+            "effects": [
+              {
+                "type": "relationship",
+                "target": "coach",
+                "delta": -3
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "textKey": "events.famiglia_matrimonio_cugino_01.c2",
+        "effects": [
+          {
+            "type": "money",
+            "delta": -100
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "famiglia_mamma_ansia_01",
+    "category": "family",
+    "weight": 2,
+    "cooldownWeeks": 30,
+    "titleKey": "events.famiglia_mamma_ansia_01.title",
+    "textKey": "events.famiglia_mamma_ansia_01.text",
+    "choices": [
+      {
+        "textKey": "events.famiglia_mamma_ansia_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 2
+          },
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -1
+          }
+        ]
+      },
+      {
+        "textKey": "events.famiglia_mamma_ansia_01.c2",
+        "effects": [
+          {
+            "type": "money",
+            "delta": -60
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 3
+          },
+          {
+            "type": "stat",
+            "path": "condition.morale",
+            "delta": 1
+          }
+        ]
+      }
+    ]
   }
 ]

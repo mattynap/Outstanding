@@ -93,5 +93,423 @@
         "effects": [{ "type": "stat", "path": "image.followers", "delta": 150 }]
       }
     ]
+  },
+  {
+    "id": "media_radio_01",
+    "category": "media",
+    "weight": 2,
+    "cooldownWeeks": 26,
+    "titleKey": "events.media_radio_01.title",
+    "textKey": "events.media_radio_01.text",
+    "choices": [
+      {
+        "textKey": "events.media_radio_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": 3
+          },
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -3
+          }
+        ]
+      },
+      {
+        "textKey": "events.media_radio_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.discipline",
+            "delta": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "media_soprannome_01",
+    "category": "media",
+    "weight": 1,
+    "cooldownWeeks": 0,
+    "once": true,
+    "conditions": {
+      "stats": [
+        {
+          "path": "image.popularity",
+          "gte": 15
+        }
+      ]
+    },
+    "titleKey": "events.media_soprannome_01.title",
+    "textKey": "events.media_soprannome_01.text",
+    "choices": [
+      {
+        "textKey": "events.media_soprannome_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": 3
+          },
+          {
+            "type": "stat",
+            "path": "image.followers",
+            "delta": 200
+          }
+        ]
+      },
+      {
+        "textKey": "events.media_soprannome_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.reputation",
+            "delta": 1
+          },
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "media_videogioco_01",
+    "category": "media",
+    "weight": 1,
+    "cooldownWeeks": 0,
+    "once": true,
+    "conditions": {
+      "stats": [
+        {
+          "path": "image.popularity",
+          "gte": 50
+        }
+      ]
+    },
+    "titleKey": "events.media_videogioco_01.title",
+    "textKey": "events.media_videogioco_01.text",
+    "choices": [
+      {
+        "textKey": "events.media_videogioco_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": 2
+          }
+        ]
+      },
+      {
+        "textKey": "events.media_videogioco_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": 1
+          },
+          {
+            "type": "stat",
+            "path": "image.reputation",
+            "delta": -2
+          },
+          {
+            "type": "stat",
+            "path": "image.followers",
+            "delta": 500
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "media_talkshow_01",
+    "category": "media",
+    "weight": 2,
+    "cooldownWeeks": 30,
+    "conditions": {
+      "stats": [
+        {
+          "path": "image.popularity",
+          "gte": 35
+        }
+      ]
+    },
+    "titleKey": "events.media_talkshow_01.title",
+    "textKey": "events.media_talkshow_01.text",
+    "choices": [
+      {
+        "textKey": "events.media_talkshow_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": 4
+          },
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -5
+          },
+          {
+            "type": "chance",
+            "p": 0.3,
+            "effects": [
+              {
+                "type": "stat",
+                "path": "image.reputation",
+                "delta": -3
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "textKey": "events.media_talkshow_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.discipline",
+            "delta": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "media_pagella_01",
+    "category": "media",
+    "weight": 2,
+    "cooldownWeeks": 20,
+    "conditions": {
+      "professional": true
+    },
+    "titleKey": "events.media_pagella_01.title",
+    "textKey": "events.media_pagella_01.text",
+    "choices": [
+      {
+        "textKey": "events.media_pagella_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.reputation",
+            "delta": -3
+          },
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": 2
+          }
+        ]
+      },
+      {
+        "textKey": "events.media_pagella_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.discipline",
+            "delta": 2
+          },
+          {
+            "type": "stat",
+            "path": "condition.morale",
+            "delta": -2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "media_documentario_01",
+    "category": "media",
+    "weight": 1,
+    "cooldownWeeks": 0,
+    "once": true,
+    "conditions": {
+      "stats": [
+        {
+          "path": "image.popularity",
+          "gte": 55
+        }
+      ]
+    },
+    "titleKey": "events.media_documentario_01.title",
+    "textKey": "events.media_documentario_01.text",
+    "choices": [
+      {
+        "textKey": "events.media_documentario_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": 6
+          },
+          {
+            "type": "money",
+            "delta": 2000
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": -3
+          }
+        ]
+      },
+      {
+        "textKey": "events.media_documentario_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": 2
+          },
+          {
+            "type": "money",
+            "delta": 500
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "media_fake_news_01",
+    "category": "media",
+    "weight": 2,
+    "cooldownWeeks": 30,
+    "conditions": {
+      "stats": [
+        {
+          "path": "image.popularity",
+          "gte": 30
+        }
+      ]
+    },
+    "titleKey": "events.media_fake_news_01.title",
+    "textKey": "events.media_fake_news_01.text",
+    "choices": [
+      {
+        "textKey": "events.media_fake_news_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.reputation",
+            "delta": 2
+          },
+          {
+            "type": "relationship",
+            "target": "coach",
+            "delta": 2
+          }
+        ]
+      },
+      {
+        "textKey": "events.media_fake_news_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": 2
+          },
+          {
+            "type": "relationship",
+            "target": "coach",
+            "delta": -4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "media_lettera_01",
+    "category": "media",
+    "weight": 2,
+    "cooldownWeeks": 30,
+    "titleKey": "events.media_lettera_01.title",
+    "textKey": "events.media_lettera_01.text",
+    "choices": [
+      {
+        "textKey": "events.media_lettera_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": 3
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 3
+          },
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -2
+          }
+        ]
+      },
+      {
+        "textKey": "events.media_lettera_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "media_meme_01",
+    "category": "media",
+    "weight": 2,
+    "cooldownWeeks": 30,
+    "conditions": {
+      "stats": [
+        {
+          "path": "image.popularity",
+          "gte": 20
+        }
+      ]
+    },
+    "titleKey": "events.media_meme_01.title",
+    "textKey": "events.media_meme_01.text",
+    "choices": [
+      {
+        "textKey": "events.media_meme_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": 3
+          },
+          {
+            "type": "stat",
+            "path": "image.followers",
+            "delta": 300
+          }
+        ]
+      },
+      {
+        "textKey": "events.media_meme_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.reputation",
+            "delta": -1
+          },
+          {
+            "type": "stat",
+            "path": "condition.morale",
+            "delta": -2
+          }
+        ]
+      }
+    ]
   }
 ]

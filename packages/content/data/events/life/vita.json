@@ -217,5 +217,368 @@
         ]
       }
     ]
+  },
+  {
+    "id": "vita_trasloco_01",
+    "category": "life",
+    "weight": 1,
+    "cooldownWeeks": 0,
+    "once": true,
+    "conditions": {
+      "age": {
+        "min": 19
+      }
+    },
+    "titleKey": "events.vita_trasloco_01.title",
+    "textKey": "events.vita_trasloco_01.text",
+    "choices": [
+      {
+        "textKey": "events.vita_trasloco_01.c1",
+        "effects": [
+          {
+            "type": "money",
+            "delta": -300
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 4
+          },
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -4
+          }
+        ]
+      },
+      {
+        "textKey": "events.vita_trasloco_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": -1
+          },
+          {
+            "type": "stat",
+            "path": "persona.discipline",
+            "delta": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vita_videogiochi_01",
+    "category": "life",
+    "weight": 2,
+    "cooldownWeeks": 24,
+    "titleKey": "events.vita_videogiochi_01.title",
+    "textKey": "events.vita_videogiochi_01.text",
+    "choices": [
+      {
+        "textKey": "events.vita_videogiochi_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 3
+          },
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -8
+          }
+        ]
+      },
+      {
+        "textKey": "events.vita_videogiochi_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vita_cucina_01",
+    "category": "life",
+    "weight": 2,
+    "cooldownWeeks": 40,
+    "titleKey": "events.vita_cucina_01.title",
+    "textKey": "events.vita_cucina_01.text",
+    "choices": [
+      {
+        "textKey": "events.vita_cucina_01.c1",
+        "effects": [
+          {
+            "type": "money",
+            "delta": -80
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 3
+          },
+          {
+            "type": "stat",
+            "path": "condition.injuryRisk",
+            "delta": -2
+          }
+        ]
+      },
+      {
+        "textKey": "events.vita_cucina_01.c2",
+        "effects": [
+          {
+            "type": "money",
+            "delta": -30
+          },
+          {
+            "type": "stat",
+            "path": "condition.form",
+            "delta": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vita_volontariato_01",
+    "category": "life",
+    "weight": 2,
+    "cooldownWeeks": 40,
+    "titleKey": "events.vita_volontariato_01.title",
+    "textKey": "events.vita_volontariato_01.text",
+    "choices": [
+      {
+        "textKey": "events.vita_volontariato_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.reputation",
+            "delta": 3
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 3
+          },
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -3
+          }
+        ]
+      },
+      {
+        "textKey": "events.vita_volontariato_01.c2",
+        "effects": [
+          {
+            "type": "money",
+            "delta": -100
+          },
+          {
+            "type": "stat",
+            "path": "image.reputation",
+            "delta": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vita_cane_01",
+    "category": "life",
+    "weight": 1,
+    "cooldownWeeks": 0,
+    "once": true,
+    "conditions": {
+      "flagsNot": ["cane"]
+    },
+    "titleKey": "events.vita_cane_01.title",
+    "textKey": "events.vita_cane_01.text",
+    "choices": [
+      {
+        "textKey": "events.vita_cane_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 6
+          },
+          {
+            "type": "money",
+            "delta": -150
+          },
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -2
+          },
+          {
+            "type": "flag",
+            "flag": "cane"
+          },
+          {
+            "type": "schedule",
+            "eventId": "vita_cane_scarpe_01",
+            "inWeeks": 4
+          }
+        ]
+      },
+      {
+        "textKey": "events.vita_cane_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vita_cane_scarpe_01",
+    "category": "life",
+    "weight": 1,
+    "cooldownWeeks": 0,
+    "chainOnly": true,
+    "conditions": {
+      "flags": ["cane"]
+    },
+    "titleKey": "events.vita_cane_scarpe_01.title",
+    "textKey": "events.vita_cane_scarpe_01.text",
+    "choices": [
+      {
+        "textKey": "events.vita_cane_scarpe_01.c1",
+        "effects": [
+          {
+            "type": "money",
+            "delta": -120
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 2
+          }
+        ]
+      },
+      {
+        "textKey": "events.vita_cane_scarpe_01.c2",
+        "effects": [
+          {
+            "type": "money",
+            "delta": -90
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vita_insonnia_01",
+    "category": "life",
+    "weight": 2,
+    "cooldownWeeks": 20,
+    "titleKey": "events.vita_insonnia_01.title",
+    "textKey": "events.vita_insonnia_01.text",
+    "textVariants": 2,
+    "choices": [
+      {
+        "textKey": "events.vita_insonnia_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": 4
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": -1
+          }
+        ]
+      },
+      {
+        "textKey": "events.vita_insonnia_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 2
+          },
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vita_multa_velocita_01",
+    "category": "life",
+    "weight": 2,
+    "cooldownWeeks": 40,
+    "conditions": {
+      "age": {
+        "min": 18
+      }
+    },
+    "titleKey": "events.vita_multa_velocita_01.title",
+    "textKey": "events.vita_multa_velocita_01.text",
+    "choices": [
+      {
+        "textKey": "events.vita_multa_velocita_01.c1",
+        "effects": [
+          {
+            "type": "money",
+            "delta": -120
+          },
+          {
+            "type": "stat",
+            "path": "persona.discipline",
+            "delta": 2
+          }
+        ]
+      },
+      {
+        "textKey": "events.vita_multa_velocita_01.c2",
+        "effects": [
+          {
+            "type": "chance",
+            "p": 0.3,
+            "effects": [
+              {
+                "type": "stat",
+                "path": "persona.happiness",
+                "delta": 2
+              }
+            ],
+            "otherwise": [
+              {
+                "type": "money",
+                "delta": -200
+              },
+              {
+                "type": "stat",
+                "path": "image.reputation",
+                "delta": -1
+              }
+            ]
+          }
+        ]
+      }
+    ]
   }
 ]

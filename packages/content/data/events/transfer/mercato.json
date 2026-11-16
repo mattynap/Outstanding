@@ -55,5 +55,326 @@
         ]
       }
     ]
+  },
+  {
+    "id": "mercato_ritiro_01",
+    "category": "transfer",
+    "weight": 2,
+    "cooldownWeeks": 40,
+    "conditions": {
+      "window": "summer"
+    },
+    "titleKey": "events.mercato_ritiro_01.title",
+    "textKey": "events.mercato_ritiro_01.text",
+    "choices": [
+      {
+        "textKey": "events.mercato_ritiro_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "condition.form",
+            "delta": 3
+          },
+          {
+            "type": "relationship",
+            "target": "coach",
+            "delta": 2
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": -2
+          }
+        ]
+      },
+      {
+        "textKey": "events.mercato_ritiro_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 2
+          },
+          {
+            "type": "relationship",
+            "target": "coach",
+            "delta": -3
+          },
+          {
+            "type": "stat",
+            "path": "condition.form",
+            "delta": -2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mercato_striscione_01",
+    "category": "transfer",
+    "weight": 2,
+    "cooldownWeeks": 40,
+    "conditions": {
+      "window": "summer",
+      "stats": [
+        {
+          "path": "image.popularity",
+          "gte": 40
+        }
+      ]
+    },
+    "titleKey": "events.mercato_striscione_01.title",
+    "textKey": "events.mercato_striscione_01.text",
+    "choices": [
+      {
+        "textKey": "events.mercato_striscione_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": 4
+          },
+          {
+            "type": "flag",
+            "flag": "promessa_tifosi"
+          }
+        ]
+      },
+      {
+        "textKey": "events.mercato_striscione_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.reputation",
+            "delta": 1
+          },
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": -2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mercato_ritorno_casa_01",
+    "category": "transfer",
+    "weight": 1,
+    "cooldownWeeks": 60,
+    "conditions": {
+      "age": {
+        "min": 24
+      }
+    },
+    "titleKey": "events.mercato_ritorno_casa_01.title",
+    "textKey": "events.mercato_ritorno_casa_01.text",
+    "choices": [
+      {
+        "textKey": "events.mercato_ritorno_casa_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 3
+          },
+          {
+            "type": "startTransfer",
+            "to": "lower_level"
+          }
+        ]
+      },
+      {
+        "textKey": "events.mercato_ritorno_casa_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.reputation",
+            "delta": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mercato_rinnovo_01",
+    "category": "transfer",
+    "weight": 2,
+    "cooldownWeeks": 40,
+    "conditions": {
+      "window": "winter"
+    },
+    "titleKey": "events.mercato_rinnovo_01.title",
+    "textKey": "events.mercato_rinnovo_01.text",
+    "choices": [
+      {
+        "textKey": "events.mercato_rinnovo_01.c1",
+        "effects": [
+          {
+            "type": "relationship",
+            "target": "coach",
+            "delta": -2
+          },
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": 1
+          }
+        ]
+      },
+      {
+        "textKey": "events.mercato_rinnovo_01.c2",
+        "effects": [
+          {
+            "type": "relationship",
+            "target": "coach",
+            "delta": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mercato_amico_ceduto_01",
+    "category": "transfer",
+    "weight": 2,
+    "cooldownWeeks": 40,
+    "conditions": {
+      "window": "summer"
+    },
+    "titleKey": "events.mercato_amico_ceduto_01.title",
+    "textKey": "events.mercato_amico_ceduto_01.text",
+    "choices": [
+      {
+        "textKey": "events.mercato_amico_ceduto_01.c1",
+        "effects": [
+          {
+            "type": "money",
+            "delta": -60
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": -2
+          },
+          {
+            "type": "stat",
+            "path": "condition.morale",
+            "delta": 2
+          }
+        ]
+      },
+      {
+        "textKey": "events.mercato_amico_ceduto_01.c2",
+        "effects": [
+          {
+            "type": "relationship",
+            "target": "coach",
+            "delta": -3
+          },
+          {
+            "type": "stat",
+            "path": "image.reputation",
+            "delta": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mercato_provino_01",
+    "category": "transfer",
+    "weight": 1,
+    "cooldownWeeks": 40,
+    "conditions": {
+      "professional": false,
+      "age": {
+        "max": 21
+      }
+    },
+    "titleKey": "events.mercato_provino_01.title",
+    "textKey": "events.mercato_provino_01.text",
+    "choices": [
+      {
+        "textKey": "events.mercato_provino_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -8
+          },
+          {
+            "type": "chance",
+            "p": 0.35,
+            "effects": [
+              {
+                "type": "startTransfer",
+                "to": "higher_level"
+              }
+            ],
+            "otherwise": [
+              {
+                "type": "stat",
+                "path": "condition.morale",
+                "delta": -3
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "textKey": "events.mercato_provino_01.c2",
+        "effects": [
+          {
+            "type": "relationship",
+            "target": "coach",
+            "delta": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mercato_sospetti_01",
+    "category": "transfer",
+    "weight": 2,
+    "cooldownWeeks": 30,
+    "conditions": {
+      "window": "winter"
+    },
+    "titleKey": "events.mercato_sospetti_01.title",
+    "textKey": "events.mercato_sospetti_01.text",
+    "choices": [
+      {
+        "textKey": "events.mercato_sospetti_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.discipline",
+            "delta": 1
+          },
+          {
+            "type": "relationship",
+            "target": "coach",
+            "delta": 1
+          }
+        ]
+      },
+      {
+        "textKey": "events.mercato_sospetti_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "condition.morale",
+            "delta": -1
+          },
+          {
+            "type": "stat",
+            "path": "image.popularity",
+            "delta": 1
+          }
+        ]
+      }
+    ]
   }
 ]

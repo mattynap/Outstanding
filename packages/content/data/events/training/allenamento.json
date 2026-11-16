@@ -108,5 +108,412 @@
         ]
       }
     ]
+  },
+  {
+    "id": "allenamento_doppia_01",
+    "category": "training",
+    "weight": 2,
+    "cooldownWeeks": 20,
+    "titleKey": "events.allenamento_doppia_01.title",
+    "textKey": "events.allenamento_doppia_01.text",
+    "choices": [
+      {
+        "textKey": "events.allenamento_doppia_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -10
+          },
+          {
+            "type": "stat",
+            "path": "skills.physical",
+            "delta": 1
+          },
+          {
+            "type": "stat",
+            "path": "condition.injuryRisk",
+            "delta": 3
+          }
+        ]
+      },
+      {
+        "textKey": "events.allenamento_doppia_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": 4
+          },
+          {
+            "type": "relationship",
+            "target": "coach",
+            "delta": -2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "allenamento_dieta_01",
+    "category": "training",
+    "weight": 2,
+    "cooldownWeeks": 40,
+    "titleKey": "events.allenamento_dieta_01.title",
+    "textKey": "events.allenamento_dieta_01.text",
+    "choices": [
+      {
+        "textKey": "events.allenamento_dieta_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": -3
+          },
+          {
+            "type": "stat",
+            "path": "condition.injuryRisk",
+            "delta": -4
+          },
+          {
+            "type": "stat",
+            "path": "condition.form",
+            "delta": 2
+          }
+        ]
+      },
+      {
+        "textKey": "events.allenamento_dieta_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 3
+          },
+          {
+            "type": "stat",
+            "path": "condition.injuryRisk",
+            "delta": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "allenamento_rigorista_01",
+    "category": "training",
+    "weight": 2,
+    "cooldownWeeks": 40,
+    "conditions": {
+      "roles": ["ATT", "MID"]
+    },
+    "titleKey": "events.allenamento_rigorista_01.title",
+    "textKey": "events.allenamento_rigorista_01.text",
+    "choices": [
+      {
+        "textKey": "events.allenamento_rigorista_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "skills.shooting",
+            "delta": 1
+          },
+          {
+            "type": "chance",
+            "p": 0.5,
+            "effects": [
+              {
+                "type": "stat",
+                "path": "condition.morale",
+                "delta": 3
+              }
+            ],
+            "otherwise": [
+              {
+                "type": "stat",
+                "path": "condition.morale",
+                "delta": -2
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "textKey": "events.allenamento_rigorista_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.discipline",
+            "delta": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "allenamento_portiere_01",
+    "category": "training",
+    "weight": 2,
+    "cooldownWeeks": 30,
+    "conditions": {
+      "roles": ["GK"]
+    },
+    "titleKey": "events.allenamento_portiere_01.title",
+    "textKey": "events.allenamento_portiere_01.text",
+    "choices": [
+      {
+        "textKey": "events.allenamento_portiere_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "skills.goalkeeping",
+            "delta": 1
+          },
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -8
+          }
+        ]
+      },
+      {
+        "textKey": "events.allenamento_portiere_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "allenamento_marcatura_01",
+    "category": "training",
+    "weight": 2,
+    "cooldownWeeks": 30,
+    "conditions": {
+      "roles": ["DEF"]
+    },
+    "titleKey": "events.allenamento_marcatura_01.title",
+    "textKey": "events.allenamento_marcatura_01.text",
+    "choices": [
+      {
+        "textKey": "events.allenamento_marcatura_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "skills.defending",
+            "delta": 1
+          },
+          {
+            "type": "chance",
+            "p": 0.15,
+            "effects": [
+              {
+                "type": "injury",
+                "injuryType": "contusione",
+                "weeks": [1, 2]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "textKey": "events.allenamento_marcatura_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.discipline",
+            "delta": 1
+          },
+          {
+            "type": "stat",
+            "path": "condition.morale",
+            "delta": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "allenamento_video_01",
+    "category": "training",
+    "weight": 2,
+    "cooldownWeeks": 24,
+    "titleKey": "events.allenamento_video_01.title",
+    "textKey": "events.allenamento_video_01.text",
+    "choices": [
+      {
+        "textKey": "events.allenamento_video_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "skills.vision",
+            "delta": 1
+          },
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -2
+          }
+        ]
+      },
+      {
+        "textKey": "events.allenamento_video_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": 3
+          },
+          {
+            "type": "chance",
+            "p": 0.4,
+            "effects": [
+              {
+                "type": "relationship",
+                "target": "coach",
+                "delta": -4
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "allenamento_caldo_01",
+    "category": "training",
+    "weight": 2,
+    "cooldownWeeks": 40,
+    "conditions": {
+      "seasonWeek": {
+        "max": 6
+      }
+    },
+    "titleKey": "events.allenamento_caldo_01.title",
+    "textKey": "events.allenamento_caldo_01.text",
+    "choices": [
+      {
+        "textKey": "events.allenamento_caldo_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -10
+          },
+          {
+            "type": "stat",
+            "path": "skills.physical",
+            "delta": 1
+          },
+          {
+            "type": "stat",
+            "path": "condition.injuryRisk",
+            "delta": 2
+          }
+        ]
+      },
+      {
+        "textKey": "events.allenamento_caldo_01.c2",
+        "effects": [
+          {
+            "type": "relationship",
+            "target": "coach",
+            "delta": -2
+          },
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "allenamento_yoga_01",
+    "category": "training",
+    "weight": 2,
+    "cooldownWeeks": 40,
+    "titleKey": "events.allenamento_yoga_01.title",
+    "textKey": "events.allenamento_yoga_01.text",
+    "choices": [
+      {
+        "textKey": "events.allenamento_yoga_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "condition.injuryRisk",
+            "delta": -5
+          },
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 1
+          }
+        ]
+      },
+      {
+        "textKey": "events.allenamento_yoga_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.happiness",
+            "delta": 3
+          },
+          {
+            "type": "relationship",
+            "target": "coach",
+            "delta": -2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "allenamento_primavera_01",
+    "category": "training",
+    "weight": 1,
+    "cooldownWeeks": 40,
+    "conditions": {
+      "professional": true
+    },
+    "titleKey": "events.allenamento_primavera_01.title",
+    "textKey": "events.allenamento_primavera_01.text",
+    "choices": [
+      {
+        "textKey": "events.allenamento_primavera_01.c1",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "image.reputation",
+            "delta": 3
+          },
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -4
+          }
+        ]
+      },
+      {
+        "textKey": "events.allenamento_primavera_01.c2",
+        "effects": [
+          {
+            "type": "stat",
+            "path": "persona.discipline",
+            "delta": 1
+          },
+          {
+            "type": "stat",
+            "path": "condition.morale",
+            "delta": -2
+          }
+        ]
+      }
+    ]
   }
 ]

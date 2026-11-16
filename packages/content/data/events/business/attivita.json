@@ -154,5 +154,128 @@
         ]
       }
     ]
+  },
+  {
+    "id": "attivita_virale_01",
+    "category": "business",
+    "weight": 2,
+    "cooldownWeeks": 26,
+    "conditions": {
+      "business": true
+    },
+    "titleKey": "events.attivita_virale_01.title",
+    "textKey": "events.attivita_virale_01.text",
+    "choices": [
+      {
+        "textKey": "events.attivita_virale_01.c1",
+        "effects": [
+          {
+            "type": "business",
+            "health": 8
+          },
+          {
+            "type": "stat",
+            "path": "condition.energy",
+            "delta": -3
+          }
+        ]
+      },
+      {
+        "textKey": "events.attivita_virale_01.c2",
+        "effects": [
+          {
+            "type": "business",
+            "health": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "attivita_aumento_01",
+    "category": "business",
+    "weight": 2,
+    "cooldownWeeks": 30,
+    "conditions": {
+      "business": true
+    },
+    "titleKey": "events.attivita_aumento_01.title",
+    "textKey": "events.attivita_aumento_01.text",
+    "choices": [
+      {
+        "textKey": "events.attivita_aumento_01.c1",
+        "effects": [
+          {
+            "type": "money",
+            "delta": -1500
+          },
+          {
+            "type": "business",
+            "health": 6
+          }
+        ]
+      },
+      {
+        "textKey": "events.attivita_aumento_01.c2",
+        "effects": [
+          {
+            "type": "business",
+            "health": -5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "attivita_concorrente_01",
+    "category": "business",
+    "weight": 2,
+    "cooldownWeeks": 30,
+    "conditions": {
+      "business": true
+    },
+    "titleKey": "events.attivita_concorrente_01.title",
+    "textKey": "events.attivita_concorrente_01.text",
+    "choices": [
+      {
+        "textKey": "events.attivita_concorrente_01.c1",
+        "effects": [
+          {
+            "type": "money",
+            "delta": -3000
+          },
+          {
+            "type": "chance",
+            "p": 0.6,
+            "effects": [
+              {
+                "type": "business",
+                "health": 8
+              }
+            ],
+            "otherwise": [
+              {
+                "type": "business",
+                "health": -4
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "textKey": "events.attivita_concorrente_01.c2",
+        "effects": [
+          {
+            "type": "business",
+            "health": -2
+          },
+          {
+            "type": "stat",
+            "path": "image.reputation",
+            "delta": 1
+          }
+        ]
+      }
+    ]
   }
 ]

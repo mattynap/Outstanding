@@ -90,7 +90,14 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
 - Tempo di gioco (2026-11-16, scelta utente tra 4 proposte): fatti **piano ricordato** e **avanti
   veloce**; scartati (per ora) meno momenti chiave per partita e meno notizie. Ripartizione misurata
   (prudente, 300 carriere): momenti 110 min, partite giocate 93, piano 72, notizie 68.
-- Prossimo passo: **M12 (pubblicazione Android)**.
+- M12 (2026-11-16): l'utente vuole **creare l'app ma non pubblicarla ancora**. Fatto: progetto
+  Android, icona/splash dal codice, APK di debug (`pnpm android:apk`, vedi `docs/android.md`).
+  Rimandati: chiave di firma (decisa: la creo io in `C:\Users\User\keys\`, password mostrata una
+  volta), AAB firmato, scheda Play, verifica nomi (decisa: verificare "Outstanding" e proporre 2
+  nomi). Package id deciso: `it.outstanding.calcio`.
+- Strumenti di questa macchina (installati con il permesso dell'utente, fuori dal repo):
+  `C:\Users\User\tools\android-sdk` (SDK) e `C:\Users\User\tools\jdk-21.0.13+9` (JAVA_HOME per
+  Gradle; il JDK 17 e il 25 non vanno bene).
   Nota M15: i prezzi dei beni sono alti rispetto agli stipendi dei dilettanti (si compra davvero
   solo dalla Serie Bronzo in su), ed è voluto. Piano e decisioni in [[user-ideas-roadmap]]. Ancora aperto: tempo di gioco. Contenuti:
   arrivare a 100 eventi in parallelo.

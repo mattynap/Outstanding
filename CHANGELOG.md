@@ -370,6 +370,17 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
 - Simulatore (prudente, 1000 carriere, seme 42): massima serie 60,6%, leggende 3,2%, tempo di
   gioco invariato (le notizie a settimana non aumentano).
 
+### M12 (prima parte) – App Android
+
+- Progetto Android di Capacitor (`packages/app/android/`), identificativo `it.outstanding.calcio`,
+  versione 0.1.0, Android 7 (API 24) e successivi, target API 36.
+- Icona e schermata d'avvio disegnate dal codice (`packages/app/assets/make-art.mjs`) e generate in
+  tutte le misure con `@capacitor/assets`, icona adattiva compresa.
+- Script `pnpm android:apk` (APK di debug) e `pnpm android:assets`; istruzioni in
+  `docs/android.md`.
+- Schermo intero: il contenuto delle pagine non finisce più sotto la barra di stato.
+- La pubblicazione su Google Play è rimandata (decisione dell'utente).
+
 ### Tempo di gioco
 
 - Piano ricordato: `planWeek` salva l'ultimo piano scelto (`GameState.lastPlan`) e la settimana lo

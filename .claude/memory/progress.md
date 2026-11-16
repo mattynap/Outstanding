@@ -2,7 +2,10 @@
 name: progress
 description: Stato di avanzamento delle milestone e punto esatto da cui riprendere
 metadata:
+  node_type: memory
   type: project
+  originSessionId: ba3e7028-a690-4902-a1e6-0b641b622f63
+  modified: 2026-11-16T17:04:07.616Z
 ---
 
 Obiettivo concordato (2026-11-16): sviluppare M0→M4 in autonomia, commit + CHANGELOG + memoria a fine
@@ -66,25 +69,10 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
   marcare gli eventi della versione completa e filtrarli senza l'entitlement.
 - M11b (editor, 2026-11-16): vedi [[editor-design]]. Provato nel browser con Playwright (club,
   persone, competizioni, esporta → annulla tutto → importa, nomi visibili in classifica).
-- Prossimo passo: M12 (pubblicazione Android), salvo diverse priorità. Ancora da discutere: idee di docs/TODO.txt
-  (l'utente ha aggiunto "vita reale con simulazione" e "tutorial") e tempo di gioco.
-  Contenuti: arrivare a 100 eventi in parallelo.
-
-## Idee dell'utente (docs/TODO.txt) — NON ancora pianificate
-
-Personalizzazione del personaggio, finanze personali, investimenti con immagini, vita affettiva,
-feste private, difficoltà iniziale (facile/normale/difficile), impostazione "solo testo o altro".
-2026-11-16: proposta di collocazione (M9 avatar, nuova M7c "Vita privata", difficoltà tarata in
-M8, solo-testo in fase 2) **non approvata**: l'utente vuole prima **integrare la lista** con altre
-idee. Non inserirle in CLAUDE.md né nelle milestone finché l'utente non lo conferma.
-
-## Da dove riprendere (sessione successiva al 2026-11-16)
-
-1. Chiedere all'utente la lista integrata delle idee (docs/TODO.txt aggiornato) e concordare dove
-   inserirle; poi aggiornare CLAUDE.md (sezione 11) e la memoria.
-2. Chiedere se tenere `docs/TODO.txt` versionato (finito per errore nel commit di M7).
-3. M7b e M8 fatte (2026-11-16; l'utente ha chiesto due volte di rimandare le idee). Le idee di
-   docs/TODO.txt restano da discutere, insieme alla taratura del bilanciamento.
+- Prossimo passo: **M13 (basi: difficoltà, tutorial, modalità di gioco)**, poi M14–M17 e solo dopo
+  M12. Piano e decisioni in [[user-ideas-roadmap]]. Ancora aperto: tempo di gioco. Contenuti:
+  arrivare a 100 eventi in parallelo.
+- `docs/TODO.txt` lo modifica l'utente: non includerlo nei commit.
 - Stato git: tutto committato e pushato su `origin/dev` (main fermo a M2).
 
 ## Decisioni prese dall'utente (2026-11-16)

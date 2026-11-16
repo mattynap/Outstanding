@@ -279,6 +279,12 @@ Ogni milestone è finita quando: build ok, lint ok, test verdi, `CHANGELOG.md` a
 - **M10 – Salvataggi:** salvataggio automatico ogni settimana, più slot, migrazioni.
 - **M11 – Servizi:** interfacce per analytics, pubblicità a premio e acquisti in-app, con implementazioni finte per lo sviluppo; integrazione reale solo su richiesta.
 - **M11b – Editor:** schermata per rinominare club, giocatori e competizioni e cambiarne i colori; esportazione/importazione JSON con validazione; le modifiche si applicano sopra il mondo generato senza alterare i dati originali.
+- **M13 – Basi:** difficoltà iniziale (facile/normale/difficile), tutorial facoltativo prima della prima carriera, impostazione della modalità di gioco (testuale; le partite animate 2D arriveranno con la fase 2).
+- **M14 – Personaggio:** avatar più umano e dettagliato (corporatura, viso, accessori), tatuaggi anche durante la carriera.
+- **M15 – Finanze:** conto deposito, investimenti inventati (borsa, cripto) con guadagni e perdite, mutui e prestiti, acquisto di case, ville, yacht, auto, attività del giocatore (ristorante, marchio di abbigliamento…), con vignette illustrate.
+- **M16 – Vita privata:** incontri, relazioni, tradimenti, matrimonio, figli, feste e vita fuori dal campo, con vignette illustrate. Tono allusivo, obiettivo PEGI 12.
+- **M17 – Media:** social del calciatore, interviste e conferenze stampa.
+- Le vignette sono SVG piatti disegnati dal codice, nello stile di stemmi e avatar. M13–M17 vengono prima di M12.
 - **M12 – Pubblicazione Android:** icona, splash, build firmata, checklist per Google Play; controllo che i nomi inventati (club, leghe, coppe, testate) non coincidano con società o marchi esistenti (registri pubblici e banche dati dei marchi), eventuale parere legale sulla proprietà intellettuale.
 - **Contenuti (in parallelo da M5):** 100 eventi per la versione di prova, poi 300 per la completa.
 - **Fase 2:** solo dopo approvazione esplicita dell'utente.

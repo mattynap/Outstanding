@@ -15,3 +15,4 @@ Indice delle note di progetto. Questa cartella è versionata in git.
 - [Simulatore](simulator-design.md) — strategie, punteggio di carriera/leggenda, tempi, output
 - [App](app-design.md) — struttura dell'app, versioni Angular/Ionic, insidie trovate in M9
 - [Editor](editor-design.md) — correzioni per carriera, tavolozza, valori originali, formato file
+- [Idee utente M13–M17](user-ideas-roadmap.md) — basi, personaggio, finanze, vita privata, media; vignette SVG, PEGI 12

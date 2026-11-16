@@ -12,6 +12,7 @@ export default tseslint.config(
       '**/coverage/**',
       '**/.angular/**',
       'sim-output/**',
+      '**/android/**',
     ],
   },
   js.configs.recommended,

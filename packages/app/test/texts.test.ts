@@ -1,0 +1,68 @@
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
+import { describe, expect, it } from 'vitest';
+import { defaultConfig } from '@outstanding/config';
+import { defaultContent, STAT_PATHS, EVENT_CATEGORIES } from '@outstanding/content';
+import { ROLES } from '@outstanding/engine';
+import {
+  chanceTone,
+  formatDelta,
+  formatMoney,
+  formatRating,
+  translate,
+} from '../src/app/core/text';
+
+const t = defaultContent.i18n.it;
+const root = join(import.meta.dirname, '../src');
+
+function sources(dir: string): string[] {
+  return readdirSync(dir).flatMap((name) => {
+    const path = join(dir, name);
+    return statSync(path).isDirectory() ? sources(path) : path.endsWith('.ts') ? [path] : [];
+  });
+}
+
+describe("testi dell'interfaccia", () => {
+  it('ogni chiave ui.* scritta nel codice esiste nelle traduzioni', () => {
+    const missing = new Set<string>();
+    for (const file of sources(root)) {
+      for (const [, key] of readFileSync(file, 'utf8').matchAll(
+        /'(ui\.[a-zA-Z0-9_.]+[a-zA-Z0-9_])'/g,
+      )) {
+        if (!(key! in t)) missing.add(key!);
+      }
+    }
+    expect([...missing]).toEqual([]);
+  });
+
+  it('le chiavi composte a runtime esistono per ogni valore possibile', () => {
+    const need = [
+      ...ROLES.map((r) => `ui.create.roleHint.${r}`),
+      ...defaultConfig.world.startLevels.map((l) => `ui.create.levelHint.${l}`),
+      ...EVENT_CATEGORIES.map((c) => `ui.event.category.${c}`),
+      ...STAT_PATHS.map((p) => `ui.statPath.${p}`),
+      ...['summer', 'winter', 'closed'].map((w) => `ui.market.window.${w}`),
+      ...['dark', 'light'].map((th) => `ui.settings.themes.${th}`),
+    ];
+    expect(need.filter((k) => !(k in t))).toEqual([]);
+  });
+});
+
+describe('formattazione', () => {
+  it('scrive numeri, soldi e voti all’italiana', () => {
+    expect(formatMoney(12000)).toBe('€ 12.000');
+    expect(formatMoney(-50)).toBe('−€ 50');
+    expect(formatRating(7.5)).toBe('7,5');
+    expect(formatRating(6)).toBe('6');
+    expect(formatRating(null)).toBe('s.v.');
+    expect(formatDelta(3)).toBe('+3');
+    expect(formatDelta(-2)).toBe('−2');
+  });
+
+  it('sostituisce i segnaposto e lascia visibili le chiavi mancanti', () => {
+    expect(translate({ a: 'Ciao {name}' }, 'a', { name: 'Tommaso' })).toBe('Ciao Tommaso');
+    expect(translate({}, 'x.y')).toBe('x.y');
+    expect(chanceTone(0.7)).toBe('pos');
+    expect(chanceTone(0.2)).toBe('neg');
+  });
+});

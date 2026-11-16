@@ -1,0 +1,112 @@
+/*
+ * Token del design system: unica fonte di colori, tipografia, spazi e tempi.
+ * Modalità scura predefinita (verde campo); la chiara si attiva con data-theme="light" su <html>.
+ * Documentazione: docs/design-system.md.
+ */
+:root {
+  /* Campo (scuro) */
+  --o-bg: #0b1f15;
+  --o-bg-deep: #081810;
+  --o-surface: #10291c;
+  --o-surface-raised: #1b4d2e;
+  --o-border: #22432f;
+  --o-border-strong: #2a5a3c;
+  --o-track: #1e3d2b;
+  --o-text: #eef2ea;
+  --o-text-muted: #a9bbae;
+  --o-text-soft: #cfe3d4;
+  --o-pitch-line: rgba(255, 255, 255, 0.025);
+
+  /* Accenti */
+  --o-accent: #f2b830;
+  --o-accent-ink: #14140f;
+  --o-accent-soft: rgba(242, 184, 48, 0.12);
+  /* Accento usato come colore di testo o icona (più scuro nel tema chiaro per il contrasto). */
+  --o-accent-fg: #f2b830;
+  --o-hero-foot: rgba(0, 0, 0, 0.22);
+  --o-accent-text: #e9d8a8;
+  --o-positive: #5bd08a;
+  --o-negative: #e5484d;
+  --o-neutral-bar: #4e7a5e;
+
+  /* Carta di giornale (notizie e pagelle) */
+  --o-paper: #f1ebdd;
+  --o-paper-rule: #cfc6b2;
+  --o-ink: #1a1a17;
+  --o-ink-soft: #2b2924;
+  --o-ink-muted: #4a4740;
+  --o-headline-red: #b3261e;
+
+  /* Tipografia */
+  --o-font-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --o-font-body: 'Inter', system-ui, sans-serif;
+  --o-text-xs: 11px;
+  --o-text-sm: 12px;
+  --o-text-md: 14px;
+  --o-text-lg: 16px;
+  --o-tracking-label: 1.6px;
+
+  /* Spazi e forme */
+  --o-space-1: 4px;
+  --o-space-2: 8px;
+  --o-space-3: 12px;
+  --o-space-4: 16px;
+  --o-space-5: 20px;
+  --o-space-6: 24px;
+  --o-radius-sm: 6px;
+  --o-radius-md: 12px;
+  --o-radius-lg: 14px;
+  --o-radius-xl: 16px;
+  --o-touch: 44px;
+  --o-button-h: 56px;
+  --o-shadow-paper: 0 18px 40px rgba(0, 0, 0, 0.45);
+
+  /* Movimento */
+  --o-fast: 150ms;
+  --o-normal: 220ms;
+  --o-slow: 300ms;
+  --o-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* Modalità chiara: prato di giorno, stessa carta di giornale. */
+:root[data-theme='light'] {
+  --o-bg: #eef1e7;
+  --o-bg-deep: #e2e7d9;
+  --o-surface: #ffffff;
+  --o-surface-raised: #d9ead9;
+  --o-border: #cfd8c8;
+  --o-border-strong: #a9bfa9;
+  --o-track: #dfe6d8;
+  --o-text: #12261a;
+  --o-text-muted: #4c6052;
+  --o-text-soft: #2f4a38;
+  --o-pitch-line: rgba(0, 60, 20, 0.035);
+  --o-accent-soft: rgba(242, 184, 48, 0.22);
+  --o-accent-fg: #8a5f00;
+  --o-hero-foot: rgba(20, 60, 30, 0.06);
+  --o-accent-text: #6b4f00;
+  --o-positive: #1d7f45;
+  --o-negative: #c42b30;
+  --o-neutral-bar: #8fae98;
+  --o-shadow-paper: 0 10px 24px rgba(20, 40, 25, 0.18);
+}
+
+/* Variabili di Ionic collegate ai token. */
+:root {
+  --ion-font-family: var(--o-font-body);
+  --ion-background-color: var(--o-bg);
+  --ion-text-color: var(--o-text);
+  --ion-color-primary: #f2b830;
+  --ion-color-primary-contrast: #14140f;
+  --ion-color-primary-shade: #d5a22a;
+  --ion-color-primary-tint: #f3bf45;
+  --ion-color-success: var(--o-positive);
+  --ion-color-danger: var(--o-negative);
+  --ion-toolbar-background: var(--o-bg-deep);
+  --ion-tab-bar-background: var(--o-bg-deep);
+  --ion-tab-bar-border-color: var(--o-border);
+  --ion-tab-bar-color: var(--o-text-muted);
+  --ion-tab-bar-color-selected: var(--o-accent-fg);
+  --ion-item-background: var(--o-surface);
+  --ion-border-color: var(--o-border);
+}

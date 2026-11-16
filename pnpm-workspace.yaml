@@ -3,3 +3,7 @@ packages:
 
 onlyBuiltDependencies:
   - esbuild
+  # Strumenti di build di Angular (binari nativi precompilati).
+  - '@parcel/watcher'
+  - lmdb
+  - msgpackr-extract

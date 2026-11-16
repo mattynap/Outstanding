@@ -1,0 +1,17 @@
+/* Font inclusi nell'app (licenza OFL, vedi ASSETS.md): solo l'alfabeto latino. */
+@import '@fontsource/barlow-condensed/latin-500.css';
+@import '@fontsource/barlow-condensed/latin-600.css';
+@import '@fontsource/barlow-condensed/latin-700.css';
+@import '@fontsource/barlow-condensed/latin-800.css';
+@import '@fontsource/inter/latin-400.css';
+@import '@fontsource/inter/latin-400-italic.css';
+@import '@fontsource/inter/latin-500.css';
+@import '@fontsource/inter/latin-600.css';
+
+@import '@ionic/angular/css/core.css';
+@import '@ionic/angular/css/normalize.css';
+@import '@ionic/angular/css/structure.css';
+@import '@ionic/angular/css/typography.css';
+
+@import './theme/tokens.css';
+@import './theme/components.css';

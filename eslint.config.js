@@ -29,6 +29,13 @@ export default tseslint.config(
     },
   },
   {
+    // L'app gira nel browser (WebView di Capacitor).
+    files: ['packages/app/src/**/*.ts'],
+    languageOptions: {
+      globals: { ...globals.browser },
+    },
+  },
+  {
     // Il motore deve restare puro, deterministico e indipendente dalla UI.
     files: ['packages/engine/src/**/*.ts'],
     languageOptions: {

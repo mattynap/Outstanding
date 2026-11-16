@@ -211,3 +211,20 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
   classifica e coppe, carriera (punteggio, bacheca, stagioni), fine carriera, impostazioni.
 - Testi dell'interfaccia in `content/data/i18n/it.ui.json`; test che verifica ogni chiave usata.
 - Il motore esporta anche `applyWeeklyFinances` (anteprima delle finanze settimanali).
+
+### M10 – Salvataggi
+
+- Tre slot di salvataggio: un file per carriera (Capacitor Filesystem, nella memoria privata
+  dell'app; IndexedDB nel browser) e un indice con i riepiloghi (Capacitor Preferences).
+- Salvataggio automatico dopo ogni azione, quindi anche a ogni settimana, con una coda che scrive
+  sempre l'ultimo stato una volta sola; avviso in caso di errore di scrittura.
+- Scrittura sicura: file temporaneo poi spostamento; se l'app si chiude a metà si recupera il
+  temporaneo.
+- File compressi (gzip + base64 con intestazione `OSV1:`): da ~1,3 MB a ~215 KB, ~30 ms su PC.
+  Si leggono anche i salvataggi JSON semplici.
+- Migrazioni: il motore porta ogni salvataggio alla versione attuale (`saveVersion`); un salvataggio
+  rovinato o di una versione più recente viene segnalato senza essere cancellato. Il salvataggio
+  unico di M9 viene spostato da solo nel primo slot libero.
+- Schermata iniziale con le carriere salvate (giocatore, club, stagione, settimana, data), pulsante
+  "Continua" sull'ultima giocata, eliminazione con conferma; all'avvio si riapre l'ultimo slot.
+- La creazione della carriera indica lo slot di destinazione e avvisa se ne sostituisce una.

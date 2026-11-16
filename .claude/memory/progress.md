@@ -10,7 +10,7 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
 
 ## Stato al 2026-11-16
 
-- M0–M9 (con M7b) completate e pushate sul branch `dev`.
+- M0–M10 (con M7b) completate e pushate sul branch `dev`.
 - M4: modulo `engine/src/match/`, parametri in `config/match.json`. Bilanciamento indicativo
   (prima stagione, scelte casuali): ATT ~15 gol in 30 partite, 2,8–3 gol a partita. Da rivedere
   con il simulatore in M8. La partita non tocca ancora forma/energia/morale/fiducia (M6).
@@ -55,8 +55,13 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
 - M9 (app, 2026-11-16): vedi [[app-design]]. Verificata nel browser con Playwright (giro completo
   creazione → settimana → notizie → partita → pagella → tutte le schede, tema chiaro), nessun
   errore in console. Avvio: `pnpm --filter @outstanding/app start` (porta 4200).
-- Prossimo passo: M10 (salvataggi: più slot, migrazioni, compressione del JSON da ~1,3 MB), salvo
-  diverse priorità. Ancora da discutere: idee di docs/TODO.txt e tempo di gioco.
+- M10 (salvataggi, 2026-11-16): 3 slot (scelta mia, costante `SLOT_COUNT`), file compressi con
+  fflate (~215 KB), coda di scrittura, recupero del file temporaneo, migrazione del salvataggio di
+  M9. Provato nel browser (ricarica, due carriere, migrazione). `saveVersion` resta 1 fino alla
+  pubblicazione (vedi [[engine-design]]).
+- Prossimo passo: M11 (servizi: interfacce analytics, pubblicità a premio, acquisti con
+  implementazioni finte), salvo diverse priorità. Ancora da discutere: idee di docs/TODO.txt
+  (l'utente ha aggiunto "vita reale con simulazione" e "tutorial") e tempo di gioco.
   Contenuti: arrivare a 100 eventi in parallelo.
 
 ## Idee dell'utente (docs/TODO.txt) — NON ancora pianificate

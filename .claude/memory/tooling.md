@@ -14,6 +14,8 @@ metadata:
   JSON importati con `resolveJsonModule` (moduleResolution Bundler).
 - Dipendenze scelte: zod (validazione, MIT), vitest (test, MIT), tsx (eseguire TS da CLI, MIT),
   ESLint + typescript-eslint + Prettier (MIT).
+- fflate (MIT, puro JS, veloce) per comprimere i salvataggi nell'app; @capacitor/filesystem per i
+  file degli slot. La compressione sta nell'app, non nel motore (che resta senza dipendenze).
 - Il motore ha `lib: ES2022` e `types: []`: niente DOM né Node, imposto anche da regole ESLint.
 
 Collegato: [[repo-setup]]

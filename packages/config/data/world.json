@@ -1,0 +1,81 @@
+{
+  "levels": [
+    {
+      "level": 1,
+      "professional": true,
+      "groups": 1,
+      "areas": [],
+      "clubsPerGroup": 20,
+      "promotePerGroup": 0,
+      "relegatePerGroup": 3,
+      "ratingRange": [66, 82],
+      "citySizeWeights": [0, 0.3, 2, 6]
+    },
+    {
+      "level": 2,
+      "professional": true,
+      "groups": 1,
+      "areas": [],
+      "clubsPerGroup": 20,
+      "promotePerGroup": 3,
+      "relegatePerGroup": 3,
+      "ratingRange": [58, 68],
+      "citySizeWeights": [0, 1, 4, 3]
+    },
+    {
+      "level": 3,
+      "professional": true,
+      "groups": 3,
+      "areas": ["N", "C", "S"],
+      "clubsPerGroup": 20,
+      "promotePerGroup": 1,
+      "relegatePerGroup": 2,
+      "ratingRange": [50, 60],
+      "citySizeWeights": [0.5, 3, 3, 1]
+    },
+    {
+      "level": 4,
+      "professional": false,
+      "groups": 3,
+      "areas": ["N", "C", "S"],
+      "clubsPerGroup": 18,
+      "promotePerGroup": 2,
+      "relegatePerGroup": 3,
+      "ratingRange": [43, 53],
+      "citySizeWeights": [2, 3, 1, 0.3]
+    },
+    {
+      "level": 5,
+      "professional": false,
+      "groups": 3,
+      "areas": ["N", "C", "S"],
+      "clubsPerGroup": 16,
+      "promotePerGroup": 3,
+      "relegatePerGroup": 3,
+      "ratingRange": [36, 46],
+      "citySizeWeights": [4, 2, 0.5, 0.2]
+    },
+    {
+      "level": 6,
+      "professional": false,
+      "groups": 3,
+      "areas": ["N", "C", "S"],
+      "clubsPerGroup": 16,
+      "promotePerGroup": 3,
+      "relegatePerGroup": 0,
+      "ratingRange": [30, 40],
+      "citySizeWeights": [5, 2, 0.4, 0.2]
+    }
+  ],
+  "startLevels": [5, 6],
+  "defaultStartLevel": 6,
+  "roster": {
+    "composition": { "GK": 2, "DEF": 7, "MID": 6, "ATT": 5 },
+    "ovrSpread": 5,
+    "ageRange": [17, 35]
+  },
+  "formation": { "GK": 1, "DEF": 4, "MID": 4, "ATT": 2 },
+  "kitPatternWeights": { "solid": 4, "vstripes": 3, "hstripes": 1, "sash": 1 },
+  "agents": 12,
+  "maxClubsPerCityPerGroup": 1
+}

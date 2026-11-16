@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkContent, defaultContent, parseContent } from '../src/index';
+import { checkContent, defaultContent, parseContent, rawDefaultContent } from '../src/index';
 
 describe('content', () => {
   it('default content passes all cross checks', () => {
@@ -8,7 +8,7 @@ describe('content', () => {
 
   it('rejects malformed data with a readable error', () => {
     expect(() =>
-      parseContent({ names: { firstNames: [], lastNames: [] }, traits: [], i18n: { it: {} } }),
+      parseContent({ ...rawDefaultContent, names: { firstNames: [], lastNames: [] } }),
     ).toThrow(/names\.json/);
   });
 

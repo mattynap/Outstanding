@@ -1,0 +1,820 @@
+[
+  {
+    "name": "Torino",
+    "region": "Piemonte",
+    "area": "N",
+    "size": 4,
+    "epithets": ["Subalpina", "Taurina"]
+  },
+  {
+    "name": "Novara",
+    "region": "Piemonte",
+    "area": "N",
+    "size": 3,
+    "epithets": ["Novarese", "Cupola"]
+  },
+  {
+    "name": "Alessandria",
+    "region": "Piemonte",
+    "area": "N",
+    "size": 2,
+    "epithets": ["Mandrogna", "Cittadella"]
+  },
+  {
+    "name": "Asti",
+    "region": "Piemonte",
+    "area": "N",
+    "size": 2,
+    "epithets": ["Astigiana", "Palio"]
+  },
+  {
+    "name": "Cuneo",
+    "region": "Piemonte",
+    "area": "N",
+    "size": 2,
+    "epithets": ["Granda", "Stura"]
+  },
+  {
+    "name": "Biella",
+    "region": "Piemonte",
+    "area": "N",
+    "size": 1,
+    "epithets": ["Laniera", "Oropa"]
+  },
+  {
+    "name": "Alba",
+    "region": "Piemonte",
+    "area": "N",
+    "size": 1,
+    "epithets": ["Langarola", "Tartufo"]
+  },
+  {
+    "name": "Aosta",
+    "region": "Valle d'Aosta",
+    "area": "N",
+    "size": 1,
+    "epithets": ["Pretoriana", "Cervino"]
+  },
+  {
+    "name": "Milano",
+    "region": "Lombardia",
+    "area": "N",
+    "size": 4,
+    "epithets": ["Meneghina", "Navigli"]
+  },
+  {
+    "name": "Bergamo",
+    "region": "Lombardia",
+    "area": "N",
+    "size": 3,
+    "epithets": ["Orobica", "Città Alta"]
+  },
+  {
+    "name": "Brescia",
+    "region": "Lombardia",
+    "area": "N",
+    "size": 3,
+    "epithets": ["Leonessa", "Cidneo"]
+  },
+  {
+    "name": "Monza",
+    "region": "Lombardia",
+    "area": "N",
+    "size": 3,
+    "epithets": ["Brianzola", "Corona Ferrea"]
+  },
+  {
+    "name": "Como",
+    "region": "Lombardia",
+    "area": "N",
+    "size": 2,
+    "epithets": ["Lariana", "Baradello"]
+  },
+  {
+    "name": "Varese",
+    "region": "Lombardia",
+    "area": "N",
+    "size": 2,
+    "epithets": ["Prealpina", "Sette Laghi"]
+  },
+  {
+    "name": "Pavia",
+    "region": "Lombardia",
+    "area": "N",
+    "size": 2,
+    "epithets": ["Ticinese", "Cento Torri"]
+  },
+  {
+    "name": "Cremona",
+    "region": "Lombardia",
+    "area": "N",
+    "size": 2,
+    "epithets": ["Torrazzo", "Liutaria"]
+  },
+  {
+    "name": "Mantova",
+    "region": "Lombardia",
+    "area": "N",
+    "size": 2,
+    "epithets": ["Virgiliana", "Gonzaga"]
+  },
+  {
+    "name": "Lecco",
+    "region": "Lombardia",
+    "area": "N",
+    "size": 1,
+    "epithets": ["Manzoniana", "Resegone"]
+  },
+  {
+    "name": "Sondrio",
+    "region": "Lombardia",
+    "area": "N",
+    "size": 1,
+    "epithets": ["Valtellinese", "Retica"]
+  },
+  {
+    "name": "Lodi",
+    "region": "Lombardia",
+    "area": "N",
+    "size": 1,
+    "epithets": ["Laudense", "Adda"]
+  },
+  {
+    "name": "Legnano",
+    "region": "Lombardia",
+    "area": "N",
+    "size": 1,
+    "epithets": ["Carroccio", "Olona"]
+  },
+  {
+    "name": "Genova",
+    "region": "Liguria",
+    "area": "N",
+    "size": 4,
+    "epithets": ["Superba", "Lanterna"]
+  },
+  {
+    "name": "La Spezia",
+    "region": "Liguria",
+    "area": "N",
+    "size": 2,
+    "epithets": ["Golfo dei Poeti", "Arsenale"]
+  },
+  {
+    "name": "Savona",
+    "region": "Liguria",
+    "area": "N",
+    "size": 2,
+    "epithets": ["Priamar", "Ligure"]
+  },
+  {
+    "name": "Sanremo",
+    "region": "Liguria",
+    "area": "N",
+    "size": 1,
+    "epithets": ["Matuziana", "Riviera"]
+  },
+  {
+    "name": "Trento",
+    "region": "Trentino-Alto Adige",
+    "area": "N",
+    "size": 3,
+    "epithets": ["Tridentina", "Buonconsiglio"]
+  },
+  {
+    "name": "Bolzano",
+    "region": "Trentino-Alto Adige",
+    "area": "N",
+    "size": 3,
+    "epithets": ["Atesina", "Dolomitica"]
+  },
+  {
+    "name": "Rovereto",
+    "region": "Trentino-Alto Adige",
+    "area": "N",
+    "size": 1,
+    "epithets": ["Lagarina", "Campana"]
+  },
+  {
+    "name": "Venezia",
+    "region": "Veneto",
+    "area": "N",
+    "size": 4,
+    "epithets": ["Lagunare", "Serenissima"]
+  },
+  {
+    "name": "Verona",
+    "region": "Veneto",
+    "area": "N",
+    "size": 4,
+    "epithets": ["Scaligera", "Arena"]
+  },
+  {
+    "name": "Padova",
+    "region": "Veneto",
+    "area": "N",
+    "size": 3,
+    "epithets": ["Patavina", "Santo"]
+  },
+  {
+    "name": "Vicenza",
+    "region": "Veneto",
+    "area": "N",
+    "size": 3,
+    "epithets": ["Berica", "Palladiana"]
+  },
+  {
+    "name": "Treviso",
+    "region": "Veneto",
+    "area": "N",
+    "size": 2,
+    "epithets": ["Trevigiana", "Sile"]
+  },
+  {
+    "name": "Rovigo",
+    "region": "Veneto",
+    "area": "N",
+    "size": 1,
+    "epithets": ["Polesana", "Adige"]
+  },
+  {
+    "name": "Belluno",
+    "region": "Veneto",
+    "area": "N",
+    "size": 1,
+    "epithets": ["Bellunese", "Piave"]
+  },
+  {
+    "name": "Bassano del Grappa",
+    "region": "Veneto",
+    "area": "N",
+    "size": 1,
+    "epithets": ["Ponte Vecchio", "Grappa"]
+  },
+  {
+    "name": "Trieste",
+    "region": "Friuli-Venezia Giulia",
+    "area": "N",
+    "size": 3,
+    "epithets": ["Giuliana", "Alabarda"]
+  },
+  {
+    "name": "Udine",
+    "region": "Friuli-Venezia Giulia",
+    "area": "N",
+    "size": 3,
+    "epithets": ["Friulana", "Castello"]
+  },
+  {
+    "name": "Pordenone",
+    "region": "Friuli-Venezia Giulia",
+    "area": "N",
+    "size": 2,
+    "epithets": ["Naoniana", "Noncello"]
+  },
+  {
+    "name": "Gorizia",
+    "region": "Friuli-Venezia Giulia",
+    "area": "N",
+    "size": 1,
+    "epithets": ["Isontina", "Isonzo"]
+  },
+  {
+    "name": "Bologna",
+    "region": "Emilia-Romagna",
+    "area": "N",
+    "size": 4,
+    "epithets": ["Felsinea", "Due Torri"]
+  },
+  {
+    "name": "Parma",
+    "region": "Emilia-Romagna",
+    "area": "N",
+    "size": 3,
+    "epithets": ["Ducale", "Pilotta"]
+  },
+  {
+    "name": "Modena",
+    "region": "Emilia-Romagna",
+    "area": "N",
+    "size": 3,
+    "epithets": ["Ghirlandina", "Geminiana"]
+  },
+  {
+    "name": "Reggio Emilia",
+    "region": "Emilia-Romagna",
+    "area": "N",
+    "size": 3,
+    "epithets": ["Tricolore", "Crostolo"]
+  },
+  {
+    "name": "Ferrara",
+    "region": "Emilia-Romagna",
+    "area": "N",
+    "size": 3,
+    "epithets": ["Estense", "Castello Estense"]
+  },
+  {
+    "name": "Ravenna",
+    "region": "Emilia-Romagna",
+    "area": "N",
+    "size": 3,
+    "epithets": ["Bizantina", "Classense"]
+  },
+  {
+    "name": "Rimini",
+    "region": "Emilia-Romagna",
+    "area": "N",
+    "size": 3,
+    "epithets": ["Malatestiana", "Arco d'Augusto"]
+  },
+  {
+    "name": "Piacenza",
+    "region": "Emilia-Romagna",
+    "area": "N",
+    "size": 3,
+    "epithets": ["Primogenita", "Farnese"]
+  },
+  {
+    "name": "Forlì",
+    "region": "Emilia-Romagna",
+    "area": "N",
+    "size": 2,
+    "epithets": ["Forlivese", "Montone"]
+  },
+  {
+    "name": "Cesena",
+    "region": "Emilia-Romagna",
+    "area": "N",
+    "size": 2,
+    "epithets": ["Malatesta", "Savio"]
+  },
+  {
+    "name": "Carpi",
+    "region": "Emilia-Romagna",
+    "area": "N",
+    "size": 1,
+    "epithets": ["Carpigiana", "Piazza Grande"]
+  },
+  {
+    "name": "Imola",
+    "region": "Emilia-Romagna",
+    "area": "N",
+    "size": 1,
+    "epithets": ["Santerno", "Rocca Sforzesca"]
+  },
+  {
+    "name": "Firenze",
+    "region": "Toscana",
+    "area": "C",
+    "size": 4,
+    "epithets": ["Medicea", "Arno"]
+  },
+  {
+    "name": "Prato",
+    "region": "Toscana",
+    "area": "C",
+    "size": 3,
+    "epithets": ["Bisenzio", "Datini"]
+  },
+  {
+    "name": "Livorno",
+    "region": "Toscana",
+    "area": "C",
+    "size": 3,
+    "epithets": ["Labronica", "Quattro Mori"]
+  },
+  {
+    "name": "Pisa",
+    "region": "Toscana",
+    "area": "C",
+    "size": 2,
+    "epithets": ["Torre Pendente", "Pisana"]
+  },
+  {
+    "name": "Arezzo",
+    "region": "Toscana",
+    "area": "C",
+    "size": 2,
+    "epithets": ["Aretina", "Chimera"]
+  },
+  {
+    "name": "Siena",
+    "region": "Toscana",
+    "area": "C",
+    "size": 2,
+    "epithets": ["Senese", "Balzana"]
+  },
+  { "name": "Lucca", "region": "Toscana", "area": "C", "size": 2, "epithets": ["Mura", "Guinigi"] },
+  {
+    "name": "Pistoia",
+    "region": "Toscana",
+    "area": "C",
+    "size": 2,
+    "epithets": ["Ombrone", "Pistoriense"]
+  },
+  {
+    "name": "Grosseto",
+    "region": "Toscana",
+    "area": "C",
+    "size": 2,
+    "epithets": ["Maremmana", "Grifone"]
+  },
+  {
+    "name": "Massa",
+    "region": "Toscana",
+    "area": "C",
+    "size": 1,
+    "epithets": ["Apuana", "Frigido"]
+  },
+  {
+    "name": "Empoli",
+    "region": "Toscana",
+    "area": "C",
+    "size": 1,
+    "epithets": ["Empolese", "Valdarno"]
+  },
+  {
+    "name": "Viareggio",
+    "region": "Toscana",
+    "area": "C",
+    "size": 1,
+    "epithets": ["Versiliese", "Burlamacca"]
+  },
+  {
+    "name": "Perugia",
+    "region": "Umbria",
+    "area": "C",
+    "size": 3,
+    "epithets": ["Etrusca", "Grifo"]
+  },
+  { "name": "Terni", "region": "Umbria", "area": "C", "size": 2, "epithets": ["Acciaio", "Nera"] },
+  {
+    "name": "Foligno",
+    "region": "Umbria",
+    "area": "C",
+    "size": 1,
+    "epithets": ["Fulginate", "Topino"]
+  },
+  {
+    "name": "Gubbio",
+    "region": "Umbria",
+    "area": "C",
+    "size": 1,
+    "epithets": ["Eugubina", "Ceri"]
+  },
+  {
+    "name": "Ancona",
+    "region": "Marche",
+    "area": "C",
+    "size": 3,
+    "epithets": ["Dorica", "Conero"]
+  },
+  {
+    "name": "Pesaro",
+    "region": "Marche",
+    "area": "C",
+    "size": 2,
+    "epithets": ["Rossiniana", "Foglia"]
+  },
+  {
+    "name": "Macerata",
+    "region": "Marche",
+    "area": "C",
+    "size": 1,
+    "epithets": ["Sferisterio", "Maceratese"]
+  },
+  {
+    "name": "Ascoli Piceno",
+    "region": "Marche",
+    "area": "C",
+    "size": 2,
+    "epithets": ["Picena", "Tronto"]
+  },
+  {
+    "name": "Fermo",
+    "region": "Marche",
+    "area": "C",
+    "size": 1,
+    "epithets": ["Fermana", "Girfalco"]
+  },
+  {
+    "name": "Roma",
+    "region": "Lazio",
+    "area": "C",
+    "size": 4,
+    "epithets": ["Capitolina", "Tiberina"]
+  },
+  { "name": "Latina", "region": "Lazio", "area": "C", "size": 3, "epithets": ["Pontina", "Agro"] },
+  {
+    "name": "Frosinone",
+    "region": "Lazio",
+    "area": "C",
+    "size": 2,
+    "epithets": ["Ciociara", "Cosa"]
+  },
+  {
+    "name": "Viterbo",
+    "region": "Lazio",
+    "area": "C",
+    "size": 2,
+    "epithets": ["Tuscia", "Papale"]
+  },
+  { "name": "Rieti", "region": "Lazio", "area": "C", "size": 1, "epithets": ["Sabina", "Velino"] },
+  {
+    "name": "Civitavecchia",
+    "region": "Lazio",
+    "area": "C",
+    "size": 1,
+    "epithets": ["Portuale", "Forte Michelangelo"]
+  },
+  {
+    "name": "L'Aquila",
+    "region": "Abruzzo",
+    "area": "C",
+    "size": 2,
+    "epithets": ["Aquilana", "Gran Sasso"]
+  },
+  {
+    "name": "Pescara",
+    "region": "Abruzzo",
+    "area": "C",
+    "size": 3,
+    "epithets": ["Adriatica", "Delfino"]
+  },
+  {
+    "name": "Chieti",
+    "region": "Abruzzo",
+    "area": "C",
+    "size": 1,
+    "epithets": ["Teatina", "Maiella"]
+  },
+  {
+    "name": "Teramo",
+    "region": "Abruzzo",
+    "area": "C",
+    "size": 1,
+    "epithets": ["Aprutina", "Tordino"]
+  },
+  {
+    "name": "Cagliari",
+    "region": "Sardegna",
+    "area": "C",
+    "size": 3,
+    "epithets": ["Casteddu", "Poetto"]
+  },
+  {
+    "name": "Sassari",
+    "region": "Sardegna",
+    "area": "C",
+    "size": 3,
+    "epithets": ["Turritana", "Candelieri"]
+  },
+  {
+    "name": "Olbia",
+    "region": "Sardegna",
+    "area": "C",
+    "size": 1,
+    "epithets": ["Gallurese", "Tavolara"]
+  },
+  {
+    "name": "Nuoro",
+    "region": "Sardegna",
+    "area": "C",
+    "size": 1,
+    "epithets": ["Barbaricina", "Ortobene"]
+  },
+  {
+    "name": "Campobasso",
+    "region": "Molise",
+    "area": "S",
+    "size": 2,
+    "epithets": ["Molisana", "Monforte"]
+  },
+  {
+    "name": "Isernia",
+    "region": "Molise",
+    "area": "S",
+    "size": 1,
+    "epithets": ["Pentra", "Fontana Fraterna"]
+  },
+  {
+    "name": "Napoli",
+    "region": "Campania",
+    "area": "S",
+    "size": 4,
+    "epithets": ["Partenope", "Vesuviana"]
+  },
+  {
+    "name": "Salerno",
+    "region": "Campania",
+    "area": "S",
+    "size": 3,
+    "epithets": ["Ippocratica", "Arechi"]
+  },
+  {
+    "name": "Caserta",
+    "region": "Campania",
+    "area": "S",
+    "size": 2,
+    "epithets": ["Reggia", "Vanvitelliana"]
+  },
+  {
+    "name": "Avellino",
+    "region": "Campania",
+    "area": "S",
+    "size": 2,
+    "epithets": ["Irpina", "Partenio"]
+  },
+  {
+    "name": "Benevento",
+    "region": "Campania",
+    "area": "S",
+    "size": 2,
+    "epithets": ["Sannita", "Arco di Traiano"]
+  },
+  {
+    "name": "Torre del Greco",
+    "region": "Campania",
+    "area": "S",
+    "size": 1,
+    "epithets": ["Corallina", "Lava"]
+  },
+  {
+    "name": "Castellammare di Stabia",
+    "region": "Campania",
+    "area": "S",
+    "size": 1,
+    "epithets": ["Stabiese", "Faito"]
+  },
+  {
+    "name": "Bari",
+    "region": "Puglia",
+    "area": "S",
+    "size": 4,
+    "epithets": ["Levante", "Nicolaiana"]
+  },
+  {
+    "name": "Taranto",
+    "region": "Puglia",
+    "area": "S",
+    "size": 3,
+    "epithets": ["Ionica", "Due Mari"]
+  },
+  {
+    "name": "Foggia",
+    "region": "Puglia",
+    "area": "S",
+    "size": 3,
+    "epithets": ["Dauna", "Tavoliere"]
+  },
+  {
+    "name": "Lecce",
+    "region": "Puglia",
+    "area": "S",
+    "size": 3,
+    "epithets": ["Barocca", "Salentina"]
+  },
+  {
+    "name": "Brindisi",
+    "region": "Puglia",
+    "area": "S",
+    "size": 2,
+    "epithets": ["Messapica", "Colonne"]
+  },
+  {
+    "name": "Andria",
+    "region": "Puglia",
+    "area": "S",
+    "size": 2,
+    "epithets": ["Federiciana", "Castel del Monte"]
+  },
+  {
+    "name": "Barletta",
+    "region": "Puglia",
+    "area": "S",
+    "size": 2,
+    "epithets": ["Disfida", "Eraclio"]
+  },
+  {
+    "name": "Altamura",
+    "region": "Puglia",
+    "area": "S",
+    "size": 1,
+    "epithets": ["Murgiana", "Pulo"]
+  },
+  {
+    "name": "Monopoli",
+    "region": "Puglia",
+    "area": "S",
+    "size": 1,
+    "epithets": ["Monopolitana", "Porto Antico"]
+  },
+  {
+    "name": "Potenza",
+    "region": "Basilicata",
+    "area": "S",
+    "size": 2,
+    "epithets": ["Lucana", "Basento"]
+  },
+  {
+    "name": "Matera",
+    "region": "Basilicata",
+    "area": "S",
+    "size": 2,
+    "epithets": ["Sassi", "Murgia Materana"]
+  },
+  {
+    "name": "Cosenza",
+    "region": "Calabria",
+    "area": "S",
+    "size": 2,
+    "epithets": ["Bruzia", "Crati"]
+  },
+  {
+    "name": "Catanzaro",
+    "region": "Calabria",
+    "area": "S",
+    "size": 2,
+    "epithets": ["Tre Colli", "Fiumarella"]
+  },
+  {
+    "name": "Reggio Calabria",
+    "region": "Calabria",
+    "area": "S",
+    "size": 3,
+    "epithets": ["Stretto", "Bronzi"]
+  },
+  {
+    "name": "Crotone",
+    "region": "Calabria",
+    "area": "S",
+    "size": 1,
+    "epithets": ["Pitagorica", "Capo Colonna"]
+  },
+  {
+    "name": "Vibo Valentia",
+    "region": "Calabria",
+    "area": "S",
+    "size": 1,
+    "epithets": ["Ipponiate", "Costa degli Dei"]
+  },
+  {
+    "name": "Palermo",
+    "region": "Sicilia",
+    "area": "S",
+    "size": 4,
+    "epithets": ["Panormita", "Conca d'Oro"]
+  },
+  {
+    "name": "Catania",
+    "region": "Sicilia",
+    "area": "S",
+    "size": 4,
+    "epithets": ["Etnea", "Liotru"]
+  },
+  {
+    "name": "Messina",
+    "region": "Sicilia",
+    "area": "S",
+    "size": 3,
+    "epithets": ["Peloritana", "Zancle"]
+  },
+  {
+    "name": "Siracusa",
+    "region": "Sicilia",
+    "area": "S",
+    "size": 3,
+    "epithets": ["Aretusea", "Ortigia"]
+  },
+  {
+    "name": "Trapani",
+    "region": "Sicilia",
+    "area": "S",
+    "size": 2,
+    "epithets": ["Drepanum", "Saline"]
+  },
+  {
+    "name": "Agrigento",
+    "region": "Sicilia",
+    "area": "S",
+    "size": 2,
+    "epithets": ["Templi", "Valle dei Templi"]
+  },
+  { "name": "Ragusa", "region": "Sicilia", "area": "S", "size": 2, "epithets": ["Iblea", "Ibla"] },
+  {
+    "name": "Caltanissetta",
+    "region": "Sicilia",
+    "area": "S",
+    "size": 1,
+    "epithets": ["Nissena", "Imera"]
+  },
+  {
+    "name": "Marsala",
+    "region": "Sicilia",
+    "area": "S",
+    "size": 1,
+    "epithets": ["Lilibetana", "Stagnone"]
+  },
+  { "name": "Acireale", "region": "Sicilia", "area": "S", "size": 1, "epithets": ["Aci", "Timpa"] }
+]

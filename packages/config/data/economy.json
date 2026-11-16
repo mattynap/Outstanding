@@ -1,0 +1,7 @@
+{
+  "startContract": {
+    "salaryWeekly": [30, 80],
+    "seasons": 1
+  },
+  "initialCoachRelationship": 0
+}

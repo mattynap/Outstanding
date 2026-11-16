@@ -7,16 +7,8 @@ import {
   newCareer,
   serialize,
   ageAt,
-  type NewCareerOptions,
 } from '../src/index';
-
-export const baseOptions: NewCareerOptions = {
-  firstName: 'Tommaso',
-  lastName: 'Ferraro',
-  hometown: 'Bergamo',
-  role: 'ATT',
-  traits: ['bomber_area'],
-};
+import { baseOptions } from './fixtures';
 
 describe('newCareer', () => {
   it('is deterministic: same seed and options give the same state', () => {

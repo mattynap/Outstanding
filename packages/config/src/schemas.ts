@@ -81,6 +81,98 @@ export const calendarSchema = z
     message: 'firstMatchWeek must be inside the season',
   });
 
+export const areaSchema = z.enum(['N', 'C', 'S']);
+const perRoleInt = perRole(z.number().int().min(0));
+
+const levelSchema = z
+  .object({
+    level: z.number().int().min(1),
+    professional: z.boolean(),
+    groups: z.number().int().min(1),
+    /** One area per group; empty for a single national group. */
+    areas: z.array(areaSchema),
+    clubsPerGroup: z
+      .number()
+      .int()
+      .min(4)
+      .refine((n) => n % 2 === 0, { message: 'clubsPerGroup must be even' }),
+    promotePerGroup: z.number().int().min(0),
+    relegatePerGroup: z.number().int().min(0),
+    ratingRange: pctRange,
+    /** Weight of a city being picked, indexed by city size 1..4. */
+    citySizeWeights: z.tuple([z.number(), z.number(), z.number(), z.number()]),
+  })
+  .refine((l) => l.areas.length === l.groups || (l.groups === 1 && l.areas.length === 0), {
+    message: 'areas must list one area per group (or be empty for a single group)',
+  });
+
+export const worldSchema = z
+  .object({
+    levels: z.array(levelSchema).min(2),
+    startLevels: z.array(z.number().int()).min(1),
+    defaultStartLevel: z.number().int(),
+    roster: z.object({
+      composition: perRoleInt,
+      ovrSpread: z.number().min(0),
+      ageRange: z.tuple([z.number().int(), z.number().int()]),
+    }),
+    formation: perRoleInt,
+    kitPatternWeights: z.object({
+      solid: z.number().min(0),
+      vstripes: z.number().min(0),
+      hstripes: z.number().min(0),
+      sash: z.number().min(0),
+    }),
+    agents: z.number().int().min(1),
+    maxClubsPerCityPerGroup: z.number().int().min(1),
+  })
+  .superRefine((w, ctx) => {
+    w.levels.forEach((l, i) => {
+      if (l.level !== i + 1) {
+        ctx.addIssue({ code: 'custom', message: `levels must be ordered 1..n (index ${i})` });
+      }
+      const lower = w.levels[i + 1];
+      if (lower && l.groups * l.relegatePerGroup !== lower.groups * lower.promotePerGroup) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `level ${l.level} relegations must equal level ${lower.level} promotions`,
+        });
+      }
+    });
+    const first = w.levels[0];
+    const last = w.levels[w.levels.length - 1];
+    if (first && first.promotePerGroup !== 0) {
+      ctx.addIssue({ code: 'custom', message: 'top level cannot promote' });
+    }
+    if (last && last.relegatePerGroup !== 0) {
+      ctx.addIssue({ code: 'custom', message: 'bottom level cannot relegate' });
+    }
+    for (const s of [...w.startLevels, w.defaultStartLevel]) {
+      if (!w.levels.some((l) => l.level === s)) {
+        ctx.addIssue({ code: 'custom', message: `start level ${s} does not exist` });
+      }
+    }
+    if (!w.startLevels.includes(w.defaultStartLevel)) {
+      ctx.addIssue({ code: 'custom', message: 'defaultStartLevel must be one of startLevels' });
+    }
+    for (const role of ROLES) {
+      if (w.formation[role] > w.roster.composition[role]) {
+        ctx.addIssue({ code: 'custom', message: `roster has too few ${role} for the formation` });
+      }
+    }
+  });
+
+export const economySchema = z.object({
+  startContract: z.object({
+    salaryWeekly: z.tuple([z.number().min(0), z.number().min(0)]),
+    seasons: z.number().int().min(1),
+  }),
+  initialCoachRelationship: z.number().min(-100).max(100),
+});
+
+export type WorldConfig = z.infer<typeof worldSchema>;
+export type LevelConfig = z.infer<typeof levelSchema>;
+export type EconomyConfig = z.infer<typeof economySchema>;
 export type RatingsConfig = z.infer<typeof ratingsSchema>;
 export type PlayerConfig = z.infer<typeof playerConfigSchema>;
 export type CalendarConfig = z.infer<typeof calendarSchema>;

@@ -23,6 +23,21 @@ export function checkContent(content: GameContent): string[] {
     content.traits.map((tr) => tr.id),
   );
 
+  dupes(
+    'cities',
+    content.cities.map((c) => c.name),
+  );
+  for (const city of content.cities) dupes(`cities.${city.name}.epithets`, city.epithets);
+  dupes(
+    'clubs.prefixes',
+    content.clubs.prefixes.map((p) => p.name),
+  );
+  dupes(
+    'clubs.colors',
+    content.clubs.colors.map((c) => c.id),
+  );
+  dupes('clubs.symbols', content.clubs.symbols);
+
   for (const trait of content.traits) {
     for (const key of [`traits.${trait.id}.name`, `traits.${trait.id}.desc`]) {
       if (!(key in t)) errors.push(`traits: missing text key "${key}"`);

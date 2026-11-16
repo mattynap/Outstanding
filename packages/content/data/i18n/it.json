@@ -26,5 +26,18 @@
   "traits.para_rigori.name": "Pararigori",
   "traits.para_rigori.desc": "Dagli undici metri sembra leggere nel pensiero.",
   "traits.regista.name": "Regista",
-  "traits.regista.desc": "Detta i tempi della squadra come un direttore d'orchestra."
+  "traits.regista.desc": "Detta i tempi della squadra come un direttore d'orchestra.",
+  "leagues.1.name": "Serie Oro",
+  "leagues.2.name": "Serie Argento",
+  "leagues.3.name": "Serie Bronzo",
+  "leagues.4.name": "Lega Interzonale",
+  "leagues.5.name": "Regionale Maggiore",
+  "leagues.6.name": "Regionale Minore",
+  "groups.single": "Girone unico",
+  "groups.N": "Girone Nord",
+  "groups.C": "Girone Centro",
+  "groups.S": "Girone Sud",
+  "competitions.national_cup.name": "Coppa Tricolore",
+  "competitions.continental_major.name": "Coppa Europa Maior",
+  "competitions.continental_minor.name": "Coppa Europa Minor"
 }

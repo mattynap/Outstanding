@@ -9,3 +9,4 @@ ios/App/build/
 .env.*
 .claude/settings.local.json
 # NON ignorare .claude/memory/
+sim-output/

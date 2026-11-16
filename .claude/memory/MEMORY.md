@@ -6,3 +6,5 @@ Indice delle note di progetto. Questa cartella è versionata in git.
 - [Tooling](tooling.md) — versioni, TypeScript 6 fissato, pacchetti senza build
 - [Setup del repository](repo-setup.md) — remote GitHub, memoria locale, PDF non versionato
 - [Design del motore](engine-design.md) — Rng, GameContext, saveVersion, tempo, nomi
+- [Niente richieste di permesso](feedback-no-permission-prompts.md) — lavorare solo nel repo, PowerShell consentito
+- [Design del mondo](world-design.md) — piramide, nomi club, limiti noti

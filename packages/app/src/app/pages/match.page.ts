@@ -15,13 +15,14 @@ import { chanceTone, formatRating, ordinal } from '../core/text';
 import { ToastService } from '../core/toast.service';
 import { fixtureView, type FixtureView } from '../core/views';
 import { CrestComponent } from '../ui/crest.component';
+import { TipComponent } from '../ui/tip.component';
 
 type Phase = 'pre' | 'moment' | 'done';
 
 /** Partita del giocatore: si gioca (momenti chiave) o si simula; alla fine la pagella. */
 @Component({
   selector: 'app-match',
-  imports: [IonContent, IonIcon, RouterLink, TranslatePipe, CrestComponent],
+  imports: [IonContent, IonIcon, RouterLink, TranslatePipe, CrestComponent, TipComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ion-content class="o-page">
@@ -63,6 +64,7 @@ type Phase = 'pre' | 'moment' | 'done';
                 }
               </section>
               <p class="o-muted explain">{{ 'ui.match.chooseHint' | t }}</p>
+              <app-tip tip="match.pre" />
               <button class="o-btn" type="button" [disabled]="busy()" (click)="play()">
                 <ion-icon name="play-outline" aria-hidden="true"></ion-icon
                 >{{ 'ui.match.play' | t }}
@@ -138,6 +140,7 @@ type Phase = 'pre' | 'moment' | 'done';
                 <p class="moment-text">{{ m.textKey | t: m.params }}</p>
               </section>
 
+              <app-tip class="moment-tip" tip="match.moments" />
               <div class="options" role="group" [attr.aria-label]="'ui.match.whatDoYouDo' | t">
                 @for (o of m.options; track o.id) {
                   <button
@@ -216,6 +219,7 @@ type Phase = 'pre' | 'moment' | 'done';
                     </div>
                   </div>
                 </section>
+                <app-tip tip="match.rating" />
 
                 @if (r.injury; as inj) {
                   <div class="o-card injury" role="status">
@@ -461,6 +465,11 @@ type Phase = 'pre' | 'moment' | 'done';
     }
     .flash.ok {
       color: var(--o-positive);
+    }
+    .moment-tip {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 12px 16px 6px;
     }
     .options {
       padding: 4px 16px 22px;

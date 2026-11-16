@@ -3,10 +3,17 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { chevronBack, chevronForward, shuffleOutline } from 'ionicons/icons';
-import { ROLES, type Appearance, type Role } from '@outstanding/engine';
+import {
+  DIFFICULTIES,
+  ROLES,
+  type Appearance,
+  type Difficulty,
+  type Role,
+} from '@outstanding/engine';
 import { GameService } from '../core/game.service';
 import { I18nService, TranslatePipe } from '../core/i18n.service';
 import { ToastService } from '../core/toast.service';
+import { TutorialService } from '../core/tutorial.service';
 import { AvatarComponent } from '../ui/avatar.component';
 
 type Part = keyof Appearance;
@@ -177,6 +184,49 @@ type Part = keyof Appearance;
           </div>
         </section>
 
+        <section class="o-card">
+          <h2 class="o-section-title">{{ 'ui.create.difficulty' | t }}</h2>
+          <div class="levels" role="radiogroup" [attr.aria-label]="'ui.create.difficulty' | t">
+            @for (d of difficulties; track d) {
+              <button
+                class="o-choice level"
+                type="button"
+                role="radio"
+                [attr.aria-checked]="difficulty() === d"
+                [attr.aria-pressed]="difficulty() === d"
+                (click)="difficulty.set(d)"
+              >
+                <span class="pips" aria-hidden="true">
+                  @for (i of [0, 1, 2]; track i) {
+                    <span class="pip" [class.on]="i <= difficulties.indexOf(d)"></span>
+                  }
+                </span>
+                <span class="o-choice__body">
+                  <span>{{ 'difficulty.' + d + '.name' | t }}</span>
+                  <span class="o-choice__hint">{{ 'difficulty.' + d + '.hint' | t }}</span>
+                </span>
+              </button>
+            }
+          </div>
+        </section>
+
+        <section class="o-card guide">
+          <button
+            class="o-choice"
+            type="button"
+            role="switch"
+            [attr.aria-checked]="guided()"
+            [attr.aria-pressed]="guided()"
+            (click)="guided.set(!guided())"
+          >
+            <span class="o-choice__body">
+              <span>{{ 'ui.create.guided' | t }}</span>
+              <span class="o-choice__hint">{{ 'ui.create.guidedHint' | t }}</span>
+            </span>
+            <span class="toggle" [class.on]="guided()" aria-hidden="true"><span></span></span>
+          </button>
+        </section>
+
         @if (targetSlot() === null) {
           <p class="warning">{{ 'ui.create.noSlot' | t }}</p>
         } @else if (overwrites()) {
@@ -270,6 +320,68 @@ type Part = keyof Appearance;
       font-size: 13px;
       text-align: center;
     }
+    .levels {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .level {
+      flex-direction: row;
+      align-items: center;
+      gap: 14px;
+    }
+    .pips {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      flex: 0 0 auto;
+    }
+    .pip {
+      width: 6px;
+      border-radius: 2px;
+      background: var(--o-border-strong);
+    }
+    .pip:nth-child(1) {
+      height: 10px;
+    }
+    .pip:nth-child(2) {
+      height: 16px;
+    }
+    .pip:nth-child(3) {
+      height: 22px;
+    }
+    .pip.on {
+      background: var(--o-accent);
+    }
+    .guide .o-choice {
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+    }
+    .toggle {
+      flex: 0 0 auto;
+      width: 44px;
+      height: 26px;
+      padding: 3px;
+      border-radius: 13px;
+      background: var(--o-border-strong);
+      transition: background var(--o-fast) var(--o-ease);
+    }
+    .toggle span {
+      display: block;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--o-text);
+      transition: transform var(--o-fast) var(--o-ease);
+    }
+    .toggle.on {
+      background: var(--o-accent);
+    }
+    .toggle.on span {
+      transform: translateX(18px);
+      background: var(--o-accent-ink);
+    }
     .warning {
       margin: 0;
       font-size: 13px;
@@ -293,6 +405,8 @@ export class CreatePage {
     (a, b) => b - a,
   );
   protected readonly maxTraits = this.game.ctx.config.player.maxTraitsAtCreation;
+  protected readonly difficulties = DIFFICULTIES;
+  private readonly tutorial = inject(TutorialService);
   private readonly route = inject(ActivatedRoute);
   /** Slot di destinazione: quello richiesto, altrimenti il primo libero, altrimenti quello attuale. */
   protected readonly targetSlot = computed(() => {
@@ -319,6 +433,9 @@ export class CreatePage {
     beard: 0,
   });
   protected readonly busy = signal(false);
+  protected readonly difficulty = signal<Difficulty>(this.game.ctx.config.difficulty.default);
+  /** Settimana guidata: proposta in automatico se non c'è ancora nessuna carriera salvata. */
+  protected readonly guided = signal(this.game.slots().every((v) => v.summary === null));
 
   protected readonly parts: { part: Part; label: string }[] = [
     { part: 'skin', label: 'ui.create.parts.skin' },
@@ -436,10 +553,12 @@ export class CreatePage {
           traits: this.traits(),
           startLevel: this.startLevel(),
           appearance: this.appearance(),
+          difficulty: this.difficulty(),
         },
         seed,
         this.targetSlot()!,
       );
+      if (this.guided()) await this.tutorial.start(this.targetSlot()!);
       await this.router.navigateByUrl('/settimana', { replaceUrl: true });
     } catch {
       await this.toast.show(this.i18n.t('ui.common.error'), 'error');

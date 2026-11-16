@@ -240,5 +240,11 @@
   "offers.negotiation.withdrawn": "Il club ritira l'offerta.",
   "retirement.age": "Ritiro per raggiunti limiti di età.",
   "retirement.no_offers": "Nessun club ti ha offerto un contratto: appendi gli scarpini al chiodo.",
-  "retirement.choice": "Hai deciso di ritirarti."
+  "retirement.choice": "Hai deciso di ritirarti.",
+  "difficulty.easy.name": "Facile",
+  "difficulty.easy.hint": "Si cresce in fretta, ci si fa male di rado, i club pagano bene e in campo le giocate riescono più spesso.",
+  "difficulty.normal.name": "Normale",
+  "difficulty.normal.hint": "La carriera come l'abbiamo pensata: si sale con impegno e un po' di fortuna.",
+  "difficulty.hard.name": "Difficile",
+  "difficulty.hard.hint": "Crescita lenta, più infortuni, offerte rare e magre, e in campo ogni giocata costa fatica."
 }

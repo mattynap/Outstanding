@@ -18,7 +18,7 @@ export interface KeyValue {
 
 /** Eventi anonimi: niente nomi, niente testi scritti dal giocatore. */
 export type AnalyticsEvent =
-  | { name: 'career_start'; role: string; startLevel: number }
+  | { name: 'career_start'; role: string; startLevel: number; difficulty: string }
   | { name: 'season_end'; season: number; level: number | null; promoted: boolean }
   | { name: 'retire'; age: number; seasons: number; tier: string }
   | { name: 'purchase'; productId: string };

@@ -3,7 +3,9 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { defaultConfig } from '@outstanding/config';
 import { defaultContent, STAT_PATHS, EVENT_CATEGORIES } from '@outstanding/content';
-import { KIT_PATTERNS, ROLES } from '@outstanding/engine';
+import { DIFFICULTIES, KIT_PATTERNS, ROLES } from '@outstanding/engine';
+import { PLAY_MODES } from '../src/app/core/play-mode';
+import { TIP_IDS } from '../src/app/core/tutorial';
 import {
   chanceTone,
   formatDelta,
@@ -50,6 +52,9 @@ describe("testi dell'interfaccia", () => {
       ...['primary', 'secondary'].map((x) => `ui.editor.club.${x}`),
       ...KIT_PATTERNS.map((x) => `ui.editor.patterns.${x}`),
       ...defaultContent.clubs.colors.map((c) => `ui.editor.colors.${c.id}`),
+      ...DIFFICULTIES.flatMap((d) => [`difficulty.${d}.name`, `difficulty.${d}.hint`]),
+      ...PLAY_MODES.flatMap((m) => [`ui.settings.modes.${m}`, `ui.settings.modes.${m}Hint`]),
+      ...TIP_IDS.flatMap((id) => [`ui.tutorial.tips.${id}.title`, `ui.tutorial.tips.${id}.text`]),
       ...['tooLarge', 'notJson', 'invalid', 'newerVersion'].map(
         (x) => `ui.editor.file.errors.${x}`,
       ),

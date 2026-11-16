@@ -1,15 +1,17 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AlertController, IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { chevronBack } from 'ionicons/icons';
-import { ENGINE_VERSION } from '@outstanding/engine';
+import { careerDifficulty, ENGINE_VERSION } from '@outstanding/engine';
 import { GameService } from '../core/game.service';
 import { I18nService, TranslatePipe } from '../core/i18n.service';
+import { AVAILABLE_PLAY_MODES, PLAY_MODES, type PlayMode } from '../core/play-mode';
 import { PlatformService } from '../core/services/platform.service';
 import { SettingsService, type Theme } from '../core/settings.service';
 import { ToastService } from '../core/toast.service';
+import { TutorialService } from '../core/tutorial.service';
 
 /** Impostazioni: tema, carriera salvata, informazioni e licenze. */
 @Component({
@@ -49,16 +51,59 @@ import { ToastService } from '../core/toast.service';
           </div>
         </section>
 
+        <section class="o-card">
+          <h2 class="o-section-title">{{ 'ui.settings.mode' | t }}</h2>
+          <div class="modes" role="radiogroup" [attr.aria-label]="'ui.settings.mode' | t">
+            @for (m of modes; track m) {
+              <button
+                class="o-choice"
+                type="button"
+                role="radio"
+                [attr.aria-checked]="settings.playMode() === m"
+                [attr.aria-pressed]="settings.playMode() === m"
+                [disabled]="!available(m)"
+                (click)="settings.playMode.set(m)"
+              >
+                <span class="o-choice__body">
+                  <span>{{ 'ui.settings.modes.' + m | t }}</span>
+                  <span class="o-choice__hint">{{ 'ui.settings.modes.' + m + 'Hint' | t }}</span>
+                </span>
+              </button>
+            }
+          </div>
+        </section>
+
         @if (game.hasGame()) {
           <section class="o-card">
             <h2 class="o-section-title">{{ 'ui.settings.career' | t }}</h2>
             <p class="small o-muted none">
               {{ 'ui.settings.autosave' | t: { slot: game.slot() ?? '–' } }}
             </p>
+            <p class="small o-muted none">
+              {{ 'ui.settings.difficulty' | t: { level: (difficultyKey() | t) } }}
+            </p>
             <button class="o-btn o-btn--danger o-btn--small" type="button" (click)="deleteCareer()">
               {{ 'ui.settings.delete' | t }}
             </button>
           </section>
+
+          @if (!game.state()?.retired) {
+            <section class="o-card">
+              <h2 class="o-section-title">{{ 'ui.settings.guide' | t }}</h2>
+              @if (guideOn()) {
+                <p class="small o-muted none">{{ 'ui.settings.guideOn' | t }}</p>
+              } @else {
+                <p class="small o-muted none">{{ 'ui.settings.guideText' | t }}</p>
+                <button
+                  class="o-btn o-btn--ghost o-btn--small"
+                  type="button"
+                  (click)="startGuide()"
+                >
+                  {{ 'ui.settings.guideStart' | t }}
+                </button>
+              }
+            </section>
+          }
 
           <section class="o-card">
             <h2 class="o-section-title">{{ 'ui.editor.title' | t }}</h2>
@@ -143,6 +188,11 @@ import { ToastService } from '../core/toast.service';
     .none {
       margin: 0;
     }
+    .modes {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
     a.o-btn {
       text-decoration: none;
     }
@@ -161,6 +211,28 @@ export class SettingsPage {
   protected readonly platform = inject(PlatformService);
   private readonly toast = inject(ToastService);
   protected readonly busy = signal(false);
+  private readonly tutorial = inject(TutorialService);
+  protected readonly modes = PLAY_MODES;
+
+  protected readonly difficultyKey = computed(() => {
+    const s = this.game.state();
+    return s ? `difficulty.${careerDifficulty(s, this.game.ctx)}.name` : '';
+  });
+  protected readonly guideOn = computed(() => {
+    const slot = this.game.slot();
+    return slot !== null && this.tutorial.slot() === slot;
+  });
+
+  protected available(mode: PlayMode): boolean {
+    return AVAILABLE_PLAY_MODES.includes(mode);
+  }
+
+  protected async startGuide(): Promise<void> {
+    const slot = this.game.slot();
+    if (slot === null) return;
+    await this.tutorial.start(slot);
+    await this.toast.show(this.i18n.t('ui.settings.guideStarted'));
+  }
 
   protected setConsent(value: boolean): void {
     void this.platform.setConsent(value);

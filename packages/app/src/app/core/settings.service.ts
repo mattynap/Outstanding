@@ -1,14 +1,16 @@
 import { Injectable, inject, signal } from '@angular/core';
+import type { PlayMode } from './play-mode';
 import { StorageService } from './storage.service';
 
 export type Theme = 'dark' | 'light';
 const THEME_KEY = 'outstanding.theme';
 
-/** Preferenze dell'interfaccia (per ora solo il tema). */
+/** Preferenze dell'interfaccia: tema e modalità di gioco. */
 @Injectable({ providedIn: 'root' })
 export class SettingsService {
   private readonly storage = inject(StorageService);
   readonly theme = signal<Theme>('dark');
+  readonly playMode = signal<PlayMode>('text');
 
   async load(): Promise<void> {
     const saved = await this.storage.get(THEME_KEY);

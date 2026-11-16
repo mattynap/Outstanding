@@ -11,6 +11,7 @@ import { routes } from './app.routes';
 import { GameService } from './core/game.service';
 import { PlatformService } from './core/services/platform.service';
 import { SettingsService } from './core/settings.service';
+import { TutorialService } from './core/tutorial.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,7 +25,10 @@ export const appConfig: ApplicationConfig = {
       const settings = inject(SettingsService);
       const game = inject(GameService);
       const platform = inject(PlatformService);
-      return Promise.all([settings.load(), platform.init()]).then(() => game.init());
+      const tutorial = inject(TutorialService);
+      return Promise.all([settings.load(), platform.init(), tutorial.load()]).then(() =>
+        game.init(),
+      );
     }),
   ],
 };

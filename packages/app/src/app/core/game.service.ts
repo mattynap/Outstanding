@@ -4,6 +4,7 @@ import {
   acceptSponsor,
   advanceWeek,
   beginMatch,
+  careerDifficulty,
   careerScore,
   computeOvr,
   decideMoment,
@@ -51,6 +52,7 @@ import { I18nService } from './i18n.service';
 import { CapacitorSaveBackend } from './saves/capacitor-backend';
 import { SlotStore, type SlotView } from './saves/slots';
 import { PlatformService } from './services/platform.service';
+import { TutorialService } from './tutorial.service';
 import { clubInfo } from './views';
 
 /** Cosa deve fare il giocatore adesso: guida il pulsante principale della settimana. */
@@ -66,6 +68,7 @@ export class GameService {
   readonly ctx = defaultContext;
   private readonly platform = inject(PlatformService);
   private readonly i18n = inject(I18nService);
+  private readonly tutorial = inject(TutorialService);
   private readonly store = new SlotStore(new CapacitorSaveBackend(), this.ctx);
 
   /** Slot della carriera caricata e riepilogo di tutti gli slot. */
@@ -141,6 +144,8 @@ export class GameService {
   async newGame(options: NewCareerOptions, seed: number, slot: number): Promise<void> {
     await this.flush();
     this.resetReports();
+    // La carriera nuova sostituisce quella dello slot: la sua eventuale guida finisce.
+    await this.tutorial.forgetSlot(slot);
     this.slot.set(slot);
     const state = newCareer(options, seed, this.ctx);
     await this.commit(state);
@@ -148,6 +153,7 @@ export class GameService {
       name: 'career_start',
       role: state.player.role,
       startLevel: clubInfo(state, this.ctx)?.level ?? 0,
+      difficulty: careerDifficulty(state, this.ctx),
     });
     await this.flush();
   }
@@ -155,6 +161,7 @@ export class GameService {
   async deleteSlot(slot: number): Promise<void> {
     await this.flush();
     await this.store.remove(slot);
+    await this.tutorial.forgetSlot(slot);
     if (this.slot() === slot) {
       this.slot.set(null);
       this.setState(null);

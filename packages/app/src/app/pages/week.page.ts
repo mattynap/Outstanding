@@ -19,6 +19,7 @@ import { clubInfo, fixtureView, playerAge, seasonWeekNumber, upcomingFixture } f
 import { CrestComponent } from '../ui/crest.component';
 import { StatBarComponent } from '../ui/stat-bar.component';
 import { TabBarComponent } from '../ui/tab-bar.component';
+import { TipComponent } from '../ui/tip.component';
 
 /** Home della settimana: stato del giocatore, prossima partita, azioni e pulsante principale. */
 @Component({
@@ -31,6 +32,7 @@ import { TabBarComponent } from '../ui/tab-bar.component';
     CrestComponent,
     StatBarComponent,
     TabBarComponent,
+    TipComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -81,6 +83,8 @@ import { TabBarComponent } from '../ui/tab-bar.component';
             </div>
           </section>
 
+          <app-tip tip="week.welcome" />
+
           @if (v.injury; as inj) {
             <div class="o-card injury" role="status">
               <ion-icon name="medkit-outline" aria-hidden="true"></ion-icon>
@@ -108,6 +112,7 @@ import { TabBarComponent } from '../ui/tab-bar.component';
               tone="auto"
             />
           </section>
+          <app-tip tip="week.condition" />
 
           @if (next(); as f) {
             <section class="o-card o-card--hero match" [attr.aria-label]="'ui.week.nextMatch' | t">
@@ -153,6 +158,7 @@ import { TabBarComponent } from '../ui/tab-bar.component';
                   'ui.week.actionsCount' | t: { n: choices().length, max: maxActions }
                 }}</span>
               </div>
+              <app-tip tip="week.plan" />
               <div class="actions">
                 @for (o of options(); track o.id) {
                   <button
@@ -211,6 +217,12 @@ import { TabBarComponent } from '../ui/tab-bar.component';
               <span class="small">{{ 'ui.week.balance' | t: { amount: lw } }}</span>
             </section>
           }
+
+          @if (step() !== 'plan') {
+            <app-tip tip="week.cta" />
+          }
+          <app-tip tip="week.tabs" />
+          <app-tip tip="week.done" />
 
           <div class="cta">
             <button class="o-btn" type="button" [disabled]="busy() || !canAct()" (click)="act()">

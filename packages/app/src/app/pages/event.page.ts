@@ -9,6 +9,7 @@ import { I18nService, TranslatePipe } from '../core/i18n.service';
 import { formatDelta, formatMoney } from '../core/text';
 import { ToastService } from '../core/toast.service';
 import { seasonWeekNumber } from '../core/views';
+import { TipComponent } from '../ui/tip.component';
 
 interface ChangeLine {
   text: string;
@@ -21,7 +22,7 @@ const BAD_WHEN_UP = new Set(['condition.injuryRisk']);
 /** Evento della settimana come notizia di giornale: testo, scelte, conseguenze. */
 @Component({
   selector: 'app-event',
-  imports: [IonContent, IonIcon, RouterLink, TranslatePipe],
+  imports: [IonContent, IonIcon, RouterLink, TranslatePipe, TipComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ion-content class="o-page">
@@ -78,6 +79,7 @@ const BAD_WHEN_UP = new Set(['condition.injuryRisk']);
               {{ (remaining() > 0 ? 'ui.event.nextNews' : 'ui.event.backToWeek') | t }}
             </button>
           } @else {
+            <app-tip tip="event.choice" />
             <div class="choices" role="group" [attr.aria-label]="'ui.event.choices' | t">
               @for (c of e.choices; track $index) {
                 <button class="o-choice" type="button" [disabled]="busy()" (click)="choose($index)">

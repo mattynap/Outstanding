@@ -28,6 +28,8 @@ export const routes: Routes = [
   game('aspetto', () => import('./pages/look.page').then((m) => m.LookPage)),
   game('patrimonio', () => import('./pages/wealth.page').then((m) => m.WealthPage)),
   game('vita-privata', () => import('./pages/private.page').then((m) => m.PrivatePage)),
+  game('social', () => import('./pages/social.page').then((m) => m.SocialPage)),
+  game('conferenza', () => import('./pages/press.page').then((m) => m.PressPage)),
   {
     path: 'profilo',
     loadComponent: () => import('./pages/profile.page').then((m) => m.ProfilePage),

@@ -2,9 +2,17 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { Router, RouterLink } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { arrowForward, medkitOutline, settingsOutline, walletOutline } from 'ionicons/icons';
+import {
+  arrowForward,
+  chatbubblesOutline,
+  medkitOutline,
+  micOutline,
+  settingsOutline,
+  walletOutline,
+} from 'ionicons/icons';
 import {
   getTransferWindow,
+  getPressConference,
   getWeekOptions,
   playerFixture,
   SKILLS,
@@ -56,6 +64,9 @@ import { TipComponent } from '../ui/tip.component';
               <span class="o-muted small">{{ 'ui.week.freeAgentHint' | t }}</span>
             </div>
           }
+          <a class="o-icon-btn" routerLink="/social" [attr.aria-label]="'ui.social.title' | t">
+            <ion-icon name="chatbubbles-outline" aria-hidden="true"></ion-icon>
+          </a>
           <a
             class="o-icon-btn"
             routerLink="/impostazioni"
@@ -84,6 +95,17 @@ import { TipComponent } from '../ui/tip.component';
           </section>
 
           <app-tip tip="week.welcome" />
+
+          @if (press(); as pr) {
+            <a class="o-card press-call" routerLink="/conferenza">
+              <ion-icon name="mic-outline" aria-hidden="true"></ion-icon>
+              <span class="grow">
+                <span class="o-section-title">{{ 'ui.press.title' | t }}</span>
+                <span class="o-muted small">{{ 'ui.press.kind.' + pr.kind | t: pr.params }}</span>
+              </span>
+              <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+            </a>
+          }
 
           @if (v.injury; as inj) {
             <div class="o-card injury" role="status">
@@ -246,6 +268,24 @@ import { TipComponent } from '../ui/tip.component';
     <app-tab-bar active="week" />
   `,
   styles: `
+    .press-call {
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--o-text);
+      border-color: var(--o-accent);
+    }
+    .press-call > ion-icon:first-child {
+      font-size: 26px;
+      color: var(--o-accent-fg);
+    }
+    .press-call .grow {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
     .club {
       display: flex;
       align-items: center;
@@ -489,6 +529,12 @@ export class WeekPage {
     return s ? getWeekOptions(s, this.ctx) : [];
   });
 
+  /** Conferenza stampa disponibile (presentazione o vigilia di una grande partita). */
+  protected readonly press = computed(() => {
+    const s = this.game.state();
+    return s && !s.retired ? getPressConference(s, this.ctx) : null;
+  });
+
   protected readonly needsFocus = computed(() =>
     this.options().some((o) => o.needsFocus && this.choices().includes(o.id)),
   );
@@ -528,7 +574,14 @@ export class WeekPage {
   });
 
   constructor() {
-    addIcons({ arrowForward, settingsOutline, walletOutline, medkitOutline });
+    addIcons({
+      arrowForward,
+      chatbubblesOutline,
+      micOutline,
+      settingsOutline,
+      walletOutline,
+      medkitOutline,
+    });
   }
 
   protected whenKey(weeks: number): string {

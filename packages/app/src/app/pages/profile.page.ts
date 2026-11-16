@@ -157,10 +157,10 @@ import { TabBarComponent } from '../ui/tab-bar.component';
               />
               <app-stat-bar [label]="'ui.stats.popularity' | t" [value]="v.image.popularity" />
               <app-stat-bar [label]="'ui.stats.reputation' | t" [value]="v.image.reputation" />
-              <div class="followers">
+              <a class="followers" routerLink="/social">
                 <span class="o-muted small">{{ 'ui.stats.followers' | t }}</span>
                 <span class="o-number">{{ v.followers }}</span>
-              </div>
+              </a>
             </div>
           </section>
 
@@ -310,6 +310,8 @@ import { TabBarComponent } from '../ui/tab-bar.component';
       display: flex;
       flex-direction: column;
       gap: 2px;
+      text-decoration: none;
+      color: inherit;
     }
     .followers .o-number {
       font-size: 22px;

@@ -4,6 +4,8 @@ import { IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { chevronBack, flashOutline, playOutline } from 'ionicons/icons';
 import {
+  getInterview,
+  type Tone,
   playerFixture,
   type KeyMoment,
   type MatchEvent,
@@ -221,6 +223,39 @@ type Phase = 'pre' | 'moment' | 'done';
                 </section>
                 <app-tip tip="match.rating" />
 
+                @if (played() && interview(); as iv) {
+                  <section class="o-paper interview" [attr.aria-label]="'ui.interview.title' | t">
+                    <span class="o-kicker">{{ 'ui.interview.title' | t }}</span>
+                    <p class="o-headline ask">«{{ iv.questionKey | t: iv.params }}»</p>
+                    <div class="answers">
+                      @for (a of iv.answers; track a.tone) {
+                        <button
+                          class="answer"
+                          type="button"
+                          [disabled]="busy()"
+                          (click)="answerInterview(a.tone)"
+                        >
+                          <span class="tone">{{ 'ui.tone.' + a.tone | t }}</span>
+                          <span>{{ a.textKey | t: iv.params }}</span>
+                        </button>
+                      }
+                    </div>
+                    <button
+                      class="no-comment"
+                      type="button"
+                      [disabled]="busy()"
+                      (click)="answerInterview(null)"
+                    >
+                      {{ 'ui.interview.none' | t }}
+                    </button>
+                  </section>
+                } @else if (interviewHeadline(); as h) {
+                  <section class="o-paper interview">
+                    <span class="o-kicker">{{ 'ui.press.tomorrow' | t }}</span>
+                    <p class="o-headline ask">{{ h.textKey | t: h.params }}</p>
+                  </section>
+                }
+
                 @if (r.injury; as inj) {
                   <div class="o-card injury" role="status">
                     {{
@@ -289,6 +324,53 @@ type Phase = 'pre' | 'moment' | 'done';
     </ion-content>
   `,
   styles: `
+    .interview {
+      gap: 10px;
+    }
+    .interview .ask {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.1;
+    }
+    .answers {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .answer {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--o-paper-rule);
+      background: rgba(255, 255, 255, 0.35);
+      color: var(--o-ink);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    .answer:not(:disabled):active {
+      transform: scale(0.99);
+    }
+    .tone {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--o-headline-red);
+    }
+    .no-comment {
+      align-self: flex-end;
+      background: none;
+      border: none;
+      padding: 6px 0;
+      font: inherit;
+      font-size: 14px;
+      color: var(--o-ink-muted);
+      text-decoration: underline;
+      cursor: pointer;
+    }
     .top {
       display: flex;
       align-items: center;
@@ -606,6 +688,16 @@ export class MatchPage {
   protected readonly moment = signal<KeyMoment | null>(null);
   protected readonly report = signal<MatchReport | null>(null);
   protected readonly outcome = signal<'ok' | 'ko' | null>(null);
+  /** Vero se la partita è stata giocata di persona: solo allora c'è l'intervista. */
+  protected readonly played = signal(false);
+  protected readonly interview = computed(() => {
+    const s = this.game.state();
+    return s ? getInterview(s, this.game.ctx) : null;
+  });
+  protected readonly interviewHeadline = signal<{
+    textKey: string;
+    params: Record<string, string>;
+  } | null>(null);
   /** Partita mostrata: resta fissa anche quando, a fine partita, il calendario va avanti. */
   private readonly fixtureId = signal<string | null>(null);
 
@@ -663,6 +755,7 @@ export class MatchPage {
   }
 
   protected async play(): Promise<void> {
+    this.played.set(true);
     await this.run(async () => {
       const step = await this.game.startMatch();
       this.show(step);
@@ -685,6 +778,14 @@ export class MatchPage {
       const last = events.slice(before).find((e) => e.kind === 'moment');
       this.outcome.set(last && last.kind === 'moment' ? (last.success ? 'ok' : 'ko') : null);
       this.show(step);
+    });
+  }
+
+  protected async answerInterview(tone: Tone | null): Promise<void> {
+    await this.run(async () => {
+      await this.game.answerInterview(tone);
+      const h = this.game.state()?.media?.feed[0];
+      if (h) this.interviewHeadline.set({ textKey: h.textKey, params: h.params });
     });
   }
 

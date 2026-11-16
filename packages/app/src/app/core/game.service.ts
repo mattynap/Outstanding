@@ -16,6 +16,9 @@ import {
   takePersonalLoan,
   withdrawCash,
   breakUp,
+  answerInterview,
+  answerPress,
+  publishPost,
   doPrivateAction,
   endAffair,
   setInterest,
@@ -56,6 +59,9 @@ import {
   type GameState,
   type Interest,
   type PartyReport,
+  type PostReport,
+  type PressReport,
+  type Tone,
   type PrivateActionReport,
   type MatchReport,
   type MatchStep,
@@ -372,6 +378,25 @@ export class GameService {
     const { state, cost } = changeLook(this.require(), next, this.ctx);
     await this.commit(state);
     return cost;
+  }
+
+  // --- Media ------------------------------------------------------------------------------
+
+  async publishPost(id: string): Promise<PostReport> {
+    const { state, report } = publishPost(this.require(), id, this.ctx);
+    await this.commit(state);
+    return report;
+  }
+
+  /** Risponde all'intervista dopo la partita (`null` = nessun commento). */
+  async answerInterview(tone: Tone | null): Promise<void> {
+    await this.commit(answerInterview(this.require(), tone, this.ctx));
+  }
+
+  async answerPress(tones: Tone[]): Promise<PressReport> {
+    const { state, report } = answerPress(this.require(), tones, this.ctx);
+    await this.commit(state);
+    return report;
   }
 
   // --- Vita privata ------------------------------------------------------------------------

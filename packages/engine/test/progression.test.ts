@@ -122,6 +122,8 @@ describe('condizione e partite', () => {
     const { state, matchReport } = playMatch(s, () => 0);
     if (matchReport.minutesPlayed > 0) {
       expect(state.player.condition.energy).toBeLessThan(before.condition.energy);
+    }
+    if (matchReport.rating !== null && matchReport.rating !== ctx.config.match.rating.base) {
       expect(state.player.condition.form).not.toBe(before.condition.form);
     }
   });

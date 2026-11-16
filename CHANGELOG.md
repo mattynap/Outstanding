@@ -108,3 +108,25 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
 - `skipToNextMatch`: salta le settimane senza partite con un piano automatico.
 - Tutti i parametri in `config/progression.json`. Curva verificata su carriere complete: potenziale
   raggiunto verso i 25–26 anni, picco fino ai 30–31, declino dai 32.
+
+### M7 – Economia e mercato
+
+- Offerte dei club nelle finestre di mercato (e in ogni momento da svincolato): club di livello
+  vicino, preferibilmente superiore, con rating compatibile con l'OVR percepito (bonus ai giovani,
+  sconto dopo i 30 anni). Stipendio per livello da `config/economy.json`, bonus alla firma.
+- Trattativa: il club accetta entro un tetto nascosto, rilancia a metà strada o ritira l'offerta.
+- Rinnovo proposto dal club nell'ultima stagione di contratto se il giocatore è all'altezza (la
+  fiducia del mister aiuta). Contratti scaduti a fine stagione: svincolo.
+- Prestiti per i giovani poco utilizzati, con rientro automatico a fine stagione.
+- Procuratore: candidati in base alla reputazione, qualità da 1 a 5, commissione, più offerte e
+  più margine nelle trattative; segnaposto `{agent}` ed effetti sul rapporto attivi negli eventi.
+- Sponsor con marchi inventati (`content/data/sponsors.json`) che arrivano con la popolarità, pagano
+  ogni settimana e sbloccano l'azione "servizio per lo sponsor".
+- Finanze settimanali (stipendio, sponsor, commissione, tenore di vita a tre livelli), debiti che
+  pesano su felicità e morale.
+- Ritiro deciso dal mercato: automatico a 40 anni o dai 33 se si resta senza squadra a fine
+  mercato estivo; ritiro volontario dai 33. Le richieste di trasferimento degli eventi diventano
+  offerte.
+- Gli aumenti di abilità dati dagli eventi rispettano ora il potenziale nascosto.
+- Verifica su 12 carriere complete: 10 arrivano in massima serie (non quelle con potenziale ~60),
+  ritiro tra 33 e 39 anni.

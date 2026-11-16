@@ -45,8 +45,15 @@ function getAction(id: string, ctx: GameContext): WeekActionConfig {
 /** Le azioni possibili questa settimana (gli allenamenti non sono disponibili da infortunati). */
 export function getWeekOptions(state: GameState, ctx: GameContext = defaultContext): WeekOption[] {
   const injured = isInjured(state.player);
+  const noSponsor = state.player.sponsors.length === 0;
   return ctx.config.progression.actions.map((a) => {
-    const blocked = injured && a.kind === 'training';
+    const reasonKey =
+      injured && a.kind === 'training'
+        ? 'week.blocked.injured'
+        : noSponsor && a.kind === 'sponsor'
+          ? 'week.blocked.no_sponsor'
+          : undefined;
+    const blocked = reasonKey !== undefined;
     return {
       id: a.id,
       kind: a.kind,
@@ -54,15 +61,26 @@ export function getWeekOptions(state: GameState, ctx: GameContext = defaultConte
       descKey: `week.actions.${a.id}.desc`,
       needsFocus: Boolean(a.focus),
       available: !blocked,
-      ...(blocked ? { reasonKey: 'week.blocked.injured' } : {}),
+      ...(reasonKey ? { reasonKey } : {}),
     };
   });
 }
 
-function applyDeltas(player: Player, a: WeekActionConfig): Player {
+function applyDeltas(player: Player, a: WeekActionConfig, ctx: GameContext): Player {
   const e = a.effects;
+  // Il servizio fotografico paga qualche settimana extra di ogni sponsor.
+  const bonus =
+    a.kind === 'sponsor'
+      ? player.sponsors.reduce((sum, d) => sum + d.weeklyIncome, 0) *
+        ctx.config.economy.sponsors.shootBonusWeeks
+      : 0;
   return {
     ...player,
+    money: { ...player.money, cash: player.money.cash + bonus },
+    image: {
+      ...player.image,
+      popularity: clamp(player.image.popularity + (e.popularity ?? 0), 0, 100),
+    },
     condition: {
       ...player.condition,
       energy: clamp(player.condition.energy + (e.energy ?? 0), 0, 100),
@@ -87,6 +105,7 @@ export function planWeek(
   ctx: GameContext = defaultContext,
 ): { state: GameState; report: WeekPlanReport } {
   const cfg = ctx.config.progression;
+  if (state.retired) throw new Error('The career is over');
   if (state.plannedWeek === state.week) throw new Error('This week is already planned');
   if (choices.length > cfg.actionsPerWeek) throw new Error(`At most ${cfg.actionsPerWeek} actions`);
   if (new Set(choices.map((c) => c.actionId)).size !== choices.length) {
@@ -134,7 +153,7 @@ export function planWeek(
       }
       healed = true;
     }
-    player = applyDeltas(player, action);
+    player = applyDeltas(player, action, ctx);
   }
 
   return {

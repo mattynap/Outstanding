@@ -1,0 +1,7 @@
+1.personalizzazione personaggio
+2.finanze personali
+3.investimenti con immagini
+4.vita personale affettiva
+5.feste private
+6.modalità iniziale (facile, normale difficile)
+7.impostazioni scelta per solo testuale o altro

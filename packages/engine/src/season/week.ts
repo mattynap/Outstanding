@@ -2,6 +2,8 @@ import { defaultContext, type GameContext } from '../context';
 import { Rng } from '../rng';
 import { seasonStartWeek, weekOfSeason } from '../time';
 import type { Fixture, GameState } from '../types';
+import { applyWeeklyFinances, type WeekFinance } from '../market/life';
+import { refreshMarket } from '../market/offers';
 import { weeklyRecovery } from '../player/condition';
 import { quickResult } from './quickSim';
 
@@ -12,6 +14,8 @@ export interface WeekReport {
   week: number;
   /** Risultati della settimana nel girone del giocatore. */
   results: Fixture[];
+  /** Entrate e uscite della settimana. */
+  finance: WeekFinance;
 }
 
 /** Vero quando tutte le settimane della stagione sono state giocate: poi va chiamato endSeason. */
@@ -48,6 +52,7 @@ export function advanceWeek(
   state: GameState,
   ctx: GameContext = defaultContext,
 ): { state: GameState; report: WeekReport } {
+  if (state.retired) throw new Error('The career is over');
   if (isSeasonOver(state, ctx)) throw new Error('Season is over: call endSeason');
   const own = playerFixture(state);
   if (state.pendingEvents.length > 0) throw new Error('Pending events: call resolveEvent');
@@ -68,9 +73,19 @@ export function advanceWeek(
 
   const groupId = state.world.clubs.find((c) => c.id === state.player.clubId)?.groupId;
   const results = calendar.filter((f) => f.week === state.week && f.groupId === groupId);
-  const player = weeklyRecovery(state.player, ctx);
-  return {
-    state: { ...state, player, calendar, week: state.week + 1, rngState: rng.getState() },
-    report: { week: state.week, results },
+  const { player, finance } = applyWeeklyFinances(
+    weeklyRecovery(state.player, ctx),
+    state.world.npcs,
+    ctx,
+  );
+  let next: GameState = {
+    ...state,
+    player,
+    calendar,
+    week: state.week + 1,
+    rngState: rng.getState(),
   };
+  // Il mercato della settimana nuova; a stagione finita ci pensa endSeason.
+  if (!isSeasonOver(next, ctx)) next = refreshMarket(next, ctx);
+  return { state: next, report: { week: state.week, results, finance } };
 }

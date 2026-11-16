@@ -90,6 +90,8 @@ export function createPlayer(
     },
     money: { ...init.money },
     traits: [...(opts.traits ?? [])],
+    lifestyle: ctx.config.economy.defaultLifestyle,
+    sponsors: [],
     relationships: {},
     flags: {},
     seasonStats: emptySeasonStats(),

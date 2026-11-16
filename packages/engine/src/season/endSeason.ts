@@ -1,6 +1,7 @@
 import type { LevelConfig } from '@outstanding/config';
 import { defaultContext, type GameContext } from '../context';
 import { emptySeasonStats } from '../player/create';
+import { seasonMarketTransition } from '../market/life';
 import { applyDecline } from '../player/progression';
 import { computeOvr } from '../player/ratings';
 import { Rng } from '../rng';
@@ -107,6 +108,7 @@ export function endSeason(
   state: GameState,
   ctx: GameContext = defaultContext,
 ): { state: GameState; seasonReport: SeasonReport } {
+  if (state.retired) throw new Error('The career is over');
   if (!isSeasonOver(state, ctx)) throw new Error('The season is not over yet');
   const cfg = ctx.config;
   const rng = Rng.fromState(state.rngState);
@@ -212,18 +214,6 @@ export function endSeason(
     promoted: move?.kind === 'promoted',
     relegated: move?.kind === 'relegated',
   };
-  // Regola temporanea finché i contratti non si negoziano (M7): quelli in scadenza si rinnovano da soli.
-  let contract = p.contract;
-  if (contract && p.clubId) {
-    const newLevel = levelOfGroup.get(newGroupOf.get(p.clubId)!)!;
-    const professional = cfg.world.levels.find((l) => l.level === newLevel)!.professional;
-    contract = {
-      ...contract,
-      untilSeason: Math.max(contract.untilSeason, state.season + 1),
-      amateur: !professional,
-    };
-  }
-
   const world = { ...state.world, leagues, clubs };
   const nextSeason = state.season + 1;
   const calendar = buildSeasonCalendar(world, nextSeason, rng, cfg.calendar);
@@ -235,7 +225,6 @@ export function endSeason(
     calendar,
     player: {
       ...applyDecline(p, record.age, ctx),
-      ...(contract ? { contract } : {}),
       seasonStats: emptySeasonStats(),
       history: [...p.history, record],
     },
@@ -244,7 +233,8 @@ export function endSeason(
   };
 
   return {
-    state: next,
+    // Contratti scaduti, prestiti finiti, ritiro e mercato della nuova stagione.
+    state: seasonMarketTransition(next, ctx),
     seasonReport: {
       season: state.season,
       record,

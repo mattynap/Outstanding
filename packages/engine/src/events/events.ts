@@ -7,6 +7,7 @@ import {
   type StatPath,
 } from '@outstanding/content';
 import { defaultContext, type GameContext } from '../context';
+import { computeOvr } from '../player/ratings';
 import { Rng } from '../rng';
 import { getTransferWindow } from '../season/week';
 import { ageAt, weekOfSeason } from '../time';
@@ -122,6 +123,7 @@ export function drawWeekEvents(
   state: GameState,
   ctx: GameContext = defaultContext,
 ): { state: GameState; events: EventView[] } {
+  if (state.retired) throw new Error('The career is over');
   if (state.eventsWeek === state.week) return { state, events: getPendingEvents(state, ctx) };
   const cfg = ctx.config.events;
   const rng = Rng.fromState(state.rngState);
@@ -187,6 +189,8 @@ function eventParams(state: GameState): Record<string, string> {
     const coach = state.world.npcs.find((n) => n.id === club.coachId);
     if (coach) params['coach'] = `${coach.firstName} ${coach.lastName}`;
   }
+  const agent = p.agentId ? state.world.npcs.find((n) => n.id === p.agentId) : undefined;
+  if (agent) params['agent'] = `${agent.firstName} ${agent.lastName}`;
   return params;
 }
 
@@ -218,7 +222,17 @@ function applyEffects(
   const limits = ctx.config.events.statLimits;
   const stat = (path: StatPath, delta: number) => {
     const before = getStat(s.player, path);
-    const player = setStat(s.player, path, before + delta, limits);
+    let value = before + delta;
+    // Anche le abilità guadagnate con gli eventi rispettano il potenziale nascosto.
+    if (path.startsWith('skills.') && delta > 0) {
+      const g = ctx.config.progression.growth;
+      const p = s.player;
+      const ovr = computeOvr(p.skills, p.role, ctx.config.ratings);
+      const gap = Math.min(1, Math.max(0, (p.potential - ovr) / g.potentialGapScale));
+      const cap = Math.min(g.skillMax, p.potential + g.skillCapOverPotential);
+      value = Math.max(before, Math.min(cap, before + delta * gap));
+    }
+    const player = setStat(s.player, path, value, limits);
     s = { ...s, player };
     changes.push({ kind: 'stat', path, before, after: getStat(player, path) });
   };
@@ -241,11 +255,13 @@ function applyEffects(
         break;
       }
       case 'relationship': {
-        // Il procuratore arriva con il mercato (M7): fino ad allora l'effetto non ha bersaglio.
+        // Senza club o senza procuratore l'effetto non ha bersaglio.
         const npcId =
-          effect.target === 'coach' && s.player.clubId
-            ? getClub(s.world, s.player.clubId).coachId
-            : undefined;
+          effect.target === 'coach'
+            ? s.player.clubId
+              ? getClub(s.world, s.player.clubId).coachId
+              : undefined
+            : s.player.agentId;
         if (!npcId) break;
         const before = s.player.relationships[npcId] ?? 0;
         const after = Math.min(100, Math.max(-100, before + effect.delta));

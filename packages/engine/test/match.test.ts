@@ -100,9 +100,9 @@ describe('partita', () => {
     expect(() => advanceWeek(paused)).toThrow();
 
     const resumed = deserialize(serialize(paused));
-    const direct = playMatch(decideMoment(paused, 0).state, first);
-    const viaSave = playMatch(decideMoment(resumed, 0).state, first);
-    expect(viaSave.matchReport).toEqual(direct.matchReport);
+    const finish = (r: ReturnType<typeof decideMoment>) =>
+      r.step.kind === 'finished' ? r.step.report : playMatch(r.state, first).matchReport;
+    expect(finish(decideMoment(resumed, 0))).toEqual(finish(decideMoment(paused, 0)));
     expect(() => decideMoment(paused, 99)).toThrow();
   });
 

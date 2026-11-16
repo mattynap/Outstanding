@@ -10,7 +10,7 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
 
 ## Stato al 2026-11-16
 
-- M0–M6 completate e pushate sul branch `dev`.
+- M0–M7 completate e pushate sul branch `dev`.
 - M4: modulo `engine/src/match/`, parametri in `config/match.json`. Bilanciamento indicativo
   (prima stagione, scelte casuali): ATT ~15 gol in 30 partite, 2,8–3 gol a partita. Da rivedere
   con il simulatore in M8. La partita non tocca ancora forma/energia/morale/fiducia (M6).
@@ -27,8 +27,18 @@ di ogni milestone, poi **fermarsi dopo M4** per la revisione dell'utente.
 - Taratura M6 (8 carriere, 20 stagioni, piano allenamento+riposo): OVR medio 45 a 17 anni, 72 a 25,
   picco 74 fino a 31, 68 a 36; ~8 infortuni a carriera. Con allenamento intenso+normale si arriva al
   potenziale ~2 anni prima ma ~40 infortuni a carriera: compromesso voluto, da rivedere in M8.
-- Il ritiro non esiste ancora: da definire (probabilmente con M7 o con la schermata fine carriera).
-- Prossimo passo: M7 (economia e mercato). Contenuti: arrivare a 100 eventi in parallelo.
+- Ritiro (decisione utente 2026-11-16, opzione 2): **decide il mercato**. Ritiro automatico quando
+  nessun club offre un contratto (dai 33 anni, a fine finestra estiva senza squadra) o a 40 anni;
+  il giocatore può ritirarsi prima di sua scelta dai 33. Implementato in M7.
+- M7: `engine/src/market/offers.ts` (offerte, trattative, rinnovi, prestiti, sponsor, ritiro per
+  mancanza di offerte: `refreshMarket` chiamato da `advanceWeek`), `market/life.ts` (finanze,
+  tenore di vita, procuratore, sponsor, `retire`, `seasonMarketTransition` chiamato da `endSeason`).
+  Config in `config/economy.json`, marchi in `content/data/sponsors.json`.
+- Verifica M7 (12 carriere, strategia "firma l'offerta del livello più alto"): 10/12 in massima
+  serie, esordio 22–26 anni, ritiro 33–39. Da tarare in M8: i potenziali altissimi (90+) si fermano
+  a ~80 (la crescita satura con `potentialGapScale`); i guadagni in carriera (3–36 milioni) dipendono
+  da stipendi di massima serie fino a 60.000/settimana.
+- Prossimo passo: M7b (coppe), poi M8 (simulatore). Contenuti: arrivare a 100 eventi in parallelo.
 
 ## Decisioni prese dall'utente (2026-11-16)
 

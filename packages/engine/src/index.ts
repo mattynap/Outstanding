@@ -47,6 +47,29 @@ export {
   type WeekPlanReport,
 } from './season/plan';
 export { applyGrowth, applyDecline, growthMultiplier } from './player/progression';
+export {
+  acceptOffer,
+  clubLevel,
+  getOffers,
+  marketSalary,
+  negotiateOffer,
+  perceivedOvr,
+  refreshMarket,
+  rejectOffer,
+  type NegotiationResult,
+  type OfferView,
+} from './market/offers';
+export {
+  acceptSponsor,
+  fireAgent,
+  getAgentCandidates,
+  getSponsorOffers,
+  hireAgent,
+  rejectSponsor,
+  retire,
+  setLifestyle,
+  type WeekFinance,
+} from './market/life';
 export { getClub, getGroup, getLeagueByLevel, playerClub } from './world/queries';
 export {
   serialize,

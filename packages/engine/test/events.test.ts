@@ -6,6 +6,7 @@ import {
   checkConditions,
   defaultContext,
   deserialize,
+  acceptOffer,
   drawWeekEvents,
   endSeason,
   getPendingEvents,
@@ -236,13 +237,20 @@ describe('eventi del gioco', () => {
         s = d.state;
         for (const e of d.events) {
           seen.add(e.eventId);
-          expect(Object.keys(e.params)).toEqual(expect.arrayContaining(['firstName', 'club']));
+          expect(Object.keys(e.params)).toEqual(expect.arrayContaining(['firstName', 'city']));
+          if (s.player.clubId) expect(e.params['club']).toBeDefined();
           s = resolveEvent(s, e.eventId, pick++ % e.choices.length).state;
         }
         if (playerFixture(s)) s = playMatch(s, () => 0).state;
         s = advanceWeek(s).state;
       }
       s = endSeason(s).state;
+      // Da svincolato firma la prima offerta che arriva.
+      while (!s.player.clubId && !isSeasonOver(s)) {
+        const offer = s.offers[0];
+        if (offer) s = acceptOffer(s, offer.id);
+        else s = advanceWeek(s).state;
+      }
     }
     expect(seen.size).toBeGreaterThan(10);
   });

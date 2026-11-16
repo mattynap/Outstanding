@@ -67,7 +67,14 @@ export interface Player {
   traits: string[];
   injury?: { type: string; weeksLeft: number };
   contract?: Contract;
+  /** Club in cui gioca: quello del contratto, o quello del prestito. */
   clubId?: string;
+  /** Prestito in corso: il contratto resta con il club proprietario. */
+  loan?: { parentClubId: string; untilSeason: number };
+  agentId?: string;
+  /** Tenore di vita (id da config/economy.json). */
+  lifestyle: string;
+  sponsors: SponsorDeal[];
   /** npcId -> -100..100 */
   relationships: Record<string, number>;
   flags: Record<string, number | boolean | string>;
@@ -155,6 +162,43 @@ export interface Npc {
   firstName: string;
   lastName: string;
   clubId?: string;
+  /** Solo procuratori: qualità da 1 a 5 stelle e commissione sugli incassi. */
+  quality?: number;
+  commission?: number;
+}
+
+/** Contratto di sponsorizzazione attivo. */
+export interface SponsorDeal {
+  sponsorId: string;
+  weeklyIncome: number;
+  untilSeason: number;
+}
+
+export interface SponsorOffer extends SponsorDeal {
+  id: string;
+  expiresWeek: number;
+}
+
+/** Offerta di contratto da un club (trasferimento, prestito o rinnovo). */
+export interface ContractOffer {
+  id: string;
+  kind: 'transfer' | 'loan' | 'renewal';
+  clubId: string;
+  salaryWeekly: number;
+  seasons: number;
+  signingBonus: number;
+  expiresWeek: number;
+  /** Stipendio massimo che il club è disposto a pagare: nascosto al giocatore. */
+  maxSalary: number;
+  /** Rilanci rimasti prima che il club ritiri l'offerta. */
+  roundsLeft: number;
+}
+
+export interface Retirement {
+  season: number;
+  week: number;
+  age: number;
+  reason: 'age' | 'no_offers' | 'choice';
 }
 
 export interface Fixture {
@@ -267,6 +311,12 @@ export interface GameState {
   transferRequests: TransferRequest[];
   /** Settimana per cui le azioni sono già state scelte (-1 = mai). */
   plannedWeek: number;
+  offers: ContractOffer[];
+  sponsorOffers: SponsorOffer[];
+  /** Settimana in cui il mercato è già stato aggiornato (-1 = mai). */
+  marketWeek: number;
+  /** Presente quando la carriera è finita. */
+  retired?: Retirement;
   /** Contatore crescente usato per creare id univoci. */
   nextId: number;
   /** Partita del giocatore iniziata e non ancora finita. */

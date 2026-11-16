@@ -99,6 +99,9 @@ export function newCareer(
     eventsWeek: -1,
     transferRequests: [],
     plannedWeek: -1,
+    offers: [],
+    sponsorOffers: [],
+    marketWeek: -1,
     nextId: ids.next,
   };
 }

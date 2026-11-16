@@ -29,6 +29,13 @@ export class IdGen {
   }
 }
 
+/** Qualità e commissione di un procuratore (la commissione cresce con la qualità). */
+function agentTerms(rng: Rng, ctx: GameContext): { quality: number; commission: number } {
+  const a = ctx.config.economy.agents;
+  const quality = rng.int(a.qualityRange[0], a.qualityRange[1]);
+  return { quality, commission: a.commissionByQuality[quality - 1]! };
+}
+
 /**
  * Genera la piramide calcistica italiana fittizia: campionati, gironi per area, club con città reali
  * e nomi inventati, rose, allenatori e procuratori.
@@ -129,6 +136,7 @@ export function generateWorld(rng: Rng, ids: IdGen, week: number, ctx: GameConte
       role: 'agent',
       firstName: rng.pick(names.firstNames),
       lastName: rng.pick(names.lastNames),
+      ...agentTerms(rng, ctx),
     });
   }
 

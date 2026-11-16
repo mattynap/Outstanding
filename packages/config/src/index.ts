@@ -1,5 +1,6 @@
 /** Parametri di bilanciamento (JSON validati con Zod). */
 import calendarJson from '../data/calendar.json';
+import careerJson from '../data/career.json';
 import cupsJson from '../data/cups.json';
 import economyJson from '../data/economy.json';
 import eventsJson from '../data/events.json';
@@ -10,6 +11,7 @@ import ratingsJson from '../data/ratings.json';
 import worldJson from '../data/world.json';
 import {
   calendarSchema,
+  careerSchema,
   cupsSchema,
   economySchema,
   eventsConfigSchema,
@@ -19,6 +21,7 @@ import {
   ratingsSchema,
   worldSchema,
   type CalendarConfig,
+  type CareerConfig,
   type CupsConfig,
   type EconomyConfig,
   type EventsConfig,
@@ -41,6 +44,7 @@ export const configSchema = {
   events: eventsConfigSchema,
   progression: progressionSchema,
   cups: cupsSchema,
+  career: careerSchema,
 } as const;
 
 export interface GameConfig {
@@ -53,6 +57,7 @@ export interface GameConfig {
   events: EventsConfig;
   progression: ProgressionConfig;
   cups: CupsConfig;
+  career: CareerConfig;
 }
 
 /** Oggetti di configurazione grezzi (non validati), uno per file JSON. */
@@ -120,6 +125,23 @@ function crossCheck(c: GameConfig): string[] {
   if (foreignClubs < foreignNeeded) {
     problems.push(`cups: ${foreignClubs} foreign clubs, at least ${foreignNeeded} needed`);
   }
+
+  // Punteggio di carriera: un valore per livello e trofei che esistono davvero.
+  if (c.career.score.perLevel.length !== c.world.levels.length) {
+    problems.push('career: score.perLevel must have one entry per league level');
+  }
+  const trophyIds = new Set([
+    ...c.world.levels.map((l) => `L${l.level}`),
+    nationalCup.id,
+    ...continental.cups.map((cup) => cup.id),
+  ]);
+  for (const id of trophyIds) {
+    if (!(id in c.career.score.trophies))
+      problems.push(`career: missing trophy points for "${id}"`);
+  }
+  for (const id of Object.keys(c.career.score.trophies)) {
+    if (!trophyIds.has(id)) problems.push(`career: unknown trophy "${id}"`);
+  }
   return problems;
 }
 
@@ -134,6 +156,7 @@ export const rawDefaultConfig: RawConfig = {
   events: eventsJson,
   progression: progressionJson,
   cups: cupsJson,
+  career: careerJson,
 };
 
 /** Configurazione predefinita distribuita con il gioco. */

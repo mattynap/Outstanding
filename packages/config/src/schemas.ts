@@ -693,6 +693,40 @@ export const cupsSchema = z
   });
 
 export type CupsConfig = z.infer<typeof cupsSchema>;
+
+/** Punteggio di fine carriera e fasce di giudizio (l'ultima è la "leggenda"). */
+export const careerSchema = z
+  .object({
+    score: z.object({
+      /** Voto in pagella che non dà né toglie punti. */
+      baseRating: z.number(),
+      /** Punti per livello di campionato (indice 0 = massima serie). */
+      perLevel: z
+        .array(
+          z.object({
+            appearance: z.number().min(0),
+            goal: z.number().min(0),
+            assist: z.number().min(0),
+            cleanSheet: z.number().min(0),
+            /** Punti per ogni punto di voto sopra (o sotto) `baseRating`, partita per partita. */
+            ratingPoint: z.number().min(0),
+          }),
+        )
+        .min(1),
+      /** Punti per trofeo: id del campionato (L1, L2, ...) o della coppa. */
+      trophies: z.record(z.string(), z.number().min(0)),
+    }),
+    tiers: z.array(z.object({ id: cupId, min: z.number().min(0) })).min(2),
+  })
+  .superRefine((c, ctx) => {
+    if (c.tiers[0]!.min !== 0)
+      ctx.addIssue({ code: 'custom', message: 'first tier must start at 0' });
+    if (!sortedDistinct(c.tiers.map((t) => t.min))) {
+      ctx.addIssue({ code: 'custom', message: 'tier thresholds must be increasing' });
+    }
+  });
+
+export type CareerConfig = z.infer<typeof careerSchema>;
 export type ProgressionConfig = z.infer<typeof progressionSchema>;
 export type WeekActionConfig = z.infer<typeof weekAction>;
 export type MatchConfig = z.infer<typeof matchSchema>;

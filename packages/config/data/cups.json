@@ -1,0 +1,50 @@
+{
+  "nationalCup": {
+    "id": "national_cup",
+    "levels": [1, 2, 3],
+    "extra": { "level": 4, "count": 28 },
+    "rounds": [
+      { "weekOfSeason": 3, "entrants": 64 },
+      { "weekOfSeason": 4, "entrants": 32 },
+      { "weekOfSeason": 8, "entrants": 32 },
+      { "weekOfSeason": 12, "entrants": 0 },
+      { "weekOfSeason": 19, "entrants": 0 },
+      { "weekOfSeason": 27, "entrants": 0 },
+      { "weekOfSeason": 38, "entrants": 0 },
+      { "weekOfSeason": 46, "entrants": 0, "neutral": true }
+    ],
+    "winnerQualifiesTo": "continental_minor"
+  },
+  "continental": {
+    "cups": [
+      { "id": "continental_major", "leaguePlaces": [1, 2, 3, 4] },
+      { "id": "continental_minor", "leaguePlaces": [5, 6] }
+    ],
+    "teams": 32,
+    "groups": 8,
+    "advancePerGroup": 2,
+    "groupWeeks": [9, 11, 14, 17, 20, 23],
+    "knockout": [
+      { "weeks": [29, 31] },
+      { "weeks": [34, 36] },
+      { "weeks": [39, 41] },
+      { "weeks": [47], "neutral": true }
+    ]
+  },
+  "extraTime": {
+    "xgFactor": 0.33
+  },
+  "penalties": {
+    "ratingScale": 0.01,
+    "minChance": 0.35,
+    "maxChance": 0.65,
+    "winnerGoals": [3, 5],
+    "maxMargin": 3
+  },
+  "foreign": {
+    "tiers": [
+      { "count": 30, "ratingRange": [70, 85] },
+      { "count": 36, "ratingRange": [66, 79] }
+    ]
+  }
+}

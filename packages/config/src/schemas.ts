@@ -592,6 +592,107 @@ export const progressionSchema = z
     }
   });
 
+const cupId = z.string().regex(/^[a-z0-9_]+$/);
+const sortedDistinct = (weeks: readonly number[]) =>
+  weeks.every((w, i) => i === 0 || w > weeks[i - 1]!);
+
+/** Coppe: Coppa Tricolore a eliminazione diretta e due coppe europee con gironi. */
+export const cupsSchema = z
+  .object({
+    nationalCup: z.object({
+      id: cupId,
+      /** Livelli che partecipano al completo. */
+      levels: z.array(z.number().int().min(1)).min(1),
+      /** Le migliori `count` squadre (per forza) di un livello in più. */
+      extra: z.object({ level: z.number().int().min(1), count: z.number().int().min(0) }),
+      /** Ogni turno è a gara secca; `entrants` = squadre nuove che entrano in quel turno (le più deboli). */
+      rounds: z
+        .array(
+          z.object({
+            weekOfSeason: seasonWeek,
+            entrants: z.number().int().min(0),
+            neutral: z.boolean().optional(),
+          }),
+        )
+        .min(1),
+      winnerQualifiesTo: cupId,
+    }),
+    continental: z.object({
+      cups: z
+        .array(
+          z.object({
+            id: cupId,
+            /** Posizioni finali in massima serie che qualificano (stagione precedente). */
+            leaguePlaces: z.array(z.number().int().min(1)).min(1),
+          }),
+        )
+        .min(1),
+      teams: z.number().int().min(4),
+      groups: z.number().int().min(1),
+      advancePerGroup: z.number().int().min(1),
+      /** Settimane delle giornate dei gironi (andata e ritorno). */
+      groupWeeks: z.array(seasonWeek).min(2),
+      /** Turni a eliminazione diretta: una settimana = gara secca, due = andata e ritorno. */
+      knockout: z
+        .array(
+          z.object({
+            weeks: z.array(seasonWeek).min(1).max(2),
+            neutral: z.boolean().optional(),
+          }),
+        )
+        .min(1),
+    }),
+    extraTime: z.object({ xgFactor: z.number().min(0).max(1) }),
+    penalties: z.object({
+      /** Effetto della differenza di forza sulla probabilità di vincere ai rigori. */
+      ratingScale: z.number().min(0),
+      minChance: share,
+      maxChance: share,
+      winnerGoals: intRange,
+      maxMargin: z.number().int().min(1),
+    }),
+    /** Club stranieri generati per le coppe europee, per fascia di forza. */
+    foreign: z.object({
+      tiers: z.array(z.object({ count: z.number().int().min(1), ratingRange: pctRange })).min(1),
+    }),
+  })
+  .superRefine((c, ctx) => {
+    const issue = (message: string) => ctx.addIssue({ code: 'custom', message });
+    // Coppa nazionale: ogni turno deve avere un numero pari di squadre e finire con una vincitrice.
+    let alive = 0;
+    c.nationalCup.rounds.forEach((r, i) => {
+      const teams = alive + r.entrants;
+      if (teams < 2 || teams % 2 !== 0) issue(`nationalCup round ${i + 1} has ${teams} teams`);
+      alive = Math.floor(teams / 2);
+    });
+    if (alive !== 1) issue('nationalCup rounds must end with a single winner');
+    if (!sortedDistinct(c.nationalCup.rounds.map((r) => r.weekOfSeason))) {
+      issue('nationalCup round weeks must be increasing');
+    }
+    if (!c.continental.cups.some((cup) => cup.id === c.nationalCup.winnerQualifiesTo)) {
+      issue('nationalCup.winnerQualifiesTo must be a continental cup');
+    }
+    // Coppe europee: gironi uguali, tabellone a potenze di due, settimane in ordine.
+    const k = c.continental;
+    const groupSize = k.teams / k.groups;
+    if (!Number.isInteger(groupSize) || groupSize < 2) issue('teams must split evenly in groups');
+    if (k.groupWeeks.length !== (groupSize - 1) * 2) {
+      issue(`groupWeeks must list ${(groupSize - 1) * 2} matchdays`);
+    }
+    if (k.advancePerGroup > groupSize) issue('advancePerGroup is larger than a group');
+    if (k.groups * k.advancePerGroup !== 2 ** k.knockout.length) {
+      issue('qualified teams must halve down to one winner in the knockout rounds');
+    }
+    const contWeeks = [...k.groupWeeks, ...k.knockout.flatMap((r) => r.weeks)];
+    if (!sortedDistinct(contWeeks)) issue('continental weeks must be increasing');
+    const national = new Set(c.nationalCup.rounds.map((r) => r.weekOfSeason));
+    if (contWeeks.some((w) => national.has(w))) {
+      issue('national and continental cups cannot share a week');
+    }
+    if (c.penalties.minChance > c.penalties.maxChance) issue('penalties minChance > maxChance');
+  });
+
+export type CupsConfig = z.infer<typeof cupsSchema>;
 export type ProgressionConfig = z.infer<typeof progressionSchema>;
 export type WeekActionConfig = z.infer<typeof weekAction>;
 export type MatchConfig = z.infer<typeof matchSchema>;

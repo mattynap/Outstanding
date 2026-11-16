@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Outstanding</string>
+    <string name="title_activity_main">Outstanding</string>
+    <string name="package_name">it.outstanding.calcio</string>
+    <string name="custom_url_scheme">it.outstanding.calcio</string>
+</resources>

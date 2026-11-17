@@ -120,6 +120,8 @@ export {
   type KeyMomentDecider,
   type MatchDecision,
   type MatchReport,
+  type RatingPart,
+  type RatingPartKey,
   type MatchStep,
 } from './match/match';
 export { optionChance, type KeyMoment, type KeyMomentOption } from './match/moments';

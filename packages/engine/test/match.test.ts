@@ -281,6 +281,39 @@ describe('convocazione e pagella', () => {
   });
 });
 
+describe('voci del voto', () => {
+  const cfg = ctx.config.match.rating;
+  const roundTo = (v: number, step: number) => Math.round(v / step) * step;
+  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+  const season = (seed: number) => playSeason(newCareer(baseOptions, seed)).reports;
+
+  it('le voci del voto sommano al voto prima di arrotondare e limitare', () => {
+    let rated = 0;
+    for (const seed of [1, 2, 3, 42]) {
+      for (const r of season(seed)) {
+        if (r.rating === null) continue;
+        rated++;
+        const sum = r.ratingParts!.reduce((s, p) => s + p.delta, 0);
+        expect(clamp(roundTo(sum, cfg.step), cfg.min, cfg.max)).toBe(r.rating);
+        expect(r.ratingParts![0]).toEqual({ key: 'base', delta: cfg.base });
+        expect(r.ratingParts!.slice(1).every((p) => p.delta !== 0)).toBe(true);
+      }
+    }
+    expect(rated).toBeGreaterThan(0);
+  });
+
+  it('senza voto niente voci', () => {
+    const reports = season(99).filter((r) => r.rating === null);
+    expect(reports.length).toBeGreaterThan(0);
+    for (const r of reports) expect(r.ratingParts).toBeUndefined();
+  });
+
+  it('stesso seme, stesse voci', () => {
+    const a = season(7).map((r) => r.ratingParts);
+    expect(season(7).map((r) => r.ratingParts)).toEqual(a);
+  });
+});
+
 describe('partita simulata', () => {
   it("sceglie sempre l'opzione più probabile", () => {
     const moment = {

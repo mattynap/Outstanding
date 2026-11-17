@@ -27,6 +27,15 @@ import {
 } from './moments';
 import { planMinutes, selectPlayer } from './selection';
 
+/** Voci che compongono il voto in pagella, nell'ordine in cui si sommano. */
+export type RatingPartKey =
+  'base' | 'moments' | 'goals' | 'assists' | 'result' | 'cleanSheet' | 'conceded' | 'day';
+
+export interface RatingPart {
+  key: RatingPartKey;
+  delta: number;
+}
+
 /** Resoconto finale della partita del giocatore. */
 export interface MatchReport {
   fixtureId: string;
@@ -40,6 +49,11 @@ export interface MatchReport {
   minutesPlayed: number;
   /** Voto in pagella 4–10 a passi di 0,5; null = senza voto o non entrato. */
   rating: number | null;
+  /**
+   * Voci del voto prima di arrotondare e limitare: `base` sempre, le altre solo se diverse da 0;
+   * `day` è la giornata (rumore). Presenti solo quando c'è un voto.
+   */
+  ratingParts?: RatingPart[];
   /** Chiave della riga di commento in pagella. */
   commentKey: string;
   goals: number;
@@ -220,21 +234,26 @@ function finishMatch(
     minutesPlayed >= cfg.cleanSheetMinMinutes && m.score[opponentSide] === 0 && role !== 'ATT';
 
   let rating: number | null = null;
+  let ratingParts: RatingPart[] | undefined;
   let commentKey: string;
   if (minutesPlayed === 0) {
     commentKey = m.selection === 'out' ? 'match.comment.fuori' : 'match.comment.panchina';
   } else if (minutesPlayed < cfg.minMinutes && m.goals + m.assists === 0) {
     commentKey = 'match.comment.sv';
   } else {
-    const raw =
-      cfg.base +
-      m.ratingDelta +
-      m.goals * cfg.goal +
-      m.assists * cfg.assist +
-      cfg.result[result] +
-      (cleanSheet ? cfg.cleanSheet[role] : 0) +
-      concededOnPitch * cfg.concededPerGoal[role] +
-      rng.normal(0, cfg.noise);
+    // Stessi termini e stessa unica estrazione di rng.normal di prima: le carriere non cambiano.
+    const parts: RatingPart[] = [
+      { key: 'base', delta: cfg.base },
+      { key: 'moments', delta: m.ratingDelta },
+      { key: 'goals', delta: m.goals * cfg.goal },
+      { key: 'assists', delta: m.assists * cfg.assist },
+      { key: 'result', delta: cfg.result[result] },
+      { key: 'cleanSheet', delta: cleanSheet ? cfg.cleanSheet[role] : 0 },
+      { key: 'conceded', delta: concededOnPitch * cfg.concededPerGoal[role] },
+      { key: 'day', delta: rng.normal(0, cfg.noise) },
+    ];
+    const raw = parts.reduce((sum, p) => sum + p.delta, 0);
+    ratingParts = parts.filter((p) => p.key === 'base' || p.delta !== 0);
     rating = clamp(roundTo(raw, cfg.step), cfg.min, cfg.max);
     const r = rating;
     const band = cfg.commentBands.find((b) => r <= b.upTo) ?? cfg.commentBands.at(-1)!;
@@ -305,6 +324,7 @@ function finishMatch(
       selection: m.selection,
       minutesPlayed,
       rating,
+      ...(ratingParts ? { ratingParts } : {}),
       commentKey,
       goals: m.goals,
       assists: m.assists,

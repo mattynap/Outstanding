@@ -54,3 +54,77 @@ export function parseSeen(raw: string | null): TabId[] | null {
     return null;
   }
 }
+
+/** Archivio chiave-valore minimo (StorageService nella app, memoria nei test). */
+export interface UnlockBackend {
+  get(key: string): Promise<string | null>;
+  set(key: string, value: string): Promise<void>;
+  remove(key: string): Promise<void>;
+}
+
+interface UnlockRecord {
+  career: string;
+  seen: TabId[];
+}
+
+// Identità della carriera: una carriera nuova nello stesso slot non deve ereditare le voci.
+const careerKey = (s: GameState): string => `${s.seed}:${s.player.firstName} ${s.player.lastName}`;
+
+function parseRecord(raw: string | null): UnlockRecord | null {
+  if (raw === null) return null;
+  try {
+    const v = JSON.parse(raw) as Partial<UnlockRecord> | null;
+    const seen = parseSeen(JSON.stringify(v?.seen ?? null));
+    return typeof v?.career === 'string' && seen ? { career: v.career, seen } : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Voci della barra già viste, per slot. Senza dati salvati la carriera è di prima di questa
+ * versione: tutte le voci restano aperte. Le carriere nuove partono da `start`.
+ */
+export class UnlockStore {
+  private readonly records = new Map<number, UnlockRecord>();
+
+  constructor(private readonly backend: UnlockBackend) {}
+
+  /** Voci visibili con quello che è già in memoria (nessuna lettura dall'archivio). */
+  visible(slot: number | null, s: GameState, offers: number): TabId[] {
+    const r = slot === null ? undefined : this.records.get(slot);
+    const seen = r && r.career === careerKey(s) ? r.seen : [];
+    return visibleTabs(s, offers, seen);
+  }
+
+  /** Carriera nuova nello slot: vede solo le voci di partenza. */
+  async start(slot: number, s: GameState): Promise<void> {
+    const r = { career: careerKey(s), seen: visibleTabs(s, 0) };
+    this.records.set(slot, r);
+    await this.backend.set(unlocksKey(slot), JSON.stringify(r));
+  }
+
+  async forget(slot: number): Promise<void> {
+    this.records.delete(slot);
+    await this.backend.remove(unlocksKey(slot));
+  }
+
+  /** Registra le voci comparse e le restituisce, da annunciare. */
+  async sync(slot: number, s: GameState, offers: number): Promise<TabId[]> {
+    const career = careerKey(s);
+    let r = this.records.get(slot);
+    if (!r) {
+      const stored = parseRecord(await this.backend.get(unlocksKey(slot)));
+      // Un'altra operazione può aver scritto lo slot mentre si leggeva.
+      r = this.records.get(slot) ?? stored ?? { career, seen: [...TAB_IDS] };
+      this.records.set(slot, r);
+    }
+    // Stato di un'altra carriera (pagina rimasta aperta dopo un cambio): si ignora.
+    if (r.career !== career) return [];
+    const { tabs, seen } = newTabs(visibleTabs(s, offers, r.seen), r.seen);
+    if (tabs.length === 0) return [];
+    this.records.set(slot, { career, seen });
+    await this.backend.set(unlocksKey(slot), JSON.stringify({ career, seen }));
+    return tabs;
+  }
+}

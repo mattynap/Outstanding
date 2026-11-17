@@ -1,42 +1,42 @@
 import { Injectable, inject, signal } from '@angular/core';
+import type { GameState } from '@outstanding/engine';
 import { StorageService } from './storage.service';
-import { newTabs, parseSeen, unlocksKey, type TabId } from './unlocks';
+import { UnlockStore, type TabId } from './unlocks';
 
 /** Voci della barra già annunciate, per slot, e novità ancora da mostrare. */
 @Injectable({ providedIn: 'root' })
 export class UnlocksService {
-  private readonly storage = inject(StorageService);
-  private readonly seenBySlot = signal<ReadonlyMap<number, TabId[]>>(new Map());
+  private readonly store = new UnlockStore(inject(StorageService));
+  // L'archivio non è reattivo: ogni modifica incrementa la versione e ricalcola la barra.
+  private readonly version = signal(0);
   /** Voci comparse da poco: il riquadro "Novità" le annuncia finché non si chiude. */
   readonly fresh = signal<TabId[]>([]);
 
-  seen(slot: number | null): TabId[] {
-    return slot === null ? [] : (this.seenBySlot().get(slot) ?? []);
+  visible(slot: number | null, s: GameState, offers: number): TabId[] {
+    this.version();
+    return this.store.visible(slot, s, offers);
   }
 
-  /** Confronta le voci visibili con quelle già viste e salva le nuove. */
-  async sync(slot: number, visible: readonly TabId[]): Promise<void> {
-    const known =
-      this.seenBySlot().get(slot) ?? parseSeen(await this.storage.get(unlocksKey(slot)));
-    const { tabs, seen } = newTabs(visible, known);
-    if (known && tabs.length === 0) return;
-    this.seenBySlot.update((m) => new Map(m).set(slot, seen));
+  async sync(slot: number, s: GameState, offers: number): Promise<void> {
+    const tabs = await this.store.sync(slot, s, offers);
+    this.version.update((v) => v + 1);
     if (tabs.length) this.fresh.update((f) => [...f, ...tabs.filter((t) => !f.includes(t))]);
-    await this.storage.set(unlocksKey(slot), JSON.stringify(seen));
   }
 
   dismiss(): void {
     this.fresh.set([]);
   }
 
-  /** Una nuova carriera o una cancellazione riparte da zero nello slot. */
-  async forgetSlot(slot: number): Promise<void> {
-    this.seenBySlot.update((m) => {
-      const next = new Map(m);
-      next.delete(slot);
-      return next;
-    });
+  /** Carriera nuova nello slot: si riparte dalle voci di base. */
+  async start(slot: number, s: GameState): Promise<void> {
     this.fresh.set([]);
-    await this.storage.remove(unlocksKey(slot));
+    await this.store.start(slot, s);
+    this.version.update((v) => v + 1);
+  }
+
+  async forgetSlot(slot: number): Promise<void> {
+    this.fresh.set([]);
+    await this.store.forget(slot);
+    this.version.update((v) => v + 1);
   }
 }

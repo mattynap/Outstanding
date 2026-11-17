@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { IonFooter } from '@ionic/angular';
 import { GameService } from '../core/game.service';
 import { TranslatePipe } from '../core/i18n.service';
-import { visibleTabs, type TabId } from '../core/unlocks';
+import type { TabId } from '../core/unlocks';
 import { UnlocksService } from '../core/unlocks.service';
 import { PxIconComponent } from './px-icon.component';
 
@@ -171,7 +171,7 @@ export class TabBarComponent {
   private readonly visible = computed<TabId[]>(() => {
     const s = this.game.state();
     if (!s) return ['week', 'profile', 'standings'];
-    return visibleTabs(s, this.offers(), this.unlocks.seen(this.game.slot()));
+    return this.unlocks.visible(this.game.slot(), s, this.offers());
   });
   // La pagina attiva resta sempre nella barra, anche se ci si arriva da un altro percorso.
   protected readonly tabs = computed(() => {
@@ -187,8 +187,9 @@ export class TabBarComponent {
   constructor() {
     effect(() => {
       const slot = this.game.slot();
-      const ids = this.visible();
-      if (slot !== null && this.game.state()) void this.unlocks.sync(slot, ids);
+      const s = this.game.state();
+      const offers = this.offers();
+      if (slot !== null && s) void this.unlocks.sync(slot, s, offers);
     });
   }
 }

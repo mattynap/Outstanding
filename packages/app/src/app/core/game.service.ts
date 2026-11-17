@@ -178,9 +178,9 @@ export class GameService {
     this.resetReports();
     // La carriera nuova sostituisce quella dello slot: la sua eventuale guida finisce.
     await this.tutorial.forgetSlot(slot);
-    await this.unlocks.forgetSlot(slot);
-    this.slot.set(slot);
     const state = newCareer(options, seed, this.ctx);
+    await this.unlocks.start(slot, state);
+    this.slot.set(slot);
     await this.commit(state);
     this.platform.track({
       name: 'career_start',

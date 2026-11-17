@@ -5,6 +5,16 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
 
 ## [Non rilasciato]
 
+### Interfaccia ibrida giornale e pixel (ondata 1)
+
+- Strato pixel nel tema: font Jersey 15 per i numeri, cornici a gradino e ombre piene fatte di
+  box-shadow, nei temi scuro e chiaro.
+- Icone pixel 16×16 disegnate dal codice per la barra e gli indicatori.
+- Stemmi e maglie in pixel, con la stessa griglia degli sprite delle scene.
+- Barra in basso a gradini: a inizio carriera tre voci, Mercato e Carriera compaiono quando servono
+  e vengono annunciate una volta con il riquadro "Novità"; una voce vista non sparisce più.
+  I salvataggi precedenti tengono tutte le voci.
+
 ### Scene in pixel art
 
 - Campo partita e sala stampa ridisegnati in pixel art generata dal codice, con animazioni vere:

@@ -24,6 +24,7 @@
     "@capacitor/share": "^8.0.3",
     "@fontsource/barlow-condensed": "^5.3.0",
     "@fontsource/inter": "^5.3.0",
+    "@fontsource/jersey-15": "^5.3.0",
     "@ionic/angular": "^9.0.11",
     "@outstanding/config": "workspace:*",
     "@outstanding/content": "workspace:*",

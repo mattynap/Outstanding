@@ -40,6 +40,8 @@
   /* Tipografia */
   --o-font-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
   --o-font-body: 'Inter', system-ui, sans-serif;
+  /* Numeri in pixel (Jersey 15): solo da 20 px in su. */
+  --o-font-pixel: 'Jersey 15', 'Barlow Condensed', sans-serif;
   --o-text-xs: 11px;
   --o-text-sm: 12px;
   --o-text-md: 14px;
@@ -60,6 +62,12 @@
   --o-touch: 44px;
   --o-button-h: 56px;
   --o-shadow-paper: 0 18px 40px rgba(0, 0, 0, 0.45);
+
+  /* Strato pixel: un "pixel" dell'interfaccia vale 2 px, l'ombra piena è spostata di 4 px. */
+  --o-px: 2px;
+  --o-px-drop: 4px;
+  --o-px-shadow: #04100a;
+  --o-px-paper-edge: #1a1a17;
 
   /* Movimento */
   --o-fast: 150ms;
@@ -89,6 +97,7 @@
   --o-negative: #c42b30;
   --o-neutral-bar: #8fae98;
   --o-shadow-paper: 0 10px 24px rgba(20, 40, 25, 0.18);
+  --o-px-shadow: #a9bfa9;
 }
 
 /* Variabili di Ionic collegate ai token. */

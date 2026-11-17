@@ -466,3 +466,115 @@ button.o-chip:focus-visible {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/*
+ * Strato pixel (vedi docs/design-system.md). Le cornici sono fatte solo di box-shadow piene:
+ * quattro copie spostate di un pixel disegnano il bordo lasciando vuoti gli angoli (il gradino),
+ * due copie spostate di --px-d disegnano l'ombra a gradino. Niente clip-path, che taglierebbe l'ombra.
+ */
+.o-px,
+.o-card,
+.o-choice,
+.o-paper,
+.o-btn,
+.o-chip,
+.o-input,
+.o-icon-btn,
+.o-stat--boxed {
+  --px-b: var(--o-border-strong);
+  --px-s: var(--o-px-shadow);
+  --px-d: var(--o-px-drop);
+  border: none;
+  border-radius: 0;
+  box-shadow:
+    0 calc(-1 * var(--o-px)) 0 0 var(--px-b),
+    0 var(--o-px) 0 0 var(--px-b),
+    calc(-1 * var(--o-px)) 0 0 0 var(--px-b),
+    var(--o-px) 0 0 0 var(--px-b),
+    calc(var(--px-d) + var(--o-px)) var(--px-d) 0 0 var(--px-s),
+    var(--px-d) calc(var(--px-d) + var(--o-px)) 0 0 var(--px-s);
+}
+/* Elementi piccoli o annidati: ombra corta. */
+.o-chip,
+.o-input,
+.o-icon-btn,
+.o-stat--boxed {
+  --px-d: var(--o-px);
+}
+.o-card {
+  --px-b: var(--o-border);
+}
+.o-card--hero {
+  --px-b: var(--o-border-strong);
+}
+.o-paper {
+  --px-b: var(--o-px-paper-edge);
+}
+.o-btn {
+  --px-b: #8a6510;
+}
+.o-btn--ghost {
+  --px-b: var(--o-border-strong);
+}
+.o-btn--danger {
+  --px-b: var(--o-negative);
+}
+.o-chip--accent,
+.o-choice[aria-pressed='true'],
+.o-choice--selected {
+  --px-b: var(--o-accent);
+}
+.o-choice[aria-pressed='true'],
+.o-choice--selected {
+  border: none;
+}
+
+/* Pressione: il pulsante scende sull'ombra. */
+.o-btn,
+.o-choice,
+button.o-chip,
+.o-icon-btn {
+  transition:
+    transform var(--o-fast) steps(2, end),
+    box-shadow var(--o-fast) steps(2, end),
+    background var(--o-fast) var(--o-ease);
+}
+.o-btn:active:not(:disabled),
+.o-choice:active:not(:disabled),
+button.o-chip:active,
+.o-icon-btn:active {
+  transform: translate(var(--o-px), var(--o-px));
+  --px-d: 0px;
+}
+
+/* Numeri in pixel: solo per cifre grandi (≥ 20 px). */
+.o-num,
+.o-number.big,
+.o-stat__value {
+  font-family: var(--o-font-pixel);
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Entrata a scatti per numeri e cornici. */
+.o-enter-steps {
+  animation: o-enter-steps var(--o-normal) steps(3, end) both;
+}
+@keyframes o-enter-steps {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .o-enter-steps {
+    animation: none;
+  }
+  .o-btn,
+  .o-choice,
+  button.o-chip,
+  .o-icon-btn {
+    transition: none;
+  }
+}

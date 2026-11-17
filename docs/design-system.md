@@ -18,6 +18,16 @@ per la disposizione.
   quelli critici.
 - Numeri grandi in carattere condensato: settimana, punteggio, voto in pagella, OVR.
 
+Dal 2026-11-17 l'utente ha scelto l'**ibrido spinto** (spec
+`docs/superpowers/specs/2026-11-17-ui-ux-ibrido-design.md`): il giornale resta, sopra si aggiunge uno
+strato pixel coerente con le scene Phaser.
+
+| Strato           | Cosa                                                                       | Come                                                          |
+| ---------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Giornale (resta) | notizie, pagelle, fine stagione, interviste                                | carta, testata a doppio filetto, occhiello rosso, Barlow      |
+| Testo (resta)    | descrizioni, scelte, contratti                                             | Inter                                                         |
+| Pixel (nuovo)    | numeri grandi, cornici di schede e pulsanti, icone di stato, stemmi/maglie | Jersey 15 da 20 px in su, cornici a gradino, SVG `crispEdges` |
+
 ## Token (`tokens.css`)
 
 | Gruppo    | Token                                                                  | Scuro (predefinito)                        | Chiaro                           |
@@ -44,6 +54,27 @@ Tema: scuro predefinito; il chiaro si attiva con `data-theme="light"` su `<html>
   latino), mai da CDN. Vedi `ASSETS.md`.
 - Scala: etichette 11 px maiuscole spaziate (`.o-label`), testo 12–16 px, titoli di sezione 19 px,
   titoli di giornale 40–46 px, numeri grandi 56–72 px.
+
+- **Jersey 15** (400): numeri grandi in pixel (settimana, voto, OVR, percentuali, cifre dei
+  soldi), classe `.o-num`; anche `.o-number.big` e `.o-stat__value`. Mai sotto i 20 px. Scelto al
+  posto di Pixelify Sans perché in quello il 5 è identico alla S ("6,5" si leggeva "6,S") e l'euro
+  è illeggibile; Jersey 15 ha virgola, più, meno tipografico (U+2212), % ed euro leggibili.
+
+## Strato pixel
+
+- Un pixel dell'interfaccia vale `--o-px` (2 px); l'ombra piena è spostata di `--o-px-drop` (4 px)
+  e ha il colore `--o-px-shadow` (scuro `#04100A`, chiaro `#A9BFA9`). Nessuna sfocatura.
+- **Cornice**: solo `box-shadow` piene. Quattro copie spostate di un pixel fanno il bordo e lasciano
+  vuoti gli angoli (il gradino); due copie spostate fanno l'ombra a gradino. Niente `clip-path`,
+  che taglierebbe l'ombra. Si applica da sola a `.o-card`, `.o-choice`, `.o-paper`, `.o-btn`,
+  `.o-chip`, `.o-input`, `.o-icon-btn`, `.o-stat--boxed`, oppure con `.o-px` a qualunque elemento.
+- Colore del bordo con `--px-b` sull'elemento: `--o-border` per le schede, `--o-border-strong` per
+  hero, scelte e pulsanti secondari, oro scuro `#8A6510` per il pulsante principale, accento per le
+  selezioni, inchiostro `--o-px-paper-edge` per la carta. Elementi piccoli hanno ombra di 2 px.
+- **Pressione**: pulsanti, scelte e chip scendono di un pixel e l'ombra sparisce (150 ms, 2 scatti).
+- **Entrata a scatti** `.o-enter-steps`: 220 ms in 3 passi; spenta con "riduci movimento".
+- Raggi: lo strato pixel azzera i raggi di schede, scelte e pulsanti; restano tondi solo stemmi,
+  avatar e barre.
 
 ## Spazi, forme, movimento
 

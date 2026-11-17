@@ -18,3 +18,5 @@ Indice delle note di progetto. Questa cartella è versionata in git.
 - [Idee utente M13–M17](user-ideas-roadmap.md) — basi, personaggio, finanze, vita privata, media; vignette SVG, PEGI 12
 - [Build Android](android-build.md) — SDK e JDK 21 su questa macchina, comando per l'APK, icona, insidie
 - [Nomi storpiati](naming-policy.md) — dal 2026-11-17 nomi alterati per club e giocatori, sponsor inventati, rischio accettato
+- [Sempre in italiano](feedback-lingua-italiano.md) — ogni risposta all utente va in italiano
+- [Cultura pop italiana](pop-culture-italiana.md) — obbligatoria: interviste storiche e tormentoni del calcio in pixel art, nomi storpiati, PEGI 12

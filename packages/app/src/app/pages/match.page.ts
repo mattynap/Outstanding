@@ -14,7 +14,7 @@ import {
 } from '@outstanding/engine';
 import { GameService } from '../core/game.service';
 import { I18nService, TranslatePipe } from '../core/i18n.service';
-import { chanceTone, formatRating, ordinal } from '../core/text';
+import { chanceTone, formatRating, ordinal, ratingRounding, signedRating } from '../core/text';
 import { ToastService } from '../core/toast.service';
 import { fixtureView, type FixtureView } from '../core/views';
 import { CrestComponent } from '../ui/crest.component';
@@ -258,7 +258,7 @@ type Phase = 'pre' | 'moment' | 'done';
                     }}</span>
                   </div>
                   <div class="verdict-row">
-                    <div class="badge o-number" [class.sv]="r.rating === null">
+                    <div class="badge o-num" [class.sv]="r.rating === null">
                       {{ rating(r.rating) }}
                     </div>
                     <div class="who">
@@ -269,6 +269,31 @@ type Phase = 'pre' | 'moment' | 'done';
                       <p class="comment">«{{ r.commentKey + '' | t }}»</p>
                     </div>
                   </div>
+                  @if (r.rating !== null && r.ratingParts?.length) {
+                    <dl class="receipt">
+                      @for (p of r.ratingParts; track p.key) {
+                        <div class="receipt-row" [class.base]="p.key === 'base'">
+                          <dt>{{ 'ui.match.ratingPart.' + p.key | t }}</dt>
+                          <dd
+                            [class.pos]="p.key !== 'base' && p.delta > 0"
+                            [class.neg]="p.delta < 0"
+                          >
+                            {{ p.key === 'base' ? rating(p.delta) : signed(p.delta) }}
+                          </dd>
+                        </div>
+                      }
+                      @if (rounding(r.ratingParts, r.rating); as diff) {
+                        <div class="receipt-row base">
+                          <dt>{{ 'ui.match.ratingRounding' | t }}</dt>
+                          <dd>{{ signed(diff) }}</dd>
+                        </div>
+                      }
+                      <div class="receipt-row total">
+                        <dt>{{ 'ui.match.ratingTotal' | t }}</dt>
+                        <dd class="o-num">{{ rating(r.rating) }}</dd>
+                      </div>
+                    </dl>
+                  }
                 </section>
                 <app-tip tip="match.rating" />
 
@@ -728,15 +753,17 @@ type Phase = 'pre' | 'moment' | 'done';
       width: 108px;
       height: 108px;
       flex: 0 0 auto;
-      border-radius: 10px;
       background: #1b4d2e;
       color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 72px;
-      letter-spacing: -2px;
-      box-shadow: inset 0 0 0 4px #f2b830;
+      line-height: 1;
+      /* Riquadro pixel: bordo oro a gradini e ombra piena, niente angoli arrotondati. */
+      box-shadow:
+        inset 0 0 0 4px #f2b830,
+        4px 4px 0 0 var(--o-ink);
     }
     .badge.sv {
       font-size: 40px;
@@ -759,6 +786,55 @@ type Phase = 'pre' | 'moment' | 'done';
     .ink-muted {
       font-size: var(--o-text-sm);
       color: var(--o-ink-muted);
+    }
+    .receipt {
+      margin: 16px 0 0;
+      padding: 10px 0 0;
+      border-top: 2px solid var(--o-ink);
+      font-variant-numeric: tabular-nums;
+    }
+    .receipt-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      padding: 6px 0;
+      border-bottom: 1px dashed var(--o-paper-rule);
+      font-size: 14px;
+      color: var(--o-ink-soft);
+    }
+    .receipt-row dt {
+      margin: 0;
+    }
+    .receipt-row dd {
+      margin: 0;
+      font-weight: 700;
+      color: var(--o-ink);
+    }
+    .receipt-row.base dt {
+      color: var(--o-ink-muted);
+    }
+    .receipt-row dd.pos {
+      color: var(--o-ink-pos);
+    }
+    .receipt-row dd.neg {
+      color: var(--o-ink-neg);
+    }
+    .receipt-row.total {
+      border-bottom: none;
+      border-top: 2px solid var(--o-ink);
+      margin-top: 4px;
+      padding-top: 8px;
+      font-family: var(--o-font-display);
+      font-weight: 800;
+      font-size: 18px;
+      text-transform: uppercase;
+      color: var(--o-ink);
+    }
+    .receipt-row.total dd {
+      font-size: 32px;
+      font-weight: 400;
+      line-height: 1;
     }
     .comment {
       margin: 0;
@@ -877,6 +953,12 @@ export class MatchPage {
     return chanceTone(chance);
   }
 
+  protected rounding(parts: readonly { delta: number }[], rating: number): number {
+    return ratingRounding(parts, rating);
+  }
+  protected signed(delta: number): string {
+    return signedRating(delta);
+  }
   protected rating(r: number | null): string {
     return formatRating(r);
   }

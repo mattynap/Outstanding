@@ -63,6 +63,15 @@ export function formatDelta(n: number, digits = 0): string {
 /** Voce del voto con segno e un decimale: 1 -> "+1", -0.5 -> "−0,5", 0.04 -> "0". */
 export const signedRating = (delta: number): string => formatDelta(delta, 1);
 
+/**
+ * Differenza tra il voto in pagella (arrotondato al mezzo punto e limitato tra 4 e 10) e la somma
+ * delle voci: 0 se trascurabile, così lo scontrino torna sempre col voto finale.
+ */
+export function ratingRounding(parts: readonly { delta: number }[], rating: number): number {
+  const diff = rating - parts.reduce((sum, p) => sum + p.delta, 0);
+  return Math.abs(diff) < 0.05 ? 0 : diff;
+}
+
 /** Colore di una probabilità (0–1) per le barre dei momenti chiave. */
 export function chanceTone(chance: number): 'pos' | 'neg' | 'mid' {
   if (chance >= 0.6) return 'pos';

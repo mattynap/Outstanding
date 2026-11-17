@@ -234,6 +234,7 @@
   "ui.match.ratingPart.conceded": "Gol subiti",
   "ui.match.ratingPart.day": "Giornata",
   "ui.match.ratingTotal": "Voto",
+  "ui.match.ratingRounding": "Arrotondamento",
   "ui.match.momentKo": "Niente da fare",
   "ui.match.final": "Finale",
   "ui.match.afterExtra": "{home}–{away} dopo i supplementari",

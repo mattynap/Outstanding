@@ -19,6 +19,7 @@ import {
   chanceTone,
   formatDelta,
   signedRating,
+  ratingRounding,
   formatMoney,
   formatRating,
   translate,
@@ -54,6 +55,7 @@ describe("testi dell'interfaccia", () => {
       ...CONSEQUENCES.map((c) => `ui.match.consequence.${c}`),
       ...RATING_PART_KEYS.map((k) => `ui.match.ratingPart.${k}`),
       'ui.match.consequenceLine',
+      'ui.match.ratingRounding',
       ...defaultConfig.world.startLevels.map((l) => `ui.create.levelHint.${l}`),
       ...EVENT_CATEGORIES.map((c) => `ui.event.category.${c}`),
       ...STAT_PATHS.map((p) => `ui.statPath.${p}`),
@@ -105,6 +107,14 @@ describe('formattazione', () => {
     expect(formatRating(7.5)).toBe('7,5');
     expect(formatRating(6)).toBe('6');
     expect(formatRating(null)).toBe('s.v.');
+    // La pagella arrotonda al mezzo voto: la differenza diventa una riga a sé.
+    const parts = [
+      { key: 'base' as const, delta: 6 },
+      { key: 'moments' as const, delta: -0.8 },
+      { key: 'result' as const, delta: -0.5 },
+    ];
+    expect(ratingRounding(parts, 5)).toBeCloseTo(0.3);
+    expect(ratingRounding(parts.slice(0, 1), 6)).toBe(0);
     expect(signedRating(1)).toBe('+1');
     expect(signedRating(-0.5)).toBe('−0,5');
     expect(signedRating(0.04)).toBe('0');

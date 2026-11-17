@@ -36,6 +36,9 @@
   --o-ink-soft: #2b2924;
   --o-ink-muted: #4a4740;
   --o-headline-red: #b3261e;
+  /* Voci positive e negative sulla carta (contrasto AA sul fondo carta). */
+  --o-ink-pos: #1d6b3c;
+  --o-ink-neg: #b3261e;
 
   /* Tipografia */
   --o-font-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;

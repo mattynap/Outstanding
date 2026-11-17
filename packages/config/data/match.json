@@ -49,6 +49,7 @@
     "formWeight": 0.08,
     "moraleWeight": 0.04,
     "energyWeight": 0.05,
+    "qualityMaxBonus": 0.1,
     "types": [
       {
         "id": "gk_close_shot",

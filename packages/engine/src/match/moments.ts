@@ -85,7 +85,11 @@ export function optionChance(
   ctx: GameContext,
   /** Bonus della difficoltà sulla probabilità (vedi `difficultyMods`). */
   difficultyBonus = 0,
+  quality = 0.5,
 ): number {
+  if (!Number.isFinite(quality) || quality < 0 || quality > 1) {
+    throw new Error(`Invalid moment quality ${quality}`);
+  }
   const cfg = ctx.config.match.moments;
   let total = 0;
   let weights = 0;
@@ -101,5 +105,9 @@ export function optionChance(
     (cfg.energyWeight * (energy - 50)) / 50 +
     traitBonus(player, option.tag, ctx) +
     difficultyBonus;
-  return clamp(1 / (1 + Math.exp(-x)) + mods, cfg.minChance, cfg.maxChance);
+  return clamp(
+    1 / (1 + Math.exp(-x)) + mods + (2 * quality - 1) * cfg.qualityMaxBonus,
+    cfg.minChance,
+    cfg.maxChance,
+  );
 }

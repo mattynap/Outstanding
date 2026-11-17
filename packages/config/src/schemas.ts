@@ -394,6 +394,7 @@ export const matchSchema = z
       formWeight: z.number().min(0),
       moraleWeight: z.number().min(0),
       energyWeight: z.number().min(0),
+      qualityMaxBonus: z.number().min(0).max(0.1),
       types: z.array(momentType).min(1),
     }),
     rating: z.object({

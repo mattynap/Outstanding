@@ -118,6 +118,7 @@ export {
   playMatch,
   simulateMatch,
   type KeyMomentDecider,
+  type MatchDecision,
   type MatchReport,
   type MatchStep,
 } from './match/match';

@@ -58,8 +58,14 @@ export interface MatchReport {
 export type MatchStep =
   { kind: 'moment'; moment: KeyMoment } | { kind: 'finished'; report: MatchReport };
 
+/** Scelta del giocatore: qualità del tocco tra 0 e 1, con 0,5 neutro. */
+export interface MatchDecision {
+  optionIndex: number;
+  quality: number;
+}
+
 /** Strategia che sceglie l'opzione di un momento chiave (il giocatore in UI, una strategia nel simulatore). */
-export type KeyMomentDecider = (moment: KeyMoment, state: GameState) => number;
+export type KeyMomentDecider = (moment: KeyMoment, state: GameState) => number | MatchDecision;
 
 const other = (side: Side): Side => (side === 'home' ? 'away' : 'home');
 const totalMinutes = (ctx: GameContext) =>
@@ -406,12 +412,20 @@ export function getPendingMoment(
 /** Risolve il momento chiave in attesa con l'opzione scelta e fa proseguire la partita. */
 export function decideMoment(
   state: GameState,
-  optionIndex: number,
+  decision: number | MatchDecision,
   ctx: GameContext = defaultContext,
 ): { state: GameState; step: MatchStep } {
   const m = state.currentMatch;
   if (!m?.pending) throw new Error('No key moment pending');
   const type = getMomentType(m.pending.momentId, ctx);
+  const { optionIndex, quality } =
+    typeof decision === 'number' ? { optionIndex: decision, quality: 0.5 } : decision;
+  if (!Number.isInteger(optionIndex) || optionIndex < 0 || optionIndex >= type.options.length) {
+    throw new Error(`Invalid option ${optionIndex} for "${type.id}"`);
+  }
+  if (!Number.isFinite(quality) || quality < 0 || quality > 1) {
+    throw new Error(`Invalid moment quality ${quality}`);
+  }
   const option = type.options[optionIndex];
   if (!option) throw new Error(`Invalid option ${optionIndex} for "${type.id}"`);
 
@@ -426,6 +440,7 @@ export function decideMoment(
       opponent.rating,
       ctx,
       difficultyMods(state, ctx).matchChance + pressBonus(state, m.fixtureId),
+      quality,
     ),
   );
   const outcome = success ? option.success : option.failure;

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { matchSchema } from '@outstanding/config';
 import {
   advanceWeek,
   autoDecider,
@@ -123,6 +124,58 @@ describe('partita', () => {
   });
 });
 
+describe('qualità del comando partita', () => {
+  const started = beginMatch(toFirstMatch(newCareer(baseOptions, 3)));
+  const paused = started.state;
+
+  it('mantiene tutti gli esiti legacy con qualità neutra', () => {
+    expect(started.step.kind).toBe('moment');
+    expect(decideMoment(paused, { optionIndex: 0, quality: 0.5 })).toEqual(decideMoment(paused, 0));
+    for (const seed of [3, 7, 11, 2024]) {
+      const state = toFirstMatch(newCareer(baseOptions, seed));
+      expect(playMatch(state, () => ({ optionIndex: 0, quality: 0.5 }))).toEqual(
+        playMatch(state, first),
+      );
+    }
+  });
+
+  it('resta deterministico con qualità non neutra e dopo un salvataggio', () => {
+    const command = { optionIndex: 0, quality: 0.9 };
+    expect(decideMoment(deserialize(serialize(paused)), command)).toEqual(
+      decideMoment(paused, command),
+    );
+    expect(playMatch(paused, () => command)).toEqual(playMatch(paused, () => command));
+  });
+
+  it('usa la qualità per risolvere i momenti senza introdurre casualità aggiuntiva', () => {
+    const outcomes = (quality: number) =>
+      Array.from({ length: 20 }, (_, seed) => {
+        const state = toFirstMatch(newCareer(baseOptions, seed));
+        return playMatch(state, () => ({ optionIndex: 0, quality })).matchReport.events.filter(
+          (event) => event.kind === 'moment',
+        );
+      });
+    expect(outcomes(1)).not.toEqual(outcomes(0));
+  });
+
+  it.each([NaN, Infinity, -Infinity, -0.01, 1.01])(
+    'rifiuta qualità %s senza modificare stato o generatore',
+    (quality) => {
+      const before = serialize(paused);
+      expect(() => decideMoment(paused, { optionIndex: 0, quality })).toThrow();
+      expect(serialize(paused)).toBe(before);
+      expect(decideMoment(paused, 0)).toEqual(decideMoment(deserialize(before), 0));
+    },
+  );
+
+  it.each([NaN, Infinity, -Infinity, -1, 0.5, 99])('rifiuta indice %s', (optionIndex) => {
+    const before = serialize(paused);
+    expect(() => decideMoment(paused, { optionIndex, quality: 0.5 })).toThrow();
+    expect(() => decideMoment(paused, optionIndex)).toThrow();
+    expect(serialize(paused)).toBe(before);
+  });
+});
+
 describe('probabilità dei momenti chiave', () => {
   const player = newCareer(baseOptions, 7).player;
   const option = ctx.config.match.moments.types.find((t) => t.id === 'att_box_chance')!.options[0]!;
@@ -134,6 +187,52 @@ describe('probabilità dei momenti chiave', () => {
     expect(easy).toBeGreaterThan(hard);
     expect(easy).toBeLessThanOrEqual(maxChance);
     expect(hard).toBeGreaterThanOrEqual(minChance);
+  });
+
+  it('applica al massimo dieci punti di qualità e conserva il bonus difficoltà', () => {
+    const plain = {
+      ...player,
+      traits: [],
+      condition: { ...player.condition, form: 50, morale: 50, energy: 50 },
+    };
+    const balanced = { ...option, skills: { shooting: 1 }, difficulty: 0 };
+    const rating = plain.skills.shooting;
+    expect(optionChance(plain, balanced, rating, ctx)).toBe(0.5);
+    expect(optionChance(plain, balanced, rating, ctx, 0.03, 0.5)).toBe(0.53);
+    expect(optionChance(plain, balanced, rating, ctx, 0.03, 0)).toBeCloseTo(0.43);
+    expect(optionChance(plain, balanced, rating, ctx, 0.03, 1)).toBeCloseTo(0.63);
+    const reduced = {
+      ...ctx,
+      config: {
+        ...ctx.config,
+        match: {
+          ...ctx.config.match,
+          moments: { ...ctx.config.match.moments, qualityMaxBonus: 0.04 },
+        },
+      },
+    };
+    expect(optionChance(plain, balanced, rating, reduced, 0, 1)).toBeCloseTo(0.54);
+  });
+
+  it('limita la probabilità finale anche agli estremi della qualità', () => {
+    expect(optionChance(player, option, -1000, ctx, 0, 1)).toBe(maxChance);
+    expect(optionChance(player, option, 1000, ctx, 0, 0)).toBe(minChance);
+  });
+
+  it.each([NaN, Infinity, -Infinity, -0.01, 1.01])(
+    'rifiuta qualità %s anche nel calcolo pubblico',
+    (quality) => expect(() => optionChance(player, option, 45, ctx, 0, quality)).toThrow(),
+  );
+
+  it('valida in configurazione il limite del modificatore qualità', () => {
+    for (const qualityMaxBonus of [-0.01, 0.11, NaN, Infinity]) {
+      expect(
+        matchSchema.safeParse({
+          ...ctx.config.match,
+          moments: { ...ctx.config.match.moments, qualityMaxBonus },
+        }).success,
+      ).toBe(false);
+    }
   });
 
   it('aumenta con i tratti adatti', () => {

@@ -81,6 +81,7 @@ import { exportEdits, importEdits, type EditsFile, type ImportResult } from './e
 import { I18nService } from './i18n.service';
 import { CapacitorSaveBackend } from './saves/capacitor-backend';
 import { SlotStore, type SlotView } from './saves/slots';
+import { UnlocksService } from './unlocks.service';
 import { PlatformService } from './services/platform.service';
 import { TutorialService } from './tutorial.service';
 import { clubInfo } from './views';
@@ -99,6 +100,7 @@ export class GameService {
   private readonly platform = inject(PlatformService);
   private readonly i18n = inject(I18nService);
   private readonly tutorial = inject(TutorialService);
+  private readonly unlocks = inject(UnlocksService);
   private readonly store = new SlotStore(new CapacitorSaveBackend(), this.ctx);
 
   /** Slot della carriera caricata e riepilogo di tutti gli slot. */
@@ -176,6 +178,7 @@ export class GameService {
     this.resetReports();
     // La carriera nuova sostituisce quella dello slot: la sua eventuale guida finisce.
     await this.tutorial.forgetSlot(slot);
+    await this.unlocks.forgetSlot(slot);
     this.slot.set(slot);
     const state = newCareer(options, seed, this.ctx);
     await this.commit(state);
@@ -192,6 +195,7 @@ export class GameService {
     await this.flush();
     await this.store.remove(slot);
     await this.tutorial.forgetSlot(slot);
+    await this.unlocks.forgetSlot(slot);
     if (this.slot() === slot) {
       this.slot.set(null);
       this.setState(null);

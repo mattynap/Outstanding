@@ -2,6 +2,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { defaultConfig } from '@outstanding/config';
+import { TAB_IDS } from '../src/app/core/unlocks';
 import { defaultContent, STAT_PATHS, EVENT_CATEGORIES } from '@outstanding/content';
 import {
   APPEARANCE_PARTS,
@@ -46,6 +47,7 @@ describe("testi dell'interfaccia", () => {
   it('le chiavi composte a runtime esistono per ogni valore possibile', () => {
     const need = [
       ...ROLES.map((r) => `ui.create.roleHint.${r}`),
+      ...TAB_IDS.map((t) => `ui.unlock.tab.${t}`),
       ...defaultConfig.world.startLevels.map((l) => `ui.create.levelHint.${l}`),
       ...EVENT_CATEGORIES.map((c) => `ui.event.category.${c}`),
       ...STAT_PATHS.map((p) => `ui.statPath.${p}`),

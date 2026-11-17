@@ -75,6 +75,15 @@ Tema: scuro predefinito; il chiaro si attiva con `data-theme="light"` su `<html>
 - **Entrata a scatti** `.o-enter-steps`: 220 ms in 3 passi; spenta con "riduci movimento".
 - Raggi: lo strato pixel azzera i raggi di schede, scelte e pulsanti; restano tondi solo stemmi,
   avatar e barre.
+- **Icone pixel** `<app-px-icon name size>`: griglie 16×16 come dati in `ui/px-icons.ts` (`#` colore
+  corrente, `o` dettaglio scuro, `+` riflesso), mostrate a 16, 24 o 32 px. Barra in basso, stati,
+  soldi, notizie, partita, stampa, "novità". Ionicons resta solo per le icone di servizio.
+- **Stemmi e maglie** in pixel (`ui/pixel-crest.ts`): stessa griglia, contorno e carattere delle
+  scene Phaser (`scenes/pix.ts`). Stemma 22×26, maglia 20×18, `shape-rendering: crispEdges`.
+- **Barra a gradini**: all'inizio Settimana, Profilo e Classifica; Mercato alla prima finestra
+  invernale (o se svincolato, con un'offerta, dopo la prima stagione); Carriera dopo la prima
+  stagione. Regole in `core/unlocks.ts`; una voce vista non sparisce più. Ogni voce nuova ha la
+  stella e un riquadro di carta "Novità" sopra la barra, mostrato una volta e chiuso al tocco.
 
 ## Spazi, forme, movimento
 
@@ -86,25 +95,25 @@ Tema: scuro predefinito; il chiaro si attiva con `data-theme="light"` su `<html>
 
 ## Componenti
 
-| Classe / componente                                                    | Uso                                                                     |
-| ---------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `.o-wrap`                                                              | Colonna centrale della pagina                                           |
-| `.o-card`, `.o-card--hero`                                             | Riquadri; `--hero` con sfumatura verde (prossima partita, punteggio)    |
-| `.o-paper`, `.o-masthead`, `.o-kicker`, `.o-headline`, `.o-standfirst` | Pagina di giornale                                                      |
-| `.o-btn` (+ `--ghost`, `--small`, `--danger`)                          | Pulsanti                                                                |
-| `.o-choice` (`aria-pressed`)                                           | Scelte: azioni della settimana, risposte, opzioni dei momenti           |
-| `.o-bar`, `<app-stat-bar>`                                             | Barre 0–100 con tono automatico                                         |
-| `.o-chip`                                                              | Etichette e filtri                                                      |
-| `.o-stats`, `.o-stat`                                                  | Griglie di numeri                                                       |
-| `.o-lines`, `.o-line`                                                  | Righe di tabellini e riepiloghi                                         |
-| `<app-crest>`                                                          | Stemma SVG dal motore (`Club.crest`): forma, colori, simbolo, iniziali  |
-| `<app-kit>`                                                            | Maglia SVG (`Club.kit`): tinta unita, strisce, banda                    |
-| `<app-avatar>`                                                         | Avatar "figurina" a mezzo busto (`Player.appearance` + maglia del club) |
-| `<app-tab-bar>`                                                        | Navigazione in basso: Settimana, Profilo, Mercato, Classifica, Carriera |
-| `<app-tip>`                                                            | Nota del caporedattore della settimana guidata                          |
-| `<app-vignette>`                                                       | Vignetta piatta di un bene o di un'attività (id del catalogo)           |
-| `<app-price-chart>`                                                    | Andamento di un prezzo: una linea, area leggera, punto finale, tocco    |
-| `<app-portrait>`                                                       | Ritratto tondo di partner o persona conosciuta (testa, spalle, capelli) |
+| Classe / componente                                                    | Uso                                                                      |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `.o-wrap`                                                              | Colonna centrale della pagina                                            |
+| `.o-card`, `.o-card--hero`                                             | Riquadri; `--hero` con sfumatura verde (prossima partita, punteggio)     |
+| `.o-paper`, `.o-masthead`, `.o-kicker`, `.o-headline`, `.o-standfirst` | Pagina di giornale                                                       |
+| `.o-btn` (+ `--ghost`, `--small`, `--danger`)                          | Pulsanti                                                                 |
+| `.o-choice` (`aria-pressed`)                                           | Scelte: azioni della settimana, risposte, opzioni dei momenti            |
+| `.o-bar`, `<app-stat-bar>`                                             | Barre 0–100 con tono automatico                                          |
+| `.o-chip`                                                              | Etichette e filtri                                                       |
+| `.o-stats`, `.o-stat`                                                  | Griglie di numeri                                                        |
+| `.o-lines`, `.o-line`                                                  | Righe di tabellini e riepiloghi                                          |
+| `<app-crest>`                                                          | Stemma pixel dal motore (`Club.crest`): forma, colori, simbolo, iniziali |
+| `<app-kit>`                                                            | Maglia pixel (`Club.kit`): tinta unita, strisce, banda                   |
+| `<app-avatar>`                                                         | Avatar "figurina" a mezzo busto (`Player.appearance` + maglia del club)  |
+| `<app-tab-bar>`                                                        | Navigazione in basso a gradini, icone pixel, annuncio "Novità"           |
+| `<app-tip>`                                                            | Nota del caporedattore della settimana guidata                           |
+| `<app-vignette>`                                                       | Vignetta piatta di un bene o di un'attività (id del catalogo)            |
+| `<app-price-chart>`                                                    | Andamento di un prezzo: una linea, area leggera, punto finale, tocco     |
+| `<app-portrait>`                                                       | Ritratto tondo di partner o persona conosciuta (testa, spalle, capelli)  |
 
 Correzioni dell'editor ("Redazione"): il nome originale resta sopra quello nuovo, piccolo e barrato
 con una riga rossa (`--o-headline-red`), più il segno ✎ a destra della riga; i colori si scelgono

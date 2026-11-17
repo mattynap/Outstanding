@@ -1,34 +1,31 @@
 # Handoff
 
 ## Stato
-Sessione di game design e ricerca, nessun codice toccato. Scritto il documento di design delle nuove
-meccaniche (M18–M23) con le correzioni dal caso Kuroko. Fatte tre ricerche: monetizzazione, gacha
-sportivi (Kuroko), psicologia del giocatore. Decisione utente: la cultura pop del calcio italiano
-(interviste storiche e tormentoni rifatti in pixel art, nomi storpiati) è obbligatoria.
+Completata la ricerca cultura pop: 47 momenti in 8 famiglie, fonti e filtri PEGI/legali.
+Report: `reports/Cultura pop calcio italiano.md`; note nei quattro file della cartella omonima.
+Commit su `ciro-dev`: `edf7e40` (fonti), `95a71c7` (report). Nessun push.
+Nessun codice, asset o documento di design modificato; lavoro precedente lasciato intatto.
 
 ## Prossimo passo
-- Ricerca "Cultura pop calcio italiano": catalogo di interviste, conferenze e momenti divertenti,
-  come storpiarli, come inserirli nelle meccaniche. Affidata a Codex (prompt dato all'utente).
-- Poi: aggiornare il documento di design con cultura pop e correzioni di ritmo.
-- L'utente prova la versione attuale: raccogliere dove si annoia, poi riprendere l'idea "mai visto".
+- Far scegliere riferimento esplicito/riscrittura, vignette statiche/animate e collocazione del lotto.
+- Dopo approvazione, aggiornare design e checklist M12 dalle proposte del report.
+- Raccogliere la prova dell’utente sul gioco attuale prima di riprendere l’idea «mai visto».
 
 ## Blocchi e domande aperte
-- Pixel art confermata? Va contro CLAUDE.md §10 e docs/design-system.md.
-- Mini-campo e animazioni: fase 1 o fase 2 (che richiede approvazione)?
-- Durata carriera: 52 settimane × ~20 stagioni danno 7-14 s per settimana su 2-4 ore.
-- M18–M23 prima o dopo M12? Vanno scritte in CLAUDE.md §11.
-- Ancora aperti: tetto cassa idle 8/12 ore, punto dello sblocco, video al giorno 4/6.
-- Idea "mai visto" in pausa: domanda aperta "cosa deve dire un amico dopo dieci minuti?".
+- Pixel art contro CLAUDE.md §10; mini-campo fase 1 o fase 2: nessuna approvazione nuova.
+- Durata carriera e ordine complessivo M18–M23/M12 ancora aperti.
+- Nomi/slogan non verificati nei registri; scene e figurine condivisibili da sottoporre al legale.
+- Restano aperti tetto idle, sblocco e limite video dei documenti precedenti.
+- `kb.py context outstanding`: chiave non trovata nella base aziendale.
 
 ## File toccati
-- docs/superpowers/specs/2026-11-17-meccaniche-gioco-design.md
-- reports/ (3 report), research_notes/ (non committati)
-- .claude/memory/pop-culture-italiana.md, feedback-lingua-italiano.md, MEMORY.md
-- ~/.ai/cache/ricerche/psicologia-giocatore-design-2026-11-17.md
+- `reports/Cultura pop calcio italiano.md`
+- `research_notes/Cultura pop calcio italiano/{catalogo,analisi,riferimenti,legale}.md`
+- `.ai/HANDOFF.md`, `.ai/TASKS.md`
+- Cache esterna: `~/.ai/cache/ricerche/cultura-pop-calcio-italiano-2026-11-17.md`
 
 ## Skill consigliate
-- Claude: deep-research, poi brainstorming per l'idea "mai visto", writing-plans per M18.
-- Codex: lavoro diretto con ricerca web, note in research_notes/.
+- Brainstorming dopo le scelte dell’utente; writing-plans solo dopo approvazione del design.
 
 ## Firma
-Claude Code, Opus 5.5, 2026-11-17
+Codex, GPT-6, 2026-11-17 02:02 CET

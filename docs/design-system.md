@@ -39,6 +39,7 @@ strato pixel coerente con le scene Phaser.
 | Accento   | `--o-accent` (fondo), `--o-accent-fg` (testo/icone), `--o-accent-soft` | `#F2B830`                                  | fondo `#F2B830`, testo `#8A5F00` |
 | Esiti     | `--o-positive`, `--o-negative`                                         | `#5BD08A`, `#E5484D`                       | `#1D7F45`, `#C42B30`             |
 | Giornale  | `--o-paper`, `--o-ink`, `--o-ink-muted`, `--o-headline-red`            | `#F1EBDD`, `#1A1A17`, `#4A4740`, `#B3261E` | uguali                           |
+| Su carta  | `--o-ink-pos`, `--o-ink-neg` (bene e male sul fondo carta, AA)         | `#1D6B3C`, `#B3261E`                       | uguali                           |
 
 Regola di contrasto: l'oro come **fondo** va con testo `--o-accent-ink`; come **colore del testo**
 si usa sempre `--o-accent-fg` (nel tema chiaro è scurito per restare leggibile).
@@ -71,6 +72,8 @@ Tema: scuro predefinito; il chiaro si attiva con `data-theme="light"` su `<html>
 - Colore del bordo con `--px-b` sull'elemento: `--o-border` per le schede, `--o-border-strong` per
   hero, scelte e pulsanti secondari, oro scuro `#8A6510` per il pulsante principale, accento per le
   selezioni, inchiostro `--o-px-paper-edge` per la carta. Elementi piccoli hanno ombra di 2 px.
+- `.o-px--paper`: pulsanti e riquadri sulla carta (fondo `--o-paper`, testo e bordo inchiostro);
+  si somma a `.o-choice` per le risposte alle notizie.
 - **Pressione**: pulsanti, scelte e chip scendono di un pixel e l'ombra sparisce (150 ms, 2 scatti).
 - **Entrata a scatti** `.o-enter-steps`: 220 ms in 3 passi; spenta con "riduci movimento".
 - Raggi: lo strato pixel azzera i raggi di schede, scelte e pulsanti; restano tondi solo stemmi,
@@ -114,6 +117,21 @@ Tema: scuro predefinito; il chiaro si attiva con `data-theme="light"` su `<html>
 | `<app-vignette>`                                                       | Vignetta piatta di un bene o di un'attività (id del catalogo)            |
 | `<app-price-chart>`                                                    | Andamento di un prezzo: una linea, area leggera, punto finale, tocco     |
 | `<app-portrait>`                                                       | Ritratto tondo di partner o persona conosciuta (testa, spalle, capelli)  |
+
+Interfaccia ibrida (ondata 2):
+
+- **Settimana come plancia**: la scheda partita sta in cima (stemmi 48 px, "VS" in `.o-num`); nella
+  settimana della partita ha le chip Completa/Simulata (44 px) e il pulsante "Gioca". Con la
+  partita da giocare il pulsante in fondo sparisce: un'azione, un pulsante. Condizione su una riga
+  con icone pixel 24 px; notizie come striscia di prima pagina (testata, doppia riga, ombra 4 px).
+- **Momento chiave**: opzione con nome, percentuale in `.o-num` a destra colorata per tono, barra a
+  10 tacche, riga "Se va: … · Se no: …".
+- **Pagella**: voto in un badge `.o-num` con cornice oro; sotto, uno scontrino (`<dl>`) con una riga
+  per voce (base, contributi firmati, arrotondamento) e il totale.
+- **Notizia come prima pagina**: titolo 40–46 px, scelte `.o-choice.o-px--paper` con la lettera in
+  rosso; l'esito è un ritaglio di carta ruotato di 1° con occhiello "Edizione successiva", la
+  scelta come titolo e gli effetti uno per riga, valore firmato in `.o-num` 24 px
+  (`--o-ink-pos`/`--o-ink-neg`).
 
 Correzioni dell'editor ("Redazione"): il nome originale resta sopra quello nuovo, piccolo e barrato
 con una riga rossa (`--o-headline-red`), più il segno ✎ a destra della riga; i colori si scelgono

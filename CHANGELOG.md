@@ -5,6 +5,20 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
 
 ## [Non rilasciato]
 
+### Interfaccia ibrida giornale e pixel (ondata 2)
+
+- Momenti chiave: ogni opzione dice cosa succede se va e se non va, con percentuale in pixel e
+  barra a 10 tacche; il motore espone la conseguenza di ogni scelta senza cambiare gli esiti.
+- Pagella come scontrino: voto in pixel e righe con le voci che lo compongono (base, contributi,
+  risultato, arrotondamento), nuovi token `--o-ink-pos` e `--o-ink-neg` per la carta.
+- Settimana come plancia: la partita in cima con stemmi grandi, "Gioca" nella scheda e scelta fra
+  partita completa o simulata; la modalità predefinita si imposta in Impostazioni e resta salvata.
+- Condizione con icone pixel, settimana e soldi in cifre pixel, notizie come striscia di prima pagina.
+- Guida più corta: prima della prima partita solo benvenuto, pulsante principale e momenti chiave;
+  condizione, piano e prepartita arrivano dopo la prima pagella.
+- Notizie come prima pagina: titolo grande, scelte come pulsanti di carta, esito come ritaglio
+  dell'"edizione successiva" con i valori firmati in pixel.
+
 ### Interfaccia ibrida giornale e pixel (ondata 1)
 
 - Strato pixel nel tema: font Jersey 15 per i numeri, cornici a gradino e ombre piene fatte di

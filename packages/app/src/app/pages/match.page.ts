@@ -12,6 +12,7 @@ import {
   type MatchReport,
   type MatchStep,
 } from '@outstanding/engine';
+import { autoSimulate } from '../core/match-mode';
 import { GameService } from '../core/game.service';
 import { I18nService, TranslatePipe } from '../core/i18n.service';
 import { chanceTone, formatRating, ordinal, ratingRounding, signedRating } from '../core/text';
@@ -945,7 +946,14 @@ export class MatchPage {
     // Partita lasciata a metà: si riprende dal momento chiave in sospeso.
     if (s?.currentMatch) void this.play();
     // Dalla plancia della settimana con "Simula": si va dritti a risultato e pagella.
-    else if (id && this.route.snapshot.queryParamMap.get('mode') === 'sim') void this.simulate();
+    else if (
+      id &&
+      autoSimulate(this.route.snapshot.queryParamMap.get('mode'), this.game.nextStep())
+    ) {
+      // Il parametro va tolto subito: tornando indietro o ricaricando non deve simulare di nuovo.
+      void this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true });
+      void this.simulate();
+    }
   }
 
   protected pct(chance: number): number {

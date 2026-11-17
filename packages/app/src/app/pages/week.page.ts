@@ -29,7 +29,7 @@ import {
 } from '@outstanding/engine';
 import { GameService } from '../core/game.service';
 import { I18nService, TranslatePipe } from '../core/i18n.service';
-import { MATCH_MODES, type MatchMode } from '../core/match-mode';
+import { MATCH_MODES, kickoffHintKey, type MatchMode } from '../core/match-mode';
 import { SettingsService } from '../core/settings.service';
 import { formatMoney, ordinal, weekBalance } from '../core/text';
 import { ToastService } from '../core/toast.service';
@@ -169,8 +169,8 @@ import { TipComponent } from '../ui/tip.component';
                       {{ 'ui.week.play' | t }}
                       <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
                     </button>
-                  } @else {
-                    <p class="o-muted small after-plan">{{ 'ui.week.matchAfterPlan' | t }}</p>
+                  } @else if (kickoffHint(); as hint) {
+                    <p class="o-muted small after-plan">{{ hint | t }}</p>
                   }
                 </div>
               }
@@ -620,6 +620,7 @@ export class WeekPage {
   protected readonly skills = SKILLS;
   protected readonly maxActions = this.ctx.config.progression.actionsPerWeek;
   protected readonly step = this.game.nextStep;
+  protected readonly kickoffHint = computed(() => kickoffHintKey(this.step()));
   protected readonly saveFailed = this.game.saveFailed;
   protected readonly busy = signal(false);
   protected readonly choices = signal<string[]>([]);

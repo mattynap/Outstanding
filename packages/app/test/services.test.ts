@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseMatchMode } from '../src/app/core/match-mode';
+import { autoSimulate, kickoffHintKey, parseMatchMode } from '../src/app/core/match-mode';
 import {
   Analytics,
   FakeRewardedAds,
@@ -84,5 +84,21 @@ describe('modalità partita predefinita', () => {
     expect(parseMatchMode('sim')).toBe('sim');
     expect(parseMatchMode('full')).toBe('full');
     expect(parseMatchMode('boh')).toBe('full');
+  });
+});
+
+describe('partita simulata dalla plancia', () => {
+  it('simula da sola solo se la partita è il passo della settimana', () => {
+    expect(autoSimulate('sim', 'match')).toBe(true);
+    expect(autoSimulate('sim', 'plan')).toBe(false);
+    expect(autoSimulate('sim', 'events')).toBe(false);
+    expect(autoSimulate('sim', 'advance')).toBe(false);
+    expect(autoSimulate(null, 'match')).toBe(false);
+  });
+
+  it('la scheda partita indica il passo che manca prima di giocare', () => {
+    expect(kickoffHintKey('plan')).toBe('ui.week.matchAfterPlan');
+    expect(kickoffHintKey('events')).toBe('ui.week.matchAfterNews');
+    expect(kickoffHintKey('match')).toBeNull();
   });
 });

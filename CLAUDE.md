@@ -66,7 +66,7 @@ Gioco mobile (Android, poi iOS) che simula la carriera di un calciatore italiano
 | Monorepo | pnpm workspaces |
 | Motore di gioco | TypeScript puro, **zero dipendenze UI** |
 | App fase 1 | Angular (ultima versione stabile) + Ionic + Capacitor |
-| App fase 2 | Phaser 3 integrato nell'app Ionic per le scene animate |
+| App fase 2 | Phaser 4 integrato nell'app Ionic per le scene animate |
 | Test | Vitest per motore, contenuti e simulatore |
 | Validazione dati | Zod (schema dei JSON di contenuti e configurazione) |
 | Salvataggi | Capacitor Preferences / Filesystem (JSON versionato) |
@@ -254,8 +254,16 @@ L'utente non ha esperienza di grafica per giochi: la qualità visiva è responsa
 ### Schermate fase 1
 Creazione giocatore · Home settimana (stato, azioni, prossima partita) · Evento (testo + scelte) · Partita (cronaca + momenti chiave + pagella) · Profilo (statistiche, tratti, grafici di crescita) · Carriera (storico stagioni, trofei) · Mercato/contratti · Finanze e vita · Fine carriera (punteggio) · Impostazioni.
 
+### Prima prova animata mobile (2026-11-17)
+- Su richiesta dell’utente, integrato Phaser 4.2.1 come renderer differito in Angular/Capacitor.
+- Il motore TypeScript decide gli esiti; qualità del tocco facoltativa, valore neutro 0,5,
+  bonus massimo ±10 punti percentuali in config. La scelta numerica precedente resta compatibile.
+- Campo prova separato dagli slot, quattro ruoli e tre vignette pixel originali.
+- Questa integrazione non completa M18 e non approva automaticamente durata carriera, ordine M18–M23
+  o animazione di tutte le scene. Prove e limiti: `reports/prove-motore-mobile/README.md`.
+
 ### Fase 2 (2D)
-- Phaser 3 dentro l'app Ionic, una scena per tipo di momento chiave; il motore decide sempre l'esito, Phaser lo mostra.
+- Phaser 4 dentro l'app Ionic, una scena per tipo di momento chiave; il motore decide sempre l'esito, Phaser lo mostra.
 - Stile flat vettoriale visto dall'alto: campo disegnato dal codice, giocatori come figure semplici con i colori delle maglie procedurali.
 - Prima di partire: prototipo di un momento chiave da far approvare all'utente.
 

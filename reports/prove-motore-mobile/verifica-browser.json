@@ -1,0 +1,36 @@
+{
+  "browser": "Chrome headless, viewport mobile 390x844 e desktop 1440x1000",
+  "partite": {
+    "Portiere": {
+      "momenti": 2,
+      "esiti": ["Parata. Il pallone resta fuori.", "Parata. Il pallone resta fuori."]
+    },
+    "Difensore": {
+      "momenti": 4,
+      "esiti": [
+        "Pallone recuperato.",
+        "Pallone recuperato.",
+        "Azione riuscita. Il gioco continua.",
+        "Pallone recuperato."
+      ]
+    },
+    "Centrocampista": {
+      "momenti": 4,
+      "esiti": [
+        "Pallone recuperato.",
+        "Assist. Al gol ci pensa il compagno.",
+        "Azione riuscita. Il gioco continua.",
+        "Azione riuscita. Il gioco continua."
+      ]
+    },
+    "Attaccante": {
+      "momenti": 1,
+      "esiti": ["Azione riuscita. Il gioco continua."]
+    }
+  },
+  "scene_animate": 3,
+  "errori_runtime": [],
+  "riduci_movimento": true,
+  "offline": true,
+  "renderer_ricreato_senza_duplicati": true
+}

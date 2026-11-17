@@ -5,6 +5,15 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
 
 ## [Non rilasciato]
 
+### Prima prova animata mobile
+
+- Phaser 4.2.1 caricato su richiesta: campo pixel, esiti visivi dai dati del motore e tre scene originali.
+- Comando del motore con qualità del tocco facoltativa, neutra a 0,5 e limitata da config; compatibilità
+  delle scelte precedenti e simulazioni senza bonus conservata.
+- Campo prova con quattro ruoli, separato dagli slot; alternativa testuale e movimento ridotto.
+- Corretto il feedback dell’ultimo momento e la distinzione tra azione riuscita, gol, parata e recupero.
+- Prima build firmata installata e aperta su iPhone 15; prove e limiti in `reports/prove-motore-mobile/README.md`.
+
 ### M0 – Setup
 
 - Monorepo pnpm con i pacchetti `engine`, `content`, `config`, `simulator` (e segnaposto `app`).

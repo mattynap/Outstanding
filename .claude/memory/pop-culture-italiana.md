@@ -18,5 +18,13 @@ l'IP che i gacha sportivi (Kuroko) hanno e noi no.
   mai audio, immagini o volti reali.
 - Tono PEGI 12: le frasi volgari originali vanno ammorbidite o allusive.
 - Rischio legale (diritto all'immagine, frasi come marchio) da annotare per il parere legale di M12.
-- Prossimo passo: ricerca dedicata (catalogo delle interviste e dei momenti, come integrarli nelle
-  meccaniche M18–M23), affidata a Codex il 2026-11-17.
+- Ricerca completata: `reports/Cultura pop calcio italiano.md`, 47 momenti distribuiti in otto
+  posizioni P1–P8. Nomi e scene del catalogo restano proposte da verificare.
+
+## Prova animata del 2026-11-17
+
+L’utente ha chiesto lavoro effettivo e installazione sul proprio dispositivo. Prima integrazione
+con Phaser 4.2.1 dentro Angular/Capacitor: campo animato e tre scene originali (campanella,
+pendolino, conferenza). Le tre scene sono prove visive, non tutti i 47 eventi già implementati.
+Campo prova indipendente dai salvataggi e tempismo facoltativo. Prove, screenshot e limiti in
+`reports/prove-motore-mobile/README.md`. Restano aperti ritmo carriera e roadmap completa.

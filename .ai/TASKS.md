@@ -5,6 +5,8 @@
 
 ## Prossimi
 <!-- l'ordine è la priorità -->
+- [ ] Decisioni sull'offerta: codice sfida, esportazione salvataggio gratis, nome "Contratto a vita" (founder/offer.md) (2026-11-18)
+- [ ] Prova 1 con 10–15 tester veri sulla parte gratuita (founder/launch.md) (2026-11-18)
 - [ ] Feedback iPhone sull'interfaccia ibrida (ondate 1–2), poi ondata 3 con approvazione (2026-11-17)
 - [ ] Decidere i minori rimandati della review finale dell'ondata 2 (2026-11-17)
 - [ ] Raccogliere feedback iPhone e completare M18: rischio contestuale e modalità rapida (2026-11-17)
@@ -18,6 +20,7 @@
 
 ## Fatti
 <!-- ultimi 10; i più vecchi restano in git -->
+- [x] Validazione commerciale con il founder pack, offerta e business plan in founder/ (2026-11-18)
 - [x] Interfaccia ibrida ondata 2: plancia, pagella a voci, momenti con conseguenze, guida corta, notizie prima pagina (2026-11-17)
 - [x] Interfaccia ibrida ondata 1: strato pixel, icone, stemmi, barra a gradini (2026-11-17)
 - [x] Prima integrazione motore animato, Campo prova e installazione su iPhone 15 (2026-11-17)
@@ -27,4 +30,3 @@
 - [x] Correzioni Kuroko nel documento di design (2026-11-17)
 - [x] Studio gacha sportivi, caso Kuroko (2026-11-17)
 - [x] Documento di design meccaniche M18–M23 (2026-11-17)
-- [x] Report monetizzazione e retention (2026-11-17)

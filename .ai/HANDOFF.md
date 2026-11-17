@@ -1,31 +1,33 @@
 # Handoff
 
 ## Stato
-Completata la ricerca cultura pop: 47 momenti in 8 famiglie, fonti e filtri PEGI/legali.
-Report: `reports/Cultura pop calcio italiano.md`; note nei quattro file della cartella omonima.
-Commit su `ciro-dev`: `edf7e40` (fonti), `95a71c7` (report). Nessun push.
-Nessun codice, asset o documento di design modificato; lavoro precedente lasciato intatto.
+Prima integrazione animata giocabile con Phaser 4.2.1 e qualità del tocco facoltativa.
+Build firmata installata e aperta sull’iPhone 15; screenshot fisico e prove browser nel report.
+269 test, typecheck e content:check verdi; ESLint passa, lint generale segnala 18 documenti preesistenti.
+Commit motore/app/prove: `2f99362`…`651d20c`, su `ciro-dev`; nessun push.
 
 ## Prossimo passo
-- Far scegliere riferimento esplicito/riscrittura, vignette statiche/animate e collocazione del lotto.
-- Dopo approvazione, aggiornare design e checklist M12 dalle proposte del report.
-- Raccogliere la prova dell’utente sul gioco attuale prima di riprendere l’idea «mai visto».
+- Raccogliere feedback sul telefono: avvio → Prova il campo animato; quattro ruoli e tre scene.
+- Completare M18: profili di rischio contestuali e modalità rapida; non dichiarata conclusa.
+- Gestire le citazioni per gruppi P1–P8, poi integrare gli eventi approvati nella carriera.
 
 ## Blocchi e domande aperte
-- Pixel art contro CLAUDE.md §10; mini-campo fase 1 o fase 2: nessuna approvazione nuova.
-- Durata carriera e ordine complessivo M18–M23/M12 ancora aperti.
-- Nomi/slogan non verificati nei registri; scene e figurine condivisibili da sottoporre al legale.
-- Restano aperti tetto idle, sblocco e limite video dei documenti precedenti.
-- `kb.py context outstanding`: chiave non trovata nella base aziendale.
+- Direzione pixel completa, durata carriera e ordine M18–M23/M12 restano aperti.
+- Le tre scene pop sono prove visive: i 47 contenuti non sono ancora implementati.
+- Scaffolding iOS precedente ancora locale/non committato; non inglobato nei nuovi commit.
+- Nessun benchmark di consumi o collaudo di tutti gli scenari sulla carriera fisica.
+- Registrazione video devicectl non supportata dal dispositivo; screenshot disponibile.
 
 ## File toccati
-- `reports/Cultura pop calcio italiano.md`
-- `research_notes/Cultura pop calcio italiano/{catalogo,analisi,riferimenti,legale}.md`
-- `.ai/HANDOFF.md`, `.ai/TASKS.md`
-- Cache esterna: `~/.ai/cache/ricerche/cultura-pop-calcio-italiano-2026-11-17.md`
+- `packages/engine/src/match/`, `packages/engine/test/match.test.ts`, config match e schema.
+- `packages/app/src/app/scenes/`, `ui/game-stage.component.ts`, `ui/timing-control.component.ts`.
+- `pages/proof.page.ts`, `pages/match.page.ts`, avvio/route, servizi e traduzioni.
+- `reports/prove-motore-mobile/`, piano `docs/superpowers/plans/2026-11-17-motore-mobile-animato.md`.
+- `CLAUDE.md`, `ASSETS.md`, `CHANGELOG.md`, `.claude/memory/pop-culture-italiana.md`.
+- `.ai/HANDOFF.md`, `.ai/TASKS.md`, `.ai/DECISIONS.md`.
 
 ## Skill consigliate
-- Brainstorming dopo le scelte dell’utente; writing-plans solo dopo approvazione del design.
+- TDD e frontend-design per proseguire; webapp-testing e verifica su dispositivo.
 
 ## Firma
-Codex, GPT-6, 2026-11-17 02:02 CET
+Codex, GPT-6, 2026-11-17 13:45 CET

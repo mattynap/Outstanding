@@ -191,6 +191,7 @@
   "ui.event.hint": "La tua risposta avrà conseguenze.",
   "ui.event.choices": "Le tue scelte",
   "ui.event.outcome": "Com'è andata",
+  "ui.event.nextEdition": "Edizione successiva",
   "ui.event.noChanges": "Per ora nessuna conseguenza visibile.",
   "ui.event.change.relationship": "Rapporto con {name}",
   "ui.event.change.injury": "{injury}: {weeks} {weeks|settimana|settimane} di stop",

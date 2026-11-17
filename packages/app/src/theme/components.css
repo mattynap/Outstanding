@@ -507,8 +507,14 @@ button.o-chip:focus-visible {
 .o-card--hero {
   --px-b: var(--o-border-strong);
 }
-.o-paper {
+.o-paper,
+.o-px--paper {
   --px-b: var(--o-px-paper-edge);
+}
+/* Pulsanti e riquadri sulla carta: stessi colori della pagina di giornale. */
+.o-px--paper {
+  background: var(--o-paper);
+  color: var(--o-ink);
 }
 .o-btn {
   --px-b: #8a6510;

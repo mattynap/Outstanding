@@ -12,7 +12,9 @@ import { seasonWeekNumber } from '../core/views';
 import { TipComponent } from '../ui/tip.component';
 
 interface ChangeLine {
-  text: string;
+  label: string;
+  /** Valore firmato (+5, −3), separato dall'etichetta per allinearlo a destra. */
+  value?: string;
   tone: 'pos' | 'neg' | 'none';
 }
 
@@ -46,27 +48,11 @@ const BAD_WHEN_UP = new Set(['condition.injuryRisk']);
               }}</span>
             </div>
             <span class="o-kicker">{{ 'ui.event.category.' + e.category | t }}</span>
-            <h1 class="o-headline">{{ e.titleKey | t: e.params }}</h1>
+            <h1 class="o-headline headline">{{ e.titleKey | t: e.params }}</h1>
             <div class="o-standfirst">
               <p>{{ e.textKey | t: e.params }}</p>
             </div>
-            @if (result(); as r) {
-              <div class="outcome" role="status">
-                <span class="o-label ink">{{ 'ui.event.outcome' | t }}</span>
-                <p class="chosen">«{{ e.choices[r.choice]!.textKey | t: e.params }}»</p>
-                @if (r.lines.length > 0) {
-                  <ul>
-                    @for (l of r.lines; track $index) {
-                      <li [class.up]="l.tone === 'pos'" [class.down]="l.tone === 'neg'">
-                        {{ l.text }}
-                      </li>
-                    }
-                  </ul>
-                } @else {
-                  <p class="quiet">{{ 'ui.event.noChanges' | t }}</p>
-                }
-              </div>
-            } @else {
+            @if (!result()) {
               <div class="foot">
                 <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
                 {{ 'ui.event.hint' | t }}
@@ -74,7 +60,33 @@ const BAD_WHEN_UP = new Set(['condition.injuryRisk']);
             }
           </article>
 
-          @if (result()) {
+          @if (result(); as r) {
+            <section
+              class="o-paper clipping o-enter-steps"
+              role="status"
+              [attr.aria-label]="'ui.event.outcome' | t"
+            >
+              <span class="o-kicker">{{ 'ui.event.nextEdition' | t }}</span>
+              <h2 class="clip-title">{{ e.choices[r.choice]!.textKey | t: e.params }}</h2>
+              @if (r.lines.length > 0) {
+                <dl class="effects">
+                  @for (l of r.lines; track $index) {
+                    <div
+                      class="effect"
+                      [class.pos]="l.tone === 'pos'"
+                      [class.neg]="l.tone === 'neg'"
+                    >
+                      <dt>{{ l.label }}</dt>
+                      @if (l.value) {
+                        <dd class="o-num">{{ l.value }}</dd>
+                      }
+                    </div>
+                  }
+                </dl>
+              } @else {
+                <p class="quiet">{{ 'ui.event.noChanges' | t }}</p>
+              }
+            </section>
             <button class="o-btn" type="button" (click)="next()">
               {{ (remaining() > 0 ? 'ui.event.nextNews' : 'ui.event.backToWeek') | t }}
             </button>
@@ -82,7 +94,12 @@ const BAD_WHEN_UP = new Set(['condition.injuryRisk']);
             <app-tip tip="event.choice" />
             <div class="choices" role="group" [attr.aria-label]="'ui.event.choices' | t">
               @for (c of e.choices; track $index) {
-                <button class="o-choice" type="button" [disabled]="busy()" (click)="choose($index)">
+                <button
+                  class="o-choice o-px--paper"
+                  type="button"
+                  [disabled]="busy()"
+                  (click)="choose($index)"
+                >
                   <span class="o-choice__letter">{{ letters[$index] }}</span>
                   <span class="o-choice__body">{{ c.textKey | t: e.params }}</span>
                 </button>
@@ -109,7 +126,10 @@ const BAD_WHEN_UP = new Set(['condition.injuryRisk']);
       width: var(--o-touch);
     }
     .article {
-      min-height: 360px;
+      min-height: 320px;
+    }
+    .headline {
+      font-size: clamp(40px, 11.6vw, 46px);
     }
     .foot {
       margin-top: auto;
@@ -121,49 +141,67 @@ const BAD_WHEN_UP = new Set(['condition.injuryRisk']);
       border-top: 1px solid var(--o-paper-rule);
       padding-top: 10px;
     }
-    .outcome {
-      margin-top: auto;
-      border-top: 1px solid var(--o-paper-rule);
-      padding-top: 10px;
+    /* Esito come ritaglio dell'edizione successiva: leggermente storto, come appoggiato. */
+    .clipping {
+      transform: rotate(1deg);
+      margin: 4px 6px 8px 2px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 10px;
     }
-    .ink {
-      color: var(--o-ink-muted);
-    }
-    .chosen {
+    .clip-title {
       margin: 0;
-      font-style: italic;
+      font-family: var(--o-font-display);
+      font-weight: 800;
+      font-size: 24px;
+      line-height: 1.05;
+      color: var(--o-ink);
+    }
+    .effects {
+      margin: 0;
+      border-top: 3px double var(--o-ink);
+    }
+    .effect {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--o-paper-rule);
+    }
+    .effect dt {
+      font-size: 15px;
       color: var(--o-ink-soft);
     }
-    ul {
+    .effect dd {
       margin: 0;
-      padding: 0;
-      list-style: none;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
+      font-size: 24px;
+      line-height: 1;
+      color: var(--o-ink);
+      white-space: nowrap;
     }
-    li {
-      font-size: 13px;
+    .effect.pos dd {
+      color: var(--o-ink-pos);
+    }
+    .effect.neg dd {
+      color: var(--o-ink-neg);
+    }
+    /* Senza valore il colore va sull'etichetta, unico segnale di bene o male. */
+    .effect.pos dt:only-child {
+      color: var(--o-ink-pos);
       font-weight: 600;
-      padding: 4px 9px;
-      border-radius: 999px;
-      background: rgba(0, 0, 0, 0.06);
     }
-    li.up {
-      background: rgba(29, 127, 69, 0.14);
-      color: #145c32;
-    }
-    li.down {
-      background: rgba(179, 38, 30, 0.12);
-      color: #8c1d17;
+    .effect.neg dt:only-child {
+      color: var(--o-ink-neg);
+      font-weight: 600;
     }
     .quiet {
       margin: 0;
-      font-size: 13px;
+      font-size: 14px;
       color: var(--o-ink-muted);
+    }
+    .o-px--paper .o-choice__letter {
+      color: var(--o-headline-red);
     }
     .choices {
       display: flex;
@@ -239,7 +277,8 @@ export class EventPage {
           const amount = money ? (d > 0 ? '+' : '') + formatMoney(d) : formatDelta(d);
           const good = BAD_WHEN_UP.has(c.path) ? d < 0 : d > 0;
           lines.push({
-            text: `${t('ui.statPath.' + c.path)} ${amount}`,
+            label: t('ui.statPath.' + c.path),
+            value: amount,
             tone: good ? 'pos' : 'neg',
           });
           break;
@@ -250,14 +289,15 @@ export class EventPage {
           const npc = this.game.state()?.world.npcs.find((n) => n.id === c.npcId);
           const who = npc ? `${npc.firstName} ${npc.lastName}` : '';
           lines.push({
-            text: `${t('ui.event.change.relationship', { name: who })} ${formatDelta(d)}`,
+            label: t('ui.event.change.relationship', { name: who }),
+            value: formatDelta(d),
             tone: d > 0 ? 'pos' : 'neg',
           });
           break;
         }
         case 'injury':
           lines.push({
-            text: t('ui.event.change.injury', {
+            label: t('ui.event.change.injury', {
               injury: t('injuries.' + c.injuryType),
               weeks: c.weeks,
             }),
@@ -266,7 +306,7 @@ export class EventPage {
           break;
         case 'trait':
           lines.push({
-            text: t(
+            label: t(
               c.action === 'add' ? 'ui.event.change.traitAdd' : 'ui.event.change.traitRemove',
               {
                 trait: t('traits.' + c.traitId + '.name'),
@@ -276,33 +316,34 @@ export class EventPage {
           });
           break;
         case 'transferRequest':
-          lines.push({ text: t('ui.event.change.transferRequest'), tone: 'none' });
+          lines.push({ label: t('ui.event.change.transferRequest'), tone: 'none' });
           break;
         case 'partner': {
           const d = c.after - c.before;
           if (Math.abs(d) < 0.5) break;
           lines.push({
-            text: `${t('ui.event.change.partner', { name: c.name })} ${formatDelta(d)}`,
+            label: t('ui.event.change.partner', { name: c.name }),
+            value: formatDelta(d),
             tone: d > 0 ? 'pos' : 'neg',
           });
           break;
         }
         case 'meet':
-          lines.push({ text: t('ui.event.change.meet', { name: c.name }), tone: 'pos' });
+          lines.push({ label: t('ui.event.change.meet', { name: c.name }), tone: 'pos' });
           break;
         case 'affair':
           lines.push({
-            text: t(
+            label: t(
               c.action === 'start' ? 'ui.event.change.affairStart' : 'ui.event.change.affairEnd',
             ),
             tone: 'none',
           });
           break;
         case 'breakup':
-          lines.push({ text: t('ui.event.change.breakup', { name: c.name }), tone: 'neg' });
+          lines.push({ label: t('ui.event.change.breakup', { name: c.name }), tone: 'neg' });
           if (c.settlement > 0) {
             lines.push({
-              text: t('ui.event.change.settlement', {
+              label: t('ui.event.change.settlement', {
                 name: c.name,
                 amount: formatMoney(c.settlement),
               }),
@@ -314,7 +355,8 @@ export class EventPage {
           const d = c.after - c.before;
           if (Math.abs(d) < 0.5) break;
           lines.push({
-            text: `${t('ui.event.change.business', { name: c.name })} ${formatDelta(d)}`,
+            label: t('ui.event.change.business', { name: c.name }),
+            value: formatDelta(d),
             tone: d > 0 ? 'pos' : 'neg',
           });
           break;

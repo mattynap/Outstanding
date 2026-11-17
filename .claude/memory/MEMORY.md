@@ -22,3 +22,4 @@ Indice delle note di progetto. Questa cartella è versionata in git.
 - [Cultura pop italiana](pop-culture-italiana.md) — obbligatoria: interviste storiche e tormentoni del calcio in pixel art, nomi storpiati, PEGI 12
 - [Scene pixel art](pixel-art-scene.md) — campo e sala stampa disegnati dal codice, approvati il 2026-11-17
 - [UI ibrida](ui-ibrido.md) — giornale + pixel: regole, modalità partita, guida corta; ondata 3 dopo prova iPhone
+- [Lingua delle risposte](lingua-risposte.md) — rispondere sempre in italiano, anche nei report

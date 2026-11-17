@@ -286,7 +286,7 @@ import { TipComponent } from '../ui/tip.component';
             </section>
           }
 
-          @if (step() !== 'plan') {
+          @if (step() !== 'plan' && !matchFirst()) {
             <app-tip tip="week.cta" />
           }
           <app-tip tip="week.tabs" />

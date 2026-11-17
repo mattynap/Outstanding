@@ -6,14 +6,15 @@
  */
 export const TIPS = {
   'week.welcome': [],
-  'week.condition': ['week.welcome'],
-  'week.plan': ['week.condition'],
+  'week.cta': ['week.welcome'],
   'event.choice': [],
-  'week.cta': ['week.plan'],
-  'match.pre': [],
   'match.moments': [],
   'match.rating': [],
-  'week.tabs': ['match.rating'],
+  // Condizione, piano e prepartita aspettano la prima pagella: prima si gioca, poi si approfondisce.
+  'week.condition': ['match.rating'],
+  'week.plan': ['week.condition'],
+  'match.pre': ['match.rating'],
+  'week.tabs': ['week.plan'],
   'week.done': ['week.tabs'],
 } as const satisfies Record<string, readonly string[]>;
 

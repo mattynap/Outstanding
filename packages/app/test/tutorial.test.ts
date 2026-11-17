@@ -25,9 +25,35 @@ describe('settimana guidata', () => {
     expect(tipVisible(null, 2, 'week.welcome')).toBe(false);
     const later: TutorialData = { slot: 2, seen: ['week.welcome'] };
     expect(tipVisible(later, 2, 'week.welcome')).toBe(false);
-    expect(tipVisible(later, 2, 'week.condition')).toBe(true);
+    expect(tipVisible(later, 2, 'week.cta')).toBe(true);
     // I consigli delle altre schermate non aspettano quelli della settimana.
     expect(tipVisible(data, 2, 'event.choice')).toBe(true);
+  });
+
+  it('prima della prima partita al massimo 3 note fra settimana e partita', () => {
+    const fresh: TutorialData = { slot: 1, seen: [] };
+    const beforeMatch = [
+      'week.welcome',
+      'week.cta',
+      'week.condition',
+      'week.plan',
+      'match.pre',
+      'match.moments',
+    ] as const;
+    const reachable = beforeMatch.filter(
+      (id) => tipVisible(fresh, 1, id) || tipVisible({ slot: 1, seen: ['week.welcome'] }, 1, id),
+    );
+    expect(reachable).toEqual(['week.welcome', 'week.cta', 'match.moments']);
+  });
+
+  it('condizione e piano arrivano dopo la prima pagella', () => {
+    expect(
+      tipVisible(
+        { slot: 1, seen: ['week.welcome', 'week.cta', 'match.moments', 'match.rating'] },
+        1,
+        'week.condition',
+      ),
+    ).toBe(true);
   });
 
   it('scarta dati rovinati e consigli sconosciuti', () => {

@@ -45,6 +45,8 @@ L’aggiornamento usa lo stesso bundle e non prevede migrazione dei salvataggi. 
 una verifica fisica completa di ogni carriera preesistente, dell’import/export o di tutti gli
 scenari della partita normale. Il giro automatico completo riguarda il Campo prova e il motore.
 Non sono misurati autonomia, surriscaldamento o compatibilità di altri modelli Android/iPhone.
+Lo scaffolding iOS preesistente e i relativi script restano modifiche locali separate: non sono
+stati inglobati nei commit di questa integrazione.
 
 Il primo controllo visivo ha rilevato un collegamento Angular che non aggiornava la scena dopo
 il cambio scheda. Corretto leggendo sempre il signal prima di chiamare il controller; le prove

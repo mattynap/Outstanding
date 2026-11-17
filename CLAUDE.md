@@ -14,7 +14,7 @@ Una copia sintetica delle decisioni sta in `docs/design/` (vedi sotto); se c'è 
 - Messaggi di commit in italiano, formato Conventional Commits: `feat(engine): aggiungi calcolo voto in pagella`, `fix(app): ...`, `content: ...`, `test: ...`, `docs: ...`, `chore: ...`.
 - Commit piccoli e coerenti, uno per argomento. Non fare commit di codice che non compila o con test rotti.
 - Repository remoto: GitHub (`origin`). Puoi fare commit e push in autonomia; mai force push né riscrittura della storia già pubblicata.
-- **Branch di lavoro: `dev`** (creato da `main`). Commit e push vanno su `dev`; `main` si aggiorna solo su richiesta dell'utente.
+- **Branch di lavoro: `ciro-dev`** (creato da `dev` il 2026-11-17). Commit e push vanno su `ciro-dev`. `dev` contiene il lavoro di Mario e non si tocca; `main` si aggiorna solo su richiesta dell'utente.
 
 ### Autonomia nel terminale
 - **Non chiedere conferma** per i comandi da terminale: installazioni (`pnpm`, `npm`, `npx`), operazioni git (status, add, commit, branch, merge, push), build, test, generatori. Procedi e poi riassumi cosa hai fatto.

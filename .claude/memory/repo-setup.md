@@ -13,3 +13,7 @@ metadata:
   (decisione dell'utente del 2026-11-16); la sintesi è in `docs/design/README.md`.
 
 Collegato: [[tooling]]
+
+- Dal 2026-11-17: il remote `mattynap/Outstanding` accetta scritture solo dall'account GitHub
+  `mattynap`; `locodev13-prog` ha solo lettura (errore 403). Prima di pubblicare:
+  `gh auth switch -u mattynap`. Il branch remoto di Ciro è `origin/ciro-dev`.

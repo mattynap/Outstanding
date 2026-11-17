@@ -1,67 +1,58 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import type { Crest } from '@outstanding/engine';
+import { CREST_H, CREST_W, SYMBOL_SIZE, crestPixels, pixRects } from './pixel-crest';
 import { symbolPath } from './symbols';
 
-/** Stemma del club disegnato dai dati generati dal motore (forma, colori, simbolo, iniziali). */
+const masks = new Map<string, Uint8Array>();
+// Il simbolo si rasterizza 4 volte più grande e poi si riduce: a 10×10 diretto le punte sparirebbero.
+const SUPER = 4;
+
+/** Maschera 10×10 del simbolo araldico (1 = pieno), calcolata una volta per id. */
+export function symbolMask(id: string): Uint8Array {
+  const cached = masks.get(id);
+  if (cached) return cached;
+  const mask = new Uint8Array(SYMBOL_SIZE * SYMBOL_SIZE);
+  const side = SYMBOL_SIZE * SUPER;
+  const ctx =
+    typeof document === 'undefined'
+      ? null
+      : Object.assign(document.createElement('canvas'), { width: side, height: side }).getContext(
+          '2d',
+          { willReadFrequently: true },
+        );
+  if (ctx) {
+    ctx.scale(side / 24, side / 24);
+    ctx.fill(new Path2D(symbolPath(id)));
+    const alpha = ctx.getImageData(0, 0, side, side).data;
+    for (let y = 0; y < SYMBOL_SIZE; y++)
+      for (let x = 0; x < SYMBOL_SIZE; x++) {
+        let sum = 0;
+        for (let dy = 0; dy < SUPER; dy++)
+          for (let dx = 0; dx < SUPER; dx++)
+            sum += alpha[((y * SUPER + dy) * side + x * SUPER + dx) * 4 + 3]!;
+        mask[y * SYMBOL_SIZE + x] = sum / (SUPER * SUPER) >= 128 ? 1 : 0;
+      }
+  }
+  masks.set(id, mask);
+  return mask;
+}
+
+/** Stemma del club in pixel, dai dati generati dal motore (forma, colori, simbolo, iniziali). */
 @Component({
   selector: 'app-crest',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <svg
       [attr.width]="size()"
-      [attr.height]="(size() * 52) / 44"
-      viewBox="0 0 44 52"
+      [attr.height]="(size() * h) / w"
+      [attr.viewBox]="'0 0 ' + w + ' ' + h"
+      shape-rendering="crispEdges"
       [attr.role]="label() ? 'img' : null"
       [attr.aria-label]="label() || null"
       [attr.aria-hidden]="label() ? null : 'true'"
     >
-      @switch (crest().shape) {
-        @case ('shield') {
-          <path
-            [attr.d]="shield"
-            [attr.fill]="crest().primary"
-            [attr.stroke]="crest().secondary"
-            stroke-width="2.5"
-          />
-        }
-        @case ('circle') {
-          <circle
-            cx="22"
-            cy="26"
-            r="20"
-            [attr.fill]="crest().primary"
-            [attr.stroke]="crest().secondary"
-            stroke-width="2.5"
-          />
-        }
-        @default {
-          <ellipse
-            cx="22"
-            cy="26"
-            rx="18"
-            ry="23"
-            [attr.fill]="crest().primary"
-            [attr.stroke]="crest().secondary"
-            stroke-width="2.5"
-          />
-        }
-      }
-      <g [attr.transform]="symbolTransform()" [attr.fill]="crest().secondary">
-        <path [attr.d]="symbol()" />
-      </g>
-      @if (showInitials()) {
-        <text
-          x="22"
-          y="42"
-          text-anchor="middle"
-          font-family="Barlow Condensed, sans-serif"
-          font-weight="800"
-          font-size="10"
-          letter-spacing="0.5"
-          [attr.fill]="crest().secondary"
-        >
-          {{ crest().initials }}
-        </text>
+      @for (r of rects(); track $index) {
+        <rect [attr.x]="r.x" [attr.y]="r.y" [attr.width]="r.w" height="1" [attr.fill]="r.fill" />
       }
     </svg>
   `,
@@ -78,11 +69,12 @@ export class CrestComponent {
   /** Testo alternativo; vuoto = decorativo. */
   readonly label = input('');
 
-  protected readonly shield = 'M3 3h38v23c0 12-8.5 20-19 23C11.5 46 3 38 3 26z';
-  protected readonly symbol = computed(() => symbolPath(this.crest().symbol));
-  protected readonly showInitials = computed(() => this.size() >= 32);
-  /** Il simbolo sta più in alto quando sotto ci sono le iniziali. */
-  protected readonly symbolTransform = computed(() =>
-    this.showInitials() ? 'translate(13 9) scale(0.75)' : 'translate(11 15) scale(0.92)',
-  );
+  protected readonly w = CREST_W;
+  protected readonly h = CREST_H;
+  /** Sotto i 32 px le iniziali non si leggerebbero: resta solo il simbolo, più in basso. */
+  protected readonly rects = computed(() => {
+    const c = this.crest();
+    const shown = this.size() >= 32 ? c : { ...c, initials: '' };
+    return pixRects(crestPixels(shown, symbolMask(c.symbol)));
+  });
 }

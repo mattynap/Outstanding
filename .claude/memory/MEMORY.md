@@ -20,3 +20,4 @@ Indice delle note di progetto. Questa cartella è versionata in git.
 - [Nomi storpiati](naming-policy.md) — dal 2026-11-17 nomi alterati per club e giocatori, sponsor inventati, rischio accettato
 - [Sempre in italiano](feedback-lingua-italiano.md) — ogni risposta all utente va in italiano
 - [Cultura pop italiana](pop-culture-italiana.md) — obbligatoria: interviste storiche e tormentoni del calcio in pixel art, nomi storpiati, PEGI 12
+- [Scene pixel art](pixel-art-scene.md) — campo e sala stampa disegnati dal codice, approvati il 2026-11-17

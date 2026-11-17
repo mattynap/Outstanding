@@ -5,6 +5,13 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
 
 ## [Non rilasciato]
 
+### Scene in pixel art
+
+- Campo partita e sala stampa ridisegnati in pixel art generata dal codice, con animazioni vere:
+  corsa, tiro, rete che trema, coriandoli, fermo immagine e scritte a nastro.
+- Spogliatoio con campanella, studio TV con pendolino e conferenza stampa con mezzobusti espressivi.
+- Strumenti di regia comuni in `scenes/director.ts`; movimento ridotto mostra solo l'esito finale.
+
 ### Prima prova animata mobile
 
 - Phaser 4.2.1 caricato su richiesta: campo pixel, esiti visivi dai dati del motore e tre scene originali.

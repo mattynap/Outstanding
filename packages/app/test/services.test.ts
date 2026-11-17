@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { parseMatchMode } from '../src/app/core/match-mode';
 import {
   Analytics,
   FakeRewardedAds,
@@ -74,5 +75,14 @@ describe('pubblicità a premio', () => {
     const ads = new FakeRewardedAds();
     expect(await ads.isAvailable('any')).toBe(false);
     expect(await ads.show('any')).toBe('unavailable');
+  });
+});
+
+describe('modalità partita predefinita', () => {
+  it('legge il valore salvato e ricade su "full"', () => {
+    expect(parseMatchMode(null)).toBe('full');
+    expect(parseMatchMode('sim')).toBe('sim');
+    expect(parseMatchMode('full')).toBe('full');
+    expect(parseMatchMode('boh')).toBe('full');
   });
 });

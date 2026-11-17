@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { chevronBack, flashOutline, playOutline } from 'ionicons/icons';
@@ -865,6 +865,7 @@ type Phase = 'pre' | 'moment' | 'done';
 export class MatchPage {
   private readonly game = inject(GameService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly i18n = inject(I18nService);
   private readonly toast = inject(ToastService);
   private readonly settings = inject(SettingsService);
@@ -943,6 +944,8 @@ export class MatchPage {
     this.fixtureId.set(id ?? null);
     // Partita lasciata a metà: si riprende dal momento chiave in sospeso.
     if (s?.currentMatch) void this.play();
+    // Dalla plancia della settimana con "Simula": si va dritti a risultato e pagella.
+    else if (id && this.route.snapshot.queryParamMap.get('mode') === 'sim') void this.simulate();
   }
 
   protected pct(chance: number): number {

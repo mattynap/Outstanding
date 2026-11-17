@@ -4,6 +4,7 @@ import {
   computed,
   effect,
   inject,
+  linkedSignal,
   signal,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
@@ -16,7 +17,6 @@ import {
   medkitOutline,
   micOutline,
   settingsOutline,
-  walletOutline,
 } from 'ionicons/icons';
 import {
   getTransferWindow,
@@ -29,10 +29,13 @@ import {
 } from '@outstanding/engine';
 import { GameService } from '../core/game.service';
 import { I18nService, TranslatePipe } from '../core/i18n.service';
+import { MATCH_MODES, type MatchMode } from '../core/match-mode';
+import { SettingsService } from '../core/settings.service';
 import { formatMoney, ordinal, weekBalance } from '../core/text';
 import { ToastService } from '../core/toast.service';
 import { clubInfo, fixtureView, playerAge, seasonWeekNumber, upcomingFixture } from '../core/views';
 import { CrestComponent } from '../ui/crest.component';
+import { PxIconComponent } from '../ui/px-icon.component';
 import { StatBarComponent } from '../ui/stat-bar.component';
 import { TabBarComponent } from '../ui/tab-bar.component';
 import { TipComponent } from '../ui/tip.component';
@@ -46,6 +49,7 @@ import { TipComponent } from '../ui/tip.component';
     RouterLink,
     TranslatePipe,
     CrestComponent,
+    PxIconComponent,
     StatBarComponent,
     TabBarComponent,
     TipComponent,
@@ -88,7 +92,7 @@ import { TipComponent } from '../ui/tip.component';
           <section class="headline">
             <div class="when">
               <span class="o-label">{{ 'ui.week.seasonWeek' | t: { season: v.season } }}</span>
-              <span class="o-number big">{{ v.week }}</span>
+              <span class="o-num big">{{ v.week }}</span>
             </div>
             <div class="who">
               <span class="name">{{ v.name }}</span>
@@ -97,12 +101,81 @@ import { TipComponent } from '../ui/tip.component';
                 {{ v.ovr }}</span
               >
               <a class="o-chip cash" routerLink="/vita">
-                <ion-icon name="wallet-outline" aria-hidden="true"></ion-icon>{{ v.cash }}
+                <app-px-icon name="cash" aria-hidden="true" />{{ v.cash }}
               </a>
             </div>
           </section>
 
           <app-tip tip="week.welcome" />
+
+          @if (next(); as f) {
+            <section class="o-card o-card--hero match" [attr.aria-label]="'ui.week.nextMatch' | t">
+              <div class="match-top o-label">
+                <span>{{ whenKey(f.inWeeks) | t: { n: f.inWeeks } }}</span>
+                <span>{{ (f.side === 'home' ? 'ui.match.home' : 'ui.match.away') | t }}</span>
+              </div>
+              <div class="match-comp">
+                {{ f.competitionKey | t }} ·
+                @if (f.stageKey) {
+                  {{ f.stageKey | t }}
+                } @else {
+                  {{ ordinal(f.fixture.matchday) }} {{ 'ui.week.matchday' | t }}
+                }
+              </div>
+              <div class="teams">
+                <div class="team">
+                  <app-crest [crest]="f.home.crest" [size]="48" />
+                  <span>{{ f.home.shortName }}</span>
+                </div>
+                <span class="vs o-num">VS</span>
+                <div class="team">
+                  <app-crest [crest]="f.away.crest" [size]="48" />
+                  <span>{{ f.away.shortName }}</span>
+                </div>
+              </div>
+              <div class="match-foot">
+                <span>
+                  @if (f.opponentPosition) {
+                    {{ 'ui.week.opponentPos' | t: { pos: ordinal(f.opponentPosition) } }} ·
+                  }
+                  {{ 'ui.week.opponentRating' | t: { rating: f.opponent.rating } }}
+                </span>
+              </div>
+              @if (step() === 'matchInProgress') {
+                <div class="kickoff">
+                  <button class="o-btn" type="button" [disabled]="busy()" (click)="playMatch()">
+                    {{ 'ui.week.cta.resume' | t }}
+                    <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+                  </button>
+                </div>
+              } @else if (f.inWeeks === 0) {
+                <div class="kickoff">
+                  <div class="modes" role="radiogroup" [attr.aria-label]="'ui.week.matchMode' | t">
+                    @for (m of matchModes; track m) {
+                      <button
+                        class="o-chip mode"
+                        type="button"
+                        role="radio"
+                        [class.o-chip--accent]="mode() === m"
+                        [attr.aria-checked]="mode() === m"
+                        (click)="mode.set(m)"
+                      >
+                        {{ 'ui.settings.matchModes.' + m | t }}
+                      </button>
+                    }
+                  </div>
+                  @if (step() === 'match') {
+                    <button class="o-btn" type="button" [disabled]="busy()" (click)="playMatch()">
+                      {{ 'ui.week.play' | t }}
+                      <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+                    </button>
+                  } @else {
+                    <p class="o-muted small after-plan">{{ 'ui.week.matchAfterPlan' | t }}</p>
+                  }
+                </div>
+              }
+            </section>
+          }
 
           @if (press(); as pr) {
             <a class="o-card press-call" routerLink="/conferenza">
@@ -130,55 +203,14 @@ import { TipComponent } from '../ui/tip.component';
           }
 
           <section class="o-card condition" [attr.aria-label]="'ui.week.condition' | t">
-            <app-stat-bar [label]="'ui.stats.form' | t" [value]="v.condition.form" tone="auto" />
-            <app-stat-bar
-              [label]="'ui.stats.energy' | t"
-              [value]="v.condition.energy"
-              tone="auto"
-            />
-            <app-stat-bar
-              [label]="'ui.stats.morale' | t"
-              [value]="v.condition.morale"
-              tone="auto"
-            />
+            @for (c of conditionRows; track c.key) {
+              <div class="cond">
+                <app-px-icon [name]="c.icon" [size]="24" aria-hidden="true" />
+                <app-stat-bar [label]="c.label | t" [value]="v.condition[c.key]" tone="auto" />
+              </div>
+            }
           </section>
           <app-tip tip="week.condition" />
-
-          @if (next(); as f) {
-            <section class="o-card o-card--hero match" [attr.aria-label]="'ui.week.nextMatch' | t">
-              <div class="match-top o-label">
-                <span>{{ whenKey(f.inWeeks) | t: { n: f.inWeeks } }}</span>
-                <span>{{ (f.side === 'home' ? 'ui.match.home' : 'ui.match.away') | t }}</span>
-              </div>
-              <div class="match-comp">
-                {{ f.competitionKey | t }} ·
-                @if (f.stageKey) {
-                  {{ f.stageKey | t }}
-                } @else {
-                  {{ ordinal(f.fixture.matchday) }} {{ 'ui.week.matchday' | t }}
-                }
-              </div>
-              <div class="teams">
-                <div class="team">
-                  <app-crest [crest]="f.home.crest" [size]="40" />
-                  <span>{{ f.home.shortName }}</span>
-                </div>
-                <span class="vs o-number">VS</span>
-                <div class="team">
-                  <app-crest [crest]="f.away.crest" [size]="40" />
-                  <span>{{ f.away.shortName }}</span>
-                </div>
-              </div>
-              <div class="match-foot">
-                <span>
-                  @if (f.opponentPosition) {
-                    {{ 'ui.week.opponentPos' | t: { pos: ordinal(f.opponentPosition) } }} ·
-                  }
-                  {{ 'ui.week.opponentRating' | t: { rating: f.opponent.rating } }}
-                </span>
-              </div>
-            </section>
-          }
 
           @if (step() === 'plan') {
             <section class="plan" [attr.aria-label]="'ui.week.plan' | t">
@@ -232,7 +264,10 @@ import { TipComponent } from '../ui/tip.component';
 
           @if (v.pendingNews > 0) {
             <a class="news" routerLink="/evento">
-              <span class="o-kicker">{{ 'ui.week.breaking' | t }}</span>
+              <span class="news-mast">
+                <span class="o-kicker">{{ 'ui.week.breaking' | t }}</span>
+                <span class="news-paper">{{ 'ui.paper.name' | t }}</span>
+              </span>
               <span class="news-title">{{ 'ui.week.newsWaiting' | t: { n: v.pendingNews } }}</span>
             </a>
           }
@@ -258,10 +293,12 @@ import { TipComponent } from '../ui/tip.component';
           <app-tip tip="week.done" />
 
           <div class="cta">
-            <button class="o-btn" type="button" [disabled]="busy() || !canAct()" (click)="act()">
-              {{ ctaKey() | t }}
-              <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
-            </button>
+            @if (!matchFirst()) {
+              <button class="o-btn" type="button" [disabled]="busy() || !canAct()" (click)="act()">
+                {{ ctaKey() | t }}
+                <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+              </button>
+            }
             <div class="cta-row">
               @if (canSkip()) {
                 <button
@@ -377,6 +414,11 @@ import { TipComponent } from '../ui/tip.component';
       text-decoration: none;
       padding: 4px 10px;
       font-size: 12px;
+      gap: 6px;
+      color: var(--o-text);
+    }
+    .cash app-px-icon {
+      color: #f2b830;
     }
     .injury {
       flex-direction: row;
@@ -392,7 +434,21 @@ import { TipComponent } from '../ui/tip.component';
     .condition {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
+      gap: 12px;
+    }
+    .cond {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      min-width: 0;
+    }
+    .cond app-px-icon {
+      flex: 0 0 auto;
+      color: var(--o-accent-fg);
+      margin-bottom: 2px;
+    }
+    .cond app-stat-bar {
+      flex: 1 1 auto;
     }
     .match {
       padding: 0;
@@ -433,8 +489,29 @@ import { TipComponent } from '../ui/tip.component';
       text-align: center;
     }
     .vs {
-      font-size: 28px;
+      font-size: 32px;
       color: var(--o-accent-fg);
+    }
+    .kickoff {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 14px 16px 16px;
+      border-top: 1px solid var(--o-border);
+    }
+    .modes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .mode {
+      min-height: 44px;
+      justify-content: center;
+      font-size: 14px;
+    }
+    .after-plan {
+      margin: 0;
+      text-align: center;
     }
     .match-foot {
       padding: 10px 16px;
@@ -472,24 +549,39 @@ import { TipComponent } from '../ui/tip.component';
       flex-wrap: wrap;
       gap: 6px;
     }
+    /* Striscia di prima pagina: testata sottile, filetto doppio, titolo grande. */
     .news {
       display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 14px;
-      border-radius: var(--o-radius-md);
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px 16px 14px;
       background: var(--o-paper);
       color: var(--o-ink);
       text-decoration: none;
+      box-shadow: 4px 4px 0 0 var(--o-ink);
     }
-    .news .o-kicker {
-      align-self: center;
+    .news-mast {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding-bottom: 6px;
+      border-bottom: 3px double var(--o-ink);
+    }
+    .news-paper {
+      font-family: var(--o-font-display);
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--o-ink-muted);
     }
     .news-title {
       font-family: var(--o-font-display);
-      font-weight: 700;
-      font-size: 18px;
-      line-height: 1.1;
+      font-weight: 800;
+      font-size: 24px;
+      line-height: 1.05;
+      text-transform: uppercase;
     }
     .window {
       flex-direction: row;
@@ -519,6 +611,7 @@ export class WeekPage {
   private readonly i18n = inject(I18nService);
   private readonly toast = inject(ToastService);
   private readonly alerts = inject(AlertController);
+  private readonly settings = inject(SettingsService);
   private readonly ctx = this.game.ctx;
   /** Settimana per cui il piano ricordato è già stato proposto. */
   private prefilledWeek = -1;
@@ -531,6 +624,14 @@ export class WeekPage {
   protected readonly busy = signal(false);
   protected readonly choices = signal<string[]>([]);
   protected readonly focus = signal<Skill | null>(null);
+  protected readonly matchModes = MATCH_MODES;
+  /** Modalità della prossima partita: parte dal predefinito delle impostazioni, si cambia qui. */
+  protected readonly mode = linkedSignal<MatchMode>(() => this.settings.matchMode());
+  protected readonly conditionRows = [
+    { key: 'form', icon: 'form', label: 'ui.stats.form' },
+    { key: 'energy', icon: 'energy', label: 'ui.stats.energy' },
+    { key: 'morale', icon: 'morale', label: 'ui.stats.morale' },
+  ] as const;
 
   protected readonly view = computed(() => {
     const s = this.game.state();
@@ -601,6 +702,11 @@ export class WeekPage {
     }
   });
 
+  /** Partita da giocare o da riprendere: il pulsante sta nella scheda partita, non in fondo. */
+  protected readonly matchFirst = computed(
+    () => this.step() === 'match' || this.step() === 'matchInProgress',
+  );
+
   protected readonly canAct = computed(
     () => this.step() !== 'plan' || !this.needsFocus() || this.focus() !== null,
   );
@@ -637,7 +743,6 @@ export class WeekPage {
       playForwardOutline,
       micOutline,
       settingsOutline,
-      walletOutline,
       medkitOutline,
     });
   }
@@ -710,6 +815,12 @@ export class WeekPage {
         }
       }
     });
+  }
+
+  protected async playMatch(): Promise<void> {
+    // Una partita già iniziata si riprende sempre dal momento in sospeso.
+    const sim = this.step() === 'match' && this.mode() === 'sim';
+    await this.router.navigate(['/partita'], sim ? { queryParams: { mode: 'sim' } } : {});
   }
 
   protected async fastForward(): Promise<void> {

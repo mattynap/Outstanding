@@ -13,6 +13,7 @@ import {
 } from '@outstanding/engine';
 import { GameService } from '../core/game.service';
 import { I18nService, TranslatePipe } from '../core/i18n.service';
+import { MATCH_MODES } from '../core/match-mode';
 import { AVAILABLE_PLAY_MODES, PLAY_MODES, type PlayMode } from '../core/play-mode';
 import { PlatformService } from '../core/services/platform.service';
 import { SettingsService, type Theme } from '../core/settings.service';
@@ -73,6 +74,26 @@ import { TutorialService } from '../core/tutorial.service';
                 <span class="o-choice__body">
                   <span>{{ 'ui.settings.modes.' + m | t }}</span>
                   <span class="o-choice__hint">{{ 'ui.settings.modes.' + m + 'Hint' | t }}</span>
+                </span>
+              </button>
+            }
+          </div>
+          <h3 class="o-section-title sub">{{ 'ui.settings.matchMode' | t }}</h3>
+          <div class="modes" role="radiogroup" [attr.aria-label]="'ui.settings.matchMode' | t">
+            @for (m of matchModes; track m) {
+              <button
+                class="o-choice"
+                type="button"
+                role="radio"
+                [attr.aria-checked]="settings.matchMode() === m"
+                [attr.aria-pressed]="settings.matchMode() === m"
+                (click)="settings.setMatchMode(m)"
+              >
+                <span class="o-choice__body">
+                  <span>{{ 'ui.settings.matchModes.' + m | t }}</span>
+                  <span class="o-choice__hint">{{
+                    'ui.settings.matchModes.' + m + 'Hint' | t
+                  }}</span>
                 </span>
               </button>
             }
@@ -219,6 +240,9 @@ import { TutorialService } from '../core/tutorial.service';
       flex-wrap: wrap;
       gap: 8px;
     }
+    .sub {
+      margin-top: 20px;
+    }
     .modes {
       display: flex;
       flex-direction: column;
@@ -244,6 +268,7 @@ export class SettingsPage {
   protected readonly busy = signal(false);
   private readonly tutorial = inject(TutorialService);
   protected readonly modes = PLAY_MODES;
+  protected readonly matchModes = MATCH_MODES;
 
   protected readonly difficultyKey = computed(() => {
     const s = this.game.state();

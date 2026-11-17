@@ -1,4 +1,8 @@
-import type { MomentOptionConfig, MomentTypeConfig } from '@outstanding/config';
+import type {
+  MomentOptionConfig,
+  MomentOutcomeConfig,
+  MomentTypeConfig,
+} from '@outstanding/config';
 import type { GameContext } from '../context';
 import type { Rng } from '../rng';
 import type { Player, Role } from '../types';
@@ -10,6 +14,35 @@ export interface KeyMomentOption {
   textKey: string;
   /** Probabilità di successo (0–1), già comprensiva di forma, morale e tratti. */
   chance: number;
+  /** Cosa può succedere se l'azione riesce. */
+  onSuccess: Consequence;
+  /** Cosa può succedere se l'azione non riesce. */
+  onFailure: Consequence;
+}
+
+/** Conseguenza possibile di un'opzione, da mostrare prima della scelta. */
+export type Consequence = 'goal' | 'assist' | 'teamGoal' | 'rating' | 'goalAgainst' | 'lost';
+
+export const CONSEQUENCES: readonly Consequence[] = [
+  'goal',
+  'assist',
+  'teamGoal',
+  'rating',
+  'goalAgainst',
+  'lost',
+];
+
+/** Conseguenza dichiarata di un esito: il gol possibile se c'è, altrimenti solo il voto o il pallone perso. */
+export function consequenceOf(outcome: MomentOutcomeConfig, success: boolean): Consequence {
+  if (success) {
+    if (outcome.goalFor !== undefined && outcome.goalFor > 0) {
+      if (outcome.by === 'self') return 'goal';
+      if (outcome.by === 'assist') return 'assist';
+      return 'teamGoal';
+    }
+    return 'rating';
+  }
+  return outcome.goalAgainst !== undefined && outcome.goalAgainst > 0 ? 'goalAgainst' : 'lost';
 }
 
 /** Momento chiave da mostrare al giocatore. */

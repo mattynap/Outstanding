@@ -186,18 +186,31 @@ type Phase = 'pre' | 'moment' | 'done';
                       [disabled]="busy()"
                       (click)="decide($index)"
                     >
-                      <span class="o-choice__body">{{ o.textKey | t }}</span>
-                      <span class="chance">
-                        <span class="o-number pct">{{ pct(o.chance) }}%</span>
-                        <span class="o-bar mini">
+                      <span class="o-choice__body">
+                        <span class="option-name">{{ o.textKey | t }}</span>
+                        <span class="consequence">{{
+                          'ui.match.consequenceLine'
+                            | t
+                              : {
+                                  success: 'ui.match.consequence.' + o.onSuccess | t,
+                                  failure: 'ui.match.consequence.' + o.onFailure | t,
+                                }
+                        }}</span>
+                        <span class="steps" aria-hidden="true">
                           <span
-                            class="o-bar__fill"
-                            [class.o-bar__fill--pos]="tone(o.chance) === 'pos'"
-                            [class.o-bar__fill--neg]="tone(o.chance) === 'neg'"
+                            class="steps__fill"
+                            [class.pos]="tone(o.chance) === 'pos'"
+                            [class.neg]="tone(o.chance) === 'neg'"
                             [style.width.%]="pct(o.chance)"
                           ></span>
                         </span>
                       </span>
+                      <span
+                        class="o-num pct"
+                        [class.pos]="tone(o.chance) === 'pos'"
+                        [class.neg]="tone(o.chance) === 'neg'"
+                        >{{ pct(o.chance) }}<small>%</small></span
+                      >
                     </button>
                   }
                 </div>
@@ -612,24 +625,70 @@ type Phase = 'pre' | 'moment' | 'done';
       margin: 0 auto;
     }
     .option {
-      min-height: 58px;
+      min-height: 72px;
+      align-items: stretch;
+      padding: 12px 14px;
     }
-    .chance {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 4px;
+    .option-name {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .consequence {
+      font-size: var(--o-text-xs);
+      font-weight: 500;
+      color: var(--o-text-muted);
+    }
+    /* Barra a dieci tacche: il riempimento resta continuo, le fessure la fanno sembrare pixel. */
+    .steps {
+      position: relative;
+      display: block;
+      height: 6px;
+      margin-top: 6px;
+      background: var(--o-track);
+    }
+    .steps__fill {
+      display: block;
+      height: 100%;
+      background: var(--o-accent);
+      transition: width var(--o-slow) steps(5, end);
+    }
+    .steps__fill.pos {
+      background: var(--o-positive);
+    }
+    .steps__fill.neg {
+      background: var(--o-negative);
+    }
+    .steps::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        90deg,
+        transparent 0 calc(10% - 2px),
+        var(--o-surface) calc(10% - 2px) 10%
+      );
     }
     .pct {
-      font-size: 20px;
+      align-self: center;
+      min-width: 64px;
+      text-align: right;
+      font-size: 34px;
+      line-height: 1;
     }
-    .mini {
-      width: 64px;
-      height: 4px;
-      display: block;
+    .pct small {
+      font-size: 22px;
     }
-    .mini .o-bar__fill {
-      display: block;
+    .pct.pos {
+      color: var(--o-positive);
+    }
+    .pct.neg {
+      color: var(--o-negative);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .steps__fill {
+        transition: none;
+      }
     }
     .final {
       display: flex;

@@ -60,6 +60,9 @@ export function formatDelta(n: number, digits = 0): string {
   return v > 0 ? `+${abs}` : `−${abs}`;
 }
 
+/** Voce del voto con segno e un decimale: 1 -> "+1", -0.5 -> "−0,5", 0.04 -> "0". */
+export const signedRating = (delta: number): string => formatDelta(delta, 1);
+
 /** Colore di una probabilità (0–1) per le barre dei momenti chiave. */
 export function chanceTone(chance: number): 'pos' | 'neg' | 'mid' {
   if (chance >= 0.6) return 'pos';

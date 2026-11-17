@@ -4,6 +4,8 @@ import {
   advanceWeek,
   autoDecider,
   beginMatch,
+  consequenceOf,
+  type KeyMoment,
   decideMoment,
   defaultContext,
   deserialize,
@@ -281,6 +283,36 @@ describe('convocazione e pagella', () => {
   });
 });
 
+describe('conseguenze delle opzioni', () => {
+  /** Primo momento chiave trovato partendo dal seme indicato. */
+  function firstMoment(seed: number) {
+    for (let k = seed; k < seed + 50; k++) {
+      const step = beginMatch(toFirstMatch(newCareer(baseOptions, k))).step;
+      if (step.kind === 'moment') return step.moment;
+    }
+    throw new Error('nessun momento chiave');
+  }
+
+  it('ogni opzione dichiara cosa succede se va e se no', () => {
+    for (const seed of [1, 42, 77]) {
+      for (const o of firstMoment(seed).options) {
+        expect(['goal', 'assist', 'teamGoal', 'rating']).toContain(o.onSuccess);
+        expect(['goalAgainst', 'lost']).toContain(o.onFailure);
+      }
+    }
+  });
+
+  it('consequenceOf', () => {
+    expect(consequenceOf({ rating: 1, goalFor: 0.6, by: 'self' }, true)).toBe('goal');
+    expect(consequenceOf({ rating: 1, goalFor: 0.4, by: 'assist' }, true)).toBe('assist');
+    expect(consequenceOf({ rating: 0.5, goalFor: 0.2, by: 'team' }, true)).toBe('teamGoal');
+    expect(consequenceOf({ rating: 0.5 }, true)).toBe('rating');
+    expect(consequenceOf({ rating: -0.5, goalAgainst: 0.3 }, false)).toBe('goalAgainst');
+    expect(consequenceOf({ rating: -0.5, goalAgainst: 0 }, false)).toBe('lost');
+    expect(consequenceOf({ rating: -0.5 }, false)).toBe('lost');
+  });
+});
+
 describe('voci del voto', () => {
   const cfg = ctx.config.match.rating;
   const roundTo = (v: number, step: number) => Math.round(v / step) * step;
@@ -316,16 +348,16 @@ describe('voci del voto', () => {
 
 describe('partita simulata', () => {
   it("sceglie sempre l'opzione più probabile", () => {
-    const moment = {
+    const moment: KeyMoment = {
       momentId: 'x',
       minute: 10,
       textKey: 'k',
       params: {},
       score: { home: 0, away: 0 },
       options: [
-        { id: 'a', textKey: 'a', chance: 0.3 },
-        { id: 'b', textKey: 'b', chance: 0.8 },
-        { id: 'c', textKey: 'c', chance: 0.5 },
+        { id: 'a', textKey: 'a', chance: 0.3, onSuccess: 'rating', onFailure: 'lost' },
+        { id: 'b', textKey: 'b', chance: 0.8, onSuccess: 'rating', onFailure: 'lost' },
+        { id: 'c', textKey: 'c', chance: 0.5, onSuccess: 'rating', onFailure: 'lost' },
       ],
     };
     expect(autoDecider(moment, toFirstMatch(newCareer(baseOptions, 3)))).toBe(1);

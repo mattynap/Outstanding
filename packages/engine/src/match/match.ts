@@ -20,6 +20,7 @@ import { interviewContext, pressBonus, recordMatchForMedia } from '../media/medi
 import { clubRatings, getAnyClub, getClub } from '../world/queries';
 import {
   getMomentType,
+  consequenceOf,
   optionChance,
   pickMomentType,
   planMomentMinutes,
@@ -28,8 +29,17 @@ import {
 import { planMinutes, selectPlayer } from './selection';
 
 /** Voci che compongono il voto in pagella, nell'ordine in cui si sommano. */
-export type RatingPartKey =
-  'base' | 'moments' | 'goals' | 'assists' | 'result' | 'cleanSheet' | 'conceded' | 'day';
+export const RATING_PART_KEYS = [
+  'base',
+  'moments',
+  'goals',
+  'assists',
+  'result',
+  'cleanSheet',
+  'conceded',
+  'day',
+] as const;
+export type RatingPartKey = (typeof RATING_PART_KEYS)[number];
 
 export interface RatingPart {
   key: RatingPartKey;
@@ -205,6 +215,8 @@ function describeMoment(state: GameState, m: MatchState, ctx: GameContext): KeyM
         ctx,
         difficultyMods(state, ctx).matchChance + pressBonus(state, m.fixtureId),
       ),
+      onSuccess: consequenceOf(o.success, true),
+      onFailure: consequenceOf(o.failure, false),
     })),
   };
 }

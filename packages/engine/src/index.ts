@@ -120,11 +120,19 @@ export {
   type KeyMomentDecider,
   type MatchDecision,
   type MatchReport,
+  RATING_PART_KEYS,
   type RatingPart,
   type RatingPartKey,
   type MatchStep,
 } from './match/match';
-export { optionChance, type KeyMoment, type KeyMomentOption } from './match/moments';
+export {
+  CONSEQUENCES,
+  consequenceOf,
+  optionChance,
+  type Consequence,
+  type KeyMoment,
+  type KeyMomentOption,
+} from './match/moments';
 export {
   checkConditions,
   drawWeekEvents,

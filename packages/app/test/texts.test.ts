@@ -5,6 +5,8 @@ import { defaultConfig } from '@outstanding/config';
 import { TAB_IDS } from '../src/app/core/unlocks';
 import { defaultContent, STAT_PATHS, EVENT_CATEGORIES } from '@outstanding/content';
 import {
+  CONSEQUENCES,
+  RATING_PART_KEYS,
   APPEARANCE_PARTS,
   DIFFICULTIES,
   KIT_PATTERNS,
@@ -16,6 +18,7 @@ import { TIP_IDS } from '../src/app/core/tutorial';
 import {
   chanceTone,
   formatDelta,
+  signedRating,
   formatMoney,
   formatRating,
   translate,
@@ -48,6 +51,9 @@ describe("testi dell'interfaccia", () => {
     const need = [
       ...ROLES.map((r) => `ui.create.roleHint.${r}`),
       ...TAB_IDS.map((t) => `ui.unlock.tab.${t}`),
+      ...CONSEQUENCES.map((c) => `ui.match.consequence.${c}`),
+      ...RATING_PART_KEYS.map((k) => `ui.match.ratingPart.${k}`),
+      'ui.match.consequenceLine',
       ...defaultConfig.world.startLevels.map((l) => `ui.create.levelHint.${l}`),
       ...EVENT_CATEGORIES.map((c) => `ui.event.category.${c}`),
       ...STAT_PATHS.map((p) => `ui.statPath.${p}`),
@@ -99,6 +105,10 @@ describe('formattazione', () => {
     expect(formatRating(7.5)).toBe('7,5');
     expect(formatRating(6)).toBe('6');
     expect(formatRating(null)).toBe('s.v.');
+    expect(signedRating(1)).toBe('+1');
+    expect(signedRating(-0.5)).toBe('−0,5');
+    expect(signedRating(0.04)).toBe('0');
+    expect(signedRating(0)).toBe('0');
     expect(formatDelta(3)).toBe('+3');
     expect(formatDelta(-2)).toBe('−2');
   });

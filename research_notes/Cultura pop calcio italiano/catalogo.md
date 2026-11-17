@@ -33,3 +33,7 @@ La fonte prova il fatto sintetizzato, non automaticamente che sia celebre per og
 La metafora di violenza sessuale riportata accanto allo sfogo di Buffon è esclusa, non ammorbidita. Nessun riuso di filmati, audio originali o volti. Nessuna collisione dei nomi o registrazione di slogan è stata verificata: controllo da proporre a M12. Tutti i nomi sono ipotesi ancora da approvare.
 
 I dieci candidati prioritari sono nel report. Presidenti e mercato includono anche aneddoti meno immediatamente comici: non sono presentati come meme attivi. La TV include un meme visivo di fonte secondaria, dichiarato a priorità bassa. La ricircolazione è analizzata separatamente in [analisi.md](analisi.md).
+
+## La gestione passa dalla fonte alla collocazione
+
+Il report ora assegna C01–C47 a otto posizioni P1–P8, una sola sede principale per voce. Album e rivale restano riusi secondari. La fattibilità dell’animazione è valutata sui componenti locali: vignette SVG presenti, scene pixel non ancora implementate; preferenza dell’utente per l’animazione condizionata alla fattibilità. Nessun codice o documento di design modificato.

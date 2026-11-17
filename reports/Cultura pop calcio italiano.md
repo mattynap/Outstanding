@@ -140,6 +140,147 @@ Il catalogo contiene **47 voci**. Non tutti i momenti sono comici: C25–26 e C2
 - C41: il contesto è Juventus–Roma **2014**, non 2013. Non confondere la battuta sulle misure con la data di altri episodi.
 - I nomi proposti sono intenzionalmente solo ipotesi: verificare collisioni reali e marchi anche se la grafia cambia. Non affidarsi a un solo accento per distinguere un nome.
 
+## Le 47 citazioni si gestiscono per posizione nel gioco
+
+Aggiornamento successivo alla ricerca, 2026-11-17: richiesta dell’utente di dividerle per collocazione e preferenza per l’animazione, se fattibile. Uso qui «citazione» anche per gesti, episodi e rituali. **La collocazione è una proposta operativa**, non un nuovo requisito implementato: ogni voce ha una sola sede principale. Album e rivale sono riusi secondari, descritti sotto, per evitare di contare o scrivere due volte lo stesso contenuto.
+
+| Gruppo | Dove compare                      | Voci | Funzione                                                 |
+| ------ | --------------------------------- | ---- | -------------------------------------------------------- |
+| P1     | Spogliatoio e allenamento         | 6    | Conoscere il mister attraverso gesti e rituali           |
+| P2     | Interviste e conferenze M17       | 8    | Scegliere cosa dichiarare e come reagire                 |
+| P3     | Partita, esultanza e pagella      | 8    | Commentare un’azione realmente avvenuta nella carriera   |
+| P4     | Notizie e salotto TV              | 6    | Raccontare come il mondo esterno interpreta il giocatore |
+| P5     | Dopopartita e polemiche arbitrali | 6    | Gestire una controversia senza riscrivere il risultato   |
+| P6     | Vita del club e dirigenza         | 5    | Rendere riconoscibile l’ambiente della squadra           |
+| P7     | Mercato e presentazione           | 5    | Dare una scena alle trattative e al cambio di club       |
+| P8     | Finali, trofei e traguardi        | 3    | Riservare i richiami emotivi alle occasioni importanti   |
+
+### P1 — Spogliatoio e allenamento: il mister diventa un personaggio
+
+| ID  | Riferimento                 | Occasione proposta                                        | Animazione possibile                                        |
+| --- | --------------------------- | --------------------------------------------------------- | ----------------------------------------------------------- |
+| C01 | Trapattoni / Strunz         | Richiamo del mister al gruppo, con risposta del giocatore | Dito sulla lavagna e microfono che vibra; parlato riscritto |
+| C02 | Malesani / Grecia           | Tensione dello spogliatoio dopo una prestazione deludente | Gesto crescente, poi pausa; niente raffica di insulti       |
+| C06 | Spalletti / forza e destino | Discorso prima di una sfida importante                    | Il mister indica lo slogan sulla lavagna                    |
+| C07 | Ranieri / campanella        | Distrazione durante l’allenamento                         | Campanella che oscilla e compagni che si voltano            |
+| C08 | Ranieri / pizza             | Promessa di una cena dopo un risultato di squadra         | Impasto, scatola che si apre o tavolata                     |
+| C10 | Malesani / mollo            | Il mister reagisce alle critiche ricevute                 | Sedia indietro, dito sul tavolo, fermo immagine             |
+
+C01–C02 nascono in sala stampa, ma qui si propone di trasformarne la struttura in una scena del mister: **non** si afferma che l’episodio storico sia avvenuto nello spogliatoio. Variante alternativa: conservarli in P2 se si preferisce una rievocazione più fedele; non produrre entrambe le versioni inizialmente.
+
+### P2 — Interviste e conferenze: il giocatore sceglie la propria voce
+
+| ID  | Riferimento                   | Occasione proposta                                    | Animazione possibile                                                    |
+| --- | ----------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------- |
+| C03 | Mourinho / zero tituli        | Domanda sui risultati del rivale o sulle ambizioni    | Dita che contano i trofei e taccuino del cronista                       |
+| C05 | Conte / ristorante            | Domanda sul rapporto fra ambizioni e risorse del club | Conto che si srotola, portafoglio che si apre                           |
+| C09 | Gattuso / alternanza          | Bilancio di una prestazione discontinua               | Cambio fra due espressioni e due cartelli originali                     |
+| C11 | Boskov / rigore e fischio     | Domanda insistente sulla decisione arbitrale          | Microfono avanti, fischietto disegnato nel fumetto                      |
+| C12 | Buffon / cuore e immondizia   | Risposta a caldo dopo una decisione contestata        | Cronista arretra col microfono; testo riscritto senza attacco personale |
+| C13 | Chiellini / storia dei rivali | Commento dopo una rimonta o uno scontro diretto       | Cronista consulta un quaderno di risultati                              |
+| C14 | Bonucci / pastasciutta        | Sfottò dopo una vittoria importante                   | Piatto fumante nella rievocazione; niente stereotipi nazionali          |
+| C15 | Balotelli / postino           | Domanda sul perché non hai esultato                   | Calciatore immobile, breve immagine di una lettera consegnata           |
+
+Sono agganci narrativi per i contesti M17: non si presume che tutte queste condizioni siano già esposte dal sistema. Per ogni voce si sceglieranno domanda, risposte e conseguenze quando verrà gestito il gruppo.
+
+### P3 — Partita, esultanza e pagella: la gag segue quello che hai fatto
+
+| ID  | Riferimento                   | Occasione proposta                                              | Animazione possibile                                                |
+| --- | ----------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------- |
+| C04 | Allegri / corto muso          | Commento a una vittoria di misura                               | Tabellino che si assesta sul minimo vantaggio                       |
+| C16 | Totti / cucchiaio             | Rigore: rievocazione dell’azione se scelta e risolta dal motore | Palla a pallonetto e portiere; richiede scena più articolata        |
+| C17 | Totti / maglia con messaggio  | Esultanza con dedica dopo un gol                                | Sollevamento della maglia e messaggio inventato                     |
+| C18 | Totti / selfie                | Esultanza dopo un momento importante del derby                  | Braccio, telefono e lampo stilizzato                                |
+| C19 | Balotelli / perché sempre io  | Esultanza di un giocatore al centro delle attenzioni            | Maglia con domanda originale, sguardi dei compagni                  |
+| C27 | Piccinini / mucchio selvaggio | Cronaca di un’azione confusa in area                            | Piccola mischia grafica, senza simulazione aggiuntiva               |
+| C28 | Marianella / nome prolungato  | Commento al gol decisivo                                        | Nome fittizio nel titolo; efficacia senza voce originale da provare |
+| C31 | Pizzul / tutto molto bello    | Commento a una bella azione o pagella                           | Sequenza di passaggi rappresentata con pochi segni                  |
+
+C16 non concede una nuova mossa automaticamente: prima va deciso l’aggancio a M18–M19. Le esultanze non cambiano da sole gol, voto o difficoltà. Il tabellino di C04 è un commento, non un nuovo incentivo alla strategia prudente.
+
+### P4 — Notizie e salotto TV: il calcio continua fuori dal campo
+
+| ID  | Riferimento                  | Occasione proposta                                       | Animazione possibile                                              |
+| --- | ---------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------- |
+| C30 | Clamoroso al Cibali          | Titolo dopo un risultato inatteso; senza paternità certa | Tabellone ribaltato e fogli del cronista                          |
+| C32 | Mosca / pendolino            | Pronostico televisivo prima di una sfida                 | Oscillazione, pausa, espressione dubbiosa                         |
+| C33 | Biscardi / Moviolone         | Commenti discordanti sullo stesso replay                 | Lavagna, frecce che si contraddicono, replay originale            |
+| C34 | Gialappa’s / gollonzo        | Rassegna di un gol rocambolesco già registrato nel gioco | Rimbalzo inatteso e reazione delle sagome                         |
+| C35 | Tonino Carino / collegamento | Notizia locale sulla tua squadra                         | Microfono e cartello della città; voce non imitata                |
+| C36 | Pardo / caldo in studio      | Collegamento estivo leggero                              | Ventaglio, fogli e goccia sulla fronte; niente dileggio del corpo |
+
+Il salotto TV è una cornice proposta per notizie/feed, non una schermata già costruita. Pronostici senza puntate o premi. Nessun obbligo di vedere una trasmissione dopo ogni partita.
+
+### P5 — Dopopartita e arbitri: la polemica resta una reazione
+
+| ID  | Riferimento                      | Occasione proposta                                        | Animazione possibile                                                 |
+| --- | -------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------- |
+| C37 | Turone / fuorigioco infinito     | Discussione su una rete annullata nella carriera fittizia | Linee contrastanti sul fermo immagine                                |
+| C38 | Iuliano–Ronaldo / cambio di area | Due decisioni ravvicinate fanno discutere                 | Cronisti che indicano lati opposti della lavagna                     |
+| C39 | Mourinho / manette               | Protesta del mister, da riscrivere e sottoporre al legale | Gesto sostitutivo da definire; nessuna accusa mimata automaticamente |
+| C40 | Muntari / gol fantasma           | Dibattito su un pallone sulla linea                       | Zoom sul disegno della linea, non filmato reale                      |
+| C41 | Garcia / area allungata          | Ironia sulle misure usate nel commento                    | Metro che si allunga in modo assurdo                                 |
+| C42 | Candreva / fuori inquadratura    | Commento sull’inquadratura incompleta del replay          | Quadro che si allarga e rivela una sagoma                            |
+
+Qui non si introduce ora un simulatore di errori arbitrali o un VAR interattivo: se il motore non produce la situazione, la si può proporre come notizia su altre squadre del mondo fittizio. **L’esistenza del trigger va verificata**, non inventata nel file eventi. Le scelte riguardano il tono della reazione, non il ribaltamento del risultato. C12 rimane in P2, senza una seconda copia.
+
+### P6 — Vita del club e dirigenza: ogni piazza ha i suoi rituali
+
+| ID  | Riferimento                       | Occasione proposta                                         | Animazione possibile                              |
+| --- | --------------------------------- | ---------------------------------------------------------- | ------------------------------------------------- |
+| C20 | De Laurentiis / motorino          | Notizia su una protesta del presidente                     | Casco, portiera ignorata, scooter che parte piano |
+| C21 | Cellino / viola contro il 17      | Messaggio del club prima di una partita                    | Accessori viola distribuiti ai personaggi         |
+| C22 | Anconetani / sale                 | Rito prepartita osservato dal giocatore                    | Sale che cade e sguardo incredulo                 |
+| C23 | Rozzi / calzini rossi             | Incontro con il presidente o dettaglio ricorrente del club | Pantalone che si alza e rivela i calzini          |
+| C24 | Zamparini / panchine che cambiano | Notizia di cambio allenatore                               | Targhetta sostituita sulla porta                  |
+
+Collocazioni in eventi/notizie del club, non autorizzazione a creare ora un rapporto nuovo con il presidente. Superstizioni senza effetti sulle probabilità; esoneri coerenti con quanto il mondo di gioco supporta o presentati come notizie fittizie da progettare.
+
+### P7 — Mercato e presentazione: dare un volto all’attesa
+
+| ID  | Riferimento                  | Occasione proposta                                  | Animazione possibile                                          |
+| --- | ---------------------------- | --------------------------------------------------- | ------------------------------------------------------------- |
+| C43 | Ronaldo / rinnovo e clausola | Trattativa che cambia direzione                     | Contratto chiuso e valigia aperta                             |
+| C44 | Cassano / pellicciotto       | Presentazione al nuovo club                         | Entrata, cappotto ingombrante e pausa del fotografo           |
+| C45 | Suazo / due annunci          | Due club credono di averti convinto                 | Due cartelloni e procuratore che spegne un telefono           |
+| C46 | Kakà / non si vende          | Dichiarazione pubblica seguita da una nuova offerta | Cartello corretto dal dirigente                               |
+| C47 | Berbatov / aeroporto         | Trattativa in attesa di firma                       | Valigia sul nastro, sala d’arrivo vuota, sguardo all’orologio |
+
+Usare prima offerte e presentazione disponibili in M7/M17. Nessuna destinazione obbligatoria per far tornare la battuta. Lo stato del contratto deve essere chiaro prima e dopo la scena.
+
+### P8 — Finali, trofei e traguardi: poche scene, legate a un risultato
+
+| ID  | Riferimento                   | Occasione proposta                                 | Animazione possibile                          |
+| --- | ----------------------------- | -------------------------------------------------- | --------------------------------------------- |
+| C25 | Martellini / titolo mondiale  | Vittoria di un grande trofeo disponibile nel gioco | Trofeo alzato e titolo ripetuto graficamente  |
+| C26 | Caressa / viaggio alla finale | Qualificazione a una finale                        | Biglietto o destinazione fittizia che compare |
+| C29 | Repice / campioni d’Europa    | Vittoria della coppa europea disponibile           | Coppa e abbraccio fra sagome                  |
+
+Non si introduce una nazionale o una competizione nuova per ricostruire i Mondiali: i riferimenti emotivi vengono adattati alle coppe già previste. Le date della ricerca non sono date obbligatorie del calendario della carriera.
+
+### Album e rivale riusano il momento, senza rimetterlo in scena due volte
+
+**Album M21:** la figurina è il ricordo della scena vissuta nella tua carriera. Tiene il collegamento all’ID della scena e una didascalia originale; non è una seconda citazione da scrivere separatamente. Alternativa ancora aperta: pagina autonoma di momenti storici, come nella proposta iniziale. Nessun nuovo premio o sistema di sblocco approvato qui.
+
+**Rivale M21:** può essere interlocutore o oggetto della dichiarazione quando ha senso, soprattutto P2/P3/P7. Non deve recitare tutti i tormentoni né assumere l’identità della persona storica. Il richiamo a una sua dichiarazione passata richiede verificare la memoria prevista da M21.
+
+### L’animazione è plausibile per vignette semplici; il costo dipende dalla scena
+
+**Riscontro locale:** `VignetteComponent` produce già SVG 160×96; l’app usa animazioni CSS e disattiva il movimento con `prefers-reduced-motion`. Nel manifest dell’app non è presente Phaser e `AVAILABLE_PLAY_MODES` abilita soltanto `text`. Quindi esistono elementi riutilizzabili per vignette animate, **non** un sistema di scene pixel già pronto o una prova di prestazioni su telefono.
+
+| Strada                                           | Cosa comporta                                                                                                                                  | Valutazione proposta                                                                                                                                                                        |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A — Brevi vignette SVG animate                   | Animare pochi elementi originali dentro la scheda: campanella, pendolino, valigia, gesti. Nessuna dipendenza nuova necessaria per la proposta. | Prima strada da provare: un’animazione leggibile, saltabile e con alternativa ferma. Per conservare lo stile pixel servono disegni sulla griglia, non basta animare gli SVG flat esistenti. |
+| B — Scene con personaggi e azioni più articolate | Gesti con più pose, spostamenti, palla e portiere; valutare il renderer nella progettazione della fase 2.                                      | Adatta al cucchiaio e a celebrazioni complesse, ma più lavoro di asset, regia e verifica. Non è autorizzata l’intera fase 2 da una preferenza condizionata.                                 |
+
+**Preferenza raccolta:** l’utente desidera l’animazione se fattibile. **Raccomandazione:** provare prima la strada A con C07/campanella, C32/pendolino e una reazione al microfono di P2. Sono tre candidati, non un pacchetto già approvato. Il primo prototipo dovrebbe verificare leggibilità a 360–430 px, movimento ridotto, salto della scena, comportamento offline e fluidità su telefono. Durata e frequenza vanno provate senza imporre attese al giocatore.
+
+### La gestione successiva procede per gruppi, senza scrivere ora 47 scene
+
+Tutte le voci sono **da lavorare**: collocazione proposta, testo e asset non approvati. Per ogni gruppo, la scheda da completare sarà: occasione disponibile nel gioco, personaggio, battuta riscritta, scelta e conseguenze quando previste, piccolo storyboard, tipo di animazione e vincoli della riga originale. Conservare l’ID C01–C47 come collegamento alla ricerca; non è imposto come ID dei contenuti.
+
+Ordine di discussione proposto: **P1 e P2**, poi P3 e P7, quindi P4/P6/P8; P5 dopo aver definito il trattamento delle proteste. È un ordine per gestire la scrittura, non una modifica della roadmap M18–M23/M12. Pixel art, mini-campo, durata carriera e ordine delle milestone restano da decidere nel design.
+
 ## I precedenti suggeriscono un linguaggio originale, senza trasferire i loro diritti
 
 | Riferimento pubblico                           | Fatto e fonte                                                                                                                                                                                                                                                                     | Applicazione proposta                                                                                                            |
@@ -254,7 +395,7 @@ L’oggetto starebbe in un array del file `dressing_room` esistente. Le due vari
 ## Tre decisioni servono prima di trasformare la ricerca in contenuti
 
 1. **Quanto esplicito dev’essere il riferimento?** A: rievocazioni chiaramente parodiche con nomi storpiati e battute riscritte, da sottoporre al legale; B: stesse strutture comiche in situazioni originali, con richiamo meno diretto. Entrambe mantengono la cultura pop obbligatoria; cambia quanto ci si appoggia all’identificazione della persona.
-2. **Quale perimetro visivo approvare?** A: vignette statiche pixel in SVG dopo aggiornamento della direzione visiva; B: scene animate insieme alla fase 2 dopo prototipo approvato. Il **mini-campo** va deciso separatamente nello stesso confronto: non è autorizzato da questa ricerca.
+2. **Quale perimetro visivo approvare?** Preferenza successiva dell’utente: animazione, se fattibile; verifica preliminare e strade nel raggruppamento P1–P8. A: vignette statiche pixel in SVG dopo aggiornamento della direzione visiva; B: scene animate insieme alla fase 2 dopo prototipo approvato. Il **mini-campo** va deciso separatamente nello stesso confronto: non è autorizzato da questa ricerca.
 3. **Dove entra il primo lotto nella roadmap e quanto tempo occupa?** A: prova di contenuti prima di M12, con review legale sul lotto e senza aggiungere eventi settimanali; B: primo lotto con M21 dopo M12 e successiva release, riportando quella release alla verifica legale. Questo non decide l’ordine di tutte M18–M23 né il numero di partite interattive.
 
 Restano esplicitamente aperti: conflitto pixel/§10, mini-campo fase 1 o 2, durata carriera con 52 settimane per circa 20 stagioni e ordine complessivo M18–M23/M12. Non si può stabilire ora una frequenza obbligatoria delle scene: dipende dal ritmo ancora da approvare. Le questioni idle, sblocco e video restano ai documenti precedenti.

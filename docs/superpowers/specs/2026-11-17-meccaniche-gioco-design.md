@@ -1,7 +1,7 @@
 # Outstanding da simulatore a gioco: design delle nuove meccaniche
 
 Data: 2026-11-17 · Stato: bozza da approvare · Fonti: conversazione con l'utente, report
-`reports/Monetizzazione e retention gioco calcio.md`, codice attuale (M0–M17 fatte).
+`reports/Monetizzazione e retention gioco calcio.md`, `reports/Gacha sportivi caso Kuroko.md`, codice attuale (M0–M17 fatte).
 
 ## 1. Perché
 
@@ -37,6 +37,8 @@ Difetti misurati che il design deve correggere:
 - Abitudine punitiva: streak che si azzera e colpevolizza, rivale che "ti ruba" progressi se non giochi.
 - Il minigioco diventa obbligatorio per riuscire: chi non ha riflessi deve poter giocare bene.
 - Una scelta sempre giusta nei momenti chiave.
+- Svalutare ciò che il giocatore ha già ottenuto: nessuna versione "più forte" di una mossa o di una
+  figurina negli aggiornamenti, nessun contenuto che diventa introvabile (lezione Kuroko).
 
 ## 3. Vincoli
 
@@ -97,6 +99,11 @@ l'abilità è alta). `q` sposta la probabilità di successo di al massimo ±10 p
 - Si può disattivare dalle impostazioni: allora `q = 0,5` (nessun effetto). Il gioco resta vincibile.
 - Nel motore: `decide` restituisce `{ optionIndex, quality }`; il simulatore estrae `quality` da una
   distribuzione per strategia (es. media 0,5).
+- La zona si allarga con l'abilità **e** cambia forma per tipo di mossa (tiro, parata, contrasto,
+  passaggio), così ogni ruolo ha un gesto riconoscibile.
+- Quando riesce una mossa equipaggiata (§7) parte una breve animazione pixel di 1-2 secondi.
+- Simulatore: voto medio e numero di momenti per partita devono restare equilibrati fra GK, DEF,
+  MID e ATT (Street Rivals favorisce un ruolo, i giocatori se ne lamentano).
 
 ### 6.3 Mini-campo e modalità
 - **Completa**: cronaca dei 6 blocchi con il mini-campo (giocatori piccoli in pixel visti dall'alto,
@@ -118,12 +125,21 @@ l'abilità è alta). `q` sposta la probabilità di successo di al massimo ±10 p
   ATT "Tiro a giro" in `att_box_chance`, GK "Parata in tuffo") oppure un modificatore piccolo.
 - Si equipaggiano **massimo 3 mosse** (scelta di stile, non accumulo).
 - Mai in vendita, mai ottenibili con video.
+- Un solo strato di crescita controllato dal giocatore (i punti), più l'allenamento: niente valute
+  separate per livello, rango, talenti, potenziale come nei gacha.
+- Il costo dei punti cresce con il valore dell'abilità, così conviene specializzarsi.
+- Gli aggiornamenti aggiungono solo mosse alternative, mai versioni potenziate di quelle esistenti.
 
 ## 8. Meccanica 3: gradi e obiettivi
 
 - **Gradi** (6): Promessa, Titolare, Protagonista, Campione, Fuoriclasse, Leggenda. Si sale con il
   punteggio di carriera che il simulatore calcola già (M8), reso visibile. Ogni grado sblocca qualcosa
   (sezione dell'album, slot mossa, attività del business).
+- I gradi **non scendono mai**.
+- Le funzioni si sbloccano un po' alla volta con i gradi e le prime settimane (business, sezioni
+  dell'album, slot mosse, social), per non mostrare tutto alla prima sessione.
+- **Prima settimana in squadra**: 7 obiettivi guidati nel tempo di gioco per chi inizia, collegati
+  alla settimana guidata di M13.
 - **Obiettivi della settimana** (tempo di gioco): 3 per settimana, generati dal contesto ("Voto almeno
   7", "Un assist", "Vinci il derby"). Premio: XP e soldi. Non si accumulano penalità se falliti.
 - **Obiettivi della stagione**: 3 scelti a inizio stagione con il procuratore (gol, presenze,
@@ -143,6 +159,10 @@ l'abilità è alta). `q` sposta la probabilità di successo di al massimo ±10 p
 - Obiettivo di bilanciamento: una carriera completa riempie il 60–80% dell'album; completarlo
   richiede più carriere (valore dello sblocco completo).
 - Ogni figurina è disegnata dal codice (sprite pixel + cornice), condivisibile come immagine.
+- Un set completo dà un premio estetico o narrativo (titolo, cornice, prima pagina), **mai
+  statistiche**.
+- Nessuna figurina diventa impossibile da ottenere: quelle legate a una stagione o a un evento
+  restano sceglibili con i crediti album.
 
 ### 9.2 Rivale
 - Generato all'inizio della carriera: stessa età, stesso ruolo, città vicina, potenziale simile.
@@ -152,6 +172,10 @@ l'abilità è alta). `q` sposta la probabilità di successo di al massimo ±10 p
 - **Scontro diretto** quando i due club si incontrano: momento chiave speciale, notizia dedicata.
 - Eventi di rivalità (dichiarazioni, stesso club che vi vuole entrambi, possibile diventare compagni).
 - Il rivale non fa perdere nulla: è uno specchio, non una minaccia.
+- Il rivale fa da **sostituto dell'IP**: Outstanding non ha un manga alle spalle, l'attaccamento ai
+  personaggi va costruito nel gioco. Riceve quindi più contenuti scritti (eventi, prime pagine,
+  figurine dedicate) e un arco narrativo con un **ultimo scontro** come evento di chiusura vicino al
+  ritiro. Lo stesso vale per i compagni ricorrenti nell'album e nelle notizie.
 
 ## 10. Meccanica 5: business idle e "più ricco del mondo"
 
@@ -170,6 +194,7 @@ marchio..., massimo 3, salute e rendita settimanale) e si aggiunge la crescita:
 - **Due classifiche** inventate, aggiornate a fine stagione: il pallone d'oro storpiato (forza) e la
   lista dei più ricchi del calcio (patrimonio). Il traguardo "più forte e più ricco del mondo" è
   arrivare primo in entrambe.
+- Le classifiche sono contro NPC e non si possono influenzare con acquisti o video.
 
 ## 11. Strato giornaliero (tempo reale, offline)
 
@@ -178,6 +203,10 @@ marchio..., massimo 3, salute e rendita settimanale) e si aggiunge la crescita:
 - **Streak gentile**: conta i giorni con almeno una sessione; premi a soglie (3, 7, 30 giorni);
   saltare un giorno usa una **protezione** guadagnata giocando (massimo 2); senza protezioni lo streak
   riparte ma i premi già presi restano. Nessun testo che colpevolizza.
+- Accanto alle soglie consecutive, premi su **giorni cumulativi** (es. 5 giorni giocati nel mese),
+  che non si perdono mai.
+- Nessun dado, ruota o casella a premio: la sfida del giorno è deterministica, per non evocare il
+  gioco d'azzardo.
 - **Notifiche locali**: chieste dopo la prima partita, massimo 1 al giorno, testi neutri ("La cassa
   del ristorante è piena", "È arrivata la sfida del giorno"), disattivabili.
 - **Orologio**: si salva l'ora massima vista; se l'orologio torna indietro non si danno premi a tempo
@@ -197,6 +226,11 @@ marchio..., massimo 3, salute e rendita settimanale) e si aggiunge la crescita:
   o mosse, mai per protezioni dello streak.
 - **Interstitial e banner**: spenti al lancio.
 - **Più avanti**: 3–4 pacchetti cosmetici a prezzo fisso (avatar, tatuaggi, lusso, cornici album).
+  Restano **sempre in vendita**, senza scadenza né rotazione.
+- **Premio di lancio** gratuito e uguale per tutti nella prima versione (una maglia o una cornice).
+- Pagina dello store precisa su cosa è gratis ("tutta la prima carriera fino a fine seconda
+  stagione"), senza numeri gonfiati. Argomento di vendita: "lo compri una volta, non chiude e non
+  svaluta quello che hai fatto".
 - Tecnica: si usano le interfacce di M11 (finte). Il premio entra nel motore come comando esplicito
   `grantReward(kind)`; limiti di frequenza in config. Se il video non è caricato (offline) il pulsante
   non compare. L'integrazione reale (AdMob, acquisti, consenso UMP, schermata dell'età) è una
@@ -232,3 +266,6 @@ corrente.
 - Punti abilità in aggiunta all'allenamento di M6, non al posto.
 - Massimo 3 mosse equipaggiate.
 - Gratis fino a fine seconda stagione della prima carriera, sblocco a 4,99 €.
+- Correzioni dal caso Kuroko (report `reports/Gacha sportivi caso Kuroko.md`): gradi che non
+  scendono, set dell'album solo estetici, rivale con arco narrativo e ultimo scontro, premi su giorni
+  cumulativi, premio di lancio gratuito, cosmetici senza scadenza.

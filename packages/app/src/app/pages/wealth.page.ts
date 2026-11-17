@@ -591,7 +591,7 @@ const TABS: Tab[] = ['summary', 'markets', 'assets', 'business', 'bank'];
       gap: 4px;
     }
     .warn {
-      border-color: var(--o-negative);
+      --px-b: var(--o-negative);
       color: var(--o-negative);
     }
   `,

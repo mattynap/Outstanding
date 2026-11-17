@@ -709,7 +709,7 @@ type Phase = 'pre' | 'moment' | 'done';
       color: var(--o-ink-soft);
     }
     .injury {
-      border-color: var(--o-negative);
+      --px-b: var(--o-negative);
       font-size: 13px;
     }
     .min {

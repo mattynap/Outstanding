@@ -268,7 +268,7 @@ export function handleOf(first: string, last: string): string {
       border-radius: 16px 16px 16px 4px;
     }
     .bubble.mine {
-      border-color: var(--o-accent);
+      --px-b: var(--o-accent);
       border-radius: 16px 16px 4px 16px;
     }
     .bubble-head {

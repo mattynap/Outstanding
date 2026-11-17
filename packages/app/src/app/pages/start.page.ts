@@ -121,7 +121,7 @@ const savedFormat = new Intl.DateTimeFormat('it-IT', {
       gap: 10px;
     }
     .slot.current {
-      border-color: var(--o-accent);
+      --px-b: var(--o-accent);
     }
     .slot-head,
     .empty {
@@ -133,7 +133,9 @@ const savedFormat = new Intl.DateTimeFormat('it-IT', {
       flex-direction: row;
       text-decoration: none;
       color: var(--o-text);
-      border-style: dashed;
+      /* Slot vuoto: bordo tratteggiato al posto della cornice piena. */
+      box-shadow: none;
+      border: var(--o-px) dashed var(--o-border-strong);
       min-height: 64px;
     }
     .num {

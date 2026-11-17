@@ -308,7 +308,7 @@ import { TipComponent } from '../ui/tip.component';
       gap: 12px;
       text-decoration: none;
       color: var(--o-text);
-      border-color: var(--o-accent);
+      --px-b: var(--o-accent);
     }
     .press-call > ion-icon:first-child {
       font-size: 26px;
@@ -381,7 +381,7 @@ import { TipComponent } from '../ui/tip.component';
     .injury {
       flex-direction: row;
       align-items: center;
-      border-color: var(--o-negative);
+      --px-b: var(--o-negative);
       font-size: 13px;
     }
     .injury ion-icon {
@@ -498,7 +498,7 @@ import { TipComponent } from '../ui/tip.component';
       text-decoration: none;
       color: var(--o-text);
       font-size: 13px;
-      border-color: var(--o-accent);
+      --px-b: var(--o-accent);
     }
     .last {
       flex-direction: row;

@@ -341,7 +341,7 @@ const HIDDEN_REASONS = new Set([
       font-size: 26px;
     }
     .secret {
-      border-color: var(--o-warn, #c98a1f);
+      --px-b: var(--o-warn, #c98a1f);
     }
     .secret-head {
       display: flex;

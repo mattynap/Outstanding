@@ -144,7 +144,7 @@ import { StatBarComponent } from '../ui/stat-bar.component';
       gap: 12px;
       text-decoration: none;
       color: var(--o-text);
-      border-color: var(--o-accent);
+      --px-b: var(--o-accent);
     }
     .wealth-link .grow {
       flex: 1 1 auto;
@@ -158,7 +158,7 @@ import { StatBarComponent } from '../ui/stat-bar.component';
       color: var(--o-accent-fg);
     }
     .heart-link {
-      border-color: #c2304a;
+      --px-b: #c2304a;
     }
     .heart {
       font-size: 26px;

@@ -35,6 +35,8 @@ const savedFormat = new Intl.DateTimeFormat('it-IT', {
           </div>
         </article>
 
+        <a class="o-btn" routerLink="/campo-prova">{{ 'ui.stage.open' | t }}</a>
+
         @if (latest(); as l) {
           <button class="o-btn" type="button" [disabled]="busy()" (click)="open(l.slot)">
             {{ 'ui.start.continue' | t }}

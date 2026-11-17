@@ -17,6 +17,10 @@ const game = (path: string, load: Routes[number]['loadComponent']) => ({
 });
 
 export const routes: Routes = [
+  {
+    path: 'campo-prova',
+    loadComponent: () => import('./pages/proof.page').then((m) => m.ProofPage),
+  },
   { path: '', loadComponent: () => import('./pages/start.page').then((m) => m.StartPage) },
   { path: 'crea', loadComponent: () => import('./pages/create.page').then((m) => m.CreatePage) },
   game('settimana', () => import('./pages/week.page').then((m) => m.WeekPage)),

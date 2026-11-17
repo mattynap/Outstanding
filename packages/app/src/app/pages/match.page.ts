@@ -10,6 +10,7 @@ import {
   type KeyMoment,
   type MatchEvent,
   type MatchReport,
+  type MatchStep,
 } from '@outstanding/engine';
 import { GameService } from '../core/game.service';
 import { I18nService, TranslatePipe } from '../core/i18n.service';
@@ -18,13 +19,26 @@ import { ToastService } from '../core/toast.service';
 import { fixtureView, type FixtureView } from '../core/views';
 import { CrestComponent } from '../ui/crest.component';
 import { TipComponent } from '../ui/tip.component';
+import { GameStageComponent } from '../ui/game-stage.component';
+import { TimingControlComponent } from '../ui/timing-control.component';
+import { SettingsService } from '../core/settings.service';
+import { resolvedStage, sceneForMoment, type StageModel } from '../scenes/stage-model';
 
 type Phase = 'pre' | 'moment' | 'done';
 
 /** Partita del giocatore: si gioca (momenti chiave) o si simula; alla fine la pagella. */
 @Component({
   selector: 'app-match',
-  imports: [IonContent, IonIcon, RouterLink, TranslatePipe, CrestComponent, TipComponent],
+  imports: [
+    IonContent,
+    IonIcon,
+    RouterLink,
+    TranslatePipe,
+    CrestComponent,
+    TipComponent,
+    GameStageComponent,
+    TimingControlComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ion-content class="o-page">
@@ -121,7 +135,16 @@ type Phase = 'pre' | 'moment' | 'done';
                 </section>
               }
 
-              <section class="stage">
+              @if (animated()) {
+                <div class="animated-stage">
+                  <app-game-stage
+                    [model]="stageModel()"
+                    [active]="viewActive()"
+                    [label]="m.textKey | t: m.params"
+                  />
+                </div>
+              }
+              <section class="stage" [class.illustrated]="animated()">
                 <svg
                   class="pitch"
                   viewBox="0 0 390 200"
@@ -143,29 +166,42 @@ type Phase = 'pre' | 'moment' | 'done';
               </section>
 
               <app-tip class="moment-tip" tip="match.moments" />
-              <div class="options" role="group" [attr.aria-label]="'ui.match.whatDoYouDo' | t">
-                @for (o of m.options; track o.id) {
-                  <button
-                    class="o-choice option"
-                    type="button"
-                    [disabled]="busy()"
-                    (click)="decide($index)"
-                  >
-                    <span class="o-choice__body">{{ o.textKey | t }}</span>
-                    <span class="chance">
-                      <span class="o-number pct">{{ pct(o.chance) }}%</span>
-                      <span class="o-bar mini">
-                        <span
-                          class="o-bar__fill"
-                          [class.o-bar__fill--pos]="tone(o.chance) === 'pos'"
-                          [class.o-bar__fill--neg]="tone(o.chance) === 'neg'"
-                          [style.width.%]="pct(o.chance)"
-                        ></span>
-                      </span>
-                    </span>
+              @if (pendingStep()) {
+                <div class="options">
+                  <p class="o-pos" role="status">
+                    {{ 'ui.stage.result.' + stageModel().result | t }}
+                  </p>
+                  <button class="o-btn" type="button" (click)="nextMoment()">
+                    {{ 'ui.stage.next' | t }}
                   </button>
-                }
-              </div>
+                </div>
+              } @else if (aimIndex() !== null && viewActive()) {
+                <div class="options"><app-timing-control (decided)="timedDecision($event)" /></div>
+              } @else {
+                <div class="options" role="group" [attr.aria-label]="'ui.match.whatDoYouDo' | t">
+                  @for (o of m.options; track o.id) {
+                    <button
+                      class="o-choice option"
+                      type="button"
+                      [disabled]="busy()"
+                      (click)="decide($index)"
+                    >
+                      <span class="o-choice__body">{{ o.textKey | t }}</span>
+                      <span class="chance">
+                        <span class="o-number pct">{{ pct(o.chance) }}%</span>
+                        <span class="o-bar mini">
+                          <span
+                            class="o-bar__fill"
+                            [class.o-bar__fill--pos]="tone(o.chance) === 'pos'"
+                            [class.o-bar__fill--neg]="tone(o.chance) === 'neg'"
+                            [style.width.%]="pct(o.chance)"
+                          ></span>
+                        </span>
+                      </span>
+                    </button>
+                  }
+                </div>
+              }
             }
           }
 
@@ -324,6 +360,20 @@ type Phase = 'pre' | 'moment' | 'done';
     </ion-content>
   `,
   styles: `
+    .animated-stage {
+      padding: 12px 16px 0;
+      max-width: 512px;
+      margin: 0 auto;
+    }
+    .stage.illustrated {
+      min-height: 0;
+      padding-top: 12px;
+      padding-bottom: 12px;
+    }
+    .stage.illustrated .pitch {
+      display: none;
+    }
+
     .interview {
       gap: 10px;
     }
@@ -682,6 +732,24 @@ export class MatchPage {
   private readonly router = inject(Router);
   private readonly i18n = inject(I18nService);
   private readonly toast = inject(ToastService);
+  private readonly settings = inject(SettingsService);
+  protected readonly animated = computed(() => this.settings.playMode() === 'animated');
+  protected readonly viewActive = signal(true);
+  protected readonly aimIndex = signal<number | null>(null);
+  protected readonly pendingStep = signal<MatchStep | null>(null);
+  protected readonly stageModel = signal<StageModel>({
+    key: 'initial',
+    scene: 'attack',
+    phase: 'ready',
+  });
+  ionViewDidEnter(): void {
+    this.viewActive.set(true);
+  }
+  ionViewDidLeave(): void {
+    this.viewActive.set(false);
+    this.aimIndex.set(null);
+    this.nextMoment();
+  }
 
   protected readonly busy = signal(false);
   protected readonly phase = signal<Phase>('pre');
@@ -770,14 +838,45 @@ export class MatchPage {
   }
 
   protected async decide(i: number): Promise<void> {
+    if (this.busy() || this.pendingStep()) return;
+    if (this.animated() && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      this.aimIndex.set(i);
+      return;
+    }
+    await this.resolveChoice(i, 0.5);
+  }
+
+  protected async timedDecision(quality: number): Promise<void> {
+    const i = this.aimIndex();
+    if (i === null) return;
+    await this.resolveChoice(i, quality);
+  }
+
+  protected nextMoment(): void {
+    const step = this.pendingStep();
+    if (!step) return;
+    this.pendingStep.set(null);
+    this.show(step);
+  }
+
+  private async resolveChoice(i: number, quality: number): Promise<void> {
     await this.run(async () => {
-      const before = this.game.state()?.currentMatch?.events.length ?? 0;
-      const step = await this.game.decide(i);
-      // L'esito del momento appena giocato, per un breve segnale visivo.
-      const events = this.game.state()?.currentMatch?.events ?? this.report()?.events ?? [];
-      const last = events.slice(before).find((e) => e.kind === 'moment');
-      this.outcome.set(last && last.kind === 'moment' ? (last.success ? 'ok' : 'ko') : null);
-      this.show(step);
+      const state = this.game.state(),
+        moment = this.moment();
+      if (!state || !moment) return;
+      const before = state.currentMatch?.events ?? [];
+      const side = state.currentMatch?.side ?? 'home';
+      const step = await this.game.decide({ optionIndex: i, quality });
+      const events =
+        step.kind === 'finished'
+          ? step.report.events
+          : (this.game.state()?.currentMatch?.events ?? []);
+      const model = resolvedStage(moment, side, events, before);
+      this.stageModel.set(model);
+      this.aimIndex.set(null);
+      this.outcome.set(model.phase === 'success' ? 'ok' : 'ko');
+      if (this.animated()) this.pendingStep.set(step);
+      else this.show(step);
     });
   }
 
@@ -837,6 +936,11 @@ export class MatchPage {
   private show(step: Awaited<ReturnType<GameService['startMatch']>>): void {
     if (step.kind === 'moment') {
       this.moment.set(step.moment);
+      this.stageModel.set({
+        key: `${step.moment.momentId}:${step.moment.minute}`,
+        scene: sceneForMoment(step.moment.momentId),
+        phase: 'ready',
+      });
       this.phase.set('moment');
     } else {
       this.report.set(step.report);

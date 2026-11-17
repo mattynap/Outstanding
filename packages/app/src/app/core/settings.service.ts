@@ -10,7 +10,7 @@ const THEME_KEY = 'outstanding.theme';
 export class SettingsService {
   private readonly storage = inject(StorageService);
   readonly theme = signal<Theme>('dark');
-  readonly playMode = signal<PlayMode>('text');
+  readonly playMode = signal<PlayMode>('animated');
 
   async load(): Promise<void> {
     const saved = await this.storage.get(THEME_KEY);

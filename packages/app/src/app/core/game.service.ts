@@ -67,6 +67,7 @@ import {
   type Tone,
   type PrivateActionReport,
   type MatchReport,
+  type MatchDecision,
   type MatchStep,
   type NegotiationResult,
   type NewCareerOptions,
@@ -283,7 +284,7 @@ export class GameService {
     return this.afterStep(state, step);
   }
 
-  async decide(option: number): Promise<MatchStep> {
+  async decide(option: number | MatchDecision): Promise<MatchStep> {
     const { state, step } = decideMoment(this.require(), option, this.ctx);
     return this.afterStep(state, step);
   }

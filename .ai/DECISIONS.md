@@ -16,3 +16,8 @@ Decisioni con il cliente o commerciali: proporle per il registro di base-azienda
 - Decisione: Phaser 4.2.1 differito in Angular/Capacitor; il motore TypeScript resta autorevole.
 - Perché: scene e input sul dispositivo senza duplicare carriera o salvataggi. Prove in `reports/prove-motore-mobile/README.md`.
 - Alternative scartate: migrazione Godot/Unity e renderer manuale, per costo di riscrittura e manutenzione.
+
+## 2026-11-17 — Interfaccia ibrida giornale + pixel
+- Decisione: carta e titoli da giornale per notizie e pagelle, strato pixel (Jersey 15 da 20 px in su, cornici box-shadow) per numeri, icone e stemmi. Modalità partita predefinita salvata in Preferences; la simulazione automatica parte solo nel passo partita.
+- Perché: scelta dell'utente ("ibrido spinto, mantieni lo stile di giornale"); dettagli in `docs/design-system.md` e `.claude/memory/ui-ibrido.md`.
+- Alternative scartate: pixel su tutta l'interfaccia (testi lunghi illeggibili), solo giornale (poco carattere da gioco).

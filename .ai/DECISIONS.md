@@ -26,3 +26,8 @@ Decisioni con il cliente o commerciali: proporle per il registro di base-azienda
 - Decisione: prima si rifanno partita (regista di tensione, cronaca con pressione, catene, gesti al posto della barra) e stagione (capitoli, 2–3 partite giocate a capitolo, resto in riepilogo); poi settimana, collegamenti fra sistemi e solo dopo M19–M23.
 - Perché: l'utente trova il gioco piatto e poco chiaro; aggiungere sistemi sopra un nucleo opaco peggiora. Dettagli in `docs/superpowers/specs/2026-11-18-regista-partita-stagione-design.md`.
 - Alternative scartate: seguire M18–M23 così com'è; un unico ridisegno totale del motore.
+
+## 2026-11-18 — Regista: meccaniche aggiunte e formato dei salvataggi
+- Decisione: preavviso solo sulle radici, respiro dopo gol e catene, "chiudi" sicuro nelle catene, momenti per funzione (mai lo stesso tipo due volte di fila), passo decisivo in pagella, momenti da leggenda solo come archetipi, prima pagina e obiettivo di capitolo. Gesto ±0,10 con tetto 0,15. Nessun aggiustamento nascosto degli esiti. Un formato di salvataggio per parte: v2 Parte A, v3 Parte B. `rival` riservato al rivale di carriera, in partita `keyOpponent`.
+- Perché: ricerca in `reports/Meccaniche regista partita e stagione.md` e scelte dell'utente; review Codex sul piano.
+- Alternative scartate: richiami in cronaca (P6), gesto a ±15, leggende con riferimenti reali, una versione di salvataggio per task.

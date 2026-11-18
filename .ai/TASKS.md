@@ -2,7 +2,7 @@
 
 ## In corso
 <!-- max 3 -->
-- [ ] Regista della partita e della stagione: builder check, piano, implementazione (spec 2026-11-18) (2026-11-18)
+- [ ] Regista partita e stagione: eseguire il piano approvato, subagent-driven, da Task A0 (2026-11-18)
 
 ## Prossimi
 <!-- l'ordine è la priorità -->
@@ -23,6 +23,7 @@
 
 ## Fatti
 <!-- ultimi 10; i più vecchi restano in git -->
+- [x] Piano regista partita e stagione: builder check, ricerca meccaniche, review, approvazione (2026-11-18)
 - [x] Design regista partita e stagione, approccio B scelto (2026-11-18)
 - [x] Validazione commerciale con il founder pack, offerta e business plan in founder/ (2026-11-18)
 - [x] Interfaccia ibrida ondata 2: plancia, pagella a voci, momenti con conseguenze, guida corta, notizie prima pagina (2026-11-17)
@@ -32,4 +33,3 @@
 - [x] Ricerca cultura pop del calcio italiano: interviste, conferenze, tormentoni (2026-11-17)
 - [x] Ricerca psicologia del giocatore e design (2026-11-17)
 - [x] Correzioni Kuroko nel documento di design (2026-11-17)
-- [x] Studio gacha sportivi, caso Kuroko (2026-11-17)

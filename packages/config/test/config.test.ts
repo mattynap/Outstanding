@@ -158,21 +158,24 @@ describe('config', () => {
       const withNext = withTypes(
         type('t2'),
         type('cl', {}, [
-          { ...option('a', { closes: true }), success: { rating: 0, next: { momentId: 't2' } } },
+          {
+            ...option('a', { closes: true, risk: 'safe' }),
+            success: { rating: 0, next: { momentId: 't2' } },
+          },
           option('b'),
         ]),
       );
-      expect(() => parseConfig(withNext)).toThrow(/closes/);
+      expect(() => parseConfig(withNext)).toThrow(/closes option cannot have next or goals/);
       const withGoal = withTypes(
         type('cl2', {}, [
           {
-            ...option('a', { closes: true }),
+            ...option('a', { closes: true, risk: 'safe' }),
             failure: { rating: 0, goalAgainst: 0.2 },
           },
           option('b'),
         ]),
       );
-      expect(() => parseConfig(withGoal)).toThrow(/closes/);
+      expect(() => parseConfig(withGoal)).toThrow(/closes option cannot have next or goals/);
       const onlyFailure = withTypes(
         type('t3'),
         type('cl4', {}, [
@@ -183,7 +186,7 @@ describe('config', () => {
           option('b'),
         ]),
       );
-      expect(() => parseConfig(onlyFailure)).toThrow(/closes/);
+      expect(() => parseConfig(onlyFailure)).toThrow(/closes option cannot have next or goals/);
       const fine = withTypes(
         type('cl3', {}, [option('a', { closes: true, risk: 'safe' }), option('b')]),
       );
@@ -191,9 +194,10 @@ describe('config', () => {
     });
 
     it('un tipo chainOnly ha una sola opzione closes e sicura', () => {
-      const none = withTypes(type('nc', { chainOnly: true }, [option('a'), option('b')]));
-      // opts senza closes: il helper aggiunge il closer, quindi si costruisce a mano
-      none.moments.types[none.moments.types.length - 1].options.pop();
+      const none = withTypes({
+        ...type('nc', { chainOnly: true }),
+        options: [option('a'), option('b')],
+      });
       expect(() => parseConfig(none)).toThrow(/exactly one safe option with closes/);
       const two = withTypes(
         type('tc', {}, [

@@ -49,7 +49,7 @@ un piano a parte con la skill `frontend-design` una volta chiusa la Parte A.
 - Crea: `reports/regista/baseline-<strategy>.json` (uno per `cautious`, `aggressive`, `random`)
 - Crea: `reports/regista/README.md`
 
-- [ ] **Passo 1:** per ogni strategia, `pnpm sim --careers 5000 --strategy <s> --seed 42 --json reports/regista/baseline-<s>.json` (se `--json` non esiste, salva l'output JSON di `cli.ts` con la redirezione).
+- [ ] **Passo 1:** `pnpm sim --careers 5000 --strategy all --seed 42 --out reports/regista/baseline` (la CLI scrive il JSON nella cartella `--out` e stampa la tabella); rinomina i file prodotti in `baseline-<strategy>.json`.
 - [ ] **Passo 2:** nel README, la tabella con età d'esordio in massima serie, % in massima serie, gol e presenze medie, trofei, età di ritiro, % leggende, voto medio, tempo stimato. Tolleranza dei guardrail: ±10% relativo su ogni metrica (±2 punti assoluti per le percentuali sotto il 20%).
 - [ ] **Passo 3:** commit `test: baseline del simulatore prima del regista`.
 
@@ -72,7 +72,7 @@ Valori iniziali (ridotti, si tarano in A10):
 ```json
 "pressure": { "decay": 0.9, "ratingPush": 0.02, "homePush": 0.01, "noise": 0.12, "goalBoost": 1.2, "dangerAt": 0.6 },
 "director": {
-  "threshold": 0.55, "hazard": 1.5, "pMax": 0.6, "minGap": 8, "hotFrom": 75, "hotGap": 4, "hotSlots": 2,
+  "threshold": 0.35, "hazard": 1.5, "pMax": 0.6, "minGap": 8, "hotFrom": 75, "hotGap": 4, "hotSlots": 2,
   "wGame": 0.6, "wStakes": 0.25, "wPress": 0.4, "timeBase": 0.25, "timeExp": 2,
   "close": { "-3": 0.1, "-2": 0.2, "-1": 1, "0": 0.8, "1": 0.7, "2": 0.2, "3": 0.1 },
   "chainMaxSteps": 3
@@ -115,9 +115,9 @@ interface MatchState {
 ```
 L'evento `moment` in `MatchEvent` aggiunge `quality: number`.
 
-- [ ] **Passo 1: test.** `migrates v1 save without match`, `migrates v1 mid-match: minute = blocksDone·15, pressure 0, trace [], dyn zero, pending kept, director.budgetLeft = momentMinutes.length`, `serialize→deserialize v2 is identity`, `rejects save version 3`.
+- [ ] **Passo 1: test.** `migrates v1 save without match`, `migrates v1 mid-match without pending: minute = blocksDone·15`, `migrates v1 mid-match with pending: minute = pending.minute, goal events after that minute removed and score recomputed from the remaining ones`, `budgetLeft = momentMinutes.length (the pending moment is already spent)`, `pressure 0, trace [], dyn zero, pending kept`, `serialize→deserialize v2 is identity`, `rejects save version 3`.
 - [ ] **Passo 2:** FAIL.
-- [ ] **Passo 3:** `CURRENT_SAVE_VERSION = 2`, `migrations[1]`. La migrazione mette `mode: 'full'`, `stakes: 0`, `hotLeft: 0`, `lastAt: null`, `interventions: 0`; elimina `blocksDone` e `momentMinutes`.
+- [ ] **Passo 3:** `CURRENT_SAVE_VERSION = 2`, `migrations[1]`. Regola del budget per tutto il piano: `budgetLeft` scende quando si **apre** un `pending` (anche un passo di catena), quindi il momento in attesa è già speso. In v1 i gol di un blocco sono estratti prima dei suoi momenti: con `pending` aperto, i gol dopo `pending.minute` non sono ancora avvenuti e la migrazione li toglie (verranno risimulati al minuto). La migrazione mette `mode: 'full'`, `stakes: 0`, `hotLeft: 0`, `lastAt: null`, `interventions: 0`; elimina `blocksDone` e `momentMinutes`.
 - [ ] **Passo 4:** `pnpm vitest run packages/engine/test/save.test.ts` → PASS; `pnpm typecheck` mostra gli errori in `match.ts`, che si chiudono nel Task A3 (task A2 e A3 vanno in un unico commit se il typecheck non passa da solo; in alternativa i campi nuovi restano opzionali fino ad A3).
 - [ ] **Passo 5:** commit `feat(engine): stato della partita v2 e migrazione dei salvataggi`.
 
@@ -174,7 +174,7 @@ L'evento `moment` in `MatchEvent` aggiunge `quality: number`.
 - Minimo garantito: se a `minuteOut` non c'è stato nessun intervento e `budgetLeft > 0`, un intervento al minuto più teso fra quelli già simulati si sostituisce con uno all'ultimo minuto in campo (semplificazione: l'intervento cade a `minuteOut`).
 - La fase del momento segue il segno della pressione: `pickMomentType(role, phase, rng, ctx)` filtra per `phase` (fallback all'altra fase se non ci sono tipi).
 
-- [ ] **Passo 1: test.** `0-0 at 10' with stakes 0 does not intervene (10k seeds < 5%)`, `1-1 at 88' intervenes above threshold`, `respects minGap`, `hot finale lowers gap and reserves slots`, `never intervenes off pitch`, `bench player: 0 interventions, no crash`, `at least 1 intervention if on pitch ≥ minMinutesForMoment`, `full mode: 5–7 steps in ≥ 90% of matches with player on pitch 90'`, `same seed same intervention minutes`, `resume after pause equals continuous play` (serializza a ogni momento, deserializza, confronta il report).
+- [ ] **Passo 1: test.** `0-0 at 10' with stakes 0 does not intervene (10k seeds < 5%)`, `1-1 at 88' intervenes above threshold`, `respects minGap`, `hot finale lowers gap and reserves slots`, `never intervenes off pitch`, `bench player: 0 interventions, no crash`, `at least 1 intervention if on pitch ≥ minMinutesForMoment`, `full mode: 5–7 steps in ≥ 90% of matches with player on pitch 90'`, `mean interventions in full mode with player on pitch 90' ≥ 3 over 2000 matches` (i 5–7 passi totali si raggiungono con le catene: test in A7), `same seed same intervention minutes`, `resume after pause equals continuous play` (serializza a ogni momento, deserializza, confronta il report).
 - [ ] **Passo 2:** FAIL. **Passo 3:** implementa. **Passo 4:** `pnpm test` PASS e simulatore nei guardrail.
 - [ ] **Passo 5:** commit `feat(engine): regista della partita guidato dalla tensione`.
 
@@ -203,11 +203,12 @@ L'evento `moment` in `MatchEvent` aggiunge `quality: number`.
 **Delega:** i contenuti delle catene (tipi `chainOnly`, opzioni e testi) li scrive `ai-codex standard --scrivi` in background su `moments.json` e sui testi, seguendo `docs/content-style-guide.md`; il codice di `decideMoment` lo scrive chi esegue. Poi verifica `content:check` e la rilettura dei testi.
 
 **Comportamento:**
-- Se l'esito ha `next` e `rng.chance(next.chance ?? 1)`, e `budgetLeft > 0`, il prossimo `pending` è `next.momentId` allo stesso minuto (+1), con `chain = { rootId, step: step + 1 }`; `goalFor`/`goalAgainst` dell'esito non si applicano. L'intervallo minimo non vale dentro una catena.
-- Se la catena non può proseguire (budget finito o estrazione fallita), si applicano `goalFor`/`goalAgainst` dell'esito come oggi.
+- `chainDepth(typeId, ctx): number` (profondità massima del percorso, calcolata dalla config): il regista apre un tipo solo se `chainDepth ≤ budgetLeft`; altrimenti estrae fra i tipi della fase che ci stanno (nessuna catena troncata per budget, spec §8.1).
+- Se l'esito ha `next` e `rng.chance(next.chance ?? 1)`, il prossimo `pending` è `next.momentId` **allo stesso minuto** della radice, con `chain = { rootId, step: step + 1 }`; il motore non avanza i minuti dentro una catena, quindi non può uscire dal campo né oltre il 90'. `goalFor`/`goalAgainst` dell'esito non si applicano. L'intervallo minimo non vale dentro una catena.
+- Se l'estrazione di `next.chance` fallisce, si applicano `goalFor`/`goalAgainst` dell'esito come oggi.
 - Contenuti minimi: per ogni ruolo almeno una catena di 2 passi in attacco e una in difesa; `counter_recovery` (`chainOnly`, `phase: defense`) come `failure.next` dei passaggi e dribbling persi, `chance` 0,6.
 
-- [ ] **Passo 1: test.** `pass success leads to cross then header`, `failure with next does not apply goalAgainst`, `chain stops when budget ends and applies outcome goals`, `chain depth never exceeds chainMaxSteps`, `resume mid-chain equals continuous`, `content:check finds all moment text keys`.
+- [ ] **Passo 1: test.** `pass success leads to cross then header`, `failure with next does not apply goalAgainst`, `chain is never opened when chainDepth > budgetLeft`, `failed next.chance applies outcome goals`, `chain steps share the root minute`, `full mode: 5–7 steps in ≥ 80% of matches with player on pitch 90'`, `chain depth never exceeds chainMaxSteps`, `resume mid-chain equals continuous`, `content:check finds all moment text keys`.
 - [ ] **Passi 2–4:** FAIL → implementa → PASS; `pnpm content:check` PASS.
 - [ ] **Passo 5:** commit `feat(engine): azioni a catena e contropiede` e `content: catene dei momenti chiave`.
 
@@ -225,9 +226,9 @@ L'evento `moment` in `MatchEvent` aggiunge `quality: number`.
 - `KeyMomentOption` aggiunge `risk` e `value: number`: valore atteso del voto e dei gol, con il gol pesato da `close[d]` (un gol vale di più nel bilico).
 - `Strategy.decideMoment(moment, rng): number | MatchDecision`; `contextual` sceglie l'opzione con `value` massimo; `cautious` resta la probabilità massima; `aggressive` sceglie la più rischiosa.
 - Profili di qualità per strategia: `cautious` e `aggressive` 0,5; `contextual` 0,5; nuova opzione CLI `--quality <0..1>` per misurare chi fa bene il gesto.
-- `STRATEGIES` aggiunge `'contextual'`; le decisioni fuori dal campo di `contextual` sono identiche a quelle di `cautious` (isola le scelte in partita).
+- `STRATEGIES` aggiunge `'contextual'`. Nuova opzione CLI `--isolate`: tutte le strategie usano `planWeek`, `playsManually`, `chooseEvent` e `pickOffer` di `cautious` e cambiano solo `decideMoment`. Il criterio §8.3 si misura sempre con `--isolate`.
 
-- [ ] **Passo 1: test.** `riskBonus only late and by score`, `option value prefers risky when behind late`, `contextual differs from cautious only in match decisions` (stessi piani a parità di seme), test del criterio con 2000 carriere a seme fisso: `voto(contextual) > voto(cautious)`, `voto(contextual) > voto(aggressive)`, `|voto(cautious) − voto(aggressive)| ≤ 0.2`.
+- [ ] **Passo 1: test.** `riskBonus only late and by score`, `option value prefers risky when behind late`, `with isolate, strategies differ only in match decisions` (stessi piani a parità di seme), test del criterio con 2000 carriere a seme fisso e `isolate`: `voto(contextual) > voto(cautious)`, `voto(contextual) > voto(aggressive)`, `|voto(cautious) − voto(aggressive)| ≤ 0.2`.
 - [ ] **Passi 2–4:** FAIL → implementa → PASS (se il criterio non regge, si tara in A10, non si cambia il test).
 - [ ] **Passo 5:** commit `feat(engine): rischio contestuale` e `feat(simulator): strategia contestuale`.
 
@@ -258,7 +259,7 @@ L'evento `moment` in `MatchEvent` aggiunge `quality: number`.
 ### Task B1: capitoli e regista della stagione
 
 **File:**
-- Modifica: `packages/config/data/calendar.json` (`chapters`), `packages/config/src/schemas.ts`
+- Modifica: `packages/config/data/calendar.json` (`chapters`), `packages/config/src/schemas.ts`, `packages/engine/src/types.ts`, `packages/engine/src/save/serialize.ts`
 - Crea: `packages/engine/src/season/director.ts`
 - Test: `packages/engine/test/seasonDirector.test.ts`
 
@@ -277,17 +278,16 @@ L'evento `moment` in `MatchEvent` aggiunge `quality: number`.
 - `chapterOf(week: number, cfg): ChapterId`.
 - `scoreFixture(state, fixture, ctx): number`: `matchStakes(matchSignals(...))` più un peso per la classifica (posizione vicina alla zona promozione o retrocessione, pesi in config `chapterWeights`).
 - `pickChapterMatches(state, chapter, ctx): { fixtureId: string; mode: 'full' | 'quick' }[]`: le 2–3 partite con punteggio più alto fra quelle future del capitolo, la prima in `full`, le altre in `quick`; spareggi decisi da `Rng`. Le partite di coppa a eliminazione nate durante il capitolo vengono rivalutate a ogni stop.
-- `GameState.season` aggiunge `chapter: { id: ChapterId; picks: { fixtureId: string; mode: 'full' | 'quick' }[] }`.
+- `GameState` aggiunge `chapter: { id: ChapterId; picks: { fixtureId: string; mode: 'full' | 'quick' }[] }` e `chapterPlan: WeekChoice[]` (`season` resta il numero della stagione). Migrazione in questo task: `CURRENT_SAVE_VERSION = 3`, `migrations[2]`: `chapter` calcolato dalla settimana con `picks` da `pickChapterMatches`, `chapterPlan = lastPlan ?? []`.
 
-- [ ] **Passo 1: test.** `chapters cover 52 weeks`, `picks are future fixtures of the chapter`, `derby and decisive matches are preferred`, `first pick full, others quick`, `deterministic from seed`, `cup match drawn mid-chapter can replace a pick`.
+- [ ] **Passo 1: test.** `chapters cover 52 weeks`, `picks are future fixtures of the chapter`, `derby and decisive matches are preferred`, `first pick full, others quick`, `deterministic from seed`, `cup match drawn mid-chapter can replace a pick`, `migrates v2 save to v3 with chapter and chapterPlan`.
 - [ ] **Passi 2–4:** FAIL → implementa → PASS.
 - [ ] **Passo 5:** commit `feat(engine): stagione a capitoli e regista della stagione`.
 
 ### Task B2: piano per capitolo e "vai al prossimo stop"
 
 **File:**
-- Modifica: `packages/engine/src/types.ts` (`chapterPlan` sostituisce `lastPlan` come piano ricordato), `packages/engine/src/season/plan.ts:182`, `packages/engine/src/season/fastForward.ts`
-- Modifica: `packages/engine/src/save/serialize.ts` (`CURRENT_SAVE_VERSION = 3`, `migrations[2]`: `chapterPlan = lastPlan ?? []`, capitolo calcolato dalla settimana, `picks` calcolati alla prima apertura)
+- Modifica: `packages/engine/src/season/plan.ts:182` (`chapterPlan` sostituisce `lastPlan` come piano ricordato), `packages/engine/src/season/fastForward.ts`
 - Modifica: `packages/engine/src/index.ts`
 - Test: `packages/engine/test/fastForward.test.ts`, `packages/engine/test/save.test.ts`
 
@@ -298,7 +298,7 @@ L'evento `moment` in `MatchEvent` aggiunge `quality: number`.
 - Le partite non scelte si simulano con `simulateMatch` (modalità `sim`), così i voti restano confrontabili.
 - Non esiste un'API per giocare una partita non scelta (decisione dell'utente).
 
-- [ ] **Passo 1: test.** `stops before each pick`, `stops at chapter end`, `stops for events and offers as today`, `summary lists skipped matches with rating`, `chapterPlan migrated from lastPlan`, `every week still runs advanceWeek` (finanze e recupero invariati rispetto alla settimana manuale a parità di seme).
+- [ ] **Passo 1: test.** `stops before each pick`, `stops at chapter end`, `stops for events and offers as today`, `summary lists skipped matches with rating`, `every week still runs advanceWeek` (finanze e recupero invariati rispetto alla settimana manuale a parità di seme).
 - [ ] **Passi 2–4:** FAIL → implementa → PASS.
 - [ ] **Passo 5:** commit `feat(engine): piano per capitolo e avanti fino al prossimo stop`.
 

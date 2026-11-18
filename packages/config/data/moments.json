@@ -33,7 +33,7 @@
           "difficulty": 0,
           "tag": "composure",
           "success": {
-            "rating": 0.5
+            "rating": 0.25
           },
           "failure": {
             "rating": -0.25,
@@ -227,7 +227,7 @@
           "difficulty": -6,
           "tag": "composure",
           "success": {
-            "rating": 0.5
+            "rating": 0.25
           },
           "failure": {
             "rating": -1,
@@ -1206,7 +1206,7 @@
           "tag": "duel",
           "risk": "balanced",
           "success": {
-            "rating": 0.35,
+            "rating": 0.25,
             "effects": {
               "nerves": -0.5
             }

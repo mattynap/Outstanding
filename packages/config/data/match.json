@@ -8,7 +8,7 @@
   "minutesPerBlock": 15,
   "playerImpact": 0.09,
   "xgScaleWhileOnPitch": {
-    "for": 0.85,
+    "for": 0.82,
     "against": 0.9
   },
   "scorerWeights": {

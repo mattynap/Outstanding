@@ -1,7 +1,10 @@
 /**
  * CLI del simulatore di carriere:
  *   pnpm sim --careers 1000 --strategy cautious --seed 42 [--difficulty normal] [--workers 8] [--out sim-output]
- * `--strategy all` esegue tutte le strategie. Scrive un riepilogo JSON e stampa una tabella.
+ *     [--isolate] [--quality 0..1]
+ * `--strategy all` esegue tutte le strategie. `--isolate`: tutte usano le scelte fuori campo della
+ * prudente e cambiano solo i momenti chiave. `--quality`: qualità del gesto (0..1) per ogni momento.
+ * Scrive un riepilogo JSON e stampa una tabella.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
@@ -89,8 +92,14 @@ for (const strategy of strategies) {
     { isolate: values.isolate, quality },
   );
   if (tty) process.stderr.write('\n');
-  const summary = { ...summarize(results, strategy, seed, defaultContext), difficulty };
-  const file = join(values.out, `sim-${strategy}-${difficulty}-${seed}-${careers}.json`);
+  const summary = {
+    ...summarize(results, strategy, seed, defaultContext),
+    difficulty,
+    ...(values.isolate ? { isolate: true } : {}),
+    ...(quality !== undefined ? { quality } : {}),
+  };
+  const suffix = `${values.isolate ? '-isolate' : ''}${quality !== undefined ? `-q${quality}` : ''}`;
+  const file = join(values.out, `sim-${strategy}-${difficulty}-${seed}-${careers}${suffix}.json`);
   writeFileSync(
     file,
     JSON.stringify(values.details ? { ...summary, results } : summary, null, 2) + '\n',

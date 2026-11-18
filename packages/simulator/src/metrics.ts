@@ -12,6 +12,8 @@ export interface GroupMetrics {
   goals: number;
   assists: number;
   averageRating: number | null;
+  /** Media voto non arrotondata, per i confronti fra strategie. */
+  averageRatingExact: number | null;
   peakOvr: number;
   /** Trofei medi per carriera e % di carriere con almeno un trofeo. */
   trophies: number;
@@ -73,6 +75,7 @@ export function groupMetrics(results: readonly CareerResult[], ctx: GameContext)
     goals: round(avg(results.map((r) => r.totals.goals))),
     assists: round(avg(results.map((r) => r.totals.assists))),
     averageRating: ratings.length ? round(avg(ratings), 2) : null,
+    averageRatingExact: ratings.length ? avg(ratings) : null,
     peakOvr: round(avg(results.map((r) => r.peakOvr))),
     trophies: round(avg(results.map((r) => r.totals.trophies.length)), 2),
     withTrophyPct: round(pct(results.filter((r) => r.totals.trophies.length > 0).length, n)),

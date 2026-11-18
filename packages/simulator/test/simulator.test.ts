@@ -255,6 +255,37 @@ describe('match strategies', () => {
   );
 });
 
+describe('CLI', () => {
+  it(
+    'puts isolate and quality in the report name and content',
+    () => {
+      const out = mkdtempSync(join(tmpdir(), 'sim-cli-'));
+      const run = (extra: string[]) =>
+        spawnSync(
+          process.execPath,
+          [
+            '--import',
+            'tsx',
+            'packages/simulator/src/cli.ts',
+            ...['--careers', '1', '--workers', '1', '--seed', '3', '--out', out, ...extra],
+          ],
+          { encoding: 'utf8' },
+        );
+      expect(run([]).status).toBe(0);
+      expect(run(['--isolate', '--quality', '0.7']).status).toBe(0);
+      const files = readdirSync(out).sort();
+      expect(files).toEqual([
+        'sim-cautious-normal-3-1-isolate-q0.7.json',
+        'sim-cautious-normal-3-1.json',
+      ]);
+      const read = (f: string) => JSON.parse(readFileSync(join(out, f), 'utf8'));
+      expect(read(files[0]!)).toMatchObject({ isolate: true, quality: 0.7 });
+      expect(read(files[1]!)).not.toHaveProperty('isolate');
+    },
+    CAREER_TIMEOUT,
+  );
+});
+
 describe.runIf(process.env.SIM_CRITERION === '1')('isolated rating criterion', () => {
   it('contextual beats cautious and aggressive over 2000 careers', () => {
     // Il CLI usa i worker thread, che vitest non sa caricare dai sorgenti TypeScript.
@@ -273,9 +304,9 @@ describe.runIf(process.env.SIM_CRITERION === '1')('isolated rating criterion', (
       expect(result.status, result.stderr).toBe(0);
       const file = readdirSync(out).find((f) => f.startsWith(`sim-${id}-`))!;
       const summary = JSON.parse(readFileSync(join(out, file), 'utf8')) as {
-        overall: { averageRating: number };
+        overall: { averageRatingExact: number };
       };
-      return summary.overall.averageRating;
+      return summary.overall.averageRatingExact;
     };
     const cautious = rating('cautious');
     const aggressive = rating('aggressive');
@@ -283,6 +314,6 @@ describe.runIf(process.env.SIM_CRITERION === '1')('isolated rating criterion', (
     console.log('criterion', { cautious, aggressive, contextual });
     expect(contextual).toBeGreaterThan(cautious);
     expect(contextual).toBeGreaterThan(aggressive);
-    expect(Math.abs(cautious - aggressive)).toBeLessThanOrEqual(0.2);
+    expect(Math.abs(cautious - aggressive)).toBeLessThanOrEqual(0.2 + 1e-9);
   }, 3_600_000);
 });

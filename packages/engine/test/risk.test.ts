@@ -188,4 +188,99 @@ describe('rischio contestuale', () => {
       12,
     );
   });
+
+  describe('valore del seguito di una catena', () => {
+    const o = (
+      id: string,
+      success: MomentOptionConfig['success'],
+      extra: Partial<MomentOptionConfig> = {},
+    ): MomentOptionConfig => ({
+      id,
+      skills: { shooting: 1 },
+      difficulty: -1000,
+      risk: 'balanced',
+      success,
+      failure: { rating: 0 },
+      ...extra,
+    });
+    const legend = { id: 'v_gesto', minTension: 0, skills: { shooting: 1 } };
+
+    function build(opts: { effects?: boolean; weak?: boolean }): GameContext {
+      const goEffects = opts.effects ? { effects: { nerves: 1 } } : {};
+      const types: MomentTypeConfig[] = [
+        {
+          id: 'v_root',
+          phase: 'attack',
+          weights: {},
+          textVariants: 1,
+          options: [o('go', { rating: 0, next: { momentId: 'v_next' }, ...goEffects })],
+        },
+        {
+          id: 'v_next',
+          phase: 'attack',
+          chainOnly: true,
+          weights: {},
+          textVariants: 1,
+          options: [
+            o('plain', { rating: opts.weak ? 1 : 0.1 }, opts.weak ? { difficulty: 0 } : {}),
+            o('legend', { rating: 5 }, { risk: 'risky', legend }),
+            o('keep', { rating: 0.1 }, { risk: 'safe', closes: true }),
+          ],
+        },
+      ];
+      return {
+        ...ctx,
+        config: {
+          ...ctx.config,
+          match: {
+            ...cfg,
+            dyn: {
+              ...cfg.dyn,
+              chanceWeight: { coachTrust: 0, nerves: 0.4, fatigue: 0, marking: 0 },
+            },
+            moments: {
+              ...cfg.moments,
+              types: [...cfg.moments.types, ...types],
+              minChance: 0,
+              maxChance: 1,
+              formWeight: 0,
+              moraleWeight: 0,
+              energyWeight: 0,
+              qualityMaxBonus: 0,
+            },
+          },
+        },
+      };
+    }
+
+    const goValue = (c: GameContext, legendsUsed: number): number => {
+      const base = pendingState();
+      const m = base.currentMatch!;
+      const state: GameState = {
+        ...base,
+        currentMatch: {
+          ...m,
+          dyn: { coachTrust: 0, nerves: 0, fatigue: 0, marking: 0 },
+          director: { ...m.director, legendsUsed },
+          pending: { momentId: 'v_root', minute: 30, textVariant: 1, options: [0] },
+        },
+      };
+      return getPendingMoment(state, c)!.options[0]!.value;
+    };
+
+    it('ignores legend options when the match quota is exhausted', () => {
+      const c = build({});
+      const perMatch = c.config.match.legends.perMatch;
+      expect(goValue(c, 0)).toBeGreaterThan(5);
+      expect(goValue(c, perMatch)).toBeLessThan(1);
+    });
+
+    it('applies the outcome effects before valuing the continuation', () => {
+      const plain = build({ weak: true });
+      const withEffects = build({ weak: true, effects: true });
+      // Il tipo con "chiudi" e il gesto resta fuori quota: conta solo "plain", che dipende da nerves.
+      const used = plain.config.match.legends.perMatch;
+      expect(goValue(withEffects, used)).toBeGreaterThan(goValue(plain, used) + 0.05);
+    });
+  });
 });

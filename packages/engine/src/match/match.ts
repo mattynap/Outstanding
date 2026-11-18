@@ -256,9 +256,11 @@ export function availableOptions(
 
 /**
  * Stima del valore del miglior seguito di una catena: massimo di `value` fra le opzioni del tipo
- * successivo, con lo stato attuale. Ignora la disponibilità dei gesti da leggenda del passo
- * (dipende dalla tensione e dal tetto per partita) e tratta "chiudi" come riuscita sicura.
- * Ricorsione limitata dalla profondità della catena; non estrae dal generatore.
+ * successivo, con lo stato dopo gli effetti dell'esito (come li applica `decideMoment` prima di
+ * aprire il passo). I gesti da leggenda contano solo se resta quota per la partita (`legendRoom`,
+ * già al netto di quello offerto ora); tensione e abilità minime del passo si ignorano. "Chiudi"
+ * è trattata come riuscita sicura. Ricorsione limitata dalla profondità della catena; non estrae
+ * dal generatore.
  */
 function bestValue(
   typeId: string,
@@ -267,12 +269,14 @@ function bestValue(
   opponentRating: number,
   bonus: number,
   minute: number,
+  legendRoom: number,
   ctx: GameContext,
 ): number {
   const cfg = ctx.config.match;
   const d = m.score[m.side] - m.score[other(m.side)];
   let best = -Infinity;
   for (const o of getMomentType(typeId, ctx).options) {
+    if (o.legend && legendRoom <= 0) continue;
     const chance = o.closes
       ? 1
       : optionChance(
@@ -285,8 +289,17 @@ function bestValue(
           m.dyn,
           riskBonus(o.risk, goalDiff(m), minute, cfg.risk),
         );
-    const v = optionValue(o, chance, d, cfg, (id) =>
-      bestValue(id, state, m, opponentRating, bonus, minute, ctx),
+    const v = optionValue(o, chance, d, cfg, (id, outcome) =>
+      bestValue(
+        id,
+        state,
+        applyEffects(m, outcome.effects, cfg),
+        opponentRating,
+        bonus,
+        minute,
+        legendRoom,
+        ctx,
+      ),
     );
     if (v > best) best = v;
   }
@@ -332,7 +345,17 @@ function describeMoment(state: GameState, m: MatchState, ctx: GameContext): KeyM
           chance,
           m.score[m.side] - m.score[other(m.side)],
           ctx.config.match,
-          (id) => bestValue(id, state, m, opponent.rating, bonus, pending.minute, ctx),
+          (id, outcome) =>
+            bestValue(
+              id,
+              state,
+              applyEffects(m, outcome.effects, ctx.config.match),
+              opponent.rating,
+              bonus,
+              pending.minute,
+              Math.max(0, ctx.config.match.legends.perMatch - m.director.legendsUsed),
+              ctx,
+            ),
         ),
         ...(o.closes ? { closes: true as const } : {}),
         ...(o.legend ? { legendId: o.legend.id } : {}),

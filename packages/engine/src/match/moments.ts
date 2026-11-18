@@ -235,7 +235,7 @@ export function riskBonus(
 
 /**
  * Valore atteso di un'opzione (vedi `KeyMomentOption.value`), con differenza reti `d`.
- * `continuation(momentId)` dà il valore del miglior seguito di una catena. Con un seguito di
+ * `continuation(momentId, outcome)` dà il valore del miglior seguito di una catena, dopo l'esito. Con un seguito di
  * probabilità c il voto dell'esito vale sempre, ma i gol dell'esito li salta il motore: valgono
  * (1−c) e il seguito c. Il bonus della leggenda si somma se il gesto riesce.
  */
@@ -244,7 +244,7 @@ export function optionValue(
   chance: number,
   d: number,
   cfg: MatchConfig,
-  continuation: (momentId: string) => number = () => 0,
+  continuation: (momentId: string, outcome: MomentOutcomeConfig) => number = () => 0,
 ): number {
   const w = cfg.director.close[String(clamp(d, -3, 3))] ?? 0;
   const worth = (o: MomentOutcomeConfig): number => {
@@ -255,7 +255,7 @@ export function optionValue(
       if (o.by === 'assist') goals += o.goalFor * cfg.rating.assist;
     }
     if (o.goalAgainst) goals -= o.goalAgainst * w * cfg.risk.goalValue;
-    return o.rating + (1 - c) * goals + (o.next ? c * continuation(o.next.momentId) : 0);
+    return o.rating + (1 - c) * goals + (o.next ? c * continuation(o.next.momentId, o) : 0);
   };
   const legend = option.legend ? chance * cfg.legends.ratingBonus : 0;
   return chance * worth(option.success) + (1 - chance) * worth(option.failure) + legend;

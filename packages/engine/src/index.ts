@@ -125,6 +125,7 @@ export {
   type RatingPartKey,
   type MatchStep,
 } from './match/match';
+export { keyOpponentOf, matchSignals, matchStakes, type StakeSignal } from './match/stakes';
 export {
   CONSEQUENCES,
   consequenceOf,

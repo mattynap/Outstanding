@@ -287,6 +287,8 @@ export interface Fixture {
   /** Gol dei tempi supplementari (solo gare decisive finite in parità). */
   extraTime?: Score;
   penalties?: Score;
+  /** Un osservatore segue il giocatore in questa partita (estratto la settimana prima). */
+  scout?: boolean;
 }
 
 /** Stato di una coppa nella stagione corrente. */

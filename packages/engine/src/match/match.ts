@@ -28,6 +28,7 @@ import {
 } from './moments';
 import { goalChancePerMinute, pushFor, stepPressure } from './pressure';
 import { planMinutes, selectPlayer } from './selection';
+import { matchSignals, matchStakes } from './stakes';
 
 /** Voci che compongono il voto in pagella, nell'ordine in cui si sommano. */
 export const RATING_PART_KEYS = [
@@ -448,7 +449,7 @@ export function beginMatch(
       plannedMinutes,
     },
     dyn: { coachTrust: 0, nerves: 0, fatigue: 0, marking: 0 },
-    stakes: 0,
+    stakes: matchStakes(matchSignals(state, fixture, ctx), ctx.config.match.stakes),
     legend: null,
     score: { home: 0, away: 0 },
     events,

@@ -95,6 +95,19 @@ export function advanceWeek(
   });
   const cupsProgress = progressCups({ ...state, calendar }, rng, ctx);
   calendar = [...calendar, ...cupsProgress.fixtures];
+  // L'osservatore: una sola estrazione a settimana, solo per la partita del giocatore della prossima.
+  const nextClubId = state.player.clubId;
+  if (nextClubId) {
+    const target = calendar.find(
+      (f) =>
+        f.week === state.week + 1 &&
+        !f.result &&
+        (f.homeId === nextClubId || f.awayId === nextClubId),
+    );
+    if (target && rng.chance(ctx.config.match.stakes.scoutChance)) {
+      calendar = calendar.map((f) => (f === target ? { ...f, scout: true } : f));
+    }
+  }
 
   const clubId = state.player.clubId;
   const groupId = state.world.clubs.find((c) => c.id === clubId)?.groupId;

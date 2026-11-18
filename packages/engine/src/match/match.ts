@@ -29,8 +29,10 @@ import {
   tension,
 } from './director';
 import {
+  applyEffects,
   getMomentType,
   consequenceOf,
+  ZERO_DYN,
   optionChance,
   pickMomentType,
   type KeyMoment,
@@ -215,6 +217,8 @@ function describeMoment(state: GameState, m: MatchState, ctx: GameContext): KeyM
     textKey: `match.moments.${type.id}.text.${pending.textVariant}`,
     params: { opponent: opponent.shortName },
     score: { ...m.score },
+    dyn: { ...m.dyn },
+    pressure: m.pressure,
     options: type.options.map((o) => ({
       id: o.id,
       textKey: `match.moments.${type.id}.options.${o.id}`,
@@ -224,6 +228,8 @@ function describeMoment(state: GameState, m: MatchState, ctx: GameContext): KeyM
         opponent.rating,
         ctx,
         difficultyMods(state, ctx).matchChance + pressBonus(state, m.fixtureId),
+        0.5,
+        m.dyn,
       ),
       onSuccess: consequenceOf(o.success, true),
       onFailure: consequenceOf(o.failure, false),
@@ -488,7 +494,7 @@ export function beginMatch(
     pressure: 0,
     trace: [],
     director,
-    dyn: { coachTrust: 0, nerves: 0, fatigue: 0, marking: 0 },
+    dyn: { ...ZERO_DYN },
     stakes: matchStakes(matchSignals(state, fixture, ctx), ctx.config.match.stakes),
     legend: null,
     score: { home: 0, away: 0 },
@@ -542,6 +548,7 @@ export function decideMoment(
       ctx,
       difficultyMods(state, ctx).matchChance + pressBonus(state, m.fixtureId),
       quality,
+      m.dyn,
     ),
   );
   const outcome = success ? option.success : option.failure;
@@ -555,6 +562,7 @@ export function decideMoment(
       { kind: 'moment', minute, momentId: type.id, optionId: option.id, success, quality },
     ],
   };
+  cur = applyEffects(cur, outcome.effects, ctx.config.match);
   const me = fullName(state.player);
   if (outcome.goalFor !== undefined && rng.chance(outcome.goalFor)) {
     if (outcome.by === 'self') {

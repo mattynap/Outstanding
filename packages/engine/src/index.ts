@@ -127,6 +127,8 @@ export {
 } from './match/match';
 export { keyOpponentOf, matchSignals, matchStakes, type StakeSignal } from './match/stakes';
 export {
+  applyEffects,
+  ZERO_DYN,
   CONSEQUENCES,
   consequenceOf,
   optionChance,

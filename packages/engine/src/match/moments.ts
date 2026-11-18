@@ -1,11 +1,12 @@
 import type {
+  MatchConfig,
   MomentOptionConfig,
   MomentOutcomeConfig,
   MomentTypeConfig,
 } from '@outstanding/config';
 import type { GameContext } from '../context';
 import type { Rng } from '../rng';
-import type { MatchState, Player, Role } from '../types';
+import type { MatchDyn, MatchState, Player, Role } from '../types';
 import { clamp } from '../util';
 
 /** Opzione di un momento chiave come la vede l'interfaccia. */
@@ -53,7 +54,33 @@ export interface KeyMoment {
   /** Valori per i segnaposto del testo (es. `{opponent}`). */
   params: Record<string, string>;
   score: { home: number; away: number };
+  /** Stati dinamici della partita al momento dell'apertura. */
+  dyn: MatchDyn;
+  /** Pressione −1..1 al momento dell'apertura. */
+  pressure: number;
   options: KeyMomentOption[];
+}
+
+/** Stati dinamici a inizio partita. */
+export const ZERO_DYN: MatchDyn = { coachTrust: 0, nerves: 0, fatigue: 0, marking: 0 };
+
+/**
+ * Applica gli effetti di un esito: somma ai `dyn` (entro `dyn.min`/`dyn.max`) e alla pressione
+ * (entro ±1, come `stepPressure`). Non estrae nulla dal generatore.
+ */
+export function applyEffects(
+  m: MatchState,
+  effects: Partial<Record<keyof MatchDyn | 'pressure', number>> | undefined,
+  cfg: MatchConfig,
+): MatchState {
+  if (!effects) return m;
+  const dyn = { ...m.dyn };
+  for (const k of Object.keys(dyn) as (keyof MatchDyn)[]) {
+    const d = effects[k];
+    if (d) dyn[k] = clamp(dyn[k] + d, cfg.dyn.min, cfg.dyn.max);
+  }
+  const pressure = clamp(m.pressure + (effects.pressure ?? 0), -1, 1);
+  return { ...m, dyn, pressure };
 }
 
 export function getMomentType(id: string, ctx: GameContext): MomentTypeConfig {
@@ -158,6 +185,10 @@ function traitBonus(player: Player, tag: string | undefined, ctx: GameContext): 
   return bonus;
 }
 
+function dynBonus(dyn: MatchDyn, w: MatchConfig['dyn']['chanceWeight']): number {
+  return (Object.keys(w) as (keyof MatchDyn)[]).reduce((acc, k) => acc + w[k] * dyn[k], 0);
+}
+
 /**
  * Probabilità di successo: funzione logistica di (abilità pesata − forza avversaria − difficoltà),
  * più i modificatori di forma, morale, energia e tratti, limitata tra minChance e maxChance.
@@ -170,11 +201,14 @@ export function optionChance(
   /** Bonus della difficoltà sulla probabilità (vedi `difficultyMods`). */
   difficultyBonus = 0,
   quality = 0.5,
+  /** Stati dinamici della partita: ognuno sposta la probabilità col suo peso. */
+  dyn: MatchDyn = ZERO_DYN,
 ): number {
   if (!Number.isFinite(quality) || quality < 0 || quality > 1) {
     throw new Error(`Invalid moment quality ${quality}`);
   }
-  const cfg = ctx.config.match.moments;
+  const matchCfg = ctx.config.match;
+  const cfg = matchCfg.moments;
   let total = 0;
   let weights = 0;
   for (const [skill, w] of Object.entries(option.skills)) {
@@ -188,7 +222,8 @@ export function optionChance(
     (cfg.moraleWeight * (morale - 50)) / 50 +
     (cfg.energyWeight * (energy - 50)) / 50 +
     traitBonus(player, option.tag, ctx) +
-    difficultyBonus;
+    difficultyBonus +
+    dynBonus(dyn, matchCfg.dyn.chanceWeight);
   return clamp(
     1 / (1 + Math.exp(-x)) + mods + (2 * quality - 1) * cfg.qualityMaxBonus,
     cfg.minChance,

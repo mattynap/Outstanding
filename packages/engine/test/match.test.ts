@@ -12,7 +12,9 @@ import {
   getPendingMoment,
   isSeasonOver,
   newCareer,
+  applyEffects,
   optionChance,
+  ZERO_DYN,
   playerFixture,
   playMatch,
   serialize,
@@ -20,6 +22,7 @@ import {
   type GameState,
   type KeyMomentDecider,
   type MatchReport,
+  type MatchState,
 } from '../src/index';
 import { baseOptions } from './fixtures';
 
@@ -354,6 +357,8 @@ describe('partita simulata', () => {
       textKey: 'k',
       params: {},
       score: { home: 0, away: 0 },
+      dyn: ZERO_DYN,
+      pressure: 0,
       options: [
         { id: 'a', textKey: 'a', chance: 0.3, onSuccess: 'rating', onFailure: 'lost' },
         { id: 'b', textKey: 'b', chance: 0.8, onSuccess: 'rating', onFailure: 'lost' },
@@ -448,4 +453,98 @@ describe('partita al minuto', () => {
     expect(goals / n).toBeGreaterThanOrEqual(2.667);
     expect(goals / n).toBeLessThanOrEqual(2.947);
   }, 60000);
+});
+
+describe('conseguenze nel resto della partita (dyn)', () => {
+  const player = newCareer(baseOptions, 7).player;
+  const plain = {
+    ...player,
+    traits: [],
+    condition: { ...player.condition, form: 50, morale: 50, energy: 50 },
+  };
+  const option = {
+    ...ctx.config.match.moments.types.find((t) => t.id === 'att_box_chance')!.options[0]!,
+    skills: { shooting: 1 },
+    difficulty: 0,
+  };
+  const rating = plain.skills.shooting;
+  const cfg = ctx.config.match;
+  const m0 = () => {
+    const s = toFirstMatch(newCareer(baseOptions, 7));
+    const step = beginMatch(s);
+    return step.state.currentMatch!;
+  };
+
+  it('default dyn keeps old chances identical', () => {
+    expect(optionChance(plain, option, rating, ctx, 0, 0.5, ZERO_DYN)).toBe(
+      optionChance(plain, option, rating, ctx),
+    );
+    expect(optionChance(plain, option, rating, ctx)).toBe(0.5);
+  });
+
+  it('successful dribble raises marking and lowers next dribble chance', () => {
+    const m = applyEffects(m0(), { marking: 1 }, cfg);
+    expect(m.dyn.marking).toBe(1);
+    expect(optionChance(plain, option, rating, ctx, 0, 0.5, m.dyn)).toBeCloseTo(
+      0.5 + cfg.dyn.chanceWeight.marking,
+    );
+    expect(cfg.dyn.chanceWeight.marking).toBeLessThan(0);
+  });
+
+  it('fatigue lowers chance', () => {
+    const m = applyEffects(m0(), { fatigue: 2 }, cfg);
+    expect(optionChance(plain, option, rating, ctx, 0, 0.5, m.dyn)).toBeLessThan(0.5);
+  });
+
+  it('effects clamp to dyn.min/max and pressure to +-1', () => {
+    const m = applyEffects(m0(), { nerves: 99, fatigue: -99, pressure: 5 }, cfg);
+    expect(m.dyn.nerves).toBe(cfg.dyn.max);
+    expect(m.dyn.fatigue).toBe(cfg.dyn.min);
+    expect(m.pressure).toBe(1);
+    expect(applyEffects(m, { pressure: -9 }, cfg).pressure).toBe(-1);
+  });
+
+  it('decideMoment applies the outcome effects and exposes dyn in the moment', () => {
+    const s0 = toFirstMatch(newCareer(baseOptions, 7));
+    const withFx = (fx: Record<string, number>) => {
+      const types = cfg.moments.types.map((t) => ({
+        ...t,
+        options: t.options.map((o) => ({
+          ...o,
+          success: { ...o.success, effects: fx },
+          failure: { ...o.failure, effects: fx },
+        })),
+      }));
+      return {
+        ...ctx,
+        config: { ...ctx.config, match: { ...cfg, moments: { ...cfg.moments, types } } },
+      };
+    };
+    const c = withFx({ marking: 1 });
+    const step = beginMatch(s0, c);
+    if (step.step.kind !== 'moment') throw new Error('nessun momento');
+    expect(step.step.moment.dyn).toEqual(ZERO_DYN);
+    const after = decideMoment(step.state, 0, c);
+    const cm = after.state.currentMatch;
+    expect(cm ? cm.dyn.marking : 1).toBeGreaterThanOrEqual(1);
+  });
+
+  it('dyn resets each match', () => {
+    const s = toFirstMatch(newCareer(baseOptions, 7));
+    const first1 = beginMatch(s).state.currentMatch!;
+    const dirty = applyEffects(first1, { marking: 2, fatigue: 2 }, cfg);
+    expect(dirty.dyn.marking).toBe(2);
+    const r = playMatch(s, first);
+    let n = r.state;
+    let cm: MatchState | null | undefined;
+    for (let i = 0; i < 60 && !cm; i++) {
+      n = advanceWeek(n).state;
+      const f = playerFixture(n);
+      if (f && !f.result) {
+        cm = beginMatch(n).state.currentMatch;
+        if (!cm) n = playMatch(n, first).state;
+      }
+    }
+    expect(cm?.dyn).toEqual(ZERO_DYN);
+  });
 });

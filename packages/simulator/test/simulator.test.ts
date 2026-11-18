@@ -1,6 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { defaultContext } from '@outstanding/engine';
-import { careerSeeds, formatTable, runCareer, simulate, STRATEGIES, summarize } from '../src/index';
+import { spawnSync } from 'node:child_process';
+import { availableParallelism } from 'node:os';
+import {
+  defaultContext,
+  newCareer,
+  Rng,
+  type KeyMoment,
+  type MatchDecision,
+} from '@outstanding/engine';
+import {
+  careerSeeds,
+  formatTable,
+  getStrategy,
+  randomCareerOptions,
+  runCareer,
+  simulate,
+  STRATEGIES,
+  summarize,
+} from '../src/index';
 
 // Carriere complete (20 stagioni ciascuna): sotto carico superano i 5 s predefiniti.
 const CAREER_TIMEOUT = 60_000;
@@ -44,4 +61,214 @@ describe('simulatore', () => {
     },
     CAREER_TIMEOUT,
   );
+});
+
+const moment: KeyMoment = {
+  momentId: 'test',
+  minute: 85,
+  textKey: 'test',
+  params: {},
+  score: { home: 0, away: 1 },
+  dyn: { coachTrust: 0, nerves: 0, fatigue: 0, marking: 0 },
+  pressure: 0,
+  options: [
+    {
+      id: 'safe',
+      textKey: 'safe',
+      chance: 0.9,
+      chanceBand: 'high',
+      risk: 'safe',
+      value: 1,
+      onSuccess: 'rating',
+      onFailure: 'lost',
+      onFail: 'none',
+    },
+    {
+      id: 'balanced',
+      textKey: 'balanced',
+      chance: 0.2,
+      chanceBand: 'low',
+      risk: 'balanced',
+      value: 3,
+      onSuccess: 'rating',
+      onFailure: 'lost',
+      onFail: 'none',
+    },
+    {
+      id: 'risky',
+      textKey: 'risky',
+      chance: 0.6,
+      chanceBand: 'mid',
+      risk: 'risky',
+      value: 2,
+      onSuccess: 'rating',
+      onFailure: 'lost',
+      onFail: 'none',
+    },
+  ],
+};
+const indexOf = (decision: number | MatchDecision) =>
+  typeof decision === 'number' ? decision : decision.optionIndex;
+
+describe('match strategies', () => {
+  it('contextual selects maximum value, then chance, then lowest index', () => {
+    const strategy = getStrategy('contextual');
+    const decide = (m: KeyMoment) => indexOf(strategy.decideMoment(m, Rng.fromSeed(1)));
+    expect(decide(moment)).toBe(1);
+    const tied = {
+      ...moment,
+      options: moment.options.map((o, i) => ({ ...o, value: i === 0 ? 1 : 3 })),
+    };
+    expect(decide(tied)).toBe(2);
+    expect(decide({ ...tied, options: tied.options.map((o) => ({ ...o, chance: 0.5 })) })).toBe(1);
+  });
+
+  it('aggressive selects highest risk, then chance, then lowest index', () => {
+    const strategy = getStrategy('aggressive');
+    const decide = (m: KeyMoment) => indexOf(strategy.decideMoment(m, Rng.fromSeed(1)));
+    expect(decide(moment)).toBe(2);
+    const tied = {
+      ...moment,
+      options: moment.options.map((o, i) => ({
+        ...o,
+        risk: i === 0 ? ('safe' as const) : ('risky' as const),
+      })),
+    };
+    expect(decide(tied)).toBe(2);
+    expect(decide({ ...tied, options: tied.options.map((o) => ({ ...o, chance: 0.5 })) })).toBe(1);
+    expect(decide({ ...moment, options: moment.options.slice(0, 2) })).toBe(1);
+  });
+
+  it.each(['cautious', 'aggressive', 'contextual'] as const)(
+    '%s uses neutral gesture quality',
+    (id) => {
+      expect(getStrategy(id).decideMoment(moment, Rng.fromSeed(1))).toMatchObject({ quality: 0.5 });
+    },
+  );
+
+  it.each(STRATEGIES)('quality overrides %s without changing its choice', (id) => {
+    const normal = getStrategy(id).decideMoment(moment, Rng.fromSeed(1));
+    expect(getStrategy(id, { quality: 1 }).decideMoment(moment, Rng.fromSeed(1))).toEqual({
+      optionIndex: indexOf(normal),
+      quality: 1,
+    });
+  });
+
+  it(
+    'passes isolation and quality through simulate to the career',
+    async () => {
+      const options = { isolate: true, quality: 1 };
+      const results = await simulate([11], 'random', 1, undefined, undefined, options);
+      expect(results).toEqual([runCareer(11, 'random', defaultContext, undefined, options)]);
+    },
+    CAREER_TIMEOUT,
+  );
+
+  it(
+    'isolated careers are deterministic per seed and strategy',
+    () => {
+      const options = { isolate: true };
+      const a = runCareer(7, 'contextual', defaultContext, undefined, options);
+      expect(runCareer(7, 'contextual', defaultContext, undefined, options)).toEqual(a);
+    },
+    CAREER_TIMEOUT,
+  );
+
+  it('with isolate, strategies differ only in match decisions', () => {
+    const ctx = defaultContext;
+    const state = newCareer(randomCareerOptions(Rng.fromSeed(11), ctx), 11, ctx);
+    const offers = [
+      {
+        id: 'low',
+        kind: 'transfer' as const,
+        clubId: 'low',
+        clubName: 'Low',
+        level: 5,
+        salaryWeekly: 10,
+        seasons: 1,
+        signingBonus: 0,
+        expiresWeek: 10,
+      },
+      {
+        id: 'high',
+        kind: 'transfer' as const,
+        clubId: 'high',
+        clubName: 'High',
+        level: 1,
+        salaryWeekly: 100,
+        seasons: 1,
+        signingBonus: 0,
+        expiresWeek: 10,
+      },
+    ];
+    const fixture = {
+      id: 'test',
+      season: 1,
+      week: 1,
+      matchday: 1,
+      leagueId: 'test',
+      groupId: 'test',
+      homeId: 'low',
+      awayId: 'high',
+    };
+    const decisions = (id: (typeof STRATEGIES)[number]) => {
+      const strategy = getStrategy(id, { isolate: true });
+      const rng = Rng.fromSeed(42);
+      return Array.from({ length: 10 }, () => ({
+        plan: strategy.planWeek(state, rng, ctx),
+        manual: strategy.playsManually(state, fixture, rng),
+        event: strategy.chooseEvent(4, rng),
+        offer: strategy.pickOffer(state, offers, rng, ctx),
+      }));
+    };
+    for (const id of STRATEGIES) expect(decisions(id)).toEqual(decisions('cautious'));
+    // Senza isolamento le scelte fuori campo dell'aggressiva cambiano: il confronto è significativo.
+    const free = getStrategy('aggressive');
+    const rngFree = Rng.fromSeed(42);
+    const freeOffer = free.pickOffer(state, offers, rngFree, ctx);
+    const cautiousOffer = getStrategy('cautious').pickOffer(state, offers, Rng.fromSeed(42), ctx);
+    expect(freeOffer).not.toEqual(cautiousOffer);
+    expect(
+      indexOf(getStrategy('cautious', { isolate: true }).decideMoment(moment, Rng.fromSeed(1))),
+    ).toBe(0);
+    expect(
+      indexOf(getStrategy('contextual', { isolate: true }).decideMoment(moment, Rng.fromSeed(1))),
+    ).toBe(1);
+    expect(
+      indexOf(getStrategy('aggressive', { isolate: true }).decideMoment(moment, Rng.fromSeed(1))),
+    ).toBe(2);
+  });
+
+  it.each(['-0.1', '1.1', 'NaN', 'Infinity', 'abc', ''])(
+    'CLI rejects invalid quality %s',
+    (quality) => {
+      const result = spawnSync(
+        process.execPath,
+        ['--import', 'tsx', 'packages/simulator/src/cli.ts', '--quality', quality],
+        { encoding: 'utf8' },
+      );
+      expect(result.status).toBe(1);
+      expect(result.stderr).toMatch(/--quality.*0.*1/);
+    },
+  );
+});
+
+describe.runIf(process.env.SIM_CRITERION === '1')('isolated rating criterion', () => {
+  it('contextual beats cautious and aggressive over 2000 careers', async () => {
+    const seeds = careerSeeds(42, 2000);
+    const workers = Math.max(1, availableParallelism() - 1);
+    const rating = async (id: 'cautious' | 'aggressive' | 'contextual') => {
+      const results = await simulate(seeds, id, workers, undefined, undefined, { isolate: true });
+      const ratings = results.flatMap((r) =>
+        r.totals.averageRating === null ? [] : [r.totals.averageRating],
+      );
+      return ratings.reduce((sum, value) => sum + value, 0) / ratings.length;
+    };
+    const cautious = await rating('cautious');
+    const aggressive = await rating('aggressive');
+    const contextual = await rating('contextual');
+    expect(contextual).toBeGreaterThan(cautious);
+    expect(contextual).toBeGreaterThan(aggressive);
+    expect(Math.abs(cautious - aggressive)).toBeLessThanOrEqual(0.2);
+  }, 3_600_000);
 });

@@ -1,7 +1,7 @@
 /**
  * CLI del simulatore di carriere:
  *   pnpm sim --careers 1000 --strategy cautious --seed 42 [--difficulty normal] [--workers 8] [--out sim-output]
- * `--strategy all` esegue le tre strategie. Scrive un riepilogo JSON e stampa una tabella.
+ * `--strategy all` esegue tutte le strategie. Scrive un riepilogo JSON e stampa una tabella.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
@@ -12,7 +12,17 @@ import { formatTable, summarize } from './metrics';
 import { careerSeeds, simulate } from './simulate';
 import { STRATEGIES, type StrategyId } from './strategies';
 
+const args = process.argv.slice(2);
+for (let i = 0; i < args.length; i++) {
+  const next = args[i + 1];
+  // parseArgs interpreta un valore negativo separato come un'altra opzione.
+  if (args[i] === '--quality' && next?.startsWith('-') && !next.startsWith('--')) {
+    args.splice(i, 2, `--quality=${next}`);
+  }
+}
+
 const { values } = parseArgs({
+  args,
   options: {
     careers: { type: 'string', default: '100' },
     strategy: { type: 'string', default: 'cautious' },
@@ -20,6 +30,8 @@ const { values } = parseArgs({
     difficulty: { type: 'string', default: defaultContext.config.difficulty.default },
     workers: { type: 'string', default: String(Math.max(1, availableParallelism() - 1)) },
     out: { type: 'string', default: 'sim-output' },
+    isolate: { type: 'boolean', default: false },
+    quality: { type: 'string' },
     details: { type: 'boolean', default: false },
   },
 });
@@ -31,6 +43,15 @@ function int(name: string, raw: string, min: number): number {
     process.exit(1);
   }
   return n;
+}
+
+const quality = values.quality === undefined ? undefined : Number(values.quality);
+if (
+  quality !== undefined &&
+  (values.quality?.trim() === '' || !Number.isFinite(quality) || quality < 0 || quality > 1)
+) {
+  console.error('--quality deve essere un numero tra 0 e 1');
+  process.exit(1);
 }
 
 const careers = int('careers', values.careers, 1);
@@ -65,6 +86,7 @@ for (const strategy of strategies) {
       }
     },
     difficulty,
+    { isolate: values.isolate, quality },
   );
   if (tty) process.stderr.write('\n');
   const summary = { ...summarize(results, strategy, seed, defaultContext), difficulty };

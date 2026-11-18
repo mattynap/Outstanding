@@ -10,6 +10,7 @@
     "build": "pnpm -r --if-present run build",
     "typecheck": "pnpm -r --if-present run typecheck",
     "test": "vitest run",
+    "sim:criterion": "SIM_CRITERION=1 vitest run packages/simulator/test/simulator.test.ts",
     "test:watch": "vitest",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",

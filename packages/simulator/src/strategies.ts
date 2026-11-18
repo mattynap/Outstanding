@@ -7,6 +7,7 @@ import {
   type GameContext,
   type GameState,
   type KeyMoment,
+  type MatchDecision,
   type OfferView,
   type Fixture,
   type Rng,
@@ -14,14 +15,14 @@ import {
   type WeekChoice,
 } from '@outstanding/engine';
 
-export type StrategyId = 'cautious' | 'aggressive' | 'random';
-export const STRATEGIES: readonly StrategyId[] = ['cautious', 'aggressive', 'random'];
+export type StrategyId = 'cautious' | 'aggressive' | 'random' | 'contextual';
+export const STRATEGIES: readonly StrategyId[] = ['cautious', 'aggressive', 'random', 'contextual'];
 
 /** Le decisioni che in partita prende il giocatore; il simulatore le affida a una strategia. */
 export interface Strategy {
   id: StrategyId;
   planWeek(state: GameState, rng: Rng, ctx: GameContext): WeekChoice[];
-  decideMoment(moment: KeyMoment, rng: Rng): number;
+  decideMoment(moment: KeyMoment, rng: Rng): number | MatchDecision;
   /**
    * Vero se la partita si gioca di persona (momenti chiave decisi dalla strategia), falso se si
    * simula (momenti con la scelta automatica prudente del motore).
@@ -122,7 +123,7 @@ const cautious: Strategy = {
 };
 
 /**
- * Aggressiva: allenamento intenso e mirato, opzione più spettacolare (meno probabile) nei momenti
+ * Aggressiva: allenamento intenso e mirato, opzione più rischiosa nei momenti
  * chiave, firma sempre l'offerta del livello più alto e rifiuta i prestiti.
  */
 const aggressive: Strategy = {
@@ -139,7 +140,13 @@ const aggressive: Strategy = {
   decideMoment(moment) {
     let pick = 0;
     moment.options.forEach((o, i) => {
-      if (o.chance < moment.options[pick]!.chance) pick = i;
+      const best = moment.options[pick]!;
+      const risks: KeyMoment['options'][number]['risk'][] = ['safe', 'balanced', 'risky'];
+      if (
+        risks.indexOf(o.risk) > risks.indexOf(best.risk) ||
+        (o.risk === best.risk && o.chance > best.chance)
+      )
+        pick = i;
     });
     return pick;
   },
@@ -174,8 +181,45 @@ const random: Strategy = {
   },
 };
 
-export function getStrategy(id: StrategyId): Strategy {
-  return { cautious, aggressive, random }[id];
+const contextual: Strategy = {
+  ...cautious,
+  id: 'contextual',
+  decideMoment(moment) {
+    let pick = 0;
+    moment.options.forEach((option, index) => {
+      const best = moment.options[pick]!;
+      if (option.value > best.value || (option.value === best.value && option.chance > best.chance))
+        pick = index;
+    });
+    return pick;
+  },
+};
+
+const GESTURE_QUALITY = { cautious: 0.5, aggressive: 0.5, contextual: 0.5 } as const;
+
+export interface StrategyOptions {
+  isolate?: boolean;
+  quality?: number;
+}
+
+export function getStrategy(id: StrategyId, options: StrategyOptions = {}): Strategy {
+  const selected = { cautious, aggressive, random, contextual }[id];
+  const quality = options.quality ?? (id === 'random' ? undefined : GESTURE_QUALITY[id]);
+  if (quality !== undefined && (!Number.isFinite(quality) || quality < 0 || quality > 1)) {
+    throw new Error('--quality deve essere un numero tra 0 e 1');
+  }
+  return {
+    ...(options.isolate ? cautious : selected),
+    id,
+    decideMoment(moment, rng) {
+      const decision = selected.decideMoment(moment, rng);
+      if (quality === undefined) return decision;
+      return {
+        optionIndex: typeof decision === 'number' ? decision : decision.optionIndex,
+        quality,
+      };
+    },
+  };
 }
 
 /** OVR attuale del giocatore (comodo per i report). */

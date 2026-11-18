@@ -14,4 +14,10 @@ export {
   type GroupMetrics,
   type SimSummary,
 } from './metrics';
-export { getStrategy, STRATEGIES, type Strategy, type StrategyId } from './strategies';
+export {
+  getStrategy,
+  STRATEGIES,
+  type Strategy,
+  type StrategyId,
+  type StrategyOptions,
+} from './strategies';

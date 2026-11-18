@@ -29,7 +29,7 @@ import {
   type Retirement,
   type Role,
 } from '@outstanding/engine';
-import { getStrategy, type StrategyId } from './strategies';
+import { getStrategy, type StrategyId, type StrategyOptions } from './strategies';
 
 /**
  * Stima del tempo di gioco: secondi medi per ogni tipo di decisione presa davanti allo schermo.
@@ -113,10 +113,13 @@ export function runCareer(
   strategyId: StrategyId,
   ctx: GameContext = defaultContext,
   difficulty?: Difficulty,
+  options: StrategyOptions = {},
 ): CareerResult {
-  const strategy = getStrategy(strategyId);
+  const strategy = getStrategy(strategyId, options);
   // Le scelte della strategia usano un generatore separato: lo stato del gioco resta deterministico.
   const rng = Rng.fromSeed(seed ^ 0x5bd1e995);
+  // In isolamento le estrazioni dei momenti non spostano quelle delle scelte fuori campo.
+  const momentRng = options.isolate ? Rng.fromSeed(seed) : rng;
   let s = newCareer({ ...randomCareerOptions(rng, ctx), difficulty }, seed, ctx);
   const d: Decisions = {
     weeks: 0,
@@ -170,7 +173,7 @@ export function runCareer(
         s,
         (moment) => {
           d.moments++;
-          return strategy.decideMoment(moment, rng);
+          return strategy.decideMoment(moment, momentRng);
         },
         ctx,
       ).state;

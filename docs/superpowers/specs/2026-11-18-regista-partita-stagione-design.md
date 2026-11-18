@@ -156,7 +156,10 @@ confermato le scelte sotto.
 - **Gesto:** tetto di `qualityMaxBonus` alzato nello schema; la media della qualità di un giocatore medio
   deve stare a 0,5 per ogni gesto (requisito UI). Il simulatore usa profili di qualità per strategia.
 - **Salvataggi:** `saveVersion` 1 → 2; la migrazione converte le partite a metà (`minute = blocksDone·15`,
-  P = 0, `dyn` neutro, `pending` conservato).
+  o `pending.minute` se c'è un momento in attesa: i gol v1 estratti dopo quel minuto si tolgono e si
+  risimulano; P = 0, `dyn` neutro, `pending` conservato). Il budget scende all'apertura di ogni passo.
+- **Catene e budget:** una catena si apre solo se la sua profondità massima entra nel budget; i suoi
+  passi stanno tutti nel minuto della radice.
 
 ### 8.2 Stagione
 - **Piano per capitolo:** il giocatore sceglie un piano a inizio capitolo, il motore lo applica a ogni

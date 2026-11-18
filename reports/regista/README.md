@@ -2,6 +2,7 @@
 
 Comando: `pnpm sim --careers 5000 --strategy all --seed 42 --out reports/regista/baseline`
 (difficoltà normal, 5000 carriere per strategia). File: `baseline-cautious.json`, `baseline-aggressive.json`, `baseline-random.json`.
+La CLI scrive `sim-<strategy>-normal-42-5000.json`; i file sono stati rinominati in `baseline-<strategy>.json`.
 Ogni modifica a `config/` si confronta con questi numeri.
 
 ## Tabella (totale, tutti i ruoli)
@@ -26,14 +27,40 @@ Tempo stimato = `playMinutes` del riepilogo. Nota: la stagione (16-17 min) è so
 
 ## Gol per partita (motore attuale)
 
-Metodo: 2000 partite del giocatore (carriera `newCareer` con le opzioni di `test/fixtures.ts`, una stagione per seme, semi 42, 43, ...) giocate con `autoDecider`.
+Metodo: 2000 partite del giocatore, una stagione per carriera (semi 42, 43, ...), tutte con `autoDecider`. Il calendario del motore include anche le coppe, quindi le partite di coppa del club del giocatore sono nel campione; nessuna scelta fuori campo (niente `planWeek`), si usa solo `advanceWeek`. Il campione si ferma a 2000 partite (la stagione in corso è interrotta lì).
+
+Procedura esatta (salvare come `goals.ts` in una cartella fuori dal repository, poi dalla radice: `node_modules/.bin/tsx <percorso>/goals.ts`; adattare i percorsi assoluti):
+
+```ts
+import { advanceWeek, autoDecider, isSeasonOver, newCareer, playerFixture, playMatch } from '<radice>/packages/engine/src/index';
+import { baseOptions } from '<radice>/packages/engine/test/fixtures';
+let n = 0, tot = 0, own = 0, moments = 0, rated = 0, ratingSum = 0, mins = 0;
+for (let seed = 42; n < 2000; seed++) {
+  let s = newCareer(baseOptions, seed); // ATT di Bergamo, tratto bomber_area
+  while (!isSeasonOver(s) && n < 2000) { // una sola stagione per seme
+    const f = playerFixture(s);
+    if (f && !f.result) {
+      let calls = 0;
+      const r = playMatch(s, (m, st) => { calls++; return autoDecider(m, st); });
+      s = r.state; const m = r.matchReport;
+      n++; tot += m.score.home + m.score.away; own += m.score[m.side]; moments += calls;
+      if (m.rating != null) { rated++; ratingSum += m.rating; }
+      mins += m.minutesPlayed;
+    }
+    s = advanceWeek(s).state;
+  }
+}
+console.log({ n, totalGoals: tot / n, ownSideGoals: own / n, momentsPerMatch: moments / n, rating: ratingSum / rated, minutes: mins / n });
+```
+
+Risultati:
 
 - Gol per partita, le due squadre insieme: **2,807**
 - Gol della squadra del giocatore: **1,5545**
 - Momenti chiave per partita (chiamate al decisore): **1,938**
 - Voto medio nelle partite con voto: 6,405; minuti giocati medi: 57,0
 
-Il Task A3 verifica i gol totali per partita entro ±5% della baseline (2,667-2,947).
+Il Task A3 verifica i gol totali per partita entro la tolleranza `baseline × 0,95 … × 1,05` = 2,667 … 2,947 (arrotondato).
 
 ## Tolleranza dei guardrail
 

@@ -39,7 +39,14 @@ import {
 
 export * from './schemas';
 export * from './events';
-export { BUILDUP_MIN_LINES, BUILDUP_PHASES, buildupLines, checkContent } from './check';
+export {
+  BUILDUP_MIN_LINES,
+  BUILDUP_PHASES,
+  buildupLines,
+  checkContent,
+  checkMomentKeys,
+  type MomentTextSource,
+} from './check';
 
 export interface GameContent {
   names: Names;

@@ -19,6 +19,31 @@ export interface KeyMomentOption {
   onSuccess: Consequence;
   /** Cosa può succedere se l'azione non riesce. */
   onFailure: Consequence;
+  /** Cosa segue un fallimento: contropiede avversario, pallone perso con rischio gol, niente. */
+  onFail: OnFail;
+  /** Fascia mostrata della probabilità vera (`chanceBands`). */
+  chanceBand: ChanceBand;
+}
+
+export type OnFail = 'counter' | 'lost' | 'none';
+export type ChanceBand = 'low' | 'mid' | 'high';
+
+/** Fascia della probabilità vera: sotto `low` bassa, da `high` in su alta, altrimenti discreta. */
+export function chanceBandOf(chance: number, bands: MatchConfig['chanceBands']): ChanceBand {
+  if (chance < bands.low) return 'low';
+  return chance >= bands.high ? 'high' : 'mid';
+}
+
+/**
+ * Cosa telegrafare in caso di fallimento: un seguito in fase difensiva è un contropiede, un gol
+ * avversario possibile è un pallone perso pericoloso, altrimenti nessuna conseguenza in campo.
+ */
+export function onFailOf(option: MomentOptionConfig, ctx: GameContext): OnFail {
+  const next = option.failure.next;
+  if (next && getMomentType(next.momentId, ctx).phase === 'defense') return 'counter';
+  return option.failure.goalAgainst !== undefined && option.failure.goalAgainst > 0
+    ? 'lost'
+    : 'none';
 }
 
 /** Conseguenza possibile di un'opzione, da mostrare prima della scelta. */
@@ -54,6 +79,8 @@ export interface KeyMoment {
   /** Valori per i segnaposto del testo (es. `{opponent}`). */
   params: Record<string, string>;
   score: { home: number; away: number };
+  /** Passo di una catena (dal secondo in poi): radice e numero del passo. */
+  chain?: { rootId: string; step: number };
   /** Stati dinamici della partita al momento dell'apertura. */
   dyn: MatchDyn;
   /** Pressione −1..1 al momento dell'apertura. */

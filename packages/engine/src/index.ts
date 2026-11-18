@@ -131,10 +131,14 @@ export {
   ZERO_DYN,
   CONSEQUENCES,
   consequenceOf,
+  chanceBandOf,
+  onFailOf,
   optionChance,
+  type ChanceBand,
   type Consequence,
   type KeyMoment,
   type KeyMomentOption,
+  type OnFail,
 } from './match/moments';
 export {
   checkConditions,

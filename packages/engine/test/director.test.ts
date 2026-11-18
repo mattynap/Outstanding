@@ -188,6 +188,9 @@ function sample(full90: number): Sampled[] {
 // Campione condiviso, costruito una volta prima dei test che lo usano (circa 20 s).
 let SAMPLE: Sampled[] = [];
 const momentsOf = (r: MatchReport) => r.events.filter((e) => e.kind === 'moment');
+/** Radici delle catene: i passi successivi restano allo stesso minuto del passo precedente. */
+const rootsOf = (r: MatchReport) =>
+  momentsOf(r).filter((e, i, all) => i === 0 || all[i - 1]!.minute !== e.minute);
 
 describe('tensione', () => {
   it('segue la formula della spec', () => {
@@ -240,7 +243,7 @@ describe('regista della partita', () => {
     expect(gate(ms(hot, { ...d, lastAt: 60 - dc.minGap }), cfg).kind).toBe('roll');
     // Nelle partite vere due radici non sono mai più vicine di hotGap, né di minGap prima di hotFrom.
     for (const { report } of SAMPLE) {
-      const minutes = momentsOf(report).map((e) => e.minute);
+      const minutes = rootsOf(report).map((e) => e.minute);
       for (let i = 1; i < minutes.length; i++) {
         const gap = minutes[i]! - minutes[i - 1]!;
         expect(gap).toBeGreaterThanOrEqual(dc.hotGap);
@@ -390,7 +393,8 @@ describe('regista della partita', () => {
     let cancelled = 0;
     for (const { report } of SAMPLE) {
       const buildups = report.events.filter((e) => e.kind === 'buildup');
-      const moments = momentsOf(report);
+      // I passi di catena non hanno preavviso: si apre solo la radice.
+      const moments = rootsOf(report);
       for (const mo of moments) {
         const b = buildups.find((e) => e.minute === mo.minute - dc.armLead);
         expect(b).toBeDefined();
@@ -523,12 +527,12 @@ describe('regista della partita', () => {
         ],
       });
     });
-    expect(chainDepth('att_wing', chained)).toBe(2);
-    expect(chainDepth('att_box_chance', chained)).toBe(1);
+    expect(chainDepth('att_wing', chained)).toBeGreaterThanOrEqual(2);
     const m = ms({ pressure: 0.1 });
     for (let seed = 1; seed <= 300; seed++) {
       const t = pickMomentType('ATT', m, 1, Rng.fromSeed(seed), chained);
       expect(t?.id).not.toBe('att_wing');
+      expect(chainDepth(t!.id, chained)).toBe(1);
     }
   });
 

@@ -14,6 +14,32 @@ export function buildupLines(t: Translations, phase: (typeof BUILDUP_PHASES)[num
   return n;
 }
 
+/** Forma minima di un tipo di momento chiave (da `config/data/moments.json`) per i testi. */
+export interface MomentTextSource {
+  id: string;
+  textVariants: number;
+  options: readonly { id: string }[];
+}
+
+/**
+ * Chiavi di testo dei momenti chiave: ogni variante e ogni opzione di ogni tipo, compresi i
+ * passi di catena (`chainOnly`). I tipi arrivano dalla config: il pacchetto non ne dipende.
+ */
+export function checkMomentKeys(types: readonly MomentTextSource[], t: Translations): string[] {
+  const errors: string[] = [];
+  for (const type of types) {
+    for (let i = 1; i <= type.textVariants; i++) {
+      const key = `match.moments.${type.id}.text.${i}`;
+      if (!(key in t)) errors.push(`moment ${type.id}: missing text "${key}"`);
+    }
+    for (const o of type.options) {
+      const key = `match.moments.${type.id}.options.${o.id}`;
+      if (!(key in t)) errors.push(`moment ${type.id}: missing text "${key}"`);
+    }
+  }
+  return errors;
+}
+
 /**
  * Controlli incrociati tra file che uno schema da solo non può esprimere.
  * Restituisce un elenco di problemi leggibili (vuoto se è tutto a posto).

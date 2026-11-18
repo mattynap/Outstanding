@@ -359,9 +359,33 @@ describe('partita simulata', () => {
       dyn: ZERO_DYN,
       pressure: 0,
       options: [
-        { id: 'a', textKey: 'a', chance: 0.3, onSuccess: 'rating', onFailure: 'lost' },
-        { id: 'b', textKey: 'b', chance: 0.8, onSuccess: 'rating', onFailure: 'lost' },
-        { id: 'c', textKey: 'c', chance: 0.5, onSuccess: 'rating', onFailure: 'lost' },
+        {
+          id: 'a',
+          textKey: 'a',
+          chance: 0.3,
+          onSuccess: 'rating',
+          onFailure: 'lost',
+          onFail: 'none',
+          chanceBand: 'mid',
+        },
+        {
+          id: 'b',
+          textKey: 'b',
+          chance: 0.8,
+          onSuccess: 'rating',
+          onFailure: 'lost',
+          onFail: 'none',
+          chanceBand: 'mid',
+        },
+        {
+          id: 'c',
+          textKey: 'c',
+          chance: 0.5,
+          onSuccess: 'rating',
+          onFailure: 'lost',
+          onFail: 'none',
+          chanceBand: 'mid',
+        },
       ],
     };
     expect(autoDecider(moment, toFirstMatch(newCareer(baseOptions, 3)))).toBe(1);

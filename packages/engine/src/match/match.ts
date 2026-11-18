@@ -30,8 +30,10 @@ import {
 } from './director';
 import {
   applyEffects,
+  chanceBandOf,
   getMomentType,
   consequenceOf,
+  onFailOf,
   ZERO_DYN,
   optionChance,
   pickMomentType,
@@ -211,29 +213,31 @@ function describeMoment(state: GameState, m: MatchState, ctx: GameContext): KeyM
   if (!pending) throw new Error('No key moment pending');
   const type = getMomentType(pending.momentId, ctx);
   const opponent = getAnyClub(state.world, m.opponentId);
+  const bonus = difficultyMods(state, ctx).matchChance + pressBonus(state, m.fixtureId);
   return {
     momentId: type.id,
     minute: pending.minute,
     textKey: `match.moments.${type.id}.text.${pending.textVariant}`,
     params: { opponent: opponent.shortName },
     score: { ...m.score },
+    ...(pending.chain ? { chain: { ...pending.chain } } : {}),
     dyn: { ...m.dyn },
     pressure: m.pressure,
-    options: type.options.map((o) => ({
-      id: o.id,
-      textKey: `match.moments.${type.id}.options.${o.id}`,
-      chance: optionChance(
-        state.player,
-        o,
-        opponent.rating,
-        ctx,
-        difficultyMods(state, ctx).matchChance + pressBonus(state, m.fixtureId),
-        0.5,
-        m.dyn,
-      ),
-      onSuccess: consequenceOf(o.success, true),
-      onFailure: consequenceOf(o.failure, false),
-    })),
+    options: type.options.map((o) => {
+      // Chiudere riesce sempre: la probabilità vera è 1 (vedi `decideMoment`).
+      const chance = o.closes
+        ? 1
+        : optionChance(state.player, o, opponent.rating, ctx, bonus, 0.5, m.dyn);
+      return {
+        id: o.id,
+        textKey: `match.moments.${type.id}.options.${o.id}`,
+        chance,
+        onSuccess: consequenceOf(o.success, true),
+        onFailure: consequenceOf(o.failure, false),
+        onFail: onFailOf(o, ctx),
+        chanceBand: chanceBandOf(chance, ctx.config.match.chanceBands),
+      };
+    }),
   };
 }
 
@@ -371,22 +375,36 @@ function finishMatch(
   };
 }
 
-/** Apre il passo armato al minuto raggiunto: variante del testo e contatori del regista. */
-function openArmed(m: MatchState, rng: Rng, ctx: GameContext): MatchState {
-  const armed = m.director.armed!;
-  const type = getMomentType(armed.momentId, ctx);
+/**
+ * Apre un passo interattivo al minuto raggiunto: variante del testo e contatori del regista.
+ * Senza `chain` è la radice armata; con `chain` è un passo successivo, allo stesso minuto.
+ */
+function openStep(
+  m: MatchState,
+  momentId: string,
+  chain: { rootId: string; step: number } | undefined,
+  rng: Rng,
+  ctx: GameContext,
+): MatchState {
+  const type = getMomentType(momentId, ctx);
   const textVariant = rng.int(1, type.textVariants);
   return {
     ...m,
     director: onStepOpened(
       m.director,
-      { minute: m.minute, momentId: type.id, tension: tension(m, ctx.config.match), root: true },
+      {
+        minute: m.minute,
+        momentId: type.id,
+        tension: tension(m, ctx.config.match),
+        root: chain === undefined,
+      },
       ctx.config.match,
     ),
     pending: {
       momentId: type.id,
       minute: m.minute,
       textVariant,
+      ...(chain ? { chain } : {}),
       options: type.options.map((_, i) => i),
     },
   };
@@ -446,7 +464,7 @@ function run(
     if (!cur.director.armed) cur = tryArm(state, cur, rng, ctx);
     // Con armLead 0 il preavviso e l'apertura cadono nello stesso minuto.
     if (cur.director.armed && cur.director.armed.at <= cur.minute) {
-      cur = openArmed(cur, rng, ctx);
+      cur = openStep(cur, cur.director.armed.momentId, undefined, rng, ctx);
       const paused = { ...state, currentMatch: cur, rngState: rng.getState() };
       return { state: paused, step: { kind: 'moment', moment: describeMoment(paused, cur, ctx) } };
     }
@@ -540,17 +558,20 @@ export function decideMoment(
   const clubs = matchClubs(state, m);
   const opponent = clubs[other(m.side)];
   const minute = m.pending.minute;
-  const success = rng.chance(
-    optionChance(
-      state.player,
-      option,
-      opponent.rating,
-      ctx,
-      difficultyMods(state, ctx).matchChance + pressBonus(state, m.fixtureId),
-      quality,
-      m.dyn,
-    ),
-  );
+  // "Chiudi" non estrae: riesce sempre e il gesto non conta (spec §8.4).
+  const success =
+    option.closes === true ||
+    rng.chance(
+      optionChance(
+        state.player,
+        option,
+        opponent.rating,
+        ctx,
+        difficultyMods(state, ctx).matchChance + pressBonus(state, m.fixtureId),
+        quality,
+        m.dyn,
+      ),
+    );
   const outcome = success ? option.success : option.failure;
 
   let cur: MatchState = {
@@ -563,6 +584,29 @@ export function decideMoment(
     ],
   };
   cur = applyEffects(cur, outcome.effects, ctx.config.match);
+  // Esito del passo decisivo: il picco è il passo aperto a questo minuto con questo tipo.
+  const peak = cur.director.peak;
+  if (peak && peak.minute === minute && peak.momentId === type.id) {
+    cur = { ...cur, director: { ...cur.director, peak: { ...peak, success } } };
+  }
+
+  // Seguito della catena: si estrae sempre `chance(next.chance ?? 1)`, anche quando vale 1, così
+  // il consumo del generatore dipende solo dalla config e partita continua e ripresa coincidono.
+  if (outcome.next && rng.chance(outcome.next.chance ?? 1)) {
+    if (cur.director.budgetLeft <= 0) {
+      // Invariante: il regista apre solo radici con chainDepth ≤ budgetLeft.
+      throw new Error(`Chain step "${outcome.next.momentId}" opened without budget`);
+    }
+    const chain = {
+      rootId: m.pending.chain?.rootId ?? type.id,
+      step: (m.pending.chain?.step ?? 1) + 1,
+    };
+    // Stesso minuto della radice, nessun avanzamento: niente gol dell'esito, niente intervallo.
+    cur = openStep(cur, outcome.next.momentId, chain, rng, ctx);
+    const paused = { ...state, currentMatch: cur, rngState: rng.getState() };
+    return { state: paused, step: { kind: 'moment', moment: describeMoment(paused, cur, ctx) } };
+  }
+
   const me = fullName(state.player);
   if (outcome.goalFor !== undefined && rng.chance(outcome.goalFor)) {
     if (outcome.by === 'self') {
@@ -580,15 +624,8 @@ export function decideMoment(
   if (outcome.goalAgainst !== undefined && rng.chance(outcome.goalAgainst)) {
     cur = addGoal(cur, other(m.side), minute, fullName(pickScorer(opponent, rng, ctx)));
   }
-  // Senza catene (Task A7) ogni momento chiude la sua catena: esito del passo decisivo e respiro.
-  const peak = cur.director.peak;
-  const director = onChainEnd(
-    peak && peak.minute === minute && peak.momentId === type.id
-      ? { ...cur.director, peak: { ...peak, success } }
-      : cur.director,
-    minute,
-    ctx.config.match,
-  );
+  // Fine della catena: parte il respiro.
+  const director = onChainEnd(cur.director, minute, ctx.config.match);
   return run(state, { ...cur, director }, rng, ctx);
 }
 

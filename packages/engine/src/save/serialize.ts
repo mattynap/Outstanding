@@ -141,6 +141,33 @@ export function migrate(
   return current;
 }
 
+const isNum = (v: unknown) => typeof v === 'number' && Number.isFinite(v);
+const isNumOrNull = (v: unknown) => v === null || isNum(v);
+const isObjOrNull = (v: unknown) => v === null || (typeof v === 'object' && !Array.isArray(v));
+
+function directorOk(d: Json): boolean {
+  return (
+    isNum(d['budgetStart']) &&
+    isNum(d['budgetLeft']) &&
+    isNumOrNull(d['hotLeft']) &&
+    isNumOrNull(d['lastAt']) &&
+    isNum(d['interventions']) &&
+    isObjOrNull(d['armed']) &&
+    d['armed'] !== undefined &&
+    isNumOrNull(d['relaxUntil']) &&
+    Array.isArray(d['lastTypes']) &&
+    d['lastTypes'].every((t: unknown) => typeof t === 'string') &&
+    isNum(d['legendsUsed']) &&
+    isObjOrNull(d['peak']) &&
+    d['peak'] !== undefined
+  );
+}
+
+function pendingOk(p: Json | null | undefined): boolean {
+  if (p === null || p === undefined) return true;
+  return Array.isArray(p['options']) && p['options'].every(isNum);
+}
+
 function assertShape(
   raw: Record<string, unknown>,
 ): asserts raw is Record<string, unknown> & GameState {
@@ -173,7 +200,8 @@ function assertShape(
       Array.isArray(m['trace']) &&
       typeof m['director'] === 'object' &&
       m['director'] !== null &&
-      num(m['director']['budgetLeft']) &&
+      directorOk(m['director']) &&
+      pendingOk(m['pending']) &&
       typeof m['dyn'] === 'object' &&
       m['dyn'] !== null &&
       num(m['stakes']) &&

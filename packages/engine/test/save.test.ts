@@ -4,7 +4,11 @@ import {
   defaultContext,
   deserialize,
   migrate,
+  advanceWeek,
+  beginMatch,
   newCareer,
+  playerFixture,
+  playMatch,
   serialize,
   type GameState,
 } from '../src/index';
@@ -137,6 +141,46 @@ describe('migrazione dei salvataggi v1 -> v2', () => {
     const s = deserialize(JSON.stringify(raw));
     expect(s.saveVersion).toBe(2);
     expect(s.currentMatch?.minute).toBe(28);
+  });
+});
+
+describe('ripresa di una partita migrata', () => {
+  it('playMatch riprende da minute senza momento aperto, in modo deterministico', () => {
+    let s = newCareer(baseOptions, 5);
+    while (!playerFixture(s)) s = advanceWeek(s).state;
+    const paused = beginMatch(s).state;
+    const cm = paused.currentMatch!;
+    // Equivale a un salvataggio v1 migrato senza momento aperto.
+    const migrated = {
+      ...paused,
+      currentMatch: { ...cm, pending: null, director: { ...cm.director, plannedMinutes: [] } },
+    };
+    const first = playMatch(migrated, () => 0);
+    const again = playMatch(migrated, () => 0);
+    expect(first.matchReport.fixtureId).toBe(cm.fixtureId);
+    expect(again).toEqual(first);
+  });
+});
+
+describe('validazione del regista', () => {
+  const load = (edit: (m: Loose) => void) => {
+    const base = JSON.parse(serialize(newCareer(baseOptions, 5))) as Raw;
+    const migrated = migrate({ ...base, saveVersion: 1, currentMatch: matchOf(v1()) });
+    edit(matchOf(migrated));
+    return () => deserialize(JSON.stringify(migrated));
+  };
+  it('accetta il salvataggio migrato intatto', () => {
+    expect(load(() => {})).not.toThrow();
+  });
+  it.each(['lastTypes', 'budgetStart', 'interventions', 'legendsUsed', 'armed', 'peak', 'hotLeft'])(
+    'rifiuta director senza %s',
+    (field) => {
+      expect(load((m) => delete m['director'][field])).toThrow(/currentMatch/);
+    },
+  );
+  it('rifiuta lastTypes non di stringhe e options non array', () => {
+    expect(load((m) => (m['director']['lastTypes'] = [1]))).toThrow(/currentMatch/);
+    expect(load((m) => (m['pending']['options'] = 'x'))).toThrow(/currentMatch/);
   });
 });
 

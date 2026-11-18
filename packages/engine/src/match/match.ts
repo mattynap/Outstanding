@@ -558,8 +558,12 @@ export function playMatch(
   decide: KeyMomentDecider,
   ctx: GameContext = defaultContext,
 ): { state: GameState; matchReport: MatchReport } {
-  let { state: s, step } = state.currentMatch
-    ? { state, step: { kind: 'moment', moment: getPendingMoment(state, ctx)! } as MatchStep }
+  const cm = state.currentMatch;
+  // Partita in corso senza momento aperto (salvataggio migrato): si riprende dal minuto raggiunto.
+  let { state: s, step } = cm
+    ? cm.pending
+      ? { state, step: { kind: 'moment', moment: getPendingMoment(state, ctx)! } as MatchStep }
+      : run(state, cm, Rng.fromState(state.rngState), ctx)
     : beginMatch(state, ctx);
   while (step.kind === 'moment') {
     ({ state: s, step } = decideMoment(s, decide(step.moment, s), ctx));

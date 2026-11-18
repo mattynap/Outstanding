@@ -1,0 +1,181 @@
+{
+  "strategy": "random",
+  "seed": 42,
+  "careers": 5000,
+  "overall": {
+    "careers": 5000,
+    "reachedTopPct": 0.1,
+    "topDebutAge": 30,
+    "topLevelSeasons": 0,
+    "appearances": 549.9,
+    "goals": 41.9,
+    "assists": 48.2,
+    "averageRating": 6.09,
+    "peakOvr": 58.2,
+    "trophies": 0.71,
+    "withTrophyPct": 45,
+    "trophiesById": {
+      "L4": 0.25,
+      "L5": 0.21,
+      "L6": 0.15,
+      "L3": 0.1,
+      "L2": 0
+    },
+    "retirementAge": 36.3,
+    "retirementReasonsPct": {
+      "no_offers": 100
+    },
+    "score": 379,
+    "tiersPct": {
+      "anonima": 94,
+      "discreta": 5.7,
+      "buona": 0.3,
+      "grande": 0,
+      "leggenda": 0
+    },
+    "legendPct": 0,
+    "playMinutes": 289,
+    "seasons": 20.1
+  },
+  "byRole": {
+    "GK": {
+      "careers": 1239,
+      "reachedTopPct": 0.5,
+      "topDebutAge": 30,
+      "topLevelSeasons": 0,
+      "appearances": 520.1,
+      "goals": 0,
+      "assists": 1.7,
+      "averageRating": 6.03,
+      "peakOvr": 60.5,
+      "trophies": 0.26,
+      "withTrophyPct": 22.8,
+      "trophiesById": {
+        "L4": 0.1,
+        "L5": 0.08,
+        "L6": 0.03,
+        "L3": 0.05,
+        "L2": 0
+      },
+      "retirementAge": 36.8,
+      "retirementReasonsPct": {
+        "no_offers": 100
+      },
+      "score": 599,
+      "tiersPct": {
+        "anonima": 76.4,
+        "discreta": 22.4,
+        "buona": 1.2,
+        "grande": 0,
+        "leggenda": 0
+      },
+      "legendPct": 0,
+      "playMinutes": 282,
+      "seasons": 20.6
+    },
+    "DEF": {
+      "careers": 1238,
+      "reachedTopPct": 0,
+      "topDebutAge": null,
+      "topLevelSeasons": 0,
+      "appearances": 563.9,
+      "goals": 2.7,
+      "assists": 5.7,
+      "averageRating": 5.95,
+      "peakOvr": 57.3,
+      "trophies": 0.32,
+      "withTrophyPct": 26.6,
+      "trophiesById": {
+        "L5": 0.11,
+        "L6": 0.05,
+        "L4": 0.12,
+        "L3": 0.03
+      },
+      "retirementAge": 36,
+      "retirementReasonsPct": {
+        "no_offers": 100
+      },
+      "score": 284,
+      "tiersPct": {
+        "anonima": 99.5,
+        "discreta": 0.5,
+        "buona": 0,
+        "grande": 0,
+        "leggenda": 0
+      },
+      "legendPct": 0,
+      "playMinutes": 292,
+      "seasons": 19.8
+    },
+    "MID": {
+      "careers": 1275,
+      "reachedTopPct": 0,
+      "topDebutAge": null,
+      "topLevelSeasons": 0,
+      "appearances": 599.7,
+      "goals": 18.7,
+      "assists": 105.9,
+      "averageRating": 6.07,
+      "peakOvr": 56.7,
+      "trophies": 0.68,
+      "withTrophyPct": 51.6,
+      "trophiesById": {
+        "L6": 0.16,
+        "L5": 0.23,
+        "L4": 0.24,
+        "L3": 0.06
+      },
+      "retirementAge": 36.2,
+      "retirementReasonsPct": {
+        "no_offers": 100
+      },
+      "score": 341,
+      "tiersPct": {
+        "anonima": 100,
+        "discreta": 0,
+        "buona": 0,
+        "grande": 0,
+        "leggenda": 0
+      },
+      "legendPct": 0,
+      "playMinutes": 300,
+      "seasons": 20
+    },
+    "ATT": {
+      "careers": 1248,
+      "reachedTopPct": 0.1,
+      "topDebutAge": 30,
+      "topLevelSeasons": 0,
+      "appearances": 514.6,
+      "goals": 145.9,
+      "assists": 77.5,
+      "averageRating": 6.32,
+      "peakOvr": 58.2,
+      "trophies": 1.57,
+      "withTrophyPct": 78.5,
+      "trophiesById": {
+        "L4": 0.54,
+        "L3": 0.24,
+        "L6": 0.37,
+        "L5": 0.42,
+        "L2": 0
+      },
+      "retirementAge": 36.1,
+      "retirementReasonsPct": {
+        "no_offers": 100
+      },
+      "score": 292,
+      "tiersPct": {
+        "anonima": 100,
+        "discreta": 0,
+        "buona": 0,
+        "grande": 0,
+        "leggenda": 0
+      },
+      "legendPct": 0,
+      "playMinutes": 282,
+      "seasons": 19.9
+    }
+  },
+  "difficulty": "normal"
+}

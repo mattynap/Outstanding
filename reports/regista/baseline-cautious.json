@@ -1,0 +1,207 @@
+{
+  "strategy": "cautious",
+  "seed": 42,
+  "careers": 5000,
+  "overall": {
+    "careers": 5000,
+    "reachedTopPct": 60.4,
+    "topDebutAge": 25.6,
+    "topLevelSeasons": 3.8,
+    "appearances": 652,
+    "goals": 50.1,
+    "assists": 61.1,
+    "averageRating": 6.24,
+    "peakOvr": 68.4,
+    "trophies": 0.81,
+    "withTrophyPct": 45.6,
+    "trophiesById": {
+      "L3": 0.27,
+      "L5": 0.06,
+      "L1": 0.11,
+      "national_cup": 0.11,
+      "continental_major": 0,
+      "L4": 0.07,
+      "L2": 0.15,
+      "L6": 0.02,
+      "continental_minor": 0.01
+    },
+    "retirementAge": 37,
+    "retirementReasonsPct": {
+      "no_offers": 93.3,
+      "age": 6.7
+    },
+    "score": 1635,
+    "tiersPct": {
+      "discreta": 28.2,
+      "leggenda": 3.3,
+      "buona": 27.9,
+      "anonima": 16.8,
+      "grande": 23.8
+    },
+    "legendPct": 3.26,
+    "playMinutes": 361,
+    "seasons": 20.9
+  },
+  "byRole": {
+    "GK": {
+      "careers": 1239,
+      "reachedTopPct": 56.7,
+      "topDebutAge": 25.4,
+      "topLevelSeasons": 3.4,
+      "appearances": 573.5,
+      "goals": 0,
+      "assists": 0,
+      "averageRating": 6.07,
+      "peakOvr": 69.1,
+      "trophies": 0.29,
+      "withTrophyPct": 23.6,
+      "trophiesById": {
+        "national_cup": 0.06,
+        "L3": 0.09,
+        "L2": 0.04,
+        "L6": 0.01,
+        "L5": 0.03,
+        "L1": 0.03,
+        "L4": 0.02,
+        "continental_minor": 0,
+        "continental_major": 0
+      },
+      "retirementAge": 38.3,
+      "retirementReasonsPct": {
+        "no_offers": 79.7,
+        "age": 20.3
+      },
+      "score": 1516,
+      "tiersPct": {
+        "anonima": 18.3,
+        "discreta": 28.8,
+        "buona": 29.6,
+        "grande": 21.5,
+        "leggenda": 1.8
+      },
+      "legendPct": 1.78,
+      "playMinutes": 335,
+      "seasons": 22.2
+    },
+    "DEF": {
+      "careers": 1238,
+      "reachedTopPct": 55.3,
+      "topDebutAge": 25.6,
+      "topLevelSeasons": 3.3,
+      "appearances": 699.5,
+      "goals": 0,
+      "assists": 0.4,
+      "averageRating": 6.2,
+      "peakOvr": 68.4,
+      "trophies": 0.29,
+      "withTrophyPct": 23.7,
+      "trophiesById": {
+        "L3": 0.09,
+        "national_cup": 0.06,
+        "L6": 0.01,
+        "L5": 0.04,
+        "L2": 0.03,
+        "L1": 0.01,
+        "L4": 0.04,
+        "continental_minor": 0
+      },
+      "retirementAge": 37.3,
+      "retirementReasonsPct": {
+        "no_offers": 96.1,
+        "age": 3.9
+      },
+      "score": 1661,
+      "tiersPct": {
+        "buona": 26.9,
+        "anonima": 17.4,
+        "discreta": 28.2,
+        "leggenda": 4.2,
+        "grande": 23.3
+      },
+      "legendPct": 4.2,
+      "playMinutes": 371,
+      "seasons": 21.2
+    },
+    "MID": {
+      "careers": 1275,
+      "reachedTopPct": 60.9,
+      "topDebutAge": 25.7,
+      "topLevelSeasons": 3.8,
+      "appearances": 747.7,
+      "goals": 0.1,
+      "assists": 171.8,
+      "averageRating": 6.29,
+      "peakOvr": 68.2,
+      "trophies": 0.77,
+      "withTrophyPct": 50.4,
+      "trophiesById": {
+        "L5": 0.09,
+        "L4": 0.08,
+        "L3": 0.25,
+        "L2": 0.12,
+        "national_cup": 0.12,
+        "L6": 0.03,
+        "L1": 0.07,
+        "continental_minor": 0.01,
+        "continental_major": 0
+      },
+      "retirementAge": 36.8,
+      "retirementReasonsPct": {
+        "no_offers": 97.3,
+        "age": 2.7
+      },
+      "score": 1984,
+      "tiersPct": {
+        "buona": 32.9,
+        "anonima": 3.5,
+        "grande": 36.3,
+        "discreta": 23.1,
+        "leggenda": 4.2
+      },
+      "legendPct": 4.16,
+      "playMinutes": 392,
+      "seasons": 20.6
+    },
+    "ATT": {
+      "careers": 1248,
+      "reachedTopPct": 68.6,
+      "topDebutAge": 25.7,
+      "topLevelSeasons": 4.4,
+      "appearances": 585,
+      "goals": 200.8,
+      "assists": 68.9,
+      "averageRating": 6.4,
+      "peakOvr": 68.1,
+      "trophies": 1.89,
+      "withTrophyPct": 84,
+      "trophiesById": {
+        "L3": 0.64,
+        "L5": 0.07,
+        "L1": 0.35,
+        "national_cup": 0.19,
+        "continental_major": 0.01,
+        "L2": 0.42,
+        "L4": 0.14,
+        "L6": 0.04,
+        "continental_minor": 0.02
+      },
+      "retirementAge": 35.7,
+      "retirementReasonsPct": {
+        "no_offers": 99.8,
+        "age": 0.2
+      },
+      "score": 1371,
+      "tiersPct": {
+        "discreta": 32.8,
+        "leggenda": 2.9,
+        "anonima": 28.4,
+        "grande": 13.9,
+        "buona": 22
+      },
+      "legendPct": 2.88,
+      "playMinutes": 346,
+      "seasons": 19.5
+    }
+  },
+  "difficulty": "normal"
+}

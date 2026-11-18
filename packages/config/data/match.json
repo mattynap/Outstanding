@@ -156,6 +156,9 @@
     "quick": [1, 2],
     "sim": [5, 7]
   },
+  "peak": {
+    "variants": 3
+  },
   "chanceBands": {
     "low": 0.35,
     "high": 0.65

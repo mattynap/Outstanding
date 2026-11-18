@@ -523,6 +523,8 @@ export const matchSchema = z
     }),
     /** Passi interattivi per modalità di partita: [min, max]. */
     modes: z.object({ full: countRange, quick: countRange, sim: countRange }),
+    /** Riga di chiusura della pagella dal passo decisivo: varianti di `match.peak.<success|failure>.<n>`. */
+    peak: z.object({ variants: z.number().int().min(1) }),
     /** Soglie delle fasce di probabilità mostrate (derivano dalla probabilità vera). */
     chanceBands: z.object({ low: prob, high: prob }),
     legends: z.object({
@@ -1395,3 +1397,18 @@ export const mediaSchema = z.object({
 });
 export type MediaConfig = z.infer<typeof mediaSchema>;
 export type PostConfig = MediaConfig['posts'][number];
+
+/** Stime del tempo di gioco del simulatore (secondi per decisione). */
+export const simulatorSchema = z.object({
+  secondsPer: z.object({
+    week: z.number().min(0),
+    event: z.number().min(0),
+    momentStep: z.number().min(0),
+    chainStep: z.number().min(0),
+    fullMatch: z.number().min(0),
+    quickMatch: z.number().min(0),
+    simulatedMatch: z.number().min(0),
+    offer: z.number().min(0),
+  }),
+});
+export type SimulatorConfig = z.infer<typeof simulatorSchema>;

@@ -1,9 +1,10 @@
 /**
  * CLI del simulatore di carriere:
  *   pnpm sim --careers 1000 --strategy cautious --seed 42 [--difficulty normal] [--workers 8] [--out sim-output]
- *     [--isolate] [--quality 0..1]
+ *     [--isolate] [--quality 0..1] [--mode full|quick]
  * `--strategy all` esegue tutte le strategie. `--isolate`: tutte usano le scelte fuori campo della
  * prudente e cambiano solo i momenti chiave. `--quality`: qualità del gesto (0..1) per ogni momento.
+ * `--mode quick`: le partite giocate di persona sono rapide (1–2 passi) invece che complete.
  * Scrive un riepilogo JSON e stampa una tabella.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -35,6 +36,7 @@ const { values } = parseArgs({
     out: { type: 'string', default: 'sim-output' },
     isolate: { type: 'boolean', default: false },
     quality: { type: 'string' },
+    mode: { type: 'string', default: 'full' },
     details: { type: 'boolean', default: false },
   },
 });
@@ -56,6 +58,12 @@ if (
   console.error('--quality deve essere un numero tra 0 e 1');
   process.exit(1);
 }
+
+if (values.mode !== 'full' && values.mode !== 'quick') {
+  console.error('--mode deve essere full o quick');
+  process.exit(1);
+}
+const mode = values.mode;
 
 const careers = int('careers', values.careers, 1);
 const seed = int('seed', values.seed, 0);
@@ -89,7 +97,7 @@ for (const strategy of strategies) {
       }
     },
     difficulty,
-    { isolate: values.isolate, quality },
+    { isolate: values.isolate, quality, mode },
   );
   if (tty) process.stderr.write('\n');
   const summary = {
@@ -97,8 +105,9 @@ for (const strategy of strategies) {
     difficulty,
     ...(values.isolate ? { isolate: true } : {}),
     ...(quality !== undefined ? { quality } : {}),
+    ...(mode === 'quick' ? { mode } : {}),
   };
-  const suffix = `${values.isolate ? '-isolate' : ''}${quality !== undefined ? `-q${quality}` : ''}`;
+  const suffix = `${values.isolate ? '-isolate' : ''}${quality !== undefined ? `-q${quality}` : ''}${mode === 'quick' ? '-quick' : ''}`;
   const file = join(values.out, `sim-${strategy}-${difficulty}-${seed}-${careers}${suffix}.json`);
   writeFileSync(
     file,

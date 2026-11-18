@@ -12,6 +12,7 @@ import {
 } from '@outstanding/engine';
 import {
   careerSeeds,
+  estimateSeconds,
   formatTable,
   getStrategy,
   randomCareerOptions,
@@ -316,4 +317,65 @@ describe.runIf(process.env.SIM_CRITERION === '1')('isolated rating criterion', (
     expect(contextual).toBeGreaterThan(aggressive);
     expect(Math.abs(cautious - aggressive)).toBeLessThanOrEqual(0.2 + 1e-9);
   }, 3_600_000);
+});
+
+describe('stima del tempo', () => {
+  const sp = defaultContext.config.simulator.secondsPer;
+
+  it('uses the configured values', () => {
+    expect(sp).toEqual({
+      week: 4,
+      event: 15,
+      momentStep: 8,
+      chainStep: 5,
+      fullMatch: 150,
+      quickMatch: 25,
+      simulatedMatch: 3,
+      offer: 10,
+    });
+  });
+
+  it('time estimate counts chain steps separately', () => {
+    const base = {
+      weeks: 0,
+      events: 0,
+      moments: 0,
+      chainSteps: 0,
+      matches: 0,
+      quickMatches: 0,
+      simulatedMatches: 0,
+      offers: 0,
+    };
+    expect(estimateSeconds({ ...base, moments: 1 }, sp)).toBe(sp.momentStep);
+    expect(estimateSeconds({ ...base, chainSteps: 1 }, sp)).toBe(sp.chainStep);
+    expect(
+      estimateSeconds(
+        { ...base, matches: 2, quickMatches: 3, simulatedMatches: 4, moments: 5, chainSteps: 6 },
+        sp,
+      ),
+    ).toBe(
+      2 * sp.fullMatch +
+        3 * sp.quickMatch +
+        4 * sp.simulatedMatch +
+        5 * sp.momentStep +
+        6 * sp.chainStep,
+    );
+  });
+
+  it(
+    'mode quick switches manual matches to quick',
+    () => {
+      const r = runCareer(11, 'cautious', defaultContext, undefined, { mode: 'quick' });
+      expect(r.decisions.matches).toBe(0);
+      expect(r.decisions.quickMatches).toBeGreaterThan(0);
+      expect(r.decisions.moments + r.decisions.chainSteps).toBeLessThanOrEqual(
+        2 * r.decisions.quickMatches,
+      );
+      const full = runCareer(11, 'cautious');
+      expect(full.decisions.quickMatches).toBe(0);
+      expect(full.decisions.matches).toBeGreaterThan(0);
+      expect(r.playMinutes).toBeLessThan(full.playMinutes);
+    },
+    CAREER_TIMEOUT,
+  );
 });

@@ -200,6 +200,8 @@ const GESTURE_QUALITY = { cautious: 0.5, aggressive: 0.5, contextual: 0.5 } as c
 export interface StrategyOptions {
   isolate?: boolean;
   quality?: number;
+  /** Modalità delle partite giocate di persona (default completa). */
+  mode?: 'full' | 'quick';
 }
 
 export function getStrategy(id: StrategyId, options: StrategyOptions = {}): Strategy {

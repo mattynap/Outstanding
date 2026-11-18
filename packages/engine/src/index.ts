@@ -120,6 +120,7 @@ export {
   simulateMatch,
   type KeyMomentDecider,
   type MatchDecision,
+  type MatchOptions,
   type MatchReport,
   RATING_PART_KEYS,
   type RatingPart,

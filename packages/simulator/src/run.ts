@@ -1,3 +1,4 @@
+import type { SimulatorConfig } from '@outstanding/config';
 import {
   acceptOffer,
   acceptSponsor,
@@ -32,18 +33,22 @@ import {
 import { getStrategy, type StrategyId, type StrategyOptions } from './strategies';
 
 /**
- * Stima del tempo di gioco: secondi medi per ogni tipo di decisione presa davanti allo schermo.
- * Sono ipotesi del simulatore (non parametri del gioco): servono solo a confrontare con l'obiettivo
- * di 2–4 ore per una carriera completa.
+ * Stima del tempo di gioco: secondi per decisione da `config/data/simulator.json > secondsPer`
+ * (ipotesi del simulatore, non parametri del gioco), da confrontare con 20–30 minuti a stagione
+ * e 6–8 ore a carriera. I passi di catena (dal secondo in poi) costano meno delle radici.
  */
-export const SECONDS_PER = {
-  week: 4,
-  event: 15,
-  moment: 6,
-  match: 10,
-  simulatedMatch: 3,
-  offer: 10,
-} as const;
+export function estimateSeconds(d: Decisions, sp: SimulatorConfig['secondsPer']): number {
+  return (
+    d.weeks * sp.week +
+    d.events * sp.event +
+    d.moments * sp.momentStep +
+    d.chainSteps * sp.chainStep +
+    d.matches * sp.fullMatch +
+    d.quickMatches * sp.quickMatch +
+    d.simulatedMatches * sp.simulatedMatch +
+    d.offers * sp.offer
+  );
+}
 
 /** Limite di sicurezza: nessuna carriera dura più di così (il ritiro arriva al più tardi a 40 anni). */
 const MAX_SEASONS = 40;
@@ -51,9 +56,13 @@ const MAX_SEASONS = 40;
 export interface Decisions {
   weeks: number;
   events: number;
+  /** Passi radice (il primo di ogni catena). */
   moments: number;
-  /** Partite giocate di persona e partite simulate. */
+  /** Passi di catena dopo il primo. */
+  chainSteps: number;
+  /** Partite giocate di persona in modalità completa e rapida; partite simulate. */
   matches: number;
+  quickMatches: number;
   simulatedMatches: number;
   offers: number;
 }
@@ -116,6 +125,8 @@ export function runCareer(
   options: StrategyOptions = {},
 ): CareerResult {
   const strategy = getStrategy(strategyId, options);
+  // Le partite giocate di persona sono complete o rapide; le altre sono simulate.
+  const mode = options.mode ?? 'full';
   // Le scelte della strategia usano un generatore separato: lo stato del gioco resta deterministico.
   const rng = Rng.fromSeed(seed ^ 0x5bd1e995);
   // In isolamento le estrazioni dei momenti non spostano quelle delle scelte fuori campo.
@@ -125,7 +136,9 @@ export function runCareer(
     weeks: 0,
     events: 0,
     moments: 0,
+    chainSteps: 0,
     matches: 0,
+    quickMatches: 0,
     simulatedMatches: 0,
     offers: 0,
   };
@@ -172,12 +185,15 @@ export function runCareer(
       s = playMatch(
         s,
         (moment) => {
-          d.moments++;
+          if (moment.chain) d.chainSteps++;
+          else d.moments++;
           return strategy.decideMoment(moment, momentRng);
         },
         ctx,
+        { mode },
       ).state;
-      d.matches++;
+      if (mode === 'quick') d.quickMatches++;
+      else d.matches++;
     }
     s = advanceWeek(s, ctx).state;
   }
@@ -186,13 +202,7 @@ export function runCareer(
   const totals = careerTotals(history);
   const score = careerScore(history, s.player.role, ctx);
   const levels = history.filter((h) => h.stats.appearances > 0 && h.leagueLevel !== null);
-  const seconds =
-    d.weeks * SECONDS_PER.week +
-    d.events * SECONDS_PER.event +
-    d.moments * SECONDS_PER.moment +
-    d.matches * SECONDS_PER.match +
-    d.simulatedMatches * SECONDS_PER.simulatedMatch +
-    d.offers * SECONDS_PER.offer;
+  const seconds = estimateSeconds(d, ctx.config.simulator.secondsPer);
   return {
     seed,
     strategy: strategyId,

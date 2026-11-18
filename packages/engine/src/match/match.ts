@@ -10,6 +10,7 @@ import type {
   ClubBase,
   GameState,
   MatchEvent,
+  MatchMode,
   MatchState,
   Player,
   RosterPlayer,
@@ -99,6 +100,11 @@ export interface MatchReport {
   injury?: { type: string; weeksLeft: number };
   /** Gesto da leggenda offerto e scelto in partita (per la prima pagina e l'album). */
   legend?: { id: string; success: boolean };
+  /**
+   * Passo decisivo (il passo a tensione più alta) con il suo esito e la riga di chiusura della
+   * pagella (`match.peak.<success|failure>.<n>`); null se la partita non ha avuto passi.
+   */
+  peak: { minute: number; momentId: string; success: boolean; closingKey: string } | null;
 }
 
 /** Passo della partita: un momento chiave da decidere oppure la partita finita. */
@@ -482,9 +488,22 @@ function finishMatch(
       opponent: getAnyClub(state.world, m.opponentId).shortName,
     },
   );
+  // Ultima estrazione della partita, a punto fisso: variante della riga di chiusura.
+  const peak = m.director.peak
+    ? {
+        minute: m.director.peak.minute,
+        momentId: m.director.peak.momentId,
+        success: m.director.peak.success,
+        closingKey: `match.peak.${m.director.peak.success ? 'success' : 'failure'}.${rng.int(
+          1,
+          ctx.config.match.peak.variants,
+        )}`,
+      }
+    : null;
   return {
     state: next,
     report: {
+      peak,
       fixtureId: m.fixtureId,
       homeId: fixture.homeId,
       awayId: fixture.awayId,
@@ -608,6 +627,11 @@ function run(
   }
 }
 
+/** Opzioni di una partita: modalità (completa di default, rapida, simulata). */
+export interface MatchOptions {
+  mode?: MatchMode;
+}
+
 /**
  * Inizia la partita del giocatore di questa settimana: convocazione, minuti in campo, momenti
  * chiave. Restituisce il primo momento chiave da decidere oppure, se il giocatore non gioca o non
@@ -616,6 +640,7 @@ function run(
 export function beginMatch(
   state: GameState,
   ctx: GameContext = defaultContext,
+  opts: MatchOptions = {},
 ): { state: GameState; step: MatchStep } {
   if (state.currentMatch) throw new Error('A match is already in progress');
   if (state.pendingEvents.length > 0) throw new Error('Resolve the pending events first');
@@ -634,7 +659,7 @@ export function beginMatch(
   if (minuteIn !== null && minuteIn > 0) events.push({ kind: 'subIn', minute: minuteIn });
   if (minuteIn !== null && minuteOut < total) events.push({ kind: 'subOut', minute: minuteOut });
 
-  const mode = 'full';
+  const mode = opts.mode ?? 'full';
   const minutesOnPitch = minuteIn === null ? 0 : minuteOut - minuteIn;
   const director = initialDirector(mode, minutesOnPitch, rng, ctx.config.match);
   const m: MatchState = {
@@ -801,7 +826,7 @@ export function simulateMatch(
   state: GameState,
   ctx: GameContext = defaultContext,
 ): { state: GameState; matchReport: MatchReport } {
-  return playMatch(state, autoDecider, ctx);
+  return playMatch(state, autoDecider, ctx, { mode: 'sim' });
 }
 
 /** Gioca l'intera partita della settimana affidando i momenti chiave a `decide`. */
@@ -809,6 +834,7 @@ export function playMatch(
   state: GameState,
   decide: KeyMomentDecider,
   ctx: GameContext = defaultContext,
+  opts: MatchOptions = {},
 ): { state: GameState; matchReport: MatchReport } {
   const cm = state.currentMatch;
   // Partita in corso senza momento aperto (salvataggio migrato): si riprende dal minuto raggiunto.
@@ -816,7 +842,7 @@ export function playMatch(
     ? cm.pending
       ? { state, step: { kind: 'moment', moment: getPendingMoment(state, ctx)! } as MatchStep }
       : run(state, cm, Rng.fromState(state.rngState), ctx)
-    : beginMatch(state, ctx);
+    : beginMatch(state, ctx, opts);
   while (step.kind === 'moment') {
     ({ state: s, step } = decideMoment(s, decide(step.moment, s), ctx));
   }

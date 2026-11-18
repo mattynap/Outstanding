@@ -1,0 +1,13 @@
+{
+  "_comment": "Stime del simulatore, non parametri del gioco: secondi medi per decisione davanti allo schermo. La partita completa vale 2,5 minuti di cronaca più i passi. Da confrontare con 20-30 minuti a stagione e 6-8 ore a carriera.",
+  "secondsPer": {
+    "week": 4,
+    "event": 15,
+    "momentStep": 8,
+    "chainStep": 5,
+    "fullMatch": 150,
+    "quickMatch": 25,
+    "simulatedMatch": 3,
+    "offer": 10
+  }
+}

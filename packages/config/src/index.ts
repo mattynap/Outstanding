@@ -15,6 +15,7 @@ import momentsJson from '../data/moments.json';
 import playerJson from '../data/player.json';
 import progressionJson from '../data/progression.json';
 import ratingsJson from '../data/ratings.json';
+import simulatorJson from '../data/simulator.json';
 import worldJson from '../data/world.json';
 import {
   calendarSchema,
@@ -32,6 +33,7 @@ import {
   playerConfigSchema,
   progressionSchema,
   ratingsSchema,
+  simulatorSchema,
   worldSchema,
   type CalendarConfig,
   type CareerConfig,
@@ -48,6 +50,7 @@ import {
   type PlayerConfig,
   type ProgressionConfig,
   type RatingsConfig,
+  type SimulatorConfig,
   type WorldConfig,
 } from './schemas';
 
@@ -70,6 +73,7 @@ export const configSchema = {
   finance: financeSchema,
   private: privateSchema,
   media: mediaSchema,
+  simulator: simulatorSchema,
 } as const;
 
 export interface GameConfig {
@@ -89,6 +93,7 @@ export interface GameConfig {
   finance: FinanceConfig;
   private: PrivateConfig;
   media: MediaConfig;
+  simulator: SimulatorConfig;
 }
 
 /** Oggetti di configurazione grezzi (non validati), uno per file JSON. */
@@ -217,6 +222,7 @@ export const rawDefaultConfig: RawConfig = {
   finance: financeJson,
   private: privateJson,
   media: mediaJson,
+  simulator: simulatorJson,
 };
 
 /** Configurazione predefinita distribuita con il gioco. */

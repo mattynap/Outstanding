@@ -603,3 +603,113 @@ describe('conseguenze nel resto della partita (dyn)', () => {
     expect(next[0]!.dyn).toEqual(ZERO_DYN);
   });
 });
+
+describe('modalità della partita e passo decisivo', () => {
+  /** Conta i passi interattivi di una partita giocata con `first`. */
+  function steps(seed: number, mode?: 'full' | 'quick' | 'sim') {
+    const s = toFirstMatch(newCareer(baseOptions, seed));
+    let n = 0;
+    const { matchReport, state } = playMatch(
+      s,
+      () => {
+        n++;
+        return 0;
+      },
+      ctx,
+      mode ? { mode } : undefined,
+    );
+    return { n, report: matchReport, state };
+  }
+
+  it('quick mode has 1–2 steps', () => {
+    const [min, max] = ctx.config.match.modes.quick;
+    let played = 0;
+    for (let seed = 1; seed <= 40; seed++) {
+      const { n } = steps(seed, 'quick');
+      if (n === 0) continue;
+      played++;
+      expect(n).toBeGreaterThanOrEqual(min);
+      expect(n).toBeLessThanOrEqual(max);
+    }
+    expect(played).toBeGreaterThan(5);
+  });
+
+  it('default mode is full', () => {
+    let checked = 0;
+    for (let seed = 1; seed <= 40 && checked < 3; seed++) {
+      const s = toFirstMatch(newCareer(baseOptions, seed));
+      const a = beginMatch(s, ctx);
+      const b = beginMatch(s, ctx, { mode: 'full' });
+      if (a.step.kind !== 'moment') continue;
+      checked++;
+      expect(a.state.currentMatch!.mode).toBe('full');
+      expect(a.state).toEqual(b.state);
+      expect(beginMatch(s, ctx, { mode: 'quick' }).state.currentMatch?.mode ?? 'quick').toBe(
+        'quick',
+      );
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+
+  it('sim mode decides with autoDecider and never pauses', () => {
+    let checked = 0;
+    for (let seed = 1; seed <= 20; seed++) {
+      const s = toFirstMatch(newCareer(baseOptions, seed));
+      const sim = simulateMatch(s, ctx);
+      expect(sim.state.currentMatch).toBeUndefined();
+      expect(sim.matchReport.fixtureId).toBe(playerFixture(s)!.id);
+      const begun = beginMatch(s, ctx, { mode: 'sim' });
+      if (begun.step.kind === 'moment') {
+        checked++;
+        expect(begun.state.currentMatch!.mode).toBe('sim');
+      }
+      // Stesso risultato giocando di persona con autoDecider in modalità sim.
+      expect(playMatch(s, autoDecider, ctx, { mode: 'sim' })).toEqual(sim);
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+
+  it('report.peak is the highest-tension step with its outcome', () => {
+    let checked = 0;
+    for (let seed = 1; seed <= 40; seed++) {
+      const { report } = steps(seed);
+      if (!report.peak) continue;
+      checked++;
+      const ev = report.events.find(
+        (e) =>
+          e.kind === 'moment' &&
+          e.minute === report.peak!.minute &&
+          e.momentId === report.peak!.momentId,
+      );
+      expect(ev).toBeDefined();
+      expect(report.peak.success).toBe((ev as { success: boolean }).success);
+      const kind = report.peak.success ? 'success' : 'failure';
+      expect(report.peak.closingKey).toMatch(new RegExp(`^match\\.peak\\.${kind}\\.[1-3]$`));
+      expect(report.peak.closingKey in ctx.content.i18n.it).toBe(true);
+    }
+    expect(checked).toBeGreaterThan(5);
+  });
+
+  it('every peak closing key has a translation', () => {
+    const t = ctx.content.i18n.it;
+    for (const kind of ['success', 'failure']) {
+      for (let i = 1; i <= ctx.config.match.peak.variants; i++) {
+        expect(`match.peak.${kind}.${i}` in t).toBe(true);
+      }
+    }
+  });
+
+  it('no steps → peak null', () => {
+    let nulls = 0;
+    for (let seed = 1; seed <= 40; seed++) {
+      const { n, report } = steps(seed);
+      if (n === 0) {
+        nulls++;
+        expect(report.peak).toBeNull();
+      } else {
+        expect(report.peak).not.toBeNull();
+      }
+    }
+    expect(nulls).toBeGreaterThan(0);
+  });
+});

@@ -46,6 +46,7 @@ export {
   buildupLines,
   checkContent,
   checkMomentKeys,
+  checkPeakKeys,
   type MomentTextSource,
 } from './check';
 

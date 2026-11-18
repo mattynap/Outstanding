@@ -14,6 +14,18 @@ export function buildupLines(t: Translations, phase: (typeof BUILDUP_PHASES)[num
   return n;
 }
 
+/** Righe di chiusura della pagella dal passo decisivo (`match.peak.<esito>.<n>`). */
+export function checkPeakKeys(variants: number, t: Translations): string[] {
+  const errors: string[] = [];
+  for (const kind of ['success', 'failure']) {
+    for (let i = 1; i <= variants; i++) {
+      const key = `match.peak.${kind}.${i}`;
+      if (!(key in t)) errors.push(`match: missing text "${key}"`);
+    }
+  }
+  return errors;
+}
+
 /** Testi di ogni gesto da leggenda (`match.legends.<id>.<parte>`). */
 export const LEGEND_KEYS = ['option', 'success', 'failure', 'headline'] as const;
 

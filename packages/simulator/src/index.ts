@@ -2,7 +2,7 @@
 export {
   runCareer,
   randomCareerOptions,
-  SECONDS_PER,
+  estimateSeconds,
   type CareerResult,
   type Decisions,
 } from './run';

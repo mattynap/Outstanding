@@ -191,6 +191,7 @@
   "risk": {
     "behindBonus": 0.03,
     "aheadSafeBonus": 0.02,
-    "lateFrom": 70
+    "lateFrom": 70,
+    "goalValue": 0.5
   }
 }

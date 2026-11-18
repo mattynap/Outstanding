@@ -486,6 +486,8 @@ describe('prudentMomentChoice (decisore automatico)', () => {
     onFailure: 'rating',
     onFail: 'none',
     chanceBand: chanceBandOf(chance, base.config.match.chanceBands),
+    risk: 'balanced',
+    value: 0,
     ...(closes ? { closes: true as const } : {}),
   });
   const moment = (options: KeyMomentOption[]): KeyMoment => ({

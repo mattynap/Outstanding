@@ -559,6 +559,8 @@ export const matchSchema = z
       behindBonus: z.number(),
       aheadSafeBonus: z.number(),
       lateFrom: z.number().int().min(0),
+      /** Valore in voto di un gol di squadra a differenza reti 0 (poi pesato da `director.close`). */
+      goalValue: z.number().min(0),
     }),
     rating: z.object({
       base: z.number(),

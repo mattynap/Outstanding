@@ -25,6 +25,7 @@ import { buildupLines } from '@outstanding/content';
 import {
   arm,
   directorMinute,
+  goalDiff,
   gate,
   initialDirector,
   onChainEnd,
@@ -39,6 +40,8 @@ import {
   onFailOf,
   ZERO_DYN,
   optionChance,
+  optionValue,
+  riskBonus,
   pickMomentType,
   type KeyMoment,
 } from './moments';
@@ -270,9 +273,10 @@ function describeMoment(state: GameState, m: MatchState, ctx: GameContext): KeyM
     options: pending.options.map((index) => {
       const o = type.options[index]!;
       // Chiudere riesce sempre: la probabilità vera è 1 (vedi `decideMoment`).
+      const rb = riskBonus(o.risk, goalDiff(m), pending.minute, ctx.config.match.risk);
       const chance = o.closes
         ? 1
-        : optionChance(state.player, o, opponent.rating, ctx, bonus, 0.5, m.dyn);
+        : optionChance(state.player, o, opponent.rating, ctx, bonus, 0.5, m.dyn, rb);
       return {
         id: o.id,
         textKey: o.legend
@@ -283,6 +287,8 @@ function describeMoment(state: GameState, m: MatchState, ctx: GameContext): KeyM
         onFailure: consequenceOf(o.failure, false),
         onFail: onFailOf(o, ctx),
         chanceBand: chanceBandOf(chance, ctx.config.match.chanceBands),
+        risk: o.risk,
+        value: optionValue(o, chance, m.score[m.side] - m.score[other(m.side)], ctx.config.match),
         ...(o.closes ? { closes: true as const } : {}),
         ...(o.legend ? { legendId: o.legend.id } : {}),
       };
@@ -637,6 +643,7 @@ export function decideMoment(
         difficultyMods(state, ctx).matchChance + pressBonus(state, m.fixtureId),
         quality,
         m.dyn,
+        riskBonus(option.risk, goalDiff(m), minute, ctx.config.match.risk),
       ),
     );
   const outcome = success ? option.success : option.failure;

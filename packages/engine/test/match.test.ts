@@ -375,6 +375,8 @@ describe('partita simulata', () => {
           onFailure: 'lost',
           onFail: 'none',
           chanceBand: 'mid',
+          risk: 'balanced',
+          value: 0,
         },
         {
           id: 'b',
@@ -384,6 +386,8 @@ describe('partita simulata', () => {
           onFailure: 'lost',
           onFail: 'none',
           chanceBand: 'mid',
+          risk: 'balanced',
+          value: 0,
         },
         {
           id: 'c',
@@ -393,6 +397,8 @@ describe('partita simulata', () => {
           onFailure: 'lost',
           onFail: 'none',
           chanceBand: 'mid',
+          risk: 'balanced',
+          value: 0,
         },
       ],
     };

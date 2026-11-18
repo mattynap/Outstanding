@@ -25,6 +25,14 @@ export interface KeyMomentOption {
   chanceBand: ChanceBand;
   /** Opzione "chiudi" di una catena: riesce sempre e chiude l'azione. */
   closes?: true;
+  /** Profilo di rischio dell'opzione (dalla config del momento). */
+  risk: MomentOptionConfig['risk'];
+  /**
+   * Valore atteso in punti voto: p·esito(successo) + (1−p)·esito(fallimento), con
+   * esito = voto + peso·(gol a favore·goalValue − gol subiti·goalValue) + voto personale di gol
+   * o assist; il peso è `director.close` alla differenza reti attuale (un gol vale di più nel bilico).
+   */
+  value: number;
   /** Gesto da leggenda: id dell'archetipo (testi in `match.legends.<id>.*`). */
   legendId?: string;
 }
@@ -209,6 +217,42 @@ export function pickMomentType(
   return rng.weighted(pool, (t) => phaseWeight.get(t) ?? 0);
 }
 
+/**
+ * Bonus di rischio contestuale: dopo `lateFrom` chi è sotto guadagna con l'opzione rischiosa,
+ * chi è avanti con quella sicura. Altrimenti 0. `d` è la differenza reti del giocatore.
+ */
+export function riskBonus(
+  risk: MomentOptionConfig['risk'],
+  d: number,
+  minute: number,
+  cfg: MatchConfig['risk'],
+): number {
+  if (minute < cfg.lateFrom) return 0;
+  if (risk === 'risky' && d < 0) return cfg.behindBonus;
+  if (risk === 'safe' && d > 0) return cfg.aheadSafeBonus;
+  return 0;
+}
+
+/** Valore atteso di un'opzione (vedi `KeyMomentOption.value`), con differenza reti `d`. */
+export function optionValue(
+  option: MomentOptionConfig,
+  chance: number,
+  d: number,
+  cfg: MatchConfig,
+): number {
+  const w = cfg.director.close[String(clamp(d, -3, 3))] ?? 0;
+  const worth = (o: MomentOutcomeConfig): number => {
+    let v = o.rating;
+    if (o.goalFor) {
+      v += o.goalFor * (w * cfg.risk.goalValue + (o.by === 'self' ? cfg.rating.goal : 0));
+      if (o.by === 'assist') v += o.goalFor * cfg.rating.assist;
+    }
+    if (o.goalAgainst) v -= o.goalAgainst * w * cfg.risk.goalValue;
+    return v;
+  };
+  return chance * worth(option.success) + (1 - chance) * worth(option.failure);
+}
+
 /** Somma dei modificatori dei tratti per un'etichetta di momento (`match.all` + `match.tag.<tag>`). */
 function traitBonus(player: Player, tag: string | undefined, ctx: GameContext): number {
   let bonus = 0;
@@ -241,6 +285,8 @@ export function optionChance(
   quality = 0.5,
   /** Stati dinamici della partita: ognuno sposta la probabilità col suo peso. */
   dyn: MatchDyn = ZERO_DYN,
+  /** Bonus di rischio contestuale (vedi `riskBonus`). */
+  riskBonus = 0,
 ): number {
   if (!Number.isFinite(quality) || quality < 0 || quality > 1) {
     throw new Error(`Invalid moment quality ${quality}`);
@@ -261,7 +307,8 @@ export function optionChance(
     (cfg.energyWeight * (energy - 50)) / 50 +
     traitBonus(player, option.tag, ctx) +
     difficultyBonus +
-    dynBonus(dyn, matchCfg.dyn.chanceWeight);
+    dynBonus(dyn, matchCfg.dyn.chanceWeight) +
+    riskBonus;
   return clamp(
     1 / (1 + Math.exp(-x)) + mods + (2 * quality - 1) * cfg.qualityMaxBonus,
     cfg.minChance,

@@ -135,6 +135,8 @@ export {
   chanceBandOf,
   onFailOf,
   optionChance,
+  optionValue,
+  riskBonus,
   type ChanceBand,
   type Consequence,
   type KeyMoment,

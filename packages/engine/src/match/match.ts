@@ -17,7 +17,7 @@ import type {
 import { clamp, roundTo } from '../util';
 import { settleKnockout } from '../cups/cups';
 import { interviewContext, pressBonus, recordMatchForMedia } from '../media/media';
-import { clubRatings, getAnyClub, getClub } from '../world/queries';
+import { clubRatings, getAnyClub, getClub, levelOfClub } from '../world/queries';
 import {
   getMomentType,
   consequenceOf,
@@ -277,8 +277,14 @@ function finishMatch(
   const events = [...m.events].sort((a, b) => a.minute - b.minute);
   const s = state.player.seasonStats;
   const played = minutesPlayed > 0;
+  const level = state.player.clubId ? levelOfClub(state.world, state.player.clubId) : undefined;
+  const byLevel = state.player.seasonLevelApps ?? {};
   const player = {
     ...state.player,
+    seasonLevelApps:
+      played && level !== undefined
+        ? { ...byLevel, [level]: (byLevel[level] ?? 0) + 1 }
+        : state.player.seasonLevelApps,
     seasonStats: {
       appearances: s.appearances + (played ? 1 : 0),
       starts: s.starts + (m.selection === 'starter' ? 1 : 0),

@@ -111,6 +111,8 @@ export interface Player {
   relationships: Record<string, number>;
   flags: Record<string, number | boolean | string>;
   seasonStats: SeasonStats;
+  /** Presenze della stagione in corso per livello di campionato (livello -> presenze): serve all'esordio. */
+  seasonLevelApps?: Record<string, number>;
   history: SeasonRecord[];
 }
 

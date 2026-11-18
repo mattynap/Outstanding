@@ -49,7 +49,7 @@ export function matchSignals(
   if (clubId) {
     const level = levelOfClub(state.world, clubId);
     const played =
-      p.seasonStats.appearances > 0 ||
+      (level !== undefined && (p.seasonLevelApps?.[level] ?? 0) > 0) ||
       p.history.some((h) => h.leagueLevel === level && h.stats.appearances > 0);
     if (!played) out.push('debut');
     const coachTrust = p.relationships[getClub(state.world, clubId).coachId] ?? 0;
@@ -67,4 +67,29 @@ export function matchStakes(
   cfg: MatchConfig['stakes'] = defaultContext.config.match.stakes,
 ): number {
   return clamp(Math.max(0, ...signals.map((s) => cfg[s])), 0, 1);
+}
+
+/**
+ * Dopo un trasferimento l'osservatore segue il giocatore: il segno passa dalla partita del vecchio
+ * club a quella del nuovo, nella stessa settimana. Nessuna estrazione.
+ */
+export function moveScout(
+  calendar: Fixture[],
+  week: number,
+  fromClubId: string | undefined,
+  toClubId: string,
+): Fixture[] {
+  const involves = (f: Fixture, id: string) => f.homeId === id || f.awayId === id;
+  const old = calendar.find(
+    (f) => f.week === week && !f.result && f.scout && fromClubId && involves(f, fromClubId),
+  );
+  if (!old) return calendar;
+  const target = calendar.find((f) => f.week === week && !f.result && involves(f, toClubId));
+  return calendar.map((f) => {
+    if (f === old) {
+      const { scout: _s, ...rest } = f;
+      return rest;
+    }
+    return f === target ? { ...f, scout: true } : f;
+  });
 }

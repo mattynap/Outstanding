@@ -12,7 +12,11 @@ import {
   serialize,
   type Fixture,
   type GameState,
+  type ContractOffer,
+  acceptOffer,
+  getTransferWindow,
 } from '../src/index';
+import { levelOfClub } from '../src/world/queries';
 import { keyOpponentOf, matchSignals, matchStakes } from '../src/match/stakes';
 import { baseOptions } from './fixtures';
 
@@ -39,6 +43,7 @@ function quiet(seed: number) {
     player: {
       ...state.player,
       seasonStats: { ...state.player.seasonStats, appearances: 5 },
+      seasonLevelApps: { [levelOfClub(state.world, clubId)!]: 5 },
       relationships: { ...state.player.relationships, [coachId]: 0 },
       contract: state.player.contract && { ...state.player.contract, untilSeason: 99 },
     },
@@ -61,13 +66,21 @@ describe('matchSignals', () => {
     expect(matchStakes([], cfg)).toBe(0);
   });
 
-  it('debut: nessuna presenza nel livello', () => {
+  it('debut: nessuna presenza nel livello del club attuale', () => {
     const { state, fixture } = quiet(3);
-    const s = {
+    const level = levelOfClub(state.world, state.player.clubId!)!;
+    const at = (apps: Record<string, number>, total: number) => ({
       ...state,
-      player: { ...state.player, seasonStats: { ...state.player.seasonStats, appearances: 0 } },
-    };
-    expect(matchSignals(s, fixture)).toEqual(['debut']);
+      player: {
+        ...state.player,
+        seasonLevelApps: apps,
+        seasonStats: { ...state.player.seasonStats, appearances: total },
+      },
+    });
+    expect(matchSignals(at({}, 0), fixture)).toEqual(['debut']);
+    // Tre presenze, ma in un altro livello (trasferimento a stagione in corso): è un esordio.
+    expect(matchSignals(at({ [level + 1]: 3 }, 3), fixture)).toEqual(['debut']);
+    expect(matchSignals(at({ [level]: 1 }, 1), fixture)).toEqual([]);
   });
 
   it('contractExpiring', () => {
@@ -175,6 +188,52 @@ describe('matchSignals', () => {
     expect(matchSignals(mk(200), fixture)).toEqual(['keyOpponent']);
     expect(keyOpponentOf(mk(200), fixture)?.id).toBe('k');
     expect(keyOpponentOf(mk(0), fixture)).toBeNull();
+  });
+});
+
+describe('osservatore e trasferimento', () => {
+  it('il segno segue il giocatore al nuovo club, senza nuove estrazioni', () => {
+    const always = {
+      ...defaultContext,
+      config: {
+        ...defaultContext.config,
+        match: {
+          ...defaultContext.config.match,
+          stakes: { ...cfg, scoutChance: 1 },
+        },
+      },
+    };
+    let s = newCareer(baseOptions, 4);
+    for (let i = 0; i < 80; i++) {
+      if (playerFixture(s)) s = playMatch(s, autoDecider).state;
+      s = advanceWeek(s, always).state;
+      const old = s.player.clubId!;
+      const mine = s.calendar.find((f) => f.week === s.week && f.scout);
+      const other = s.calendar.find(
+        (f) => f.week === s.week && !f.result && f.homeId !== old && f.awayId !== old && !f.cup,
+      );
+      if (!mine || !other || !getTransferWindow(s)) continue;
+      const club = s.world.clubs.find((c) => c.id === other.homeId);
+      if (!club) continue;
+      const offer: ContractOffer = {
+        id: 'o_t',
+        kind: 'transfer',
+        clubId: club.id,
+        salaryWeekly: 100,
+        seasons: 2,
+        signingBonus: 0,
+        expiresWeek: s.week + 1,
+        maxSalary: 130,
+        roundsLeft: 1,
+      };
+      const moved = acceptOffer({ ...s, offers: [offer] }, 'o_t');
+      expect(moved.rngState).toEqual(s.rngState);
+      const scouted = moved.calendar.filter((f) => f.week === s.week && f.scout);
+      expect(scouted.map((f) => f.id)).toEqual([other.id]);
+      expect(moved.calendar.find((f) => f.id === mine.id)?.scout).toBeUndefined();
+      return;
+    }
+    throw new Error('nessuna finestra di mercato con partita osservata');
   });
 });
 

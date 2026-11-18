@@ -254,6 +254,7 @@ export function endSeason(
     player: {
       ...applyDecline(p, record.age, ctx),
       seasonStats: emptySeasonStats(),
+      seasonLevelApps: undefined,
       history: [...p.history, record],
     },
     rngState: rng.getState(),

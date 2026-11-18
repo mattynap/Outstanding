@@ -7,6 +7,7 @@ import { getTransferWindow } from '../season/week';
 import { ageAt, seasonStartWeek, weekOfSeason } from '../time';
 import type { Club, ContractOffer, GameState, Player, Retirement } from '../types';
 import { clamp } from '../util';
+import { moveScout } from '../match/stakes';
 import { IdGen } from '../world/generate';
 import { getClub, getGroup } from '../world/queries';
 
@@ -477,7 +478,8 @@ export function acceptOffer(
     };
   }
   // Nuovo club: benvenuto dei tifosi e conferenza stampa di presentazione.
-  return welcomeToClub({ ...state, player, offers: [] }, club.id, ctx);
+  const calendar = moveScout(state.calendar, state.week, p.clubId, club.id);
+  return welcomeToClub({ ...state, player, offers: [], calendar }, club.id, ctx);
 }
 
 export { retirePlayer };

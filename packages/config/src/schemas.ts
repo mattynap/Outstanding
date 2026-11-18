@@ -522,7 +522,7 @@ export const matchSchema = z
       ratingBonus: z.number(),
       popularity: z.number(),
     }),
-    /** Peso della posta in gioco per tipo di partita e soglie dei fattori. */
+    /** Peso della posta in gioco per tipo di partita e soglie dei fattori (keyOpponentGap negativo: l'avversario deve superare il giocatore di tanti punti). */
     stakes: z.object({
       cup: z.number().min(0),
       derby: z.number().min(0),
@@ -533,7 +533,7 @@ export const matchSchema = z
       scout: z.number().min(0),
       keyOpponent: z.number().min(0),
       lowTrustBelow: z.number(),
-      keyOpponentGap: z.number().min(0),
+      keyOpponentGap: z.number(),
       scoutChance: prob,
     }),
     /** Variabili dinamiche: effetto sulla probabilità per unità e limiti. */

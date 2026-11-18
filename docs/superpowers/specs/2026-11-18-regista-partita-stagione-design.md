@@ -179,3 +179,31 @@ confermato le scelte sotto.
   gol e presenze, trofei, % leggende; fuori tolleranza il passo non si chiude.
 - Gradualità: i nuovi fattori (pressione, `dyn`, rischio, gesto) entrano a peso ridotto e salgono solo
   se i guardrail reggono. Baseline a 5000 carriere salvata prima di toccare il motore.
+
+### 8.4 Revisione e meccaniche aggiunte (2026-11-18)
+Dopo una revisione del piano e una ricerca sulle meccaniche (report
+`reports/Meccaniche regista partita e stagione.md`), l'utente ha aggiunto:
+- **Preavviso:** il regista "arma" la radice di un momento un minuto prima (i passi di catena no); quel minuto la cronaca mostra l'azione
+  che si costruisce. Se nel frattempo c'è un gol, il momento armato si annulla senza consumare budget.
+  Ogni opzione mostra cosa succede se va male (`onFail`) e una fascia di probabilità (bassa, discreta,
+  alta) coerente con il calcolo vero.
+- **Respiro:** dopo un gol o la fine di una catena il regista non interviene per `relaxMinutes`
+  (nel finale caldo per `hotGap`). Il minimo garantito lo ignora.
+- **Insisti o chiudi:** dal secondo passo ogni catena offre un'opzione che chiude l'azione con un
+  guadagno piccolo e sicuro: non estrae, riesce sempre, nessun gol.
+- **Momenti per funzione:** la scelta del tipo penalizza la ripetizione e preferisce i tipi legati agli
+  stati `dyn`.
+- **Passo decisivo:** il report della partita indica il passo a tensione più alta e una riga di chiusura.
+- **Momenti da leggenda:** opzioni rare e rischiose (rovesciata, cucchiaio, salvataggio sulla linea,
+  doppia parata...) nell'ultimo passo di una catena, solo con tensione molto alta e abilità adatte; al
+  massimo 1 a partita, premio più alto (voto, popolarità, prima pagina). Solo archetipi: nessun nome,
+  data o richiamo esplicito a gol o giocatori reali.
+- **Stagione:** riepilogo come prima pagina (1–3 titoli scelti per importanza) e un obiettivo per
+  capitolo, con un piccolo effetto su fiducia del mister o morale.
+- **Gesto (sostituisce §4.6 sul peso):** si parte da `qualityMaxBonus` 0,10 come oggi; il tetto dello
+  schema sale a 0,15 e si alza solo se il simulatore mostra che la scelta pesa più del gesto. Il
+  minigioco diventa utile per gesti diversi per azione e riscontro graduato, non per peso.
+- **Correzioni:** il segnale "rivale in campo" diventa `keyOpponent` (avversario forte nel ruolo);
+  `rival` resta riservato al rivale di carriera del documento del 17/11 §9.2, che avrà la precedenza.
+  Il regista sceglie quando e che cosa proporre, mai l'esito: nessun aggiustamento nascosto delle
+  probabilità.

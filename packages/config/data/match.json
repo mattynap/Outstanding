@@ -146,7 +146,10 @@
     "armLead": 1,
     "relaxMinutes": 4,
     "repeatPenalty": 0.5,
-    "dynAffinity": 0.3
+    "dynAffinity": 0.3,
+    "phaseBias": { "GK": 0.2, "DEF": 0.3, "MID": 0.56, "ATT": 0.7 },
+    "phaseTilt": 0.3,
+    "phaseMin": 0.05
   },
   "modes": {
     "full": [5, 7],

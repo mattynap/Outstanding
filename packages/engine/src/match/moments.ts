@@ -64,9 +64,13 @@ export function getMomentType(id: string, ctx: GameContext): MomentTypeConfig {
 
 export type MomentPhase = MomentTypeConfig['phase'];
 
-/** Fase del momento dal segno della pressione: 0 o più = attacco. */
-export function phaseOf(pressure: number): MomentPhase {
-  return pressure >= 0 ? 'attack' : 'defense';
+/**
+ * Probabilità che la radice sia in fase d'attacco: inclinazione del ruolo più la pressione,
+ * limitata a [phaseMin, 1 − phaseMin] perché nessuna fase sparisca del tutto.
+ */
+export function attackShare(role: Role, pressure: number, ctx: GameContext): number {
+  const d = ctx.config.match.director;
+  return clamp(d.phaseBias[role] + d.phaseTilt * pressure, d.phaseMin, 1 - d.phaseMin);
 }
 
 const depthCache = new WeakMap<readonly MomentTypeConfig[], Map<string, number>>();
@@ -92,30 +96,22 @@ export function chainDepth(typeId: string, ctx: GameContext): number {
 }
 
 /**
- * Sceglie il tipo della radice. Filtri in ordine: fase (con ripiego sull'altra), niente tipi
- * `chainOnly`, profondità entro `maxDepth`, niente ripetizione dell'ultimo tipo se c'è
- * un'alternativa; poi pesi di ruolo, penalità di ripetizione e affinità con gli stati `dyn`.
+ * Sceglie il tipo della radice con una sola estrazione. Filtri: niente tipi `chainOnly`,
+ * profondità entro `maxDepth`, niente ripetizione dell'ultimo tipo se c'è un'alternativa. Ogni
+ * candidato pesa P(sua fase) · peso / somma dei pesi della sua fase (pesi di ruolo, penalità di
+ * ripetizione, affinità con `dyn`); una fase senza candidati cede tutta la massa all'altra.
  * Null se nessun tipo entra nel budget.
  */
 export function pickMomentType(
   role: Role,
-  phase: MomentPhase,
   m: MatchState,
   maxDepth: number,
   rng: Rng,
   ctx: GameContext,
 ): MomentTypeConfig | null {
-  const all = ctx.config.match.moments.types;
-  const fits = (p: MomentPhase) =>
-    all.filter(
-      (t) =>
-        t.phase === p &&
-        !t.chainOnly &&
-        (t.weights[role] ?? 0) > 0 &&
-        chainDepth(t.id, ctx) <= maxDepth,
-    );
-  let pool = fits(phase);
-  if (pool.length === 0) pool = fits(phase === 'attack' ? 'defense' : 'attack');
+  let pool = ctx.config.match.moments.types.filter(
+    (t) => !t.chainOnly && (t.weights[role] ?? 0) > 0 && chainDepth(t.id, ctx) <= maxDepth,
+  );
   if (pool.length === 0) return null;
   const recent = m.director.lastTypes.slice(-3);
   const last = recent.at(-1);
@@ -124,15 +120,28 @@ export function pickMomentType(
     if (rest.length > 0) pool = rest;
   }
   const d = ctx.config.match.director;
-  const weight = (t: MomentTypeConfig) => {
+  const adjusted = (t: MomentTypeConfig) => {
     let w = t.weights[role] ?? 0;
     if (recent.includes(t.id)) w *= d.repeatPenalty;
     if (t.affinity && m.dyn[t.affinity] >= 1) w *= 1 + d.dynAffinity;
     return w;
   };
-  // Con repeatPenalty 0 e soli tipi recenti si torna ai pesi di ruolo.
-  const anyPositive = pool.some((t) => weight(t) > 0);
-  return rng.weighted(pool, anyPositive ? weight : (t) => t.weights[role] ?? 0);
+  const share = attackShare(role, m.pressure, ctx);
+  const phaseWeight = new Map<MomentTypeConfig, number>();
+  const phases: MomentPhase[] = ['attack', 'defense'];
+  const groups = phases.map((p) => pool.filter((t) => t.phase === p));
+  groups.forEach((group, i) => {
+    if (group.length === 0) return;
+    // Con repeatPenalty 0 e soli tipi recenti la fase torna ai pesi di ruolo.
+    const raw = group.some((t) => adjusted(t) > 0)
+      ? adjusted
+      : (t: MomentTypeConfig) => t.weights[role] ?? 0;
+    const sum = group.reduce((acc, t) => acc + raw(t), 0);
+    const other = groups[1 - i]!.length > 0;
+    const mass = other ? (phases[i] === 'attack' ? share : 1 - share) : 1;
+    for (const t of group) phaseWeight.set(t, (mass * raw(t)) / sum);
+  });
+  return rng.weighted(pool, (t) => phaseWeight.get(t) ?? 0);
 }
 
 /** Somma dei modificatori dei tratti per un'etichetta di momento (`match.all` + `match.tag.<tag>`). */

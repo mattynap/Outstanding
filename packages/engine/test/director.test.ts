@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { parseConfig, rawDefaultConfig } from '@outstanding/config';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { parseConfig, rawDefaultConfig, type MomentTypeConfig } from '@outstanding/config';
 import {
   advanceWeek,
   autoDecider,
@@ -28,7 +28,7 @@ import {
   reserveFor,
   tension,
 } from '../src/match/director';
-import { chainDepth, phaseOf, pickMomentType } from '../src/match/moments';
+import { attackShare, chainDepth, pickMomentType } from '../src/match/moments';
 import { stepPressure } from '../src/match/pressure';
 import { Rng } from '../src/rng';
 import { baseOptions } from './fixtures';
@@ -88,45 +88,46 @@ interface Opened {
 function drive(
   m0: MatchState,
   rng: Rng,
-  opts: { goalsAt?: Record<number, 'home' | 'away'>; until?: number; role?: Role } = {},
+  opts: {
+    goalsAt?: Record<number, 'home' | 'away'>;
+    until?: number;
+    role?: Role;
+    context?: GameContext;
+  } = {},
 ) {
+  const c = opts.context ?? ctx;
+  const mc = c.config.match;
   let m = m0;
   const opened: Opened[] = [];
   const buildups: { minute: number; momentId: string }[] = [];
   const until = opts.until ?? 90;
   while (m.minute < until) {
     const minute = m.minute + 1;
-    const p = stepPressure(m.pressure, 0, 0, rng, cfg.pressure);
+    const p = stepPressure(m.pressure, 0, 0, rng, mc.pressure);
     const scorer = opts.goalsAt?.[minute];
     const score = scorer ? { ...m.score, [scorer]: m.score[scorer] + 1 } : m.score;
-    m = directorMinute({ ...m, minute, pressure: p, score }, scorer !== undefined, cfg);
+    m = directorMinute({ ...m, minute, pressure: p, score }, scorer !== undefined, mc);
     if (!m.director.armed) {
-      const g = gate(m, cfg);
+      const g = gate(m, mc);
       if (g.kind !== 'none' && (g.kind === 'forced' || rng.chance(g.p))) {
-        const type = pickMomentType(
-          opts.role ?? 'ATT',
-          phaseOf(m.pressure),
-          m,
-          g.maxDepth,
-          rng,
-          ctx,
-        );
+        const type = pickMomentType(opts.role ?? 'ATT', m, g.maxDepth, rng, c);
         if (type) {
-          m = { ...m, director: arm(m.director, minute, type.id, g.kind === 'forced', cfg) };
+          const forced = g.kind === 'forced' || g.forced;
+          m = { ...m, director: arm(m.director, minute, type.id, forced, mc) };
           buildups.push({ minute, momentId: type.id });
         }
       }
     }
     const armed = m.director.armed;
     if (armed && armed.at <= minute) {
-      const t = tension(m, cfg);
+      const t = tension(m, mc);
       opened.push({ minute, momentId: armed.momentId, tension: t });
       const d = onStepOpened(
         m.director,
         { minute, momentId: armed.momentId, tension: t, root: true },
-        cfg,
+        mc,
       );
-      m = { ...m, director: onChainEnd(d, minute, cfg) };
+      m = { ...m, director: onChainEnd(d, minute, mc) };
     }
   }
   return { m, opened, buildups };
@@ -138,6 +139,15 @@ function withConfig(edit: (raw: Record<string, any>) => void): GameContext {
   const raw = JSON.parse(JSON.stringify(rawDefaultConfig));
   edit(raw);
   return { ...ctx, config: parseConfig(raw) };
+}
+
+/** Contesto con tipi di momento modificati senza passare dallo schema (casi che lo schema vieta). */
+function withTypes(edit: (types: MomentTypeConfig[]) => MomentTypeConfig[]): GameContext {
+  const types = edit([...cfg.moments.types]);
+  return {
+    ...ctx,
+    config: { ...ctx.config, match: { ...cfg, moments: { ...cfg.moments, types } } },
+  };
 }
 
 interface Sampled {
@@ -175,9 +185,8 @@ function sample(full90: number): Sampled[] {
   return out;
 }
 
-// beginMatch restituisce lo stato in pausa solo con un momento: per chi non gioca minuteIn si
-// ricava dal resoconto.
-const SAMPLE = sample(2000);
+// Campione condiviso, costruito una volta prima dei test che lo usano (circa 20 s).
+let SAMPLE: Sampled[] = [];
 const momentsOf = (r: MatchReport) => r.events.filter((e) => e.kind === 'moment');
 
 describe('tensione', () => {
@@ -196,6 +205,10 @@ describe('tensione', () => {
 });
 
 describe('regista della partita', () => {
+  beforeAll(() => {
+    SAMPLE = sample(2000);
+  }, 180_000);
+
   it("0-0 at 10' with stakes 0 does not intervene (10k seeds < 5%)", () => {
     let hits = 0;
     for (let seed = 1; seed <= 10_000; seed++) {
@@ -322,8 +335,17 @@ describe('regista della partita', () => {
     expect(full.length).toBeGreaterThanOrEqual(2000);
     const mean = full.reduce((s, x) => s + momentsOf(x.report).length, 0) / full.length;
     expect(mean).toBeGreaterThanOrEqual(3);
-    // Mai oltre il budget della modalità.
-    for (const x of full) expect(momentsOf(x.report).length).toBeLessThanOrEqual(cfg.modes.full[1]);
+  });
+
+  it('never more steps than the match budget', () => {
+    let checked = 0;
+    for (const x of SAMPLE) {
+      const budget = x.pauses[0]?.director.budgetStart;
+      if (budget === undefined) continue;
+      expect(momentsOf(x.report).length).toBeLessThanOrEqual(budget);
+      checked++;
+    }
+    expect(checked).toBeGreaterThan(1000);
   });
 
   it('same seed same intervention minutes', () => {
@@ -441,6 +463,31 @@ describe('regista della partita', () => {
     expect(late.length).toBeGreaterThan(0);
   });
 
+  it('guaranteed minimum survives a goal on an armed spanning the deadline (armLead 3)', () => {
+    const lead3 = withConfig((raw) => {
+      raw.match.director.armLead = 3;
+    });
+    const mc = lead3.config.match;
+    const loud = { stakes: 1, score: { home: 1, away: 1 } };
+    // Scadenza del minimo: 90 − 3 = 87. Un preavviso al 84 si apre all'87: niente protezione.
+    expect(gate(ms({ ...loud, minute: 84 }), mc)).toMatchObject({ kind: 'roll', forced: false });
+    // Al 86 si aprirebbe all'89, oltre la scadenza: va armato immune ai gol.
+    const g = gate(ms({ ...loud, minute: 86 }), mc);
+    expect(g).toMatchObject({ kind: 'roll', forced: true });
+    // Già un intervento: nessuna protezione.
+    expect(gate(ms({ ...loud, minute: 86 }, { interventions: 1 }), mc)).toMatchObject({
+      forced: false,
+    });
+    // Il caso riprodotto: armato al 86, gol all'88, il momento si apre comunque all'89.
+    const armed = ms({ ...loud, minute: 86 }, { armed: null });
+    const d = arm(armed.director, 86, 'att_wing', g.kind === 'roll' && g.forced, mc);
+    const { opened } = drive({ ...armed, director: d }, Rng.fromSeed(1), {
+      goalsAt: { 88: 'away' },
+      context: lead3,
+    });
+    expect(opened.map((o) => o.minute)).toEqual([89]);
+  });
+
   it('hot reserve: before hotFrom a root opens only if the reserve still fits', () => {
     const loud = { minute: 50, stakes: 1, score: { home: 1, away: 1 } };
     const reserve = Math.min(dc.hotSlots, 5 - 1);
@@ -480,7 +527,7 @@ describe('regista della partita', () => {
     expect(chainDepth('att_box_chance', chained)).toBe(1);
     const m = ms({ pressure: 0.1 });
     for (let seed = 1; seed <= 300; seed++) {
-      const t = pickMomentType('ATT', 'attack', m, 1, Rng.fromSeed(seed), chained);
+      const t = pickMomentType('ATT', m, 1, Rng.fromSeed(seed), chained);
       expect(t?.id).not.toBe('att_wing');
     }
   });
@@ -531,17 +578,68 @@ describe('regista della partita', () => {
   it('same type never proposed twice in a row when alternatives exist', () => {
     for (let seed = 1; seed <= 500; seed++) {
       const m = ms({}, { lastTypes: ['att_wing', 'att_box_chance'] });
-      const t = pickMomentType('ATT', 'attack', m, 6, Rng.fromSeed(seed), ctx)!;
+      const t = pickMomentType('ATT', m, 6, Rng.fromSeed(seed), ctx)!;
       expect(t.id).not.toBe('att_box_chance');
     }
-    // Il difensore in attacco ha un solo tipo: si ripete.
-    const only = ms({}, { lastTypes: ['def_set_piece'] });
-    expect(pickMomentType('DEF', 'attack', only, 6, Rng.fromSeed(1), ctx)!.id).toBe(
-      'def_set_piece',
+    // Un solo tipo per il ruolo: si ripete.
+    const single = withTypes((types) =>
+      types.map((t) => (t.id === 'att_wing' ? t : { ...t, weights: { ...t.weights, ATT: 0 } })),
     );
-    // La fase segue il segno della pressione (0 = attacco).
-    expect(phaseOf(0)).toBe('attack');
-    expect(phaseOf(-0.01)).toBe('defense');
+    const only = ms({}, { lastTypes: ['att_wing'] });
+    expect(pickMomentType('ATT', only, 6, Rng.fromSeed(1), single)!.id).toBe('att_wing');
+  });
+
+  it('role bias sets the phase share at pressure 0', () => {
+    const shareOf = (role: Role, pressure: number, c: GameContext = ctx) => {
+      let attack = 0;
+      const m = ms({ pressure });
+      for (let seed = 1; seed <= 4000; seed++) {
+        if (pickMomentType(role, m, 6, Rng.fromSeed(seed), c)!.phase === 'attack') attack++;
+      }
+      return attack / 4000;
+    };
+    expect(attackShare('ATT', 0, ctx)).toBeCloseTo(dc.phaseBias.ATT, 10);
+    // Con un bias d'attacco forte la quota segue il bias anche a pressione 0.
+    const striker = withConfig((raw) => {
+      raw.match.director.phaseBias.ATT = 0.85;
+    });
+    expect(shareOf('ATT', 0, striker)).toBeGreaterThan(0.75);
+    expect(shareOf('ATT', 0)).toBeCloseTo(dc.phaseBias.ATT, 1);
+    expect(shareOf('GK', 0)).toBeCloseTo(dc.phaseBias.GK, 1);
+    expect(shareOf('DEF', 0)).toBeLessThan(shareOf('MID', 0));
+    // Il ripiego: senza tipi d'attacco nel ruolo tutta la massa va alla difesa.
+    const noAttack = withTypes((types) =>
+      types.map((t) => (t.phase === 'attack' ? { ...t, weights: { ...t.weights, GK: 0 } } : t)),
+    );
+    expect(shareOf('GK', 1, noAttack)).toBe(0);
+  });
+
+  it('tilt moves the phase share with pressure', () => {
+    expect(attackShare('MID', 0.5, ctx)).toBeCloseTo(dc.phaseBias.MID + dc.phaseTilt * 0.5, 10);
+    expect(attackShare('ATT', 1, ctx)).toBe(1 - dc.phaseMin);
+    expect(attackShare('GK', -1, ctx)).toBe(dc.phaseMin);
+    const share = (pressure: number) => {
+      let attack = 0;
+      for (let seed = 1; seed <= 4000; seed++) {
+        const t = pickMomentType('MID', ms({ pressure }), 6, Rng.fromSeed(seed), ctx)!;
+        if (t.phase === 'attack') attack++;
+      }
+      return attack / 4000;
+    };
+    expect(share(0.8)).toBeGreaterThan(share(0) + 0.1);
+    expect(share(-0.8)).toBeLessThan(share(0) - 0.1);
+  });
+
+  it('phase choice is deterministic and costs one rng draw', () => {
+    for (let seed = 1; seed <= 50; seed++) {
+      const m = ms({ pressure: (seed % 7) / 7 - 0.4 });
+      const a = Rng.fromSeed(seed);
+      const b = Rng.fromSeed(seed);
+      expect(pickMomentType('MID', m, 6, a, ctx)!.id).toBe(pickMomentType('MID', m, 6, b, ctx)!.id);
+      const one = Rng.fromSeed(seed);
+      one.next();
+      expect(a.getState()).toEqual(one.getState());
+    }
   });
 
   it('high marking raises share of affine types', () => {
@@ -552,7 +650,7 @@ describe('regista della partita', () => {
       let hits = 0;
       const m = ms({ dyn: { coachTrust: 0, nerves: 0, fatigue: 0, marking } });
       for (let seed = 1; seed <= 4000; seed++) {
-        const t = pickMomentType(role, affine.phase, m, 6, Rng.fromSeed(seed), ctx)!;
+        const t = pickMomentType(role, m, 6, Rng.fromSeed(seed), ctx)!;
         if (t.id === affine.id) hits++;
       }
       return hits / 4000;

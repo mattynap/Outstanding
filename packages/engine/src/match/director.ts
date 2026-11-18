@@ -85,8 +85,11 @@ export type Gate =
   | { kind: 'none' }
   /** Minimo garantito: si arma senza estrarre (ignora soglia, respiro, intervallo e riserva). */
   | { kind: 'forced'; maxDepth: number }
-  /** Si estrae `rng.chance(p)`; se riesce, il tipo deve stare entro `maxDepth` passi. */
-  | { kind: 'roll'; p: number; maxDepth: number };
+  /**
+   * Si estrae `rng.chance(p)`; se riesce, il tipo deve stare entro `maxDepth` passi. `forced`:
+   * il preavviso scavalca la scadenza del minimo garantito e va armato immune ai gol.
+   */
+  | { kind: 'roll'; p: number; maxDepth: number; forced: boolean };
 
 const NONE: Gate = { kind: 'none' };
 
@@ -103,13 +106,9 @@ export function gate(m: MatchState, cfg: MatchConfig): Gate {
   if (minute + c.armLead > Math.min(totalMinutes(cfg), m.minuteOut)) return NONE;
 
   const minuteIn = m.minuteIn ?? 0;
-  if (
-    d.interventions === 0 &&
-    eligibleForMoments(m.minuteOut - minuteIn, cfg) &&
-    minute >= Math.max(minuteIn, m.minuteOut - c.armLead)
-  ) {
-    return { kind: 'forced', maxDepth: d.budgetLeft };
-  }
+  const owed = d.interventions === 0 && eligibleForMoments(m.minuteOut - minuteIn, cfg);
+  const deadline = Math.max(minuteIn, m.minuteOut - c.armLead);
+  if (owed && minute >= deadline) return { kind: 'forced', maxDepth: d.budgetLeft };
 
   if (d.relaxUntil !== null && minute < d.relaxUntil) return NONE;
   const gap = hotActive(d) ? c.hotGap : c.minGap;
@@ -118,7 +117,10 @@ export function gate(m: MatchState, cfg: MatchConfig): Gate {
   if (maxDepth < 1) return NONE;
   const t = tension(m, cfg);
   if (t < c.threshold) return NONE;
-  return { kind: 'roll', p: Math.min(c.pMax, (t - c.threshold) * c.hazard), maxDepth };
+  // Un preavviso ancora chiuso alla scadenza toglierebbe il posto al minimo garantito: se un gol
+  // lo annullasse dopo la scadenza non ci sarebbe più tempo per riarmare.
+  const forced = owed && minute + c.armLead > deadline;
+  return { kind: 'roll', p: Math.min(c.pMax, (t - c.threshold) * c.hazard), maxDepth, forced };
 }
 
 /** Respiro dopo un gol o una catena: più corto nel finale caldo. */
@@ -134,7 +136,8 @@ export function directorMinute(m: MatchState, goalScored: boolean, cfg: MatchCon
   let d = m.director;
   const minute = m.minute;
   if (d.armed && minute > m.minuteOut) {
-    // I cambi sono fissati a beginMatch: un preavviso oltre l'uscita è un errore del regista.
+    // Invariante, non caso di gioco: i cambi sono fissati a beginMatch e `gate` non arma mai oltre
+    // l'uscita. Se succede il regista è rotto e conviene fermarsi invece di proseguire in silenzio.
     throw new Error(`Armed moment at ${d.armed.at} beyond minuteOut ${m.minuteOut}`);
   }
   if (d.hotLeft === null && minute >= cfg.director.hotFrom && Math.abs(goalDiff(m)) <= 1) {

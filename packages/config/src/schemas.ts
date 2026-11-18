@@ -513,6 +513,12 @@ export const matchSchema = z
       relaxMinutes: z.number().int().min(0),
       repeatPenalty: prob,
       dynAffinity: z.number().min(0),
+      /** Quota di radici in fase d'attacco per ruolo, a pressione 0. */
+      phaseBias: z.object({ GK: prob, DEF: prob, MID: prob, ATT: prob }),
+      /** Quanto la pressione sposta la quota d'attacco (P += phaseTilt · pressione). */
+      phaseTilt: z.number().min(0),
+      /** Quota minima di ciascuna fase. */
+      phaseMin: z.number().min(0).max(0.5),
     }),
     /** Passi interattivi per modalità di partita: [min, max]. */
     modes: z.object({ full: countRange, quick: countRange, sim: countRange }),

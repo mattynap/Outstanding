@@ -32,7 +32,6 @@ import {
   getMomentType,
   consequenceOf,
   optionChance,
-  phaseOf,
   pickMomentType,
   type KeyMoment,
 } from './moments';
@@ -396,8 +395,10 @@ function tryArm(state: GameState, m: MatchState, rng: Rng, ctx: GameContext): Ma
   const g = gate(m, cfg);
   if (g.kind === 'none') return m;
   if (g.kind === 'roll' && !rng.chance(g.p)) return m;
-  const type = pickMomentType(state.player.role, phaseOf(m.pressure), m, g.maxDepth, rng, ctx);
+  const type = pickMomentType(state.player.role, m, g.maxDepth, rng, ctx);
   if (!type) return m;
+  // Il contesto non ha ancora una lingua scelta: l'unica tabella è `it` (content:check ne
+  // garantisce almeno BUILDUP_MIN_LINES righe per fase). Da rivedere se arrivano altre lingue.
   const lines = buildupLines(ctx.content.i18n.it, type.phase);
   const buildup: MatchEvent = {
     kind: 'buildup',
@@ -407,7 +408,7 @@ function tryArm(state: GameState, m: MatchState, rng: Rng, ctx: GameContext): Ma
   };
   return {
     ...m,
-    director: arm(m.director, m.minute, type.id, g.kind === 'forced', cfg),
+    director: arm(m.director, m.minute, type.id, g.kind === 'forced' || g.forced, cfg),
     events: [...m.events, buildup],
   };
 }

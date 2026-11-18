@@ -232,6 +232,18 @@ describe('config', () => {
       expect(() => parseConfig(bad)).toThrow(/minMinutesForMoment must be > director.armLead/);
     });
 
+    it('fase per ruolo: bias in 0..1, inclinazione non negativa, minimo fino a 0,5', () => {
+      for (const edit of [
+        (b: ReturnType<typeof raw>) => (b.match.director.phaseBias.ATT = 1.2),
+        (b: ReturnType<typeof raw>) => (b.match.director.phaseTilt = -0.1),
+        (b: ReturnType<typeof raw>) => (b.match.director.phaseMin = 0.6),
+      ]) {
+        const bad = raw();
+        edit(bad);
+        expect(() => parseConfig(bad)).toThrow();
+      }
+    });
+
     it("un'opzione legend deve essere risky", () => {
       const legend = { id: 'leg', minTension: 0.5, skills: { shooting: 1 } };
       const bad = withTypes(type('lg', {}, [option('a', { legend }), option('b')]));

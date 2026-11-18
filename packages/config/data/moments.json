@@ -204,8 +204,6 @@
           "tag": "passing",
           "success": {
             "rating": 0.25,
-            "goalFor": 0.12,
-            "by": "assist",
             "next": {
               "momentId": "gk_outlet"
             }
@@ -232,6 +230,56 @@
           "failure": {
             "rating": -1,
             "goalAgainst": 0.35
+          },
+          "risk": "safe"
+        }
+      ]
+    },
+    {
+      "id": "gk_quick_release",
+      "phase": "attack",
+      "weights": {
+        "GK": 0.3
+      },
+      "textVariants": 2,
+      "options": [
+        {
+          "id": "rimessa_rapida",
+          "skills": {
+            "passing": 0.6,
+            "vision": 0.4
+          },
+          "difficulty": 2,
+          "tag": "passing",
+          "success": {
+            "rating": 0.15,
+            "goalFor": 0.05,
+            "by": "team",
+            "effects": {
+              "pressure": 0.05
+            }
+          },
+          "failure": {
+            "rating": -0.15,
+            "effects": {
+              "pressure": -0.05
+            }
+          },
+          "risk": "balanced"
+        },
+        {
+          "id": "fai_salire",
+          "skills": {
+            "passing": 0.5,
+            "vision": 0.5
+          },
+          "difficulty": -6,
+          "tag": "composure",
+          "success": {
+            "rating": 0.1
+          },
+          "failure": {
+            "rating": -0.25
           },
           "risk": "safe"
         }
@@ -355,8 +403,7 @@
       "id": "def_set_piece",
       "phase": "attack",
       "weights": {
-        "DEF": 1.5,
-        "GK": 0.1
+        "DEF": 1.5
       },
       "textVariants": 2,
       "options": [
@@ -501,8 +548,6 @@
           "tag": "passing",
           "success": {
             "rating": 0.25,
-            "goalFor": 0.2,
-            "by": "assist",
             "next": {
               "momentId": "wing_delivery"
             }
@@ -687,8 +732,6 @@
           "tag": "dribble",
           "success": {
             "rating": 0.5,
-            "goalFor": 0.2,
-            "by": "assist",
             "next": {
               "momentId": "wing_delivery"
             },

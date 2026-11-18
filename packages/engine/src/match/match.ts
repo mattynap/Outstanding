@@ -26,6 +26,7 @@ import {
   planMomentMinutes,
   type KeyMoment,
 } from './moments';
+import { goalChancePerMinute, pushFor, stepPressure } from './pressure';
 import { planMinutes, selectPlayer } from './selection';
 
 /** Voci che compongono il voto in pagella, nell'ordine in cui si sommano. */
@@ -105,12 +106,6 @@ function pickScorer(club: ClubBase, rng: Rng, ctx: GameContext): RosterPlayer {
   return rng.weighted(club.roster, (p) => w[p.role]);
 }
 
-/** Minuti in cui il giocatore è in campo dentro l'intervallo (from, to]. */
-function overlap(m: MatchState, from: number, to: number): number {
-  if (m.minuteIn === null) return 0;
-  return Math.max(0, Math.min(to, m.minuteOut) - Math.max(from, m.minuteIn));
-}
-
 function playerOnPitch(m: MatchState, minute: number): boolean {
   return m.minuteIn !== null && minute > m.minuteIn && minute <= m.minuteOut;
 }
@@ -154,8 +149,11 @@ function addGoal(
   };
 }
 
-/** Simula un blocco di gioco: gol dei compagni e degli avversari al di fuori dei momenti chiave. */
-function simulateBlock(
+/**
+ * Simula un minuto: prima il rumore della pressione, poi il gol di casa (e il marcatore), poi
+ * quello in trasferta. L'ordine delle estrazioni è fisso: il regista si appoggia a questo.
+ */
+function simulateMinute(
   state: GameState,
   m: MatchState,
   clubs: MatchClubs,
@@ -163,33 +161,36 @@ function simulateBlock(
   ctx: GameContext,
 ): MatchState {
   const cfg = ctx.config.match;
-  const from = m.minute;
-  // Un salvataggio ripreso a metà blocco chiude il blocco al confine di 90.
-  const to = Math.min(from + cfg.minutesPerBlock, totalMinutes(ctx));
-  const length = to - from;
-  const share = overlap(m, from, to) / length;
+  const minute = m.minute + 1;
+  const on = playerOnPitch(m, minute) ? 1 : 0;
 
   const own = clubs[m.side];
   const ovr = computeOvr(state.player.skills, state.player.role, ctx.config.ratings);
   const ratings = { home: clubs.home.rating, away: clubs.away.rating };
-  ratings[m.side] += (ovr - own.rating) * cfg.playerImpact * share;
+  const push = pushFor(ratings, m.side, clubs.neutral, cfg.pressure);
+  const p = stepPressure(m.pressure, push, 0, rng, cfg.pressure);
+
+  ratings[m.side] += (ovr - own.rating) * cfg.playerImpact * on;
   const xg = expectedGoals(ratings.home, ratings.away, cfg.quickSim, clubs.neutral);
   const scale = {
-    [m.side]: 1 + (cfg.xgScaleWhileOnPitch.for - 1) * share,
-    [other(m.side)]: 1 + (cfg.xgScaleWhileOnPitch.against - 1) * share,
+    [m.side]: 1 + (cfg.xgScaleWhileOnPitch.for - 1) * on,
+    [other(m.side)]: 1 + (cfg.xgScaleWhileOnPitch.against - 1) * on,
   } as Record<Side, number>;
 
-  let next = m;
+  let next: MatchState = { ...m, minute, pressure: p, trace: [...m.trace, p] };
   for (const side of ['home', 'away'] as const) {
-    const goals = rng.poisson(
-      (xg[side] * scale[side] * length) / (cfg.blocks * cfg.minutesPerBlock),
+    const sidePressure = side === m.side ? p : -p;
+    const chance = goalChancePerMinute(
+      xg[side] * scale[side],
+      sidePressure,
+      totalMinutes(ctx),
+      cfg.pressure,
     );
-    for (let i = 0; i < goals; i++) {
-      const minute = rng.int(from + 1, to);
+    if (rng.chance(chance)) {
       next = addGoal(next, side, minute, fullName(pickScorer(clubs[side], rng, ctx)));
     }
   }
-  return { ...next, minute: to, trace: [...m.trace, ...Array<number>(length).fill(0)] };
+  return next;
 }
 
 /** Costruisce la vista del momento chiave in attesa, con le probabilità di ogni opzione. */
@@ -198,17 +199,12 @@ function describeMoment(state: GameState, m: MatchState, ctx: GameContext): KeyM
   if (!pending) throw new Error('No key moment pending');
   const type = getMomentType(pending.momentId, ctx);
   const opponent = getAnyClub(state.world, m.opponentId);
-  // I gol di un blocco vengono simulati prima dei suoi momenti: si contano solo quelli già avvenuti.
-  const score = { home: 0, away: 0 };
-  for (const e of m.events) {
-    if (e.kind === 'goal' && e.minute <= pending.minute) score[e.side] += 1;
-  }
   return {
     momentId: type.id,
     minute: pending.minute,
     textKey: `match.moments.${type.id}.text.${pending.textVariant}`,
     params: { opponent: opponent.shortName },
-    score,
+    score: { ...m.score },
     options: type.options.map((o) => ({
       id: o.id,
       textKey: `match.moments.${type.id}.options.${o.id}`,
@@ -363,6 +359,15 @@ function run(
   const clubs = matchClubs(state, m);
   let cur = m;
   for (;;) {
+    if (cur.minute >= totalMinutes(ctx)) {
+      const { state: done, report } = finishMatch(state, cur, rng, ctx);
+      return {
+        state: { ...done, rngState: rng.getState() },
+        step: { kind: 'finished', report },
+      };
+    }
+    // Si riparte sempre dal minuto successivo: il minuto del momento già aperto non si rivaluta.
+    cur = simulateMinute(state, cur, clubs, rng, ctx);
     const planned = cur.director.plannedMinutes ?? [];
     const nextMoment = planned[0];
     if (nextMoment !== undefined && nextMoment <= cur.minute) {
@@ -388,14 +393,6 @@ function run(
       const paused = { ...state, currentMatch: cur, rngState: rng.getState() };
       return { state: paused, step: { kind: 'moment', moment: describeMoment(paused, cur, ctx) } };
     }
-    if (cur.minute >= totalMinutes(ctx)) {
-      const { state: done, report } = finishMatch(state, cur, rng, ctx);
-      return {
-        state: { ...done, rngState: rng.getState() },
-        step: { kind: 'finished', report },
-      };
-    }
-    cur = simulateBlock(state, cur, clubs, rng, ctx);
   }
 }
 

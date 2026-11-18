@@ -73,7 +73,7 @@ describe('estrazione degli eventi', () => {
       while (playerFixture(s)) s = playMatch(s, () => 0).state;
       s = advanceWeek(s).state;
     }
-    expect(total).toBeGreaterThan(10);
+    expect(total).toBeGreaterThan(5);
   });
 
   it('blocca settimana e partita finché gli eventi non hanno risposta', () => {

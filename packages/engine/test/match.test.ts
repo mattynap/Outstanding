@@ -372,3 +372,75 @@ describe('partita simulata', () => {
     ).toBeDefined();
   });
 });
+
+describe('partita al minuto', () => {
+  /** Mette in pausa la partita al primo momento chiave: restituisce lo stato fermo. */
+  function firstPause(seed: number): GameState | null {
+    const s = toFirstMatch(newCareer(baseOptions, seed));
+    const r = beginMatch(s);
+    return r.step.kind === 'moment' ? r.state : null;
+  }
+
+  it('la traccia ha un valore per minuto e le stesse scelte danno la stessa traccia', () => {
+    const a = firstPause(3)!;
+    const b = firstPause(3)!;
+    const m = a.currentMatch!;
+    expect(m.trace.length).toBe(m.minute);
+    expect(m.trace).toEqual(b.currentMatch!.trace);
+    expect(m.pressure).toBe(m.trace.at(-1));
+  });
+
+  it('il punteggio è cronologico: nessun gol dopo il minuto di pausa', () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      const s = firstPause(seed);
+      if (!s) continue;
+      const m = s.currentMatch!;
+      expect(m.events.filter((e) => e.kind === 'goal' && e.minute > m.minute)).toEqual([]);
+      const goals = m.events.filter((e) => e.kind === 'goal');
+      expect(m.score.home + m.score.away).toBe(goals.length);
+    }
+  });
+
+  it('la ripresa dopo una pausa equivale al gioco continuo, con momenti ancora da giocare', () => {
+    let checked = 0;
+    for (let seed = 1; seed <= 40 && checked < 5; seed++) {
+      const paused = firstPause(seed);
+      const m = paused?.currentMatch;
+      if (!paused || !m || (m.director.plannedMinutes ?? []).length === 0) continue;
+      checked++;
+      const continuous = playMatch(toFirstMatch(newCareer(baseOptions, seed)), first);
+      const reloaded = deserialize(serialize(paused));
+      const resumed = playMatch(reloaded, first);
+      expect(resumed.matchReport).toEqual(continuous.matchReport);
+      expect(resumed.state).toEqual(continuous.state);
+      // Eventi e traccia prima della pausa restano identici nel resoconto finale.
+      // Nel minuto di pausa la decisione può ancora aggiungere eventi: si confrontano i minuti prima.
+      const settled = (e: { minute: number }) => e.minute < m.minute;
+      const before = m.events.filter(settled);
+      expect(resumed.matchReport.events.filter(settled)).toEqual(
+        [...before].sort((x, y) => x.minute - y.minute),
+      );
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+
+  it('i gol medi per partita restano entro il 5% della baseline (2,807)', () => {
+    let n = 0;
+    let goals = 0;
+    for (let seed = 42; n < 2000; seed++) {
+      let s = newCareer(baseOptions, seed);
+      while (!isSeasonOver(s) && n < 2000) {
+        const f = playerFixture(s);
+        if (f && !f.result) {
+          const r = playMatch(s, autoDecider);
+          s = r.state;
+          n++;
+          goals += r.matchReport.score.home + r.matchReport.score.away;
+        }
+        s = advanceWeek(s).state;
+      }
+    }
+    expect(goals / n).toBeGreaterThanOrEqual(2.667);
+    expect(goals / n).toBeLessThanOrEqual(2.947);
+  }, 60000);
+});

@@ -113,12 +113,12 @@
   },
   "pressure": {
     "decay": 0.9,
-    "ratingPush": 0.02,
-    "homePush": 0.01,
+    "ratingPush": 0.0002,
+    "homePush": 0.0002,
     "noise": 0.12,
     "goalBoost": 1.2,
     "dangerAt": 0.6,
-    "sigma": 0.35
+    "sigma": 0.16
   },
   "director": {
     "threshold": 0.35,

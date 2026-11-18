@@ -163,9 +163,11 @@ function simulateBlock(
   ctx: GameContext,
 ): MatchState {
   const cfg = ctx.config.match;
-  const from = m.blocksDone * cfg.minutesPerBlock;
-  const to = from + cfg.minutesPerBlock;
-  const share = overlap(m, from, to) / cfg.minutesPerBlock;
+  const from = m.minute;
+  // Un salvataggio ripreso a metà blocco chiude il blocco al confine di 90.
+  const to = Math.min(from + cfg.minutesPerBlock, totalMinutes(ctx));
+  const length = to - from;
+  const share = overlap(m, from, to) / length;
 
   const own = clubs[m.side];
   const ovr = computeOvr(state.player.skills, state.player.role, ctx.config.ratings);
@@ -179,13 +181,15 @@ function simulateBlock(
 
   let next = m;
   for (const side of ['home', 'away'] as const) {
-    const goals = rng.poisson((xg[side] * scale[side]) / cfg.blocks);
+    const goals = rng.poisson(
+      (xg[side] * scale[side] * length) / (cfg.blocks * cfg.minutesPerBlock),
+    );
     for (let i = 0; i < goals; i++) {
       const minute = rng.int(from + 1, to);
       next = addGoal(next, side, minute, fullName(pickScorer(clubs[side], rng, ctx)));
     }
   }
-  return { ...next, blocksDone: m.blocksDone + 1 };
+  return { ...next, minute: to, trace: [...m.trace, ...Array<number>(length).fill(0)] };
 }
 
 /** Costruisce la vista del momento chiave in attesa, con le probabilità di ogni opzione. */
@@ -356,27 +360,35 @@ function run(
   rng: Rng,
   ctx: GameContext,
 ): { state: GameState; step: MatchStep } {
-  const cfg = ctx.config.match;
   const clubs = matchClubs(state, m);
   let cur = m;
   for (;;) {
-    const playedUntil = cur.blocksDone * cfg.minutesPerBlock;
-    const nextMoment = cur.momentMinutes[0];
-    if (nextMoment !== undefined && nextMoment <= playedUntil) {
+    const planned = cur.director.plannedMinutes ?? [];
+    const nextMoment = planned[0];
+    if (nextMoment !== undefined && nextMoment <= cur.minute) {
       const type = pickMomentType(state.player.role, rng, ctx);
+      const d = cur.director;
       cur = {
         ...cur,
-        momentMinutes: cur.momentMinutes.slice(1),
+        director: {
+          ...d,
+          plannedMinutes: planned.slice(1),
+          budgetLeft: d.budgetLeft - 1,
+          interventions: d.interventions + 1,
+          lastAt: nextMoment,
+          lastTypes: [...d.lastTypes, type.id].slice(-3),
+        },
         pending: {
           momentId: type.id,
           minute: nextMoment,
           textVariant: rng.int(1, type.textVariants),
+          options: type.options.map((_, i) => i),
         },
       };
       const paused = { ...state, currentMatch: cur, rngState: rng.getState() };
       return { state: paused, step: { kind: 'moment', moment: describeMoment(paused, cur, ctx) } };
     }
-    if (cur.blocksDone >= cfg.blocks) {
+    if (cur.minute >= totalMinutes(ctx)) {
       const { state: done, report } = finishMatch(state, cur, rng, ctx);
       return {
         state: { ...done, rngState: rng.getState() },
@@ -413,6 +425,7 @@ export function beginMatch(
   if (minuteIn !== null && minuteIn > 0) events.push({ kind: 'subIn', minute: minuteIn });
   if (minuteIn !== null && minuteOut < total) events.push({ kind: 'subOut', minute: minuteOut });
 
+  const plannedMinutes = planMomentMinutes(state.player.role, minuteIn, minuteOut, total, rng, ctx);
   const m: MatchState = {
     fixtureId: fixture.id,
     side,
@@ -420,10 +433,28 @@ export function beginMatch(
     selection,
     minuteIn,
     minuteOut,
-    blocksDone: 0,
+    minute: 0,
+    mode: 'full',
+    pressure: 0,
+    trace: [],
+    director: {
+      budgetStart: plannedMinutes.length,
+      budgetLeft: plannedMinutes.length,
+      hotLeft: null,
+      lastAt: null,
+      interventions: 0,
+      armed: null,
+      relaxUntil: null,
+      lastTypes: [],
+      legendsUsed: 0,
+      peak: null,
+      plannedMinutes,
+    },
+    dyn: { coachTrust: 0, nerves: 0, fatigue: 0, marking: 0 },
+    stakes: 0,
+    legend: null,
     score: { home: 0, away: 0 },
     events,
-    momentMinutes: planMomentMinutes(state.player.role, minuteIn, minuteOut, total, rng, ctx),
     pending: null,
     ratingDelta: 0,
     goals: 0,
@@ -483,7 +514,7 @@ export function decideMoment(
     ratingDelta: m.ratingDelta + outcome.rating,
     events: [
       ...m.events,
-      { kind: 'moment', minute, momentId: type.id, optionId: option.id, success },
+      { kind: 'moment', minute, momentId: type.id, optionId: option.id, success, quality },
     ],
   };
   const me = fullName(state.player);

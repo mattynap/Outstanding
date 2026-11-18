@@ -1,0 +1,61 @@
+{
+  "saveVersion": 1,
+  "currentMatch": {
+    "fixtureId": "fx-demo-1",
+    "side": "home",
+    "opponentId": "club-demo-2",
+    "selection": "starter",
+    "minuteIn": 0,
+    "minuteOut": 90,
+    "blocksDone": 2,
+    "score": { "home": 2, "away": 2 },
+    "events": [
+      { "kind": "subIn", "minute": 5 },
+      {
+        "kind": "moment",
+        "minute": 12,
+        "momentId": "att_box_chance",
+        "optionId": "shoot",
+        "success": true
+      },
+      {
+        "kind": "goal",
+        "minute": 10,
+        "side": "home",
+        "scorerName": "Aldo Rossi",
+        "byPlayer": false,
+        "assistByPlayer": false
+      },
+      {
+        "kind": "goal",
+        "minute": 25,
+        "side": "away",
+        "scorerName": "Piero Bianchi",
+        "byPlayer": false,
+        "assistByPlayer": false
+      },
+      {
+        "kind": "goal",
+        "minute": 28,
+        "side": "home",
+        "scorerName": "Luca Verdi",
+        "byPlayer": false,
+        "assistByPlayer": false
+      },
+      {
+        "kind": "goal",
+        "minute": 30,
+        "side": "away",
+        "scorerName": "Piero Bianchi",
+        "byPlayer": false,
+        "assistByPlayer": false
+      }
+    ],
+    "momentMinutes": [55, 70],
+    "pending": { "momentId": "att_counter", "minute": 28, "textVariant": 2 },
+    "ratingDelta": 0.5,
+    "goals": 0,
+    "assists": 0
+  },
+  "rngState": [1, 2, 3, 4]
+}

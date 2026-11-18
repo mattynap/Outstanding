@@ -1,0 +1,161 @@
+import { describe, expect, it } from 'vitest';
+import {
+  CURRENT_SAVE_VERSION,
+  defaultContext,
+  deserialize,
+  migrate,
+  newCareer,
+  serialize,
+  type GameState,
+} from '../src/index';
+import fixture from './fixtures/save-v1-midmatch.json';
+import { baseOptions } from './fixtures';
+
+type Raw = Record<string, unknown>;
+const v1 = (): Raw => JSON.parse(JSON.stringify(fixture)) as Raw;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Loose = Record<string, any>;
+const matchOf = (raw: Raw) => raw['currentMatch'] as Loose;
+
+/** Fixture v1 senza momento in attesa: tre blocchi giocati, resta un momento da fare. */
+function withoutPending(): Raw {
+  const raw = v1();
+  const m = matchOf(raw);
+  m['pending'] = null;
+  m['blocksDone'] = 3;
+  m['momentMinutes'] = [55];
+  m['score'] = { home: 2, away: 2 };
+  return raw;
+}
+
+describe('migrazione dei salvataggi v1 -> v2', () => {
+  it('la versione corrente è 2', () => {
+    expect(CURRENT_SAVE_VERSION).toBe(2);
+  });
+
+  it('migrates v1 save without match', () => {
+    const out = migrate({ saveVersion: 1, week: 3 });
+    expect(out).toEqual({ saveVersion: 2, week: 3 });
+  });
+
+  it('i momenti del fixture esistono nella config', () => {
+    const ids = defaultContext.config.match.moments.types.map((t) => t.id);
+    const m = matchOf(v1());
+    expect(ids).toContain(m['pending'].momentId);
+    for (const e of m['events']) if (e.kind === 'moment') expect(ids).toContain(e.momentId);
+  });
+
+  it('migrates v1 mid-match without pending: minute = blocksDone·15', () => {
+    const m = matchOf(migrate(withoutPending()));
+    expect(m['minute']).toBe(45);
+    expect(m['blocksDone']).toBeUndefined();
+    expect(m['momentMinutes']).toBeUndefined();
+    expect(m['pending']).toBeNull();
+    expect(m['score']).toEqual({ home: 2, away: 2 });
+    expect(m['trace']).toHaveLength(45);
+  });
+
+  it('limita a 90 il minuto di un salvataggio a fine partita', () => {
+    const raw = withoutPending();
+    matchOf(raw)['blocksDone'] = 7;
+    expect(matchOf(migrate(raw))['minute']).toBe(90);
+  });
+
+  it('migrates v1 mid-match with pending: minute = pending.minute, goals after it removed and score recomputed', () => {
+    const m = matchOf(migrate(v1()));
+    expect(m['minute']).toBe(28);
+    const goals = m['events'].filter((e: { kind: string }) => e.kind === 'goal');
+    expect(goals.map((g: { minute: number }) => g.minute)).toEqual([10, 25, 28]);
+    expect(m['score']).toEqual({ home: 2, away: 1 });
+    expect(m['trace']).toHaveLength(28);
+    expect(m['goals']).toBe(0);
+    expect(m['ratingDelta']).toBe(0.5);
+  });
+
+  it('rifiuta di togliere un gol del giocatore', () => {
+    const raw = v1();
+    matchOf(raw)['events'].push({
+      kind: 'goal',
+      minute: 29,
+      side: 'home',
+      scorerName: 'Io',
+      byPlayer: true,
+      assistByPlayer: false,
+    });
+    expect(() => migrate(raw)).toThrow(/goal/);
+  });
+
+  it('budgetLeft = momentMinutes.length (the pending moment is already spent)', () => {
+    const m = matchOf(migrate(v1()));
+    const d = m['director'];
+    expect(d.budgetLeft).toBe(2);
+    expect(d.interventions).toBe(2); // un momento già giocato più quello in attesa
+    expect(d.budgetStart).toBe(4);
+    expect(d.lastAt).toBe(28);
+    expect(d.lastTypes).toEqual(['att_box_chance', 'att_counter']);
+    expect(d.plannedMinutes).toEqual([55, 70]);
+    expect(d.hotLeft).toBeNull();
+    expect(d.armed).toBeNull();
+    expect(d.relaxUntil).toBeNull();
+    expect(d.legendsUsed).toBe(0);
+    expect(d.peak).toBeNull();
+  });
+
+  it('senza pending: lastAt è il minuto dell ultimo momento giocato', () => {
+    const d = matchOf(migrate(withoutPending()))['director'];
+    expect(d.budgetLeft).toBe(1);
+    expect(d.interventions).toBe(1);
+    expect(d.budgetStart).toBe(2);
+    expect(d.lastAt).toBe(12);
+    expect(d.lastTypes).toEqual(['att_box_chance']);
+  });
+
+  it('pressure 0, trace [], dyn zero, pending kept', () => {
+    const m = matchOf(migrate(v1()));
+    expect(m['pressure']).toBe(0);
+    expect(m['mode']).toBe('full');
+    expect(m['stakes']).toBe(0);
+    expect(m['legend']).toBeNull();
+    expect(m['dyn']).toEqual({ coachTrust: 0, nerves: 0, fatigue: 0, marking: 0 });
+    const n = defaultContext.config.match.moments.types.find((t) => t.id === 'att_counter')!.options
+      .length;
+    expect(m['pending']).toEqual({
+      momentId: 'att_counter',
+      minute: 28,
+      textVariant: 2,
+      options: Array.from({ length: n }, (_, i) => i),
+    });
+    expect(matchOf(migrate(v1()))['events'].find((e: Loose) => e.kind === 'moment').quality).toBe(
+      0.5,
+    );
+    expect(matchOf(migrate(v1()))['events'].some((e: Loose) => e.kind === 'subIn')).toBe(true);
+  });
+
+  it('un salvataggio migrato passa la deserializzazione', () => {
+    const base = JSON.parse(serialize(newCareer(baseOptions, 5))) as Raw;
+    const raw = { ...base, saveVersion: 1, currentMatch: matchOf(v1()) };
+    const s = deserialize(JSON.stringify(raw));
+    expect(s.saveVersion).toBe(2);
+    expect(s.currentMatch?.minute).toBe(28);
+  });
+});
+
+describe('salvataggio v2', () => {
+  it('serialize→deserialize v2 is identity', () => {
+    const s = newCareer(baseOptions, 7);
+    expect(s.saveVersion).toBe(CURRENT_SAVE_VERSION);
+    expect(deserialize(serialize(s))).toEqual(s);
+  });
+
+  it('rejects CURRENT_SAVE_VERSION + 1', () => {
+    const s = newCareer(baseOptions, 7);
+    const bad = serialize({ ...s, saveVersion: CURRENT_SAVE_VERSION + 1 } as GameState);
+    expect(() => deserialize(bad)).toThrow(/newer/);
+  });
+
+  it('rifiuta una partita v2 con forma sbagliata', () => {
+    const s = JSON.parse(serialize(newCareer(baseOptions, 7))) as Raw;
+    s['currentMatch'] = { minute: 'x' };
+    expect(() => deserialize(JSON.stringify(s))).toThrow(/currentMatch/);
+  });
+});

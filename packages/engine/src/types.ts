@@ -320,7 +320,17 @@ export type MatchEvent =
       assistByPlayer: boolean;
     }
   | { kind: 'subIn' | 'subOut'; minute: number }
-  | { kind: 'moment'; minute: number; momentId: string; optionId: string; success: boolean };
+  | {
+      kind: 'moment';
+      minute: number;
+      momentId: string;
+      optionId: string;
+      success: boolean;
+      /** Qualità del gesto del giocatore, 0–1 (0,5 neutro). */
+      quality: number;
+    }
+  /** Preavviso: il momento si apre poco dopo (Task A5). */
+  | { kind: 'buildup'; minute: number; momentId: string; textKey: string };
 
 /** Momento chiave in attesa della scelta del giocatore. */
 export interface PendingMoment {
@@ -328,6 +338,40 @@ export interface PendingMoment {
   minute: number;
   /** Variante di testo, da 1. */
   textVariant: number;
+  /** Passo di una catena di momenti, se ne fa parte. */
+  chain?: { rootId: string; step: number };
+  /** Indici delle opzioni della config disponibili, fissati all'apertura. */
+  options: number[];
+}
+
+export type MatchMode = 'full' | 'quick' | 'sim';
+
+/** Dinamiche della partita che dipendono dal giocatore. */
+export interface MatchDyn {
+  coachTrust: number;
+  nerves: number;
+  fatigue: number;
+  marking: number;
+}
+
+/** Stato del regista della partita: budget di interventi, preavviso, respiro. */
+export interface DirectorState {
+  budgetStart: number;
+  budgetLeft: number;
+  /** Minuti rimasti del finale caldo; null = non ancora valutato. */
+  hotLeft: number | null;
+  lastAt: number | null;
+  interventions: number;
+  /** Preavviso: il momento si apre al minuto `at`. */
+  armed: { at: number; momentId: string } | null;
+  /** Respiro dopo un gol o la fine di una catena. */
+  relaxUntil: number | null;
+  /** Ultimi tipi proposti (massimo 3). */
+  lastTypes: string[];
+  legendsUsed: number;
+  peak: { minute: number; momentId: string; tension: number; success: boolean } | null;
+  /** Minuti pianificati ancora da giocare: solo fra A3 e A5, poi rimosso. */
+  plannedMinutes?: number[];
 }
 
 /**
@@ -344,11 +388,21 @@ export interface MatchState {
   minuteIn: number | null;
   /** Minuto di uscita (fine partita se resta in campo). */
   minuteOut: number;
-  blocksDone: number;
+  /** Minuto raggiunto dalla simulazione (0–90). */
+  minute: number;
+  mode: MatchMode;
+  /** Pressione −1..1: positivo = spinge la squadra del giocatore. */
+  pressure: number;
+  /** Pressione per minuto giocato, arrotondata a 2 decimali; lunghezza = minute. */
+  trace: number[];
+  director: DirectorState;
+  dyn: MatchDyn;
+  /** Posta in gioco 0..1, calcolata a beginMatch. */
+  stakes: number;
+  /** Momento da leggenda vissuto, letto dal report (Task A7b). */
+  legend: { id: string; success: boolean } | null;
   score: { home: number; away: number };
   events: MatchEvent[];
-  /** Minuti dei momenti chiave ancora da giocare, in ordine. */
-  momentMinutes: number[];
   pending: PendingMoment | null;
   /** Somma delle variazioni di voto dovute ai momenti chiave. */
   ratingDelta: number;

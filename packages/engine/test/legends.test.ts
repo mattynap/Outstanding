@@ -369,8 +369,8 @@ describe('momenti da leggenda', () => {
 
 describe('più gesti idonei sullo stesso passo', () => {
   /** l_end con un secondo gesto: soglie sulla stessa abilità, margini diversi. */
-  const twoLegends = (thresholdA: number, thresholdB: number): GameContext => {
-    const c = ctxFor(OPEN);
+  const twoLegends = (thresholdA: number, thresholdB: number, perMatch = 1): GameContext => {
+    const c = ctxFor({ ...OPEN, perMatch });
     const types = c.config.match.moments.types.map((t) => {
       if (t.id !== 'l_end') return t;
       const mk = (id: string, min: number): MomentTypeConfig['options'][number] => ({
@@ -406,6 +406,22 @@ describe('più gesti idonei sullo stesso passo', () => {
 
   it('ties go to the config order', () => {
     expect(ids(toEnd(twoLegends(30, 30), shooting60).moment)).toEqual(['twin', 'leg_a', 'keep']);
+  });
+
+  it('one legend per step even with perMatch 2; a later step can offer another', () => {
+    const c = twoLegends(10, 50, 2);
+    const first = toEnd(c, shooting60);
+    expect(ids(first.moment)).toEqual(['twin', 'leg_a', 'keep']);
+    expect(first.state.currentMatch!.director.legendsUsed).toBe(1);
+    // Con una quota già usata, un passo successivo ne offre ancora uno (ma uno solo).
+    const m = first.state.currentMatch!;
+    const type = c.config.match.moments.types.find((t) => t.id === 'l_end')!;
+    const player = shooting60(first.state).player;
+    const chain = { rootId: 'l_root', step: 3 };
+    const later = availableOptions(m, type, chain, player, 1, c);
+    expect(later.legendsOffered).toBe(1);
+    const spent = { ...m, director: { ...m.director, legendsUsed: 2 } };
+    expect(availableOptions(spent, type, chain, player, 1, c).legendsOffered).toBe(0);
   });
 
   it('every catalog legend can be offered with a profile that favours it', () => {

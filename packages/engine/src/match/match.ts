@@ -244,7 +244,7 @@ export function availableOptions(
     eligible
       .slice()
       .sort((x, y) => y.margin - x.margin || x.index - y.index)
-      .slice(0, room)
+      .slice(0, Math.min(1, room))
       .map((e) => e.index),
   );
   const options = type.options.flatMap((o, i) => (!o.legend || offered.has(i) ? [i] : []));

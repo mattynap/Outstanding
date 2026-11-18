@@ -254,6 +254,45 @@ export function availableOptions(
   return { options, legendsOffered: offered.size };
 }
 
+/**
+ * Stima del valore del miglior seguito di una catena: massimo di `value` fra le opzioni del tipo
+ * successivo, con lo stato attuale. Ignora la disponibilità dei gesti da leggenda del passo
+ * (dipende dalla tensione e dal tetto per partita) e tratta "chiudi" come riuscita sicura.
+ * Ricorsione limitata dalla profondità della catena; non estrae dal generatore.
+ */
+function bestValue(
+  typeId: string,
+  state: GameState,
+  m: MatchState,
+  opponentRating: number,
+  bonus: number,
+  minute: number,
+  ctx: GameContext,
+): number {
+  const cfg = ctx.config.match;
+  const d = m.score[m.side] - m.score[other(m.side)];
+  let best = -Infinity;
+  for (const o of getMomentType(typeId, ctx).options) {
+    const chance = o.closes
+      ? 1
+      : optionChance(
+          state.player,
+          o,
+          opponentRating,
+          ctx,
+          bonus,
+          0.5,
+          m.dyn,
+          riskBonus(o.risk, goalDiff(m), minute, cfg.risk),
+        );
+    const v = optionValue(o, chance, d, cfg, (id) =>
+      bestValue(id, state, m, opponentRating, bonus, minute, ctx),
+    );
+    if (v > best) best = v;
+  }
+  return best === -Infinity ? 0 : best;
+}
+
 /** Costruisce la vista del momento chiave in attesa, con le probabilità di ogni opzione. */
 function describeMoment(state: GameState, m: MatchState, ctx: GameContext): KeyMoment {
   const pending = m.pending;
@@ -288,7 +327,13 @@ function describeMoment(state: GameState, m: MatchState, ctx: GameContext): KeyM
         onFail: onFailOf(o, ctx),
         chanceBand: chanceBandOf(chance, ctx.config.match.chanceBands),
         risk: o.risk,
-        value: optionValue(o, chance, m.score[m.side] - m.score[other(m.side)], ctx.config.match),
+        value: optionValue(
+          o,
+          chance,
+          m.score[m.side] - m.score[other(m.side)],
+          ctx.config.match,
+          (id) => bestValue(id, state, m, opponent.rating, bonus, pending.minute, ctx),
+        ),
         ...(o.closes ? { closes: true as const } : {}),
         ...(o.legend ? { legendId: o.legend.id } : {}),
       };

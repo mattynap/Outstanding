@@ -1,9 +1,12 @@
-import { describe, expect, it } from 'vitest';
-import type { MomentOptionConfig } from '@outstanding/config';
+import { describe, expect, it, vi } from 'vitest';
+import type { MomentOptionConfig, MomentTypeConfig } from '@outstanding/config';
+import { Rng } from '../src/rng';
 import {
   advanceWeek,
   beginMatch,
   chanceBandOf,
+  decideMoment,
+  type GameContext,
   defaultContext,
   getPendingMoment,
   newCareer,
@@ -93,5 +96,96 @@ describe('rischio contestuale', () => {
       (o, i) => o.risk === 'risky' && o.chance > tied.options[i]!.chance,
     );
     expect(rising).toBe(true);
+  });
+
+  it('safe option gains the bonus when ahead late; shown chance is the one drawn', () => {
+    const zero = { rating: 0 };
+    const o = (id: string, r: 'safe' | 'risky'): MomentOptionConfig => ({
+      id,
+      skills: { shooting: 1 },
+      difficulty: 0,
+      risk: r,
+      success: zero,
+      failure: zero,
+    });
+    const type: MomentTypeConfig = {
+      id: 'r_test',
+      phase: 'attack',
+      chainOnly: true,
+      weights: {},
+      textVariants: 1,
+      options: [o('safe', 'safe'), o('risky', 'risky')],
+    };
+    const c: GameContext = {
+      ...ctx,
+      config: {
+        ...ctx.config,
+        match: {
+          ...cfg,
+          moments: {
+            ...cfg.moments,
+            types: [...cfg.moments.types, type],
+            minChance: 0,
+            maxChance: 1,
+          },
+        },
+      },
+    };
+    const base = pendingState();
+    const at = (minute: number, mine: number, theirs: number): GameState => {
+      const m = withScore(base, minute, mine, theirs).currentMatch!;
+      return {
+        ...base,
+        currentMatch: {
+          ...m,
+          pending: { momentId: 'r_test', minute, textVariant: 1, options: [0, 1] },
+        },
+      };
+    };
+    const late = risk.lateFrom + 5;
+    const tied = getPendingMoment(at(late, 0, 0), c)!;
+    const ahead = getPendingMoment(at(late, 1, 0), c)!;
+    const behind = getPendingMoment(at(late, 0, 1), c)!;
+    expect(ahead.options[0]!.chance).toBeCloseTo(tied.options[0]!.chance + risk.aheadSafeBonus, 12);
+    expect(behind.options[1]!.chance).toBeCloseTo(tied.options[1]!.chance + risk.behindBonus, 12);
+    expect(ahead.options[1]!.chance).toBeCloseTo(tied.options[1]!.chance, 12);
+
+    for (const [state, moment] of [
+      [at(late, 1, 0), ahead],
+      [at(late, 0, 1), behind],
+    ] as const) {
+      moment.options.forEach((opt, i) => {
+        const spy = vi.spyOn(Rng.prototype, 'chance');
+        decideMoment(state, i, c);
+        expect(spy.mock.calls[0]![0]).toBe(opt.chance);
+        spy.mockRestore();
+      });
+    }
+  });
+
+  it('value follows the chain continuation and counts the legend bonus', () => {
+    const base = {
+      risk: 'balanced',
+      success: { rating: 0.1, goalFor: 1, by: 'self', next: { momentId: 'x', chance: 0.5 } },
+      failure: { rating: 0 },
+    } as MomentOptionConfig;
+    const plain = {
+      ...base,
+      success: { rating: 0.1, goalFor: 1, by: 'self' },
+    } as MomentOptionConfig;
+    // Seguito a probabilità 1: i gol dell'esito non contano, vale il seguito.
+    const sure = {
+      ...base,
+      success: { rating: 0.1, goalFor: 1, by: 'self', next: { momentId: 'x' } },
+    } as MomentOptionConfig;
+    expect(optionValue(sure, 1, 0, cfg, () => 0.7)).toBeCloseTo(0.1 + 0.7, 12);
+    // Con c = 0,5 i gol valgono la metà e il seguito l'altra metà.
+    const goals = optionValue(plain, 1, 0, cfg) - 0.1;
+    expect(optionValue(base, 1, 0, cfg, () => 0.7)).toBeCloseTo(0.1 + 0.5 * goals + 0.35, 12);
+    const legend = { ...plain, legend: { id: 'l', minTension: 0, skills: { shooting: 1 } } };
+    expect(optionValue(legend, 0.4, 0, cfg)).toBeCloseTo(
+      optionValue(plain, 0.4, 0, cfg) + 0.4 * cfg.legends.ratingBonus,
+      12,
+    );
   });
 });

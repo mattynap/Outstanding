@@ -213,8 +213,8 @@ Ogni evento è un file JSON (o un elemento di un array) in `packages/content/eve
 ## 8. Partita e momenti chiave
 
 1. Convocazione: titolare / panchina / fuori in base a OVR, forma, fiducia dell'allenatore, concorrenza nel ruolo.
-2. Simulazione a 6 blocchi da 15 minuti; la forza delle squadre viene dal rating dei club.
-3. Momenti chiave: 3–6 per partita in base a ruolo e minuti giocati. Tipi per ruolo (es. ATT: occasione in area, contropiede, rigore; DEF: uno contro uno, anticipo; GK: tiro ravvicinato, uscita).
+2. Simulazione minuto per minuto guidata dalla pressione (inerzia della partita); la forza delle squadre viene dal rating dei club. Il regista (`match/director.ts`) ferma la partita quando la tensione lo giustifica (spec `docs/superpowers/specs/2026-11-18-regista-partita-stagione-design.md`).
+3. Momenti chiave: 5–7 passi interattivi nella partita completa (alcuni in catena), 1–2 nella rapida, in base a ruolo, minuti giocati e tensione. Tipi per ruolo (es. ATT: occasione in area, contropiede, rigore; DEF: uno contro uno, anticipo; GK: tiro ravvicinato, uscita).
 4. Ogni momento offre 2–4 opzioni; ogni opzione ha pesi sulle abilità e una difficoltà. Probabilità di successo = funzione logistica di (abilità pesata − difficoltà) + modificatori (forma, morale, tratti), limitata tra 5% e 95%. Tutti i parametri in `config/match.json`.
 5. Esito: risultato, tabellino, **voto in pagella** 4–10 (passi di 0,5), una riga di commento. Voto base 6, modificato da contributi e risultato.
 
@@ -224,7 +224,7 @@ Ogni evento è un file JSON (o un elemento di un array) in `packages/content/eve
 
 - `pnpm sim --careers 5000 --strategy cautious|aggressive|random --seed 42` gioca carriere complete senza UI e scrive un riepilogo (JSON + tabella in console).
 - Metriche da riportare: età media di esordio in massima serie, % di carriere che arrivano in massima serie, gol e presenze medie, trofei, età di ritiro, % carriere "leggenda".
-- Obiettivi iniziali (da tarare con l'utente): massima serie raggiungibile dalla maggior parte delle carriere giocate con attenzione, "leggenda" rara (pochi casi su 100), carriera completa 2–4 ore di gioco.
+- Obiettivi iniziali (da tarare con l'utente): massima serie raggiungibile dalla maggior parte delle carriere giocate con attenzione, "leggenda" rara (pochi casi su 100), stagione 20–30 minuti, carriera completa 6–8 ore di gioco (decisione dell'utente del 2026-11-18).
 - Ogni modifica a `config/` deve essere accompagnata da un'esecuzione del simulatore e dal confronto dei numeri.
 
 ---

@@ -1,6 +1,6 @@
 # Regista della partita e della stagione: design
 
-Data: 2026-11-18 · Stato: bozza approvata nella direzione, da completare (builder check) prima del piano
+Data: 2026-11-18 · Stato: approvato dopo builder check (2026-11-18), decisioni in §8
 Fonti: conversazione con l'utente del 2026-11-18, `docs/superpowers/specs/2026-11-17-meccaniche-gioco-design.md` (§6),
 codice attuale (`packages/engine/src/match/`, `season/`, `config/data/match.json`, `calendar.json`).
 
@@ -108,9 +108,7 @@ motore come `quality` 0–1, già esistente: salvataggi e simulatore restano com
 - Le altre giornate scorrono in un **riepilogo**: risultati, voti del giocatore, classifica.
 - Il campionato resta completo (tutte le giornate, classifica vera, coppe).
 - Bersaglio: stagione 20–30 minuti, carriera 6–8 ore, misurato con il simulatore.
-- Da decidere con l'utente: cosa succede alla pianificazione settimanale (diventa per capitolo?),
-  se il giocatore può chiedere di giocare una partita non scelta, interazione con avanti veloce e
-  piano ricordato già esistenti.
+- Decisioni su piano, partite extra, modalità e avanti veloce: §8.2.
 
 ## 6. Vincoli
 
@@ -119,9 +117,62 @@ motore come `quality` 0–1, già esistente: salvataggi e simulatore restano com
 - Ogni modifica a `config/` con confronto del simulatore (prima/dopo).
 - La UI usa il design system ibrido (`docs/design-system.md`) e la skill `frontend-design`.
 
-## 7. Lasciato a chi costruisce (da completare)
+## 7. Lasciato a chi costruisce (chiuso in §8)
 
 - Formula esatta della tensione e soglie: proposta + taratura col simulatore.
 - Formato dati delle catene e degli stati della partita.
 - Nuova strategia "contestuale" nel simulatore.
 - Builder check di questo documento prima del piano (skill `writing-plans`).
+
+## 8. Decisioni del builder check (2026-11-18)
+
+Builder check fatto da due revisori indipendenti; le divergenze sono state mostrate all'utente, che ha
+confermato le scelte sotto.
+
+### 8.1 Partita
+- **Stato:** la partita è già riprendibile (`GameState.currentMatch`, `beginMatch`/`decideMoment`/
+  `getPendingMoment`). Si estende `MatchState`: `blocksDone` → `minute`, via `momentMinutes`; nuovi
+  `mode` (`full`|`quick`|`sim`), `pressure`, `trace` (pressione per minuto, per la barra dopo il
+  ricaricamento), `director` (budget, finale caldo, ultimo intervento), `dyn` (fiducia del mister,
+  nervosismo, stanchezza, marcatura), `pending.chain`. `playMatch(state, decide)` mantiene la firma.
+- **Simulazione:** minuto per minuto; la pressione P ∈ [−1,1] genera i gol (probabilità per minuto
+  modulata da P, normalizzata per non spostare la media gol). Sostituisce `simulateBlock`.
+- **Tensione:** `T = wGame·close(d)·(b + (1−b)·(t/90)^k) + wStakes·stakes + wPress·max(0,|P|−pDanger)`,
+  con `close(d)` tabella in config. Intervento se `T ≥ soglia`, passati `minGap` minuti, con probabilità
+  `min(pMax, (T−soglia)·hazard)` estratta con `Rng` (niente cadenza fissa). Tutto in `match.json > director`.
+- **Budget:** contato a **passi interattivi** (ogni passo di catena consuma budget; l'intervallo
+  minimo vale fra inizi di catena). Completa 5–7, rapida 1–2. Finale caldo: dopo il 75' con scarto ≤ 1
+  si riservano 2–3 passi e `minGap` scende. Vietato aprire una catena che non entra nel budget.
+  Garantito 1 intervento se il giocatore resta in campo almeno `minMinutesForMoment`.
+- **Catene:** in `config/data/moments.json` (i tipi di momento escono da `match.json`), testi in
+  `content`. Esito con `next?: { momentId, chance? }` ed `effects?` sugli stati `dyn` e sulla pressione;
+  tipi `chainOnly` (es. `counter_recovery`) e `phase: attack|defense`; opzioni con
+  `risk: safe|balanced|risky`. Il gol si risolve una sola volta, a fine catena (niente doppio
+  `goalAgainst` + contropiede). Validazione Zod: riferimenti esistenti, nessun ciclo, profondità ≤ 3.
+- **Stati `dyn`:** valgono solo nella partita; nella carriera passano tramite voto e seguito della partita.
+- **Segnali di importanza:** derby, scontro diretto, coppa, esordio, contratto in scadenza, fiducia del
+  mister (esistenti) più due nuovi: **osservatore in tribuna** (segno sulla partita, da evento o
+  estrazione) e **rivale in campo** (giocatore avversario dello stesso ruolo legato al giocatore).
+- **Gesto:** tetto di `qualityMaxBonus` alzato nello schema; la media della qualità di un giocatore medio
+  deve stare a 0,5 per ogni gesto (requisito UI). Il simulatore usa profili di qualità per strategia.
+- **Salvataggi:** `saveVersion` 1 → 2; la migrazione converte le partite a metà (`minute = blocksDone·15`,
+  P = 0, `dyn` neutro, `pending` conservato).
+
+### 8.2 Stagione
+- **Piano per capitolo:** il giocatore sceglie un piano a inizio capitolo, il motore lo applica a ogni
+  settimana; si può cambiare a ogni stop. Il piano ricordato diventa il piano del capitolo.
+  Le settimane restano tutte simulate da `advanceWeek` (recupero, finanze, mercato, coppe).
+- **Partite giocate:** 2–3 per capitolo scelte dal regista della stagione: la più importante in
+  modalità completa, le altre in rapida. Le altre giornate in riepilogo (simulate). Il giocatore
+  **non** può chiedere di giocare una partita non scelta.
+- **Avanti veloce:** diventa "vai al prossimo stop": scorre fino alla prossima partita scelta, evento
+  o offerta; il riepilogo mostra le giornate saltate.
+- **Durata:** stagione 20–30 minuti, carriera 6–8 ore (CLAUDE.md §9 aggiornato).
+
+### 8.3 Criterio di bilanciamento (graduale)
+- Principale: voto medio in partita a parità di scelte fuori dal campo; la contestuale batte prudente e
+  aggressiva, e fra queste due la differenza resta entro ±0,2.
+- Guardrail: a ogni passo il simulatore confronta con la baseline età d'esordio, % in massima serie,
+  gol e presenze, trofei, % leggende; fuori tolleranza il passo non si chiude.
+- Gradualità: i nuovi fattori (pressione, `dyn`, rischio, gesto) entrano a peso ridotto e salgono solo
+  se i guardrail reggono. Baseline a 5000 carriere salvata prima di toccare il motore.

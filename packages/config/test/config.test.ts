@@ -35,4 +35,140 @@ describe('config', () => {
     start.world.startLevels = [9];
     expect(() => parseConfig(start)).toThrow(/start level/);
   });
+
+  describe('match: regista, catene e rischio', () => {
+    const option = (id: string, extra: Record<string, unknown> = {}) => ({
+      id,
+      skills: { passing: 1 },
+      difficulty: 0,
+      risk: 'balanced',
+      success: { rating: 0.3 },
+      failure: { rating: -0.3 },
+      ...extra,
+    });
+    const type = (id: string, extra: Record<string, unknown> = {}, opts?: unknown[]) => ({
+      id,
+      phase: 'attack',
+      weights: {},
+      textVariants: 1,
+      chainOnly: true,
+      options: opts ?? [option('a'), option('b')],
+      ...extra,
+    });
+    const withTypes = (...types: unknown[]) => {
+      const bad = raw();
+      bad.moments.types.push(...types);
+      return bad;
+    };
+    const nextTo = (momentId: string) => ({
+      ...option('a'),
+      success: { rating: 0.3, next: { momentId } },
+    });
+
+    it('accetta next, effects, risk e phase', () => {
+      const ok = withTypes(
+        type('step_two'),
+        type('step_one', {}, [
+          {
+            ...option('a'),
+            success: { rating: 0.3, next: { momentId: 'step_two', chance: 0.5 } },
+            failure: { rating: -0.3, effects: { nerves: 1, pressure: -0.1 } },
+          },
+          option('b'),
+        ]),
+      );
+      const cfg = parseConfig(ok);
+      expect(cfg.match.moments.types.length).toBe(
+        (rawDefaultConfig.moments as { types: unknown[] }).types.length + 2,
+      );
+      expect(cfg.match.moments.types[0]!.phase).toBeDefined();
+    });
+
+    it('rifiuta next verso un momento sconosciuto', () => {
+      const bad = withTypes(type('x', {}, [nextTo('non_esiste'), option('b')]));
+      expect(() => parseConfig(bad)).toThrow(/unknown moment/);
+    });
+
+    it('rifiuta i cicli di catena', () => {
+      const bad = withTypes(
+        type('c1', {}, [nextTo('c2'), option('b')]),
+        type('c2', {}, [nextTo('c1'), option('b')]),
+      );
+      expect(() => parseConfig(bad)).toThrow(/cycle/);
+    });
+
+    it('rifiuta catene oltre chainMaxSteps', () => {
+      const chain = (n: number) => {
+        const types = [];
+        for (let i = 1; i <= n; i++) {
+          types.push(
+            type(`s${i}`, i === 1 ? { chainOnly: false, weights: { ATT: 1 } } : {}, [
+              i < n ? nextTo(`s${i + 1}`) : option('a'),
+              option('b'),
+            ]),
+          );
+        }
+        return withTypes(...types);
+      };
+      expect(() => parseConfig(chain(3))).not.toThrow();
+      expect(() => parseConfig(chain(4))).toThrow(/depth/);
+    });
+
+    it('rifiuta un tipo chainOnly con pesi di ruolo', () => {
+      const bad = withTypes(type('co', { weights: { ATT: 1 } }));
+      expect(() => parseConfig(bad)).toThrow(/chainOnly/);
+    });
+
+    it('qualityMaxBonus fino a 0.15 accettato, 0.2 rifiutato', () => {
+      const ok = raw();
+      ok.match.moments.qualityMaxBonus = 0.15;
+      expect(() => parseConfig(ok)).not.toThrow();
+      const bad = raw();
+      bad.match.moments.qualityMaxBonus = 0.2;
+      expect(() => parseConfig(bad)).toThrow(/match\.json/);
+    });
+
+    it('la tabella close ha chiavi intere', () => {
+      const bad = raw();
+      bad.match.director.close = { '-1': 1, '0.5': 1 };
+      expect(() => parseConfig(bad)).toThrow(/match\.json/);
+    });
+
+    it('chanceBands: low < high', () => {
+      const bad = raw();
+      bad.match.chanceBands = { low: 0.7, high: 0.4 };
+      expect(() => parseConfig(bad)).toThrow(/low/);
+    });
+
+    it("un'opzione closes non ha next ne gol negli esiti", () => {
+      const withNext = withTypes(
+        type('t2'),
+        type('cl', {}, [
+          { ...option('a', { closes: true }), success: { rating: 0, next: { momentId: 't2' } } },
+          option('b'),
+        ]),
+      );
+      expect(() => parseConfig(withNext)).toThrow(/closes/);
+      const withGoal = withTypes(
+        type('cl2', {}, [
+          {
+            ...option('a', { closes: true }),
+            failure: { rating: 0, goalAgainst: 0.2 },
+          },
+          option('b'),
+        ]),
+      );
+      expect(() => parseConfig(withGoal)).toThrow(/closes/);
+      const fine = withTypes(type('cl3', {}, [option('a', { closes: true }), option('b')]));
+      expect(() => parseConfig(fine)).not.toThrow();
+    });
+
+    it("un'opzione legend deve essere risky", () => {
+      const legend = { id: 'leg', minTension: 0.5, skills: { shooting: 1 } };
+      const bad = withTypes(type('lg', {}, [option('a', { legend }), option('b')]));
+      expect(() => parseConfig(bad)).toThrow(/legend/);
+      const ok = withTypes(type('lg', {}, [option('a', { legend, risk: 'risky' }), option('b')]));
+      expect(() => parseConfig(ok)).not.toThrow();
+    });
+  });
 });

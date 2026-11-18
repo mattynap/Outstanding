@@ -318,6 +318,15 @@ const momentTag = z.enum([
   'penalty',
 ]);
 
+/** Variabili dinamiche di partita che gli esiti possono spostare (spec §8.1). */
+export const DYN_KEYS = ['coachTrust', 'nerves', 'fatigue', 'marking'] as const;
+export type DynKey = (typeof DYN_KEYS)[number];
+const dynKey = z.enum(DYN_KEYS);
+
+const countRange = z
+  .tuple([z.number().int().min(0), z.number().int().min(0)])
+  .refine(([a, b]) => a <= b, { message: 'range min must be <= max' });
+
 /** Esito di un'opzione: variazione del voto ed eventuale gol (a favore o contro) con probabilità. */
 const momentOutcome = z.object({
   rating: z.number(),
@@ -327,6 +336,12 @@ const momentOutcome = z.object({
   by: z.enum(['self', 'assist', 'team']).optional(),
   /** Probabilità che ne nasca un gol degli avversari. */
   goalAgainst: prob.optional(),
+  /** Passo successivo della catena: un altro momento, con probabilità (assente = sempre). */
+  next: z
+    .object({ momentId: z.string().regex(/^[a-z0-9_]+$/), chance: prob.optional() })
+    .optional(),
+  /** Spostamenti delle variabili dinamiche e della pressione. */
+  effects: z.partialRecord(z.enum([...DYN_KEYS, 'pressure']), z.number()).optional(),
 });
 
 const momentOption = z.object({
@@ -339,18 +354,85 @@ const momentOption = z.object({
   difficulty: z.number(),
   /** Etichetta usata dai modificatori dei tratti (`match.tag.<tag>`). */
   tag: momentTag.optional(),
+  /** Profilo di rischio dell'opzione (per le fasce mostrate e il contesto di partita). */
+  risk: z.enum(['safe', 'balanced', 'risky']),
+  /** Opzione "chiudi" di una catena: nessun passo successivo e nessun gol negli esiti. */
+  closes: z.boolean().optional(),
+  /** Gesto da leggenda (archetipo senza nomi): sempre rischioso. */
+  legend: z
+    .object({
+      id: z.string().regex(/^[a-z0-9_]+$/),
+      minTension: z.number().min(0),
+      skills: z.partialRecord(z.enum(SKILLS), z.number().positive()),
+    })
+    .optional(),
   success: momentOutcome,
   failure: momentOutcome,
 });
 
 const momentType = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/),
+  /** Fase di gioco: attacco o difesa. */
+  phase: z.enum(['attack', 'defense']),
+  /** Solo passo di catena: mai estratto come momento iniziale, quindi senza pesi di ruolo. */
+  chainOnly: z.boolean().optional(),
+  /** Variabile dinamica che rende il momento più probabile (Task A5). */
+  affinity: dynKey.optional(),
   /** Peso di estrazione del momento per ciascun ruolo (ruoli assenti = mai). */
   weights: z.partialRecord(roleSchema, z.number().positive()),
   /** Numero di varianti di testo (`match.moments.<id>.text.<n>`, da 1). */
   textVariants: z.number().int().min(1),
   options: z.array(momentOption).min(2).max(4),
 });
+
+/** Catene di momenti: riferimenti esistenti, niente cicli, profondità (passi) entro il massimo. */
+function validateChains(
+  types: z.infer<typeof momentType>[],
+  maxSteps: number,
+  report: (message: string) => void,
+): void {
+  const byId = new Map(types.map((t) => [t.id, t]));
+  const nextOf = (t: z.infer<typeof momentType>) => [
+    ...new Set(
+      t.options.flatMap((o) =>
+        [o.success.next?.momentId, o.failure.next?.momentId].filter((x): x is string => !!x),
+      ),
+    ),
+  ];
+  let broken = false;
+  for (const t of types) {
+    for (const id of nextOf(t)) {
+      if (!byId.has(id)) {
+        report(`${t.id}: next points to unknown moment "${id}"`);
+        broken = true;
+      }
+    }
+  }
+  if (broken) return;
+  const state = new Map<string, 'open' | 'done'>();
+  const depth = new Map<string, number>();
+  let cyclic = false;
+  const visit = (id: string): number => {
+    if (state.get(id) === 'done') return depth.get(id)!;
+    if (state.get(id) === 'open') {
+      report(`moment chain has a cycle through "${id}"`);
+      cyclic = true;
+      return 0;
+    }
+    state.set(id, 'open');
+    const d = 1 + Math.max(0, ...nextOf(byId.get(id)!).map(visit));
+    state.set(id, 'done');
+    depth.set(id, d);
+    return d;
+  };
+  for (const t of types) visit(t.id);
+  if (cyclic) return;
+  for (const t of types) {
+    if (!t.chainOnly && depth.get(t.id)! > maxSteps) {
+      report(`${t.id}: chain depth ${depth.get(t.id)} exceeds chainMaxSteps ${maxSteps}`);
+    }
+  }
+}
 
 export const matchSchema = z
   .object({
@@ -394,8 +476,81 @@ export const matchSchema = z
       formWeight: z.number().min(0),
       moraleWeight: z.number().min(0),
       energyWeight: z.number().min(0),
-      qualityMaxBonus: z.number().min(0).max(0.1),
+      qualityMaxBonus: z.number().min(0).max(0.15),
       types: z.array(momentType).min(1),
+    }),
+    /** Pressione della partita (inerzia): decadimento, spinte e rumore (Task A3). */
+    pressure: z.object({
+      decay: prob,
+      ratingPush: z.number().min(0),
+      homePush: z.number().min(0),
+      noise: z.number().min(0),
+      goalBoost: z.number().min(0),
+      dangerAt: prob,
+      sigma: z.number().positive(),
+    }),
+    /** Regista: decide quando fermare la partita e quale momento proporre (mai l'esito). */
+    director: z.object({
+      threshold: prob,
+      hazard: z.number().positive(),
+      pMax: prob,
+      minGap: z.number().int().min(0),
+      hotFrom: z.number().int().min(0),
+      hotGap: z.number().int().min(0),
+      hotSlots: z.number().int().min(0),
+      wGame: z.number().min(0),
+      wStakes: z.number().min(0),
+      wPress: z.number().min(0),
+      timeBase: z.number().min(0),
+      timeExp: z.number().positive(),
+      /** Peso per differenza reti (chiavi intere, es. "-1"). */
+      close: z
+        .record(z.string().regex(/^-?\d+$/, 'close keys must be integers'), z.number().min(0))
+        .refine((c) => Object.keys(c).length > 0, { message: 'close needs at least one entry' }),
+      chainMaxSteps: z.number().int().min(1),
+      armLead: z.number().int().min(0),
+      relaxMinutes: z.number().int().min(0),
+      repeatPenalty: prob,
+      dynAffinity: z.number().min(0),
+    }),
+    /** Passi interattivi per modalità di partita: [min, max]. */
+    modes: z.object({ full: countRange, quick: countRange, sim: countRange }),
+    /** Soglie delle fasce di probabilità mostrate (derivano dalla probabilità vera). */
+    chanceBands: z.object({ low: prob, high: prob }),
+    legends: z.object({
+      perMatch: z.number().int().min(0),
+      ratingBonus: z.number(),
+      popularity: z.number(),
+    }),
+    /** Peso della posta in gioco per tipo di partita e soglie dei fattori. */
+    stakes: z.object({
+      cup: z.number().min(0),
+      derby: z.number().min(0),
+      top: z.number().min(0),
+      debut: z.number().min(0),
+      contractExpiring: z.number().min(0),
+      lowTrust: z.number().min(0),
+      scout: z.number().min(0),
+      keyOpponent: z.number().min(0),
+      lowTrustBelow: z.number(),
+      keyOpponentGap: z.number().min(0),
+      scoutChance: prob,
+    }),
+    /** Variabili dinamiche: effetto sulla probabilità per unità e limiti. */
+    dyn: z.object({
+      chanceWeight: z.object({
+        coachTrust: z.number(),
+        nerves: z.number(),
+        fatigue: z.number(),
+        marking: z.number(),
+      }),
+      min: z.number(),
+      max: z.number(),
+    }),
+    risk: z.object({
+      behindBonus: z.number(),
+      aheadSafeBonus: z.number(),
+      lateFrom: z.number().int().min(0),
     }),
     rating: z.object({
       base: z.number(),
@@ -434,6 +589,12 @@ export const matchSchema = z
     if (m.moments.minChance > m.moments.maxChance) {
       ctx.addIssue({ code: 'custom', message: 'minChance must be <= maxChance' });
     }
+    if (m.chanceBands.low >= m.chanceBands.high) {
+      ctx.addIssue({ code: 'custom', message: 'chanceBands.low must be < high' });
+    }
+    if (m.dyn.min >= m.dyn.max) {
+      ctx.addIssue({ code: 'custom', message: 'dyn.min must be < dyn.max' });
+    }
     const ids = new Set<string>();
     for (const t of m.moments.types) {
       if (ids.has(t.id)) ctx.addIssue({ code: 'custom', message: `duplicate moment "${t.id}"` });
@@ -447,9 +608,30 @@ export const matchSchema = z
           if (out.goalFor !== undefined && !out.by) {
             ctx.addIssue({ code: 'custom', message: `${t.id}.${o.id}: goalFor needs "by"` });
           }
+          if (
+            o.closes &&
+            (out.next || out.goalFor !== undefined || out.goalAgainst !== undefined)
+          ) {
+            ctx.addIssue({
+              code: 'custom',
+              message: `${t.id}.${o.id}: closes option cannot have next or goals`,
+            });
+          }
+        }
+        if (o.legend && o.risk !== 'risky') {
+          ctx.addIssue({ code: 'custom', message: `${t.id}.${o.id}: legend option must be risky` });
         }
       }
+      if (t.chainOnly && Object.keys(t.weights).length > 0) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `${t.id}: chainOnly moment cannot have role weights`,
+        });
+      }
     }
+    validateChains(m.moments.types, m.director.chainMaxSteps, (message) =>
+      ctx.addIssue({ code: 'custom', message }),
+    );
     for (const role of ROLES) {
       if (m.moments.countByRole[role][1] > 0 && !m.moments.types.some((t) => t.weights[role])) {
         ctx.addIssue({ code: 'custom', message: `no key moment available for role ${role}` });

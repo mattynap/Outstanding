@@ -11,6 +11,7 @@ import mediaJson from '../data/media.json';
 import economyJson from '../data/economy.json';
 import eventsJson from '../data/events.json';
 import matchJson from '../data/match.json';
+import momentsJson from '../data/moments.json';
 import playerJson from '../data/player.json';
 import progressionJson from '../data/progression.json';
 import ratingsJson from '../data/ratings.json';
@@ -91,13 +92,17 @@ export interface GameConfig {
 }
 
 /** Oggetti di configurazione grezzi (non validati), uno per file JSON. */
-export type RawConfig = Record<keyof GameConfig, unknown>;
+export type RawConfig = Record<keyof GameConfig, unknown> & {
+  /** I tipi di momento stanno in `moments.json` e confluiscono in `match.moments.types`. */
+  moments: unknown;
+};
 
 /** Converte gli oggetti JSON grezzi in configurazione validata; in caso di errore lancia un messaggio leggibile. */
 export function parseConfig(raw: RawConfig): GameConfig {
   const out: Partial<GameConfig> = {};
+  const merged = mergeMoments(raw);
   for (const key of Object.keys(configSchema) as (keyof GameConfig)[]) {
-    const result = configSchema[key].safeParse(raw[key]);
+    const result = configSchema[key].safeParse(merged[key]);
     if (!result.success) {
       throw new Error(`Invalid config "${key}.json": ${result.error.message}`);
     }
@@ -107,6 +112,17 @@ export function parseConfig(raw: RawConfig): GameConfig {
   const problems = crossCheck(config);
   if (problems.length > 0) throw new Error(`Invalid config: ${problems.join('; ')}`);
   return config;
+}
+
+/** Innesta `moments.json` in `match.moments.types` senza toccare l'oggetto grezzo. */
+function mergeMoments(raw: RawConfig): RawConfig {
+  const match = raw.match as { moments?: Record<string, unknown> } | undefined;
+  const moments = raw.moments as { types?: unknown } | undefined;
+  if (!match || typeof match !== 'object' || !moments) return raw;
+  return {
+    ...raw,
+    match: { ...match, moments: { ...match.moments, types: moments.types } },
+  };
 }
 
 /** Controlli che coinvolgono più file di configurazione. */
@@ -190,6 +206,7 @@ export const rawDefaultConfig: RawConfig = {
   world: worldJson,
   economy: economyJson,
   match: matchJson,
+  moments: momentsJson,
   events: eventsJson,
   progression: progressionJson,
   cups: cupsJson,

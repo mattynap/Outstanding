@@ -1,0 +1,1026 @@
+{
+  "types": [
+    {
+      "id": "gk_close_shot",
+      "phase": "defense",
+      "weights": {
+        "GK": 4
+      },
+      "textVariants": 2,
+      "options": [
+        {
+          "id": "riflesso",
+          "skills": {
+            "goalkeeping": 0.7,
+            "pace": 0.3
+          },
+          "difficulty": 2,
+          "success": {
+            "rating": 0.75
+          },
+          "failure": {
+            "rating": -0.25,
+            "goalAgainst": 0.65
+          },
+          "risk": "balanced"
+        },
+        {
+          "id": "piazzamento",
+          "skills": {
+            "goalkeeping": 0.6,
+            "vision": 0.4
+          },
+          "difficulty": 0,
+          "tag": "composure",
+          "success": {
+            "rating": 0.5
+          },
+          "failure": {
+            "rating": -0.25,
+            "goalAgainst": 0.6
+          },
+          "risk": "safe"
+        },
+        {
+          "id": "uscita_bassa",
+          "skills": {
+            "goalkeeping": 0.5,
+            "physical": 0.3,
+            "pace": 0.2
+          },
+          "difficulty": 5,
+          "tag": "duel",
+          "success": {
+            "rating": 1
+          },
+          "failure": {
+            "rating": -0.5,
+            "goalAgainst": 0.75
+          },
+          "risk": "risky"
+        }
+      ]
+    },
+    {
+      "id": "gk_cross",
+      "phase": "defense",
+      "weights": {
+        "GK": 3
+      },
+      "textVariants": 2,
+      "options": [
+        {
+          "id": "presa",
+          "skills": {
+            "goalkeeping": 0.6,
+            "physical": 0.4
+          },
+          "difficulty": 0,
+          "success": {
+            "rating": 0.5
+          },
+          "failure": {
+            "rating": -0.75,
+            "goalAgainst": 0.45
+          },
+          "risk": "risky"
+        },
+        {
+          "id": "pugni",
+          "skills": {
+            "physical": 0.6,
+            "goalkeeping": 0.4
+          },
+          "difficulty": -4,
+          "tag": "duel",
+          "success": {
+            "rating": 0.25
+          },
+          "failure": {
+            "rating": -0.5,
+            "goalAgainst": 0.3
+          },
+          "risk": "safe"
+        },
+        {
+          "id": "resta_in_porta",
+          "skills": {
+            "goalkeeping": 0.5,
+            "vision": 0.5
+          },
+          "difficulty": -2,
+          "tag": "composure",
+          "success": {
+            "rating": 0.25
+          },
+          "failure": {
+            "rating": -0.25,
+            "goalAgainst": 0.5
+          },
+          "risk": "balanced"
+        }
+      ]
+    },
+    {
+      "id": "gk_penalty",
+      "phase": "defense",
+      "weights": {
+        "GK": 0.6
+      },
+      "textVariants": 2,
+      "options": [
+        {
+          "id": "destra",
+          "skills": {
+            "goalkeeping": 0.8,
+            "pace": 0.2
+          },
+          "difficulty": 12,
+          "tag": "penalty",
+          "success": {
+            "rating": 1.5
+          },
+          "failure": {
+            "rating": 0,
+            "goalAgainst": 1
+          },
+          "risk": "safe"
+        },
+        {
+          "id": "sinistra",
+          "skills": {
+            "goalkeeping": 0.8,
+            "pace": 0.2
+          },
+          "difficulty": 12,
+          "tag": "penalty",
+          "success": {
+            "rating": 1.5
+          },
+          "failure": {
+            "rating": 0,
+            "goalAgainst": 1
+          },
+          "risk": "balanced"
+        },
+        {
+          "id": "centrale",
+          "skills": {
+            "goalkeeping": 0.6,
+            "vision": 0.4
+          },
+          "difficulty": 15,
+          "tag": "penalty",
+          "success": {
+            "rating": 1.75
+          },
+          "failure": {
+            "rating": 0,
+            "goalAgainst": 1
+          },
+          "risk": "risky"
+        }
+      ]
+    },
+    {
+      "id": "gk_distribution",
+      "phase": "defense",
+      "weights": {
+        "GK": 2
+      },
+      "textVariants": 2,
+      "options": [
+        {
+          "id": "lancio_lungo",
+          "skills": {
+            "passing": 0.5,
+            "vision": 0.5
+          },
+          "difficulty": 4,
+          "tag": "passing",
+          "success": {
+            "rating": 0.25,
+            "goalFor": 0.12,
+            "by": "assist"
+          },
+          "failure": {
+            "rating": 0
+          },
+          "risk": "risky"
+        },
+        {
+          "id": "gioco_corto",
+          "skills": {
+            "passing": 0.7,
+            "vision": 0.3
+          },
+          "difficulty": -6,
+          "tag": "composure",
+          "success": {
+            "rating": 0.5
+          },
+          "failure": {
+            "rating": -1,
+            "goalAgainst": 0.35
+          },
+          "risk": "safe"
+        }
+      ]
+    },
+    {
+      "id": "def_one_on_one",
+      "phase": "defense",
+      "weights": {
+        "DEF": 4
+      },
+      "textVariants": 2,
+      "options": [
+        {
+          "id": "tackle",
+          "skills": {
+            "defending": 0.6,
+            "physical": 0.4
+          },
+          "difficulty": 2,
+          "tag": "tackle",
+          "success": {
+            "rating": 0.75
+          },
+          "failure": {
+            "rating": -1,
+            "goalAgainst": 0.35
+          },
+          "risk": "risky"
+        },
+        {
+          "id": "temporeggia",
+          "skills": {
+            "defending": 0.5,
+            "pace": 0.5
+          },
+          "difficulty": -4,
+          "tag": "composure",
+          "success": {
+            "rating": 0.25
+          },
+          "failure": {
+            "rating": -0.5,
+            "goalAgainst": 0.25
+          },
+          "risk": "safe"
+        },
+        {
+          "id": "spalla_a_spalla",
+          "skills": {
+            "physical": 0.7,
+            "pace": 0.3
+          },
+          "difficulty": 0,
+          "tag": "duel",
+          "success": {
+            "rating": 0.5
+          },
+          "failure": {
+            "rating": -0.75,
+            "goalAgainst": 0.3
+          },
+          "risk": "balanced"
+        }
+      ]
+    },
+    {
+      "id": "def_interception",
+      "phase": "defense",
+      "weights": {
+        "DEF": 3,
+        "MID": 1
+      },
+      "textVariants": 2,
+      "options": [
+        {
+          "id": "anticipo",
+          "skills": {
+            "defending": 0.5,
+            "pace": 0.3,
+            "vision": 0.2
+          },
+          "difficulty": 3,
+          "tag": "tackle",
+          "success": {
+            "rating": 0.5,
+            "goalFor": 0.1,
+            "by": "team"
+          },
+          "failure": {
+            "rating": -0.75,
+            "goalAgainst": 0.25
+          },
+          "risk": "risky"
+        },
+        {
+          "id": "copri_spazio",
+          "skills": {
+            "defending": 0.6,
+            "vision": 0.4
+          },
+          "difficulty": -3,
+          "tag": "composure",
+          "success": {
+            "rating": 0.25
+          },
+          "failure": {
+            "rating": -0.5,
+            "goalAgainst": 0.2
+          },
+          "risk": "safe"
+        }
+      ]
+    },
+    {
+      "id": "def_set_piece",
+      "phase": "defense",
+      "weights": {
+        "DEF": 1.5
+      },
+      "textVariants": 2,
+      "options": [
+        {
+          "id": "colpo_di_testa",
+          "skills": {
+            "physical": 0.6,
+            "shooting": 0.4
+          },
+          "difficulty": 12,
+          "tag": "finishing",
+          "success": {
+            "rating": 0.25,
+            "goalFor": 0.5,
+            "by": "self"
+          },
+          "failure": {
+            "rating": 0
+          },
+          "risk": "risky"
+        },
+        {
+          "id": "sponda",
+          "skills": {
+            "physical": 0.5,
+            "passing": 0.5
+          },
+          "difficulty": 2,
+          "tag": "passing",
+          "success": {
+            "rating": 0.25,
+            "goalFor": 0.4,
+            "by": "assist"
+          },
+          "failure": {
+            "rating": 0
+          },
+          "risk": "balanced"
+        },
+        {
+          "id": "blocco",
+          "skills": {
+            "physical": 0.8,
+            "vision": 0.2
+          },
+          "difficulty": -5,
+          "tag": "duel",
+          "success": {
+            "rating": 0.25,
+            "goalFor": 0.15,
+            "by": "team"
+          },
+          "failure": {
+            "rating": 0
+          },
+          "risk": "safe"
+        }
+      ]
+    },
+    {
+      "id": "def_cross",
+      "phase": "defense",
+      "weights": {
+        "DEF": 3
+      },
+      "textVariants": 2,
+      "options": [
+        {
+          "id": "di_testa",
+          "skills": {
+            "physical": 0.6,
+            "defending": 0.4
+          },
+          "difficulty": 0,
+          "tag": "duel",
+          "success": {
+            "rating": 0.5
+          },
+          "failure": {
+            "rating": -0.75,
+            "goalAgainst": 0.4
+          },
+          "risk": "safe"
+        },
+        {
+          "id": "marcatura",
+          "skills": {
+            "defending": 0.7,
+            "vision": 0.3
+          },
+          "difficulty": 2,
+          "tag": "composure",
+          "success": {
+            "rating": 0.5
+          },
+          "failure": {
+            "rating": -0.75,
+            "goalAgainst": 0.35
+          },
+          "risk": "risky"
+        }
+      ]
+    },
+    {
+      "id": "mid_through_ball",
+      "phase": "attack",
+      "weights": {
+        "MID": 3
+      },
+      "textVariants": 2,
+      "options": [
+        {
+          "id": "filtrante",
+          "skills": {
+            "passing": 0.5,
+            "vision": 0.5
+          },
+          "difficulty": 5,
+          "tag": "passing",
+          "success": {
+            "rating": 0.25,
+            "goalFor": 0.5,
+            "by": "assist"
+          },
+          "failure": {
+            "rating": -0.25
+          },
+          "risk": "balanced"
+        },
+        {
+          "id": "cambio_di_gioco",
+          "skills": {
+            "passing": 0.6,
+            "vision": 0.4
+          },
+          "difficulty": 0,
+          "tag": "passing",
+          "success": {
+            "rating": 0.25,
+            "goalFor": 0.2,
+            "by": "assist"
+          },
+          "failure": {
+            "rating": -0.25
+          },
+          "risk": "safe"
+        },
+        {
+          "id": "inserimento",
+          "skills": {
+            "pace": 0.4,
+            "shooting": 0.4,
+            "dribbling": 0.2
+          },
+          "difficulty": 12,
+          "tag": "finishing",
+          "success": {
+            "rating": 0.5,
+            "goalFor": 0.5,
+            "by": "self"
+          },
+          "failure": {
+            "rating": -0.25
+          },
+          "risk": "risky"
+        }
+      ]
+    },
+    {
+      "id": "mid_long_shot",
+      "phase": "attack",
+      "weights": {
+        "MID": 2
+      },
+      "textVariants": 2,
+      "options": [
+        {
+          "id": "tiro_da_fuori",
+          "skills": {
+            "shooting": 0.8,
+            "physical": 0.2
+          },
+          "difficulty": 16,
+          "tag": "finishing",
+          "success": {
+            "rating": 0.25,
+            "goalFor": 0.5,
+            "by": "self"
+          },
+          "failure": {
+            "rating": -0.25
+          },
+          "risk": "risky"
+        },
+        {
+          "id": "palla_in_area",
+          "skills": {
+            "passing": 0.5,
+            "vision": 0.5
+          },
+          "difficulty": 3,
+          "tag": "passing",
+          "success": {
+            "rating": 0,
+            "goalFor": 0.3,
+            "by": "assist"
+          },
+          "failure": {
+            "rating": -0.25
+          },
+          "risk": "balanced"
+        },
+        {
+          "id": "scarico",
+          "skills": {
+            "passing": 0.7,
+            "vision": 0.3
+          },
+          "difficulty": -8,
+          "tag": "composure",
+          "success": {
+            "rating": 0.25
+          },
+          "failure": {
+            "rating": -0.5,
+            "goalAgainst": 0.1
+          },
+          "risk": "safe"
+        }
+      ]
+    },
+    {
+      "id": "mid_pressing",
+      "phase": "attack",
+      "weights": {
+        "MID": 3,
+        "ATT": 1
+      },
+      "textVariants": 2,
+      "options": [
+        {
+          "id": "pressing",
+          "skills": {
+            "physical": 0.5,
+            "pace": 0.3,
+            "defending": 0.2
+          },
+          "difficulty": 2,
+          "tag": "duel",
+          "success": {
+            "rating": 0.5,
+            "goalFor": 0.1,
+            "by": "team"
+          },
+          "failure": {
+            "rating": -0.5,
+            "goalAgainst": 0.15
+          },
+          "risk": "balanced"
+        },
+        {
+          "id": "scivolata",
+          "skills": {
+            "defending": 0.7,
+            "physical": 0.3
+          },
+          "difficulty": 4,
+          "tag": "tackle",
+          "success": {
+            "rating": 0.75
+          },
+          "failure": {
+            "rating": -0.75,
+            "goalAgainst": 0.2
+          },
+          "risk": "risky"
+        },
+        {
+          "id": "posizione",
+          "skills": {
+            "vision": 0.6,
+            "defending": 0.4
+          },
+          "difficulty": -4,
+          "tag": "composure",
+          "success": {
+            "rating": 0.25
+          },
+          "failure": {
+            "rating": -0.25,
+            "goalAgainst": 0.1
+          },
+          "risk": "safe"
+        }
+      ]
+    },
+    {
+      "id": "mid_dribble",
+      "phase": "attack",
+      "weights": {
+        "MID": 2
+      },
+      "textVariants": 2,
+      "options": [
+        {
+          "id": "dribbling",
+          "skills": {
+            "dribbling": 0.7,
+            "pace": 0.3
+          },
+          "difficulty": 5,
+          "tag": "dribble",
+          "success": {
+            "rating": 0.5,
+            "goalFor": 0.2,
+            "by": "assist"
+          },
+          "failure": {
+            "rating": -0.5,
+            "goalAgainst": 0.1
+          },
+          "risk": "risky"
+        },
+        {
+          "id": "di_prima",
+          "skills": {
+            "passing": 0.6,
+            "vision": 0.4
+          },
+          "difficulty": 0,
+          "tag": "passing",
+          "success": {
+            "rating": 0.25,
+            "goalFor": 0.1,
+            "by": "assist"
+          },
+          "failure": {
+            "rating": -0.25
+          },
+          "risk": "balanced"
+        },
+        {
+          "id": "protezione",
+          "skills": {
+            "physical": 0.6,
+            "dribbling": 0.4
+          },
+          "difficulty": -4,
+          "tag": "duel",
+          "success": {
+            "rating": 0.25
+          },
+          "failure": {
+            "rating": -0.25,
+            "goalAgainst": 0.1
+          },
+          "risk": "safe"
+        }
+      ]
+    },
+    {
+      "id": "att_box_chance",
+      "phase": "attack",
+      "weights": {
+        "ATT": 3,
+        "MID": 1
+      },
+      "textVariants": 3,
+      "options": [
+        {
+          "id": "potenza",
+          "skills": {
+            "shooting": 0.7,
+            "physical": 0.3
+          },
+          "difficulty": 11,
+          "tag": "finishing",
+          "success": {
+            "rating": 0.5,
+            "goalFor": 0.6,
+            "by": "self"
+          },
+          "failure": {
+            "rating": -0.5
+          },
+          "risk": "balanced"
+        },
+        {
+          "id": "piazzato",
+          "skills": {
+            "shooting": 0.5,
+            "vision": 0.3,
+            "dribbling": 0.2
+          },
+          "difficulty": 9,
+          "tag": "finishing",
+          "success": {
+            "rating": 0.25,
+            "goalFor": 0.65,
+            "by": "self"
+          },
+          "failure": {
+            "rating": -0.5
+          },
+          "risk": "balanced"
+        },
+        {
+          "id": "dribbla_portiere",
+          "skills": {
+            "dribbling": 0.6,
+            "pace": 0.2,
+            "shooting": 0.2
+          },
+          "difficulty": 14,
+          "tag": "dribble",
+          "success": {
+            "rating": 1,
+            "goalFor": 0.8,
+            "by": "self"
+          },
+          "failure": {
+            "rating": -0.75
+          },
+          "risk": "risky"
+        },
+        {
+          "id": "servi_compagno",
+          "skills": {
+            "passing": 0.6,
+            "vision": 0.4
+          },
+          "difficulty": -4,
+          "tag": "passing",
+          "success": {
+            "rating": 0,
+            "goalFor": 0.45,
+            "by": "assist"
+          },
+          "failure": {
+            "rating": -0.25
+          },
+          "risk": "safe"
+        }
+      ]
+    },
+    {
+      "id": "att_counter",
+      "phase": "attack",
+      "weights": {
+        "ATT": 2
+      },
+      "textVariants": 2,
+      "options": [
+        {
+          "id": "corsa_e_tiro",
+          "skills": {
+            "pace": 0.5,
+            "shooting": 0.5
+          },
+          "difficulty": 11,
+          "tag": "finishing",
+          "success": {
+            "rating": 0.5,
+            "goalFor": 0.6,
+            "by": "self"
+          },
+          "failure": {
+            "rating": -0.5
+          },
+          "risk": "risky"
+        },
+        {
+          "id": "aspetta_compagni",
+          "skills": {
+            "vision": 0.6,
+            "passing": 0.4
+          },
+          "difficulty": -2,
+          "tag": "passing",
+          "success": {
+            "rating": 0.25,
+            "goalFor": 0.4,
+            "by": "assist"
+          },
+          "failure": {
+            "rating": -0.25
+          },
+          "risk": "safe"
+        },
+        {
+          "id": "punta_difensore",
+          "skills": {
+            "dribbling": 0.6,
+            "pace": 0.4
+          },
+          "difficulty": 9,
+          "tag": "dribble",
+          "success": {
+            "rating": 0.5,
+            "goalFor": 0.5,
+            "by": "self"
+          },
+          "failure": {
+            "rating": -0.5
+          },
+          "risk": "balanced"
+        }
+      ]
+    },
+    {
+      "id": "att_penalty",
+      "phase": "attack",
+      "weights": {
+        "ATT": 0.5
+      },
+      "textVariants": 2,
+      "options": [
+        {
+          "id": "angolo_basso",
+          "skills": {
+            "shooting": 0.8,
+            "vision": 0.2
+          },
+          "difficulty": -12,
+          "tag": "composure",
+          "success": {
+            "rating": 0.25,
+            "goalFor": 0.85,
+            "by": "self"
+          },
+          "failure": {
+            "rating": -1
+          },
+          "risk": "safe"
+        },
+        {
+          "id": "potenza_centrale",
+          "skills": {
+            "shooting": 0.6,
+            "physical": 0.4
+          },
+          "difficulty": -10,
+          "tag": "composure",
+          "success": {
+            "rating": 0.25,
+            "goalFor": 0.85,
+            "by": "self"
+          },
+          "failure": {
+            "rating": -1
+          },
+          "risk": "balanced"
+        },
+        {
+          "id": "cucchiaio",
+          "skills": {
+            "shooting": 0.5,
+            "vision": 0.5
+          },
+          "difficulty": -5,
+          "tag": "composure",
+          "success": {
+            "rating": 0.5,
+            "goalFor": 0.8,
+            "by": "self"
+          },
+          "failure": {
+            "rating": -1.5
+          },
+          "risk": "risky"
+        }
+      ]
+    },
+    {
+      "id": "att_wing",
+      "phase": "attack",
+      "weights": {
+        "ATT": 2
+      },
+      "textVariants": 2,
+      "options": [
+        {
+          "id": "dribbling",
+          "skills": {
+            "dribbling": 0.6,
+            "pace": 0.4
+          },
+          "difficulty": 3,
+          "tag": "dribble",
+          "success": {
+            "rating": 0.25,
+            "goalFor": 0.3,
+            "by": "assist"
+          },
+          "failure": {
+            "rating": -0.25
+          },
+          "risk": "risky"
+        },
+        {
+          "id": "cross",
+          "skills": {
+            "passing": 0.6,
+            "vision": 0.4
+          },
+          "difficulty": 0,
+          "tag": "passing",
+          "success": {
+            "rating": 0.25,
+            "goalFor": 0.25,
+            "by": "assist"
+          },
+          "failure": {
+            "rating": -0.25
+          },
+          "risk": "balanced"
+        },
+        {
+          "id": "sponda",
+          "skills": {
+            "physical": 0.6,
+            "passing": 0.4
+          },
+          "difficulty": -3,
+          "tag": "duel",
+          "success": {
+            "rating": 0.25,
+            "goalFor": 0.15,
+            "by": "assist"
+          },
+          "failure": {
+            "rating": -0.25
+          },
+          "risk": "safe"
+        }
+      ]
+    },
+    {
+      "id": "att_pressing",
+      "phase": "attack",
+      "weights": {
+        "ATT": 1.5
+      },
+      "textVariants": 2,
+      "options": [
+        {
+          "id": "sul_portiere",
+          "skills": {
+            "pace": 0.5,
+            "physical": 0.5
+          },
+          "difficulty": 12,
+          "tag": "duel",
+          "success": {
+            "rating": 0.25,
+            "goalFor": 0.45,
+            "by": "self"
+          },
+          "failure": {
+            "rating": 0
+          },
+          "risk": "risky"
+        },
+        {
+          "id": "scherma",
+          "skills": {
+            "vision": 0.6,
+            "physical": 0.4
+          },
+          "difficulty": -2,
+          "tag": "composure",
+          "success": {
+            "rating": 0.5
+          },
+          "failure": {
+            "rating": 0
+          },
+          "risk": "safe"
+        }
+      ]
+    }
+  ]
+}

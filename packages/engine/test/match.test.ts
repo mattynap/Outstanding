@@ -227,7 +227,7 @@ describe('probabilità dei momenti chiave', () => {
   );
 
   it('valida in configurazione il limite del modificatore qualità', () => {
-    for (const qualityMaxBonus of [-0.01, 0.11, NaN, Infinity]) {
+    for (const qualityMaxBonus of [-0.01, 0.16, NaN, Infinity]) {
       expect(
         matchSchema.safeParse({
           ...ctx.config.match,

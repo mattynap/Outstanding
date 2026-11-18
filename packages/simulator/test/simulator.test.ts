@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { availableParallelism } from 'node:os';
+import { mkdtempSync, readdirSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
   defaultContext,
   newCareer,
@@ -254,19 +256,31 @@ describe('match strategies', () => {
 });
 
 describe.runIf(process.env.SIM_CRITERION === '1')('isolated rating criterion', () => {
-  it('contextual beats cautious and aggressive over 2000 careers', async () => {
-    const seeds = careerSeeds(42, 2000);
-    const workers = Math.max(1, availableParallelism() - 1);
-    const rating = async (id: 'cautious' | 'aggressive' | 'contextual') => {
-      const results = await simulate(seeds, id, workers, undefined, undefined, { isolate: true });
-      const ratings = results.flatMap((r) =>
-        r.totals.averageRating === null ? [] : [r.totals.averageRating],
+  it('contextual beats cautious and aggressive over 2000 careers', () => {
+    // Il CLI usa i worker thread, che vitest non sa caricare dai sorgenti TypeScript.
+    const out = mkdtempSync(join(tmpdir(), 'sim-criterion-'));
+    const rating = (id: 'cautious' | 'aggressive' | 'contextual') => {
+      const result = spawnSync(
+        process.execPath,
+        [
+          '--import',
+          'tsx',
+          'packages/simulator/src/cli.ts',
+          ...['--careers', '2000', '--strategy', id, '--seed', '42', '--isolate', '--out', out],
+        ],
+        { encoding: 'utf8' },
       );
-      return ratings.reduce((sum, value) => sum + value, 0) / ratings.length;
+      expect(result.status, result.stderr).toBe(0);
+      const file = readdirSync(out).find((f) => f.startsWith(`sim-${id}-`))!;
+      const summary = JSON.parse(readFileSync(join(out, file), 'utf8')) as {
+        overall: { averageRating: number };
+      };
+      return summary.overall.averageRating;
     };
-    const cautious = await rating('cautious');
-    const aggressive = await rating('aggressive');
-    const contextual = await rating('contextual');
+    const cautious = rating('cautious');
+    const aggressive = rating('aggressive');
+    const contextual = rating('contextual');
+    console.log('criterion', { cautious, aggressive, contextual });
     expect(contextual).toBeGreaterThan(cautious);
     expect(contextual).toBeGreaterThan(aggressive);
     expect(Math.abs(cautious - aggressive)).toBeLessThanOrEqual(0.2);

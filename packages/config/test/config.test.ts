@@ -128,6 +128,53 @@ describe('config', () => {
       expect(() => parseConfig(chain(4))).toThrow(/depth/);
     });
 
+    describe('gesti da leggenda', () => {
+      const legend = (id: string, extra: Record<string, unknown> = {}) =>
+        option('l', {
+          risk: 'risky',
+          legend: { id, minTension: 1, skills: { shooting: 70 } },
+          ...extra,
+        });
+
+      it('accetta un gesto rischioso, senza seguito, in un tipo chainOnly', () => {
+        const cfg = parseConfig(
+          withTypes(type('lg', {}, [option('a'), legend('gesto_uno'), closer()])),
+        );
+        expect(cfg.match.moments.types.at(-1)!.options[1]!.legend!.id).toBe('gesto_uno');
+      });
+
+      it('rifiuta un gesto non rischioso', () => {
+        const bad = withTypes(type('lg', {}, [legend('g', { risk: 'balanced' }), closer()]));
+        expect(() => parseConfig(bad)).toThrow(/risky/);
+      });
+
+      it('rifiuta un gesto fuori da un tipo chainOnly', () => {
+        const bad = withTypes(
+          type('lg', { chainOnly: false, weights: { ATT: 1 } }, [legend('g'), option('b')]),
+        );
+        expect(() => parseConfig(bad)).toThrow(/only in chainOnly/);
+      });
+
+      it('rifiuta un gesto con seguito', () => {
+        const bad = withTypes(
+          type('lt'),
+          type('lg', {}, [
+            legend('g', { success: { rating: 0.3, next: { momentId: 'lt' } } }),
+            closer(),
+          ]),
+        );
+        expect(() => parseConfig(bad)).toThrow(/cannot close or have next/);
+      });
+
+      it('rifiuta id di gesto duplicati', () => {
+        const bad = withTypes(
+          type('lg1', {}, [legend('g'), closer()]),
+          type('lg2', {}, [legend('g'), closer()]),
+        );
+        expect(() => parseConfig(bad)).toThrow(/duplicate legend/);
+      });
+    });
+
     it('rifiuta un tipo chainOnly con pesi di ruolo', () => {
       const bad = withTypes(type('co', { weights: { ATT: 1 } }));
       expect(() => parseConfig(bad)).toThrow(/chainOnly/);

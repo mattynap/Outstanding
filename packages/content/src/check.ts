@@ -14,11 +14,14 @@ export function buildupLines(t: Translations, phase: (typeof BUILDUP_PHASES)[num
   return n;
 }
 
+/** Testi di ogni gesto da leggenda (`match.legends.<id>.<parte>`). */
+export const LEGEND_KEYS = ['option', 'success', 'failure', 'headline'] as const;
+
 /** Forma minima di un tipo di momento chiave (da `config/data/moments.json`) per i testi. */
 export interface MomentTextSource {
   id: string;
   textVariants: number;
-  options: readonly { id: string }[];
+  options: readonly { id: string; legend?: { id: string } }[];
 }
 
 /**
@@ -33,6 +36,13 @@ export function checkMomentKeys(types: readonly MomentTextSource[], t: Translati
       if (!(key in t)) errors.push(`moment ${type.id}: missing text "${key}"`);
     }
     for (const o of type.options) {
+      if (o.legend) {
+        for (const part of LEGEND_KEYS) {
+          const key = `match.legends.${o.legend.id}.${part}`;
+          if (!(key in t)) errors.push(`legend ${o.legend.id}: missing text "${key}"`);
+        }
+        continue;
+      }
       const key = `match.moments.${type.id}.options.${o.id}`;
       if (!(key in t)) errors.push(`moment ${type.id}: missing text "${key}"`);
     }

@@ -25,6 +25,8 @@ export interface KeyMomentOption {
   chanceBand: ChanceBand;
   /** Opzione "chiudi" di una catena: riesce sempre e chiude l'azione. */
   closes?: true;
+  /** Gesto da leggenda: id dell'archetipo (testi in `match.legends.<id>.*`). */
+  legendId?: string;
 }
 
 export type OnFail = 'counter' | 'lost' | 'none';

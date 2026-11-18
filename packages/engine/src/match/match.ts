@@ -1,3 +1,4 @@
+import type { MomentTypeConfig } from '@outstanding/config';
 import { defaultContext, type GameContext } from '../context';
 import { difficultyMods } from '../difficulty';
 import { applyMatchAftermath } from '../player/condition';
@@ -10,7 +11,9 @@ import type {
   GameState,
   MatchEvent,
   MatchState,
+  Player,
   RosterPlayer,
+  Skill,
   Selection,
   Side,
 } from '../types';
@@ -91,6 +94,8 @@ export interface MatchReport {
   competitionId?: string;
   /** Infortunio subito durante la partita. */
   injury?: { type: string; weeksLeft: number };
+  /** Gesto da leggenda offerto e scelto in partita (per la prima pagina e l'album). */
+  legend?: { id: string; success: boolean };
 }
 
 /** Passo della partita: un momento chiave da decidere oppure la partita finita. */
@@ -207,6 +212,41 @@ function simulateMinute(
   return next;
 }
 
+/**
+ * Indici delle opzioni della config offerte a questo passo, fissati all'apertura. Un gesto da
+ * leggenda compare solo come ultimo passo di una catena (passo 2 o oltre, nessun seguito), con
+ * tensione e abilità sufficienti e finché ne restano nella partita; sale `legendsUsed` quando
+ * viene offerto, scelto o no. Non estrae nulla.
+ */
+function availableOptions(
+  m: MatchState,
+  type: MomentTypeConfig,
+  chain: { rootId: string; step: number } | undefined,
+  player: Player,
+  ctx: GameContext,
+): { options: number[]; legendsOffered: number } {
+  const cfg = ctx.config.match;
+  const tens = tension(m, cfg);
+  let room = cfg.legends.perMatch - m.director.legendsUsed;
+  const options: number[] = [];
+  type.options.forEach((o, i) => {
+    const lg = o.legend;
+    if (!lg) {
+      options.push(i);
+      return;
+    }
+    if (!chain || chain.step < 2 || o.success.next || o.failure.next || room <= 0) return;
+    if (tens < lg.minTension) return;
+    const skilled = (Object.entries(lg.skills) as [Skill, number][]).every(
+      ([k, min]) => player.skills[k] >= min,
+    );
+    if (!skilled) return;
+    room -= 1;
+    options.push(i);
+  });
+  return { options, legendsOffered: cfg.legends.perMatch - m.director.legendsUsed - room };
+}
+
 /** Costruisce la vista del momento chiave in attesa, con le probabilità di ogni opzione. */
 function describeMoment(state: GameState, m: MatchState, ctx: GameContext): KeyMoment {
   const pending = m.pending;
@@ -223,20 +263,24 @@ function describeMoment(state: GameState, m: MatchState, ctx: GameContext): KeyM
     ...(pending.chain ? { chain: { ...pending.chain } } : {}),
     dyn: { ...m.dyn },
     pressure: m.pressure,
-    options: type.options.map((o) => {
+    options: pending.options.map((index) => {
+      const o = type.options[index]!;
       // Chiudere riesce sempre: la probabilità vera è 1 (vedi `decideMoment`).
       const chance = o.closes
         ? 1
         : optionChance(state.player, o, opponent.rating, ctx, bonus, 0.5, m.dyn);
       return {
         id: o.id,
-        textKey: `match.moments.${type.id}.options.${o.id}`,
+        textKey: o.legend
+          ? `match.legends.${o.legend.id}.option`
+          : `match.moments.${type.id}.options.${o.id}`,
         chance,
         onSuccess: consequenceOf(o.success, true),
         onFailure: consequenceOf(o.failure, false),
         onFail: onFailOf(o, ctx),
         chanceBand: chanceBandOf(chance, ctx.config.match.chanceBands),
         ...(o.closes ? { closes: true as const } : {}),
+        ...(o.legend ? { legendId: o.legend.id } : {}),
       };
     }),
   };
@@ -301,6 +345,16 @@ function finishMatch(
   const byLevel = state.player.seasonLevelApps ?? {};
   const player = {
     ...state.player,
+    image: m.legend?.success
+      ? {
+          ...state.player.image,
+          popularity: clamp(
+            state.player.image.popularity + ctx.config.match.legends.popularity,
+            0,
+            100,
+          ),
+        }
+      : state.player.image,
     seasonLevelApps:
       played && level !== undefined
         ? { ...byLevel, [level]: (byLevel[level] ?? 0) + 1 }
@@ -371,6 +425,7 @@ function finishMatch(
       ...(settled.extraTime ? { extraTime: { ...settled.extraTime } } : {}),
       ...(settled.penalties ? { penalties: { ...settled.penalties } } : {}),
       ...(fixture.cup ? { competitionId: fixture.cup.competitionId } : {}),
+      ...(m.legend ? { legend: { ...m.legend } } : {}),
       ...(after.injured && after.player.injury ? { injury: { ...after.player.injury } } : {}),
     },
   };
@@ -384,15 +439,17 @@ function openStep(
   m: MatchState,
   momentId: string,
   chain: { rootId: string; step: number } | undefined,
+  player: Player,
   rng: Rng,
   ctx: GameContext,
 ): MatchState {
   const type = getMomentType(momentId, ctx);
   const textVariant = rng.int(1, type.textVariants);
+  const { options, legendsOffered } = availableOptions(m, type, chain, player, ctx);
   return {
     ...m,
     director: onStepOpened(
-      m.director,
+      { ...m.director, legendsUsed: m.director.legendsUsed + legendsOffered },
       {
         minute: m.minute,
         momentId: type.id,
@@ -406,7 +463,7 @@ function openStep(
       minute: m.minute,
       textVariant,
       ...(chain ? { chain } : {}),
-      options: type.options.map((_, i) => i),
+      options,
     },
   };
 }
@@ -465,7 +522,7 @@ function run(
     if (!cur.director.armed) cur = tryArm(state, cur, rng, ctx);
     // Con armLead 0 il preavviso e l'apertura cadono nello stesso minuto.
     if (cur.director.armed && cur.director.armed.at <= cur.minute) {
-      cur = openStep(cur, cur.director.armed.momentId, undefined, rng, ctx);
+      cur = openStep(cur, cur.director.armed.momentId, undefined, state.player, rng, ctx);
       const paused = { ...state, currentMatch: cur, rngState: rng.getState() };
       return { state: paused, step: { kind: 'moment', moment: describeMoment(paused, cur, ctx) } };
     }
@@ -546,13 +603,17 @@ export function decideMoment(
   const type = getMomentType(m.pending.momentId, ctx);
   const { optionIndex, quality } =
     typeof decision === 'number' ? { optionIndex: decision, quality: 0.5 } : decision;
-  if (!Number.isInteger(optionIndex) || optionIndex < 0 || optionIndex >= type.options.length) {
+  if (
+    !Number.isInteger(optionIndex) ||
+    optionIndex < 0 ||
+    optionIndex >= m.pending.options.length
+  ) {
     throw new Error(`Invalid option ${optionIndex} for "${type.id}"`);
   }
   if (!Number.isFinite(quality) || quality < 0 || quality > 1) {
     throw new Error(`Invalid moment quality ${quality}`);
   }
-  const option = type.options[optionIndex];
+  const option = type.options[m.pending.options[optionIndex]!];
   if (!option) throw new Error(`Invalid option ${optionIndex} for "${type.id}"`);
 
   const rng = Rng.fromState(state.rngState);
@@ -574,11 +635,16 @@ export function decideMoment(
       ),
     );
   const outcome = success ? option.success : option.failure;
+  const legend = option.legend;
 
   let cur: MatchState = {
     ...m,
     pending: null,
-    ratingDelta: m.ratingDelta + outcome.rating,
+    ratingDelta:
+      m.ratingDelta +
+      outcome.rating +
+      (legend && success ? ctx.config.match.legends.ratingBonus : 0),
+    legend: legend ? { id: legend.id, success } : m.legend,
     events: [
       ...m.events,
       { kind: 'moment', minute, momentId: type.id, optionId: option.id, success, quality },
@@ -603,7 +669,7 @@ export function decideMoment(
       step: (m.pending.chain?.step ?? 1) + 1,
     };
     // Stesso minuto della radice, nessun avanzamento: niente gol dell'esito, niente intervallo.
-    cur = openStep(cur, outcome.next.momentId, chain, rng, ctx);
+    cur = openStep(cur, outcome.next.momentId, chain, state.player, rng, ctx);
     const paused = { ...state, currentMatch: cur, rngState: rng.getState() };
     return { state: paused, step: { kind: 'moment', moment: describeMoment(paused, cur, ctx) } };
   }

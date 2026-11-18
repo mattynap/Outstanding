@@ -603,6 +603,7 @@ export const matchSchema = z
       ctx.addIssue({ code: 'custom', message: 'dyn.min must be < dyn.max' });
     }
     const ids = new Set<string>();
+    const legendIds = new Set<string>();
     for (const t of m.moments.types) {
       if (ids.has(t.id)) ctx.addIssue({ code: 'custom', message: `duplicate moment "${t.id}"` });
       ids.add(t.id);
@@ -627,6 +628,24 @@ export const matchSchema = z
         }
         if (o.legend && o.risk !== 'risky') {
           ctx.addIssue({ code: 'custom', message: `${t.id}.${o.id}: legend option must be risky` });
+        }
+        if (o.legend) {
+          if (!t.chainOnly) {
+            ctx.addIssue({
+              code: 'custom',
+              message: `${t.id}.${o.id}: legend option only in chainOnly moments`,
+            });
+          }
+          if (o.closes || o.success.next || o.failure.next) {
+            ctx.addIssue({
+              code: 'custom',
+              message: `${t.id}.${o.id}: legend option cannot close or have next`,
+            });
+          }
+          if (legendIds.has(o.legend.id)) {
+            ctx.addIssue({ code: 'custom', message: `duplicate legend "${o.legend.id}"` });
+          }
+          legendIds.add(o.legend.id);
         }
       }
       if (t.chainOnly && Object.keys(t.weights).length > 0) {

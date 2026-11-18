@@ -60,7 +60,15 @@ describe('testi della partita', () => {
     };
     for (const type of ctx.config.match.moments.types) {
       for (let i = 1; i <= type.textVariants; i++) need(`match.moments.${type.id}.text.${i}`);
-      for (const o of type.options) need(`match.moments.${type.id}.options.${o.id}`);
+      for (const o of type.options) {
+        if (o.legend) {
+          for (const part of ['option', 'success', 'failure', 'headline']) {
+            need(`match.legends.${o.legend.id}.${part}`);
+          }
+        } else {
+          need(`match.moments.${type.id}.options.${o.id}`);
+        }
+      }
     }
     for (const band of ctx.config.match.rating.commentBands) {
       for (let i = 1; i <= band.variants; i++) need(`match.comment.${band.id}.${i}`);

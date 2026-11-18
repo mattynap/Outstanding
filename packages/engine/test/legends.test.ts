@@ -21,6 +21,7 @@ import {
   type KeyMoment,
   type MatchStep,
 } from '../src/index';
+import { Rng } from '../src/rng';
 import { baseOptions } from './fixtures';
 
 const base = defaultContext;
@@ -363,4 +364,43 @@ describe('momenti da leggenda', () => {
     });
     expect(rest).toEqual([]);
   });
+});
+
+describe('rarità dei gesti da leggenda (config reale)', () => {
+  const ROLES = ['GK', 'DEF', 'MID', 'ATT'] as const;
+  it("legends appear in < 10% of full matches with player on pitch 90'", () => {
+    const N = 2000;
+    for (const role of ROLES) {
+      const start = toFirstMatch(newCareer({ ...baseOptions, role, traits: [] }, 7, base), base);
+      // Caso peggiore: abilità al massimo, così le soglie delle abilità non frenano.
+      const skills = Object.fromEntries(
+        Object.keys(start.player.skills).map((k) => [k, 99]),
+      ) as typeof start.player.skills;
+      let full = 0;
+      let offered = 0;
+      for (let i = 0; i < N; i++) {
+        const s: GameState = {
+          ...start,
+          player: { ...start.player, skills },
+          rngState: Rng.fromSeed(1000 + i).getState(),
+        };
+        let seen = false;
+        // Decisore a caso: copre anche le scelte che prolungano le catene.
+        const pick = Rng.fromSeed(5000 + i);
+        const r = playMatch(
+          s,
+          (mo) => {
+            if (mo.options.some((o) => o.legendId)) seen = true;
+            return pick.int(0, mo.options.length - 1);
+          },
+          base,
+        );
+        if (r.matchReport.minutesPlayed < 90) continue;
+        full++;
+        if (seen) offered++;
+      }
+      expect(full).toBeGreaterThan(N / 2);
+      expect(offered / full, `${role}: ${offered}/${full}`).toBeLessThan(0.1);
+    }
+  }, 120_000);
 });

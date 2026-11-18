@@ -6,6 +6,7 @@ import clubsJson from '../data/clubs.json';
 import foreignJson from '../data/foreign.json';
 import itJson from '../data/i18n/it.json';
 import itEventsJson from '../data/i18n/it.events.json';
+import itLegendsJson from '../data/i18n/it.legends.json';
 import itUiJson from '../data/i18n/it.ui.json';
 import { rawEvents } from './eventFiles';
 import { eventsSchema, type GameEvent } from './events';
@@ -135,6 +136,7 @@ export const rawDefaultContent: RawContent = {
     it: [
       { file: 'i18n/it.json', data: itJson },
       { file: 'i18n/it.events.json', data: itEventsJson },
+      { file: 'i18n/it.legends.json', data: itLegendsJson },
       { file: 'i18n/it.ui.json', data: itUiJson },
     ],
   },

@@ -1281,6 +1281,87 @@
           }
         },
         {
+          "id": "leg_doppia_parata",
+          "skills": {
+            "goalkeeping": 0.75,
+            "pace": 0.25
+          },
+          "difficulty": 14,
+          "risk": "risky",
+          "legend": {
+            "id": "leg_doppia_parata",
+            "minTension": 0.5,
+            "skills": {
+              "goalkeeping": 85,
+              "pace": 80
+            }
+          },
+          "success": {
+            "rating": 1.5,
+            "effects": {
+              "fatigue": 0.5
+            }
+          },
+          "failure": {
+            "rating": -0.75,
+            "goalAgainst": 0.4
+          }
+        },
+        {
+          "id": "leg_reni_incrocio",
+          "skills": {
+            "goalkeeping": 0.7,
+            "physical": 0.3
+          },
+          "difficulty": 14,
+          "risk": "risky",
+          "legend": {
+            "id": "leg_reni_incrocio",
+            "minTension": 0.5,
+            "skills": {
+              "goalkeeping": 85,
+              "physical": 80
+            }
+          },
+          "success": {
+            "rating": 1.5,
+            "effects": {
+              "fatigue": 0.5
+            }
+          },
+          "failure": {
+            "rating": -0.75,
+            "goalAgainst": 0.4
+          }
+        },
+        {
+          "id": "leg_presa_sui_piedi",
+          "skills": {
+            "goalkeeping": 0.65,
+            "pace": 0.35
+          },
+          "difficulty": 13,
+          "risk": "risky",
+          "legend": {
+            "id": "leg_presa_sui_piedi",
+            "minTension": 0.5,
+            "skills": {
+              "goalkeeping": 85,
+              "pace": 80
+            }
+          },
+          "success": {
+            "rating": 1.25,
+            "effects": {
+              "fatigue": 0.5
+            }
+          },
+          "failure": {
+            "rating": -0.75,
+            "goalAgainst": 0.4
+          }
+        },
+        {
           "id": "proteggi_porta",
           "skills": {
             "goalkeeping": 0.6,
@@ -1370,6 +1451,62 @@
           }
         },
         {
+          "id": "leg_cross_esterno",
+          "skills": {
+            "passing": 0.65,
+            "vision": 0.35
+          },
+          "difficulty": 12,
+          "risk": "risky",
+          "legend": {
+            "id": "leg_cross_esterno",
+            "minTension": 0.4,
+            "skills": {
+              "passing": 85,
+              "vision": 80
+            }
+          },
+          "success": {
+            "rating": 1.25,
+            "goalFor": 0.3,
+            "by": "assist"
+          },
+          "failure": {
+            "rating": -0.5,
+            "effects": {
+              "pressure": -0.08
+            }
+          }
+        },
+        {
+          "id": "leg_tacco_smarcante",
+          "skills": {
+            "passing": 0.6,
+            "vision": 0.4
+          },
+          "difficulty": 11,
+          "risk": "risky",
+          "legend": {
+            "id": "leg_tacco_smarcante",
+            "minTension": 0.4,
+            "skills": {
+              "passing": 80,
+              "vision": 80
+            }
+          },
+          "success": {
+            "rating": 1,
+            "goalFor": 0.25,
+            "by": "assist"
+          },
+          "failure": {
+            "rating": -0.5,
+            "effects": {
+              "pressure": -0.08
+            }
+          }
+        },
+        {
           "id": "scarica_dietro",
           "skills": {
             "passing": 0.7,
@@ -1442,6 +1579,118 @@
           },
           "failure": {
             "rating": -0.35,
+            "effects": {
+              "pressure": -0.08
+            }
+          }
+        },
+        {
+          "id": "leg_rovesciata",
+          "skills": {
+            "shooting": 0.65,
+            "physical": 0.35
+          },
+          "difficulty": 17,
+          "risk": "risky",
+          "legend": {
+            "id": "leg_rovesciata",
+            "minTension": 0.4,
+            "skills": {
+              "shooting": 85,
+              "physical": 80
+            }
+          },
+          "success": {
+            "rating": 1.5,
+            "goalFor": 0.16,
+            "by": "self"
+          },
+          "failure": {
+            "rating": -0.6,
+            "effects": {
+              "pressure": -0.08
+            }
+          }
+        },
+        {
+          "id": "leg_scavetto_uscita",
+          "skills": {
+            "shooting": 0.6,
+            "vision": 0.4
+          },
+          "difficulty": 16,
+          "risk": "risky",
+          "legend": {
+            "id": "leg_scavetto_uscita",
+            "minTension": 0.4,
+            "skills": {
+              "shooting": 80,
+              "vision": 80
+            }
+          },
+          "success": {
+            "rating": 1.25,
+            "goalFor": 0.16,
+            "by": "self"
+          },
+          "failure": {
+            "rating": -0.6,
+            "effects": {
+              "pressure": -0.08
+            }
+          }
+        },
+        {
+          "id": "leg_volo_da_fuori",
+          "skills": {
+            "shooting": 0.8,
+            "physical": 0.2
+          },
+          "difficulty": 17,
+          "risk": "risky",
+          "legend": {
+            "id": "leg_volo_da_fuori",
+            "minTension": 0.4,
+            "skills": {
+              "shooting": 85,
+              "physical": 75
+            }
+          },
+          "success": {
+            "rating": 1.25,
+            "goalFor": 0.12,
+            "by": "self"
+          },
+          "failure": {
+            "rating": -0.5,
+            "effects": {
+              "pressure": -0.08
+            }
+          }
+        },
+        {
+          "id": "leg_volo_sotto_incrocio",
+          "skills": {
+            "shooting": 0.75,
+            "vision": 0.25
+          },
+          "difficulty": 17,
+          "risk": "risky",
+          "legend": {
+            "id": "leg_volo_sotto_incrocio",
+            "minTension": 0.4,
+            "skills": {
+              "shooting": 85,
+              "vision": 80
+            }
+          },
+          "success": {
+            "rating": 1.5,
+            "goalFor": 0.12,
+            "by": "self"
+          },
+          "failure": {
+            "rating": -0.5,
             "effects": {
               "pressure": -0.08
             }
@@ -1521,6 +1770,33 @@
           }
         },
         {
+          "id": "leg_anticipo_testa",
+          "skills": {
+            "defending": 0.65,
+            "physical": 0.35
+          },
+          "difficulty": 14,
+          "risk": "risky",
+          "legend": {
+            "id": "leg_anticipo_testa",
+            "minTension": 0.6,
+            "skills": {
+              "defending": 85,
+              "physical": 80
+            }
+          },
+          "success": {
+            "rating": 1.25,
+            "effects": {
+              "fatigue": 1
+            }
+          },
+          "failure": {
+            "rating": -0.75,
+            "goalAgainst": 0.2
+          }
+        },
+        {
           "id": "ricomponi_linea",
           "skills": {
             "vision": 0.6,
@@ -1595,6 +1871,66 @@
             "goalAgainst": 0.22,
             "effects": {
               "nerves": 0.5
+            }
+          }
+        },
+        {
+          "id": "leg_scivolata_ultimo_uomo",
+          "skills": {
+            "defending": 0.7,
+            "pace": 0.3
+          },
+          "difficulty": 14,
+          "risk": "risky",
+          "legend": {
+            "id": "leg_scivolata_ultimo_uomo",
+            "minTension": 0.65,
+            "skills": {
+              "defending": 85,
+              "pace": 80
+            }
+          },
+          "success": {
+            "rating": 1.5,
+            "effects": {
+              "fatigue": 1
+            }
+          },
+          "failure": {
+            "rating": -0.9,
+            "goalAgainst": 0.22,
+            "effects": {
+              "fatigue": 1
+            }
+          }
+        },
+        {
+          "id": "leg_salvataggio_linea",
+          "skills": {
+            "defending": 0.6,
+            "pace": 0.4
+          },
+          "difficulty": 14,
+          "risk": "risky",
+          "legend": {
+            "id": "leg_salvataggio_linea",
+            "minTension": 0.65,
+            "skills": {
+              "defending": 80,
+              "pace": 85
+            }
+          },
+          "success": {
+            "rating": 1.5,
+            "effects": {
+              "fatigue": 1
+            }
+          },
+          "failure": {
+            "rating": -0.75,
+            "goalAgainst": 0.22,
+            "effects": {
+              "fatigue": 1
             }
           }
         },

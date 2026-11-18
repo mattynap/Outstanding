@@ -382,7 +382,8 @@ const momentType = z.object({
   weights: z.partialRecord(roleSchema, z.number().positive()),
   /** Numero di varianti di testo (`match.moments.<id>.text.<n>`, da 1). */
   textVariants: z.number().int().min(1),
-  options: z.array(momentOption).min(2).max(4),
+  // Fino a 4 opzioni ordinarie più i gesti da leggenda (ne compare al massimo `perMatch`).
+  options: z.array(momentOption).min(2).max(8),
 });
 
 /** Catene di momenti: riferimenti esistenti, niente cicli, profondità (passi) entro il massimo. */
@@ -610,6 +611,9 @@ export const matchSchema = z
       const optIds = new Set(t.options.map((o) => o.id));
       if (optIds.size !== t.options.length) {
         ctx.addIssue({ code: 'custom', message: `duplicate option id in moment "${t.id}"` });
+      }
+      if (t.options.filter((o) => !o.legend).length > 4) {
+        ctx.addIssue({ code: 'custom', message: `${t.id}: at most 4 non-legend options` });
       }
       for (const o of t.options) {
         for (const out of [o.success, o.failure]) {

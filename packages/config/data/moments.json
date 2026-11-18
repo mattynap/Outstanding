@@ -1290,7 +1290,7 @@
           "risk": "risky",
           "legend": {
             "id": "leg_doppia_parata",
-            "minTension": 0.5,
+            "minTension": 0.6,
             "skills": {
               "goalkeeping": 85,
               "pace": 80
@@ -1317,7 +1317,7 @@
           "risk": "risky",
           "legend": {
             "id": "leg_reni_incrocio",
-            "minTension": 0.5,
+            "minTension": 0.6,
             "skills": {
               "goalkeeping": 85,
               "physical": 80
@@ -1344,10 +1344,10 @@
           "risk": "risky",
           "legend": {
             "id": "leg_presa_sui_piedi",
-            "minTension": 0.5,
+            "minTension": 0.6,
             "skills": {
               "goalkeeping": 85,
-              "pace": 80
+              "vision": 75
             }
           },
           "success": {
@@ -1460,7 +1460,7 @@
           "risk": "risky",
           "legend": {
             "id": "leg_cross_esterno",
-            "minTension": 0.4,
+            "minTension": 0.6,
             "skills": {
               "passing": 85,
               "vision": 80
@@ -1488,10 +1488,10 @@
           "risk": "risky",
           "legend": {
             "id": "leg_tacco_smarcante",
-            "minTension": 0.4,
+            "minTension": 0.6,
             "skills": {
               "passing": 80,
-              "vision": 80
+              "dribbling": 80
             }
           },
           "success": {
@@ -1594,7 +1594,7 @@
           "risk": "risky",
           "legend": {
             "id": "leg_rovesciata",
-            "minTension": 0.4,
+            "minTension": 0.6,
             "skills": {
               "shooting": 85,
               "physical": 80
@@ -1622,7 +1622,7 @@
           "risk": "risky",
           "legend": {
             "id": "leg_scavetto_uscita",
-            "minTension": 0.4,
+            "minTension": 0.6,
             "skills": {
               "shooting": 80,
               "vision": 80
@@ -1650,10 +1650,9 @@
           "risk": "risky",
           "legend": {
             "id": "leg_volo_da_fuori",
-            "minTension": 0.4,
+            "minTension": 0.6,
             "skills": {
-              "shooting": 85,
-              "physical": 75
+              "shooting": 90
             }
           },
           "success": {
@@ -1678,10 +1677,10 @@
           "risk": "risky",
           "legend": {
             "id": "leg_volo_sotto_incrocio",
-            "minTension": 0.4,
+            "minTension": 0.6,
             "skills": {
               "shooting": 85,
-              "vision": 80
+              "pace": 80
             }
           },
           "success": {
@@ -1884,7 +1883,7 @@
           "risk": "risky",
           "legend": {
             "id": "leg_scivolata_ultimo_uomo",
-            "minTension": 0.65,
+            "minTension": 0.6,
             "skills": {
               "defending": 85,
               "pace": 80
@@ -1914,7 +1913,7 @@
           "risk": "risky",
           "legend": {
             "id": "leg_salvataggio_linea",
-            "minTension": 0.65,
+            "minTension": 0.6,
             "skills": {
               "defending": 80,
               "pace": 85

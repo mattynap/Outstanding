@@ -23,6 +23,8 @@ export interface KeyMomentOption {
   onFail: OnFail;
   /** Fascia mostrata della probabilità vera (`chanceBands`). */
   chanceBand: ChanceBand;
+  /** Opzione "chiudi" di una catena: riesce sempre e chiude l'azione. */
+  closes?: true;
 }
 
 export type OnFail = 'counter' | 'lost' | 'none';

@@ -236,6 +236,7 @@ function describeMoment(state: GameState, m: MatchState, ctx: GameContext): KeyM
         onFailure: consequenceOf(o.failure, false),
         onFail: onFailOf(o, ctx),
         chanceBand: chanceBandOf(chance, ctx.config.match.chanceBands),
+        ...(o.closes ? { closes: true as const } : {}),
       };
     }),
   };
@@ -630,11 +631,24 @@ export function decideMoment(
 }
 
 /**
- * Decisore delle partite simulate: sceglie sempre l'opzione più probabile. È la scelta prudente:
- * chi gioca la partita di persona può rischiare di più per ottenere di più.
+ * Decisore delle partite simulate: sceglie l'opzione più probabile fra quelle che proseguono
+ * l'azione. "Chiudi" (probabilità 1) lo sceglie solo se la migliore delle altre è in fascia bassa:
+ * è la scelta prudente, chi gioca di persona può insistere per ottenere di più.
  */
-export const autoDecider: KeyMomentDecider = (moment) =>
-  moment.options.reduce((best, o, i, all) => (o.chance > all[best]!.chance ? i : best), 0);
+export function prudentMomentChoice(moment: KeyMoment): number {
+  const best = (keep: (o: KeyMoment['options'][number]) => boolean) =>
+    moment.options.reduce(
+      (b, o, i, all) => (keep(o) && (b < 0 || o.chance > all[b]!.chance) ? i : b),
+      -1,
+    );
+  const open = best((o) => !o.closes);
+  const close = best((o) => o.closes === true);
+  if (close >= 0 && (open < 0 || moment.options[open]!.chanceBand === 'low')) return close;
+  return open;
+}
+
+/** Decisore delle partite simulate (`prudentMomentChoice`). */
+export const autoDecider: KeyMomentDecider = (moment) => prudentMomentChoice(moment);
 
 /** Simula la partita della settimana senza chiedere nulla al giocatore (momenti con `autoDecider`). */
 export function simulateMatch(

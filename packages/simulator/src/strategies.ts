@@ -1,4 +1,5 @@
 import {
+  prudentMomentChoice,
   computeOvr,
   getOffers,
   getWeekOptions,
@@ -104,13 +105,8 @@ const cautious: Strategy = {
     if (injured(state)) return feasible(state, [{ actionId: 'physio' }, { actionId: 'rest' }], ctx);
     return feasible(state, [{ actionId: 'train_normal' }, { actionId: 'rest' }], ctx);
   },
-  decideMoment(moment) {
-    let best = 0;
-    moment.options.forEach((o, i) => {
-      if (o.chance > moment.options[best]!.chance) best = i;
-    });
-    return best;
-  },
+  // Come le partite simulate: la più probabile, e "chiudi" solo se le altre sono in fascia bassa.
+  decideMoment: (moment) => prudentMomentChoice(moment),
   chooseEvent: (n, rng) => rng.int(0, n - 1),
   pickOffer(state, offers, _rng, ctx) {
     const current = level(state, ctx);

@@ -7,6 +7,7 @@ import type {
 import { checkMomentKeys } from '@outstanding/content';
 import {
   advanceWeek,
+  autoDecider,
   beginMatch,
   decideMoment,
   defaultContext,
@@ -15,10 +16,12 @@ import {
   newCareer,
   playerFixture,
   playMatch,
+  prudentMomentChoice,
   serialize,
   type GameContext,
   type GameState,
   type KeyMoment,
+  type KeyMomentOption,
   type MatchEvent,
   type MatchStep,
 } from '../src/index';
@@ -440,5 +443,46 @@ describe('catene di momenti (contesto di prova)', () => {
       ]),
     );
     expect(checkMomentKeys(TYPES, { ...t, ...all })).toEqual([]);
+  });
+});
+
+describe('prudentMomentChoice (decisore automatico)', () => {
+  const opt = (id: string, chance: number, closes = false): KeyMomentOption => ({
+    id,
+    textKey: `k.${id}`,
+    chance,
+    onSuccess: 'rating',
+    onFailure: 'rating',
+    onFail: 'none',
+    chanceBand: chanceBandOf(chance, base.config.match.chanceBands),
+    ...(closes ? { closes: true as const } : {}),
+  });
+  const moment = (options: KeyMomentOption[]): KeyMoment => ({
+    momentId: 'm',
+    minute: 50,
+    textKey: 'k',
+    params: {},
+    score: { home: 0, away: 0 },
+    dyn: { coachTrust: 0, nerves: 0, fatigue: 0, marking: 0 },
+    pressure: 0,
+    options,
+  });
+  const { low, high } = base.config.match.chanceBands;
+
+  it('closes when the best open option is in the low band', () => {
+    const m = moment([opt('a', low - 0.1), opt('b', low - 0.05), opt('c', 1, true)]);
+    expect(prudentMomentChoice(m)).toBe(2);
+    expect(autoDecider(m, undefined as never)).toBe(2);
+  });
+
+  it('keeps playing when the best open option is mid or high', () => {
+    expect(prudentMomentChoice(moment([opt('a', low), opt('c', 1, true)]))).toBe(0);
+    expect(
+      prudentMomentChoice(moment([opt('c', 1, true), opt('a', low + 0.01), opt('b', high)])),
+    ).toBe(2);
+  });
+
+  it('without a closes option picks the highest chance', () => {
+    expect(prudentMomentChoice(moment([opt('a', 0.1), opt('b', 0.3), opt('c', 0.2)]))).toBe(1);
   });
 });

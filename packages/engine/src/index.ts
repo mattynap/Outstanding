@@ -112,6 +112,7 @@ export {
 export { endSeason, type SeasonReport, type ClubMovement } from './season/endSeason';
 export {
   autoDecider,
+  prudentMomentChoice,
   beginMatch,
   decideMoment,
   getPendingMoment,

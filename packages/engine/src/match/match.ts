@@ -215,36 +215,40 @@ function simulateMinute(
 /**
  * Indici delle opzioni della config offerte a questo passo, fissati all'apertura. Un gesto da
  * leggenda compare solo come ultimo passo di una catena (passo 2 o oltre, nessun seguito), con
- * tensione e abilità sufficienti e finché ne restano nella partita; sale `legendsUsed` quando
+ * tensione e abilità sufficienti e finché ne restano nella partita. Se più gesti sono idonei
+ * se ne offrono al massimo quanti ne restano, scegliendo quelli col margine maggiore sulle
+ * soglie (somma abilità − soglia; a parità, ordine della config). Sale `legendsUsed` quando
  * viene offerto, scelto o no. Non estrae nulla.
  */
-function availableOptions(
+export function availableOptions(
   m: MatchState,
   type: MomentTypeConfig,
   chain: { rootId: string; step: number } | undefined,
   player: Player,
+  tens: number,
   ctx: GameContext,
 ): { options: number[]; legendsOffered: number } {
-  const cfg = ctx.config.match;
-  const tens = tension(m, cfg);
-  let room = cfg.legends.perMatch - m.director.legendsUsed;
-  const options: number[] = [];
-  type.options.forEach((o, i) => {
+  const room = Math.max(0, ctx.config.match.legends.perMatch - m.director.legendsUsed);
+  const eligible: { index: number; margin: number }[] = [];
+  type.options.forEach((o, index) => {
     const lg = o.legend;
-    if (!lg) {
-      options.push(i);
-      return;
-    }
-    if (!chain || chain.step < 2 || o.success.next || o.failure.next || room <= 0) return;
+    if (!lg || !chain || chain.step < 2 || o.success.next || o.failure.next) return;
     if (tens < lg.minTension) return;
-    const skilled = (Object.entries(lg.skills) as [Skill, number][]).every(
-      ([k, min]) => player.skills[k] >= min,
+    const gaps = (Object.entries(lg.skills) as [Skill, number][]).map(
+      ([k, min]) => player.skills[k] - min,
     );
-    if (!skilled) return;
-    room -= 1;
-    options.push(i);
+    if (gaps.some((g) => g < 0)) return;
+    eligible.push({ index, margin: gaps.reduce((a, g) => a + g, 0) });
   });
-  return { options, legendsOffered: cfg.legends.perMatch - m.director.legendsUsed - room };
+  const offered = new Set(
+    eligible
+      .slice()
+      .sort((x, y) => y.margin - x.margin || x.index - y.index)
+      .slice(0, room)
+      .map((e) => e.index),
+  );
+  const options = type.options.flatMap((o, i) => (!o.legend || offered.has(i) ? [i] : []));
+  return { options, legendsOffered: offered.size };
 }
 
 /** Costruisce la vista del momento chiave in attesa, con le probabilità di ogni opzione. */
@@ -445,7 +449,8 @@ function openStep(
 ): MatchState {
   const type = getMomentType(momentId, ctx);
   const textVariant = rng.int(1, type.textVariants);
-  const { options, legendsOffered } = availableOptions(m, type, chain, player, ctx);
+  const stepTension = tension(m, ctx.config.match);
+  const { options, legendsOffered } = availableOptions(m, type, chain, player, stepTension, ctx);
   return {
     ...m,
     director: onStepOpened(
@@ -453,7 +458,7 @@ function openStep(
       {
         minute: m.minute,
         momentId: type.id,
-        tension: tension(m, ctx.config.match),
+        tension: stepTension,
         root: chain === undefined,
       },
       ctx.config.match,

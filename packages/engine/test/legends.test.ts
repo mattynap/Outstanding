@@ -22,6 +22,7 @@ import {
   type MatchStep,
 } from '../src/index';
 import { Rng } from '../src/rng';
+import { availableOptions } from '../src/match/match';
 import { baseOptions } from './fixtures';
 
 const base = defaultContext;
@@ -363,6 +364,77 @@ describe('momenti da leggenda', () => {
       'match.moments.l_end.options.keep': 'x',
     });
     expect(rest).toEqual([]);
+  });
+});
+
+describe('più gesti idonei sullo stesso passo', () => {
+  /** l_end con un secondo gesto: soglie sulla stessa abilità, margini diversi. */
+  const twoLegends = (thresholdA: number, thresholdB: number): GameContext => {
+    const c = ctxFor(OPEN);
+    const types = c.config.match.moments.types.map((t) => {
+      if (t.id !== 'l_end') return t;
+      const mk = (id: string, min: number): MomentTypeConfig['options'][number] => ({
+        ...t.options[1]!,
+        id,
+        legend: { id, minTension: 0, skills: { shooting: min } },
+      });
+      return {
+        ...t,
+        options: [t.options[0]!, mk('leg_a', thresholdA), mk('leg_b', thresholdB), t.options[2]!],
+      };
+    });
+    return {
+      ...c,
+      config: {
+        ...c.config,
+        match: { ...c.config.match, moments: { ...c.config.match.moments, types } },
+      },
+    };
+  };
+  const shooting60 = (s: GameState): GameState => ({
+    ...s,
+    player: { ...s.player, skills: { ...s.player.skills, shooting: 60 } },
+  });
+
+  it('offers only the legend with the larger margin over its thresholds', () => {
+    const a = twoLegends(10, 50);
+    expect(ids(toEnd(a, shooting60).moment)).toEqual(['twin', 'leg_a', 'keep']);
+    const b = twoLegends(50, 10);
+    expect(ids(toEnd(b, shooting60).moment)).toEqual(['twin', 'leg_b', 'keep']);
+    expect(toEnd(b, shooting60).state.currentMatch!.director.legendsUsed).toBe(1);
+  });
+
+  it('ties go to the config order', () => {
+    expect(ids(toEnd(twoLegends(30, 30), shooting60).moment)).toEqual(['twin', 'leg_a', 'keep']);
+  });
+
+  it('every catalog legend can be offered with a profile that favours it', () => {
+    const start = firstPending(base);
+    const m = start.currentMatch!;
+    const all = base.config.match.moments.types.flatMap((t) =>
+      t.options.filter((o) => o.legend).map((o) => ({ t, o })),
+    );
+    expect(all.length).toBe(12);
+    for (const { t, o } of all) {
+      const th = o.legend!.skills as Record<string, number>;
+      // Profili: soglie esatte e, per ogni abilità del gesto, quella abilità al massimo.
+      const profiles = [th, ...Object.keys(th).map((k) => ({ ...th, [k]: 99 }))];
+      const offered = profiles.some((p) => {
+        const skills = Object.fromEntries(
+          Object.keys(start.player.skills).map((k) => [k, p[k] ?? 0]),
+        ) as typeof start.player.skills;
+        const { options } = availableOptions(
+          m,
+          t,
+          { rootId: 'x', step: 2 },
+          { ...start.player, skills },
+          1,
+          base,
+        );
+        return options.includes(t.options.indexOf(o));
+      });
+      expect(offered, o.id).toBe(true);
+    }
   });
 });
 

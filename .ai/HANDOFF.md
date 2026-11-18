@@ -1,27 +1,31 @@
 # Handoff
 
 ## Stato
-Validazione commerciale con il founder pack completa, in `founder/` (ignorata da git, non versionata).
-Fatte tutte le fasi: board, competitors, consumer, pricing, cfo, marketing, brand, ops, launch, plan, offer.
-Verdetto di `compile.py`: Profitable, al limite. Panel simulato 5/20 (v1), 6/20 con l'offerta "Contratto a vita" (v2).
-Nessuna modifica al codice del gioco. Lo stato del lavoro sull'interfaccia ibrida resta quello del commit `558ffc6`.
+Sessione di design sul motore. L'utente trova il gioco piatto: partita monotona, scelte senza seguito,
+momenti a caso, minigioco inutile, stagioni troppo lunghe.
+Scelto l'approccio B: prima rifare il nucleo (partita, stagione, settimana, collegamenti fra sistemi),
+poi M19–M23. Direzione approvata e scritta in
+`docs/superpowers/specs/2026-11-18-regista-partita-stagione-design.md` (non ancora committato).
+Nessuna modifica al codice.
 
 ## Prossimo passo
-- Fare decidere all'utente le tre scelte in `founder/offer.md` (sezione "Decisioni per te"): codice sfida, esportazione del salvataggio gratis, nome dell'offerta.
-- Prova 1 di `founder/launch.md`: 10–15 tester veri sulla parte gratuita, con le soglie scritte lì.
-- Riprendere il feedback su iPhone dell'interfaccia ibrida (vedi TASKS).
+Obiettivo della prossima sessione: impostare il regista della partita e della stagione.
+1. Committare lo spec (`docs: design regista partita e stagione`).
+2. Builder check dello spec, poi chiudere con l'utente le domande aperte del §5 (stagione).
+3. Piano con `writing-plans`: prima la partita (cronaca + pressione, tensione, catene, conseguenze,
+   rischio contestuale, gesti), poi la stagione a capitoli.
+4. Nel simulatore: strategia "contestuale" e misura del tempo di gioco (bersaglio 20–30 min a stagione, 6–8 ore a carriera).
 
 ## Blocchi e domande aperte
-- Il dubbio principale ora è se il gioco tiene fino alla fine della seconda stagione (13/20 nel panel v2 temono di stufarsi). Si risolve con il prodotto e con i tester veri, non con l'offerta.
-- Strada di pubblicazione (da soli, publisher, vendita) non decisa: si sceglie a L+60 del lancio di prova.
-- Restano aperte la decisione sul taglio di M18–M23 e quella sul punto dello sblocco (fine seconda stagione o evento).
-- Se si ricompila `founder/business-plan.md`, l'intestazione torna in inglese con `$`: va ritradotta.
+- Stagione a capitoli: la pianificazione settimanale diventa per capitolo? Il giocatore può chiedere di giocare una partita non scelta dal regista? Che ruolo restano ad avanti veloce e piano ricordato?
+- Peso del gesto in partita: da tarare (oggi ±10 punti).
+- Restano aperte dalle sessioni precedenti: decisioni dell'offerta (`founder/offer.md`), prova con i tester, feedback iPhone dell'interfaccia ibrida.
 
 ## File toccati
-- `founder/`: offer.md, pitch.md, pitch-v1.md, panel-v2/, ops.md, launch.md, summary.md, business-plan.md, one-pager.md e le fasi precedenti.
+- `docs/superpowers/specs/2026-11-18-regista-partita-stagione-design.md` (nuovo)
 
 ## Skill consigliate
-- founder-consumer o founder-pricing solo dopo i dati dei tester veri; executing-plans e frontend-design per l'ondata 3 dell'interfaccia.
+- brainstorming (per chiudere §5), writing-plans, test-driven-development, frontend-design per la schermata partita.
 
 ## Firma
-Claude Code, Opus 5.5, 2026-11-18
+Claude Code, Opus 5.5, 2026-11-18. Deleghe Codex oggi: 4 (leggero 3, standard 1); in questa sessione 0.

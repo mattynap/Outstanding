@@ -21,3 +21,8 @@ Decisioni con il cliente o commerciali: proporle per il registro di base-azienda
 - Decisione: carta e titoli da giornale per notizie e pagelle, strato pixel (Jersey 15 da 20 px in su, cornici box-shadow) per numeri, icone e stemmi. Modalità partita predefinita salvata in Preferences; la simulazione automatica parte solo nel passo partita.
 - Perché: scelta dell'utente ("ibrido spinto, mantieni lo stile di giornale"); dettagli in `docs/design-system.md` e `.claude/memory/ui-ibrido.md`.
 - Alternative scartate: pixel su tutta l'interfaccia (testi lunghi illeggibili), solo giornale (poco carattere da gioco).
+
+## 2026-11-18 — Nucleo prima delle meccaniche nuove (approccio B)
+- Decisione: prima si rifanno partita (regista di tensione, cronaca con pressione, catene, gesti al posto della barra) e stagione (capitoli, 2–3 partite giocate a capitolo, resto in riepilogo); poi settimana, collegamenti fra sistemi e solo dopo M19–M23.
+- Perché: l'utente trova il gioco piatto e poco chiaro; aggiungere sistemi sopra un nucleo opaco peggiora. Dettagli in `docs/superpowers/specs/2026-11-18-regista-partita-stagione-design.md`.
+- Alternative scartate: seguire M18–M23 così com'è; un unico ridisegno totale del motore.

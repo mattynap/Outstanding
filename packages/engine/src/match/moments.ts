@@ -42,7 +42,9 @@ export function chanceBandOf(chance: number, bands: MatchConfig['chanceBands']):
  */
 export function onFailOf(option: MomentOptionConfig, ctx: GameContext): OnFail {
   const next = option.failure.next;
-  if (next && getMomentType(next.momentId, ctx).phase === 'defense') return 'counter';
+  // Con next.chance 0 il contropiede non arriva mai: vale il gol avversario dell'esito.
+  if (next && (next.chance ?? 1) > 0 && getMomentType(next.momentId, ctx).phase === 'defense')
+    return 'counter';
   return option.failure.goalAgainst !== undefined && option.failure.goalAgainst > 0
     ? 'lost'
     : 'none';

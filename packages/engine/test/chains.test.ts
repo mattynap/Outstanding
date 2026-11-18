@@ -291,10 +291,9 @@ describe('catene di momenti (contesto di prova)', () => {
     const minute = m0.pending!.minute;
     const r = decide(s0, 't_pass', 'gamble');
     if (r.step.kind === 'moment') expect(r.step.moment.chain).toBeUndefined();
-    const against = goalsAt(eventsOf(r), minute).filter(
-      (e) => e.kind === 'goal' && e.side !== m0.side,
-    );
-    expect(against.length).toBe(goalsAt(m0.events, minute).length + 1);
+    const againstOf = (events: MatchEvent[]) =>
+      goalsAt(events, minute).filter((e) => e.kind === 'goal' && e.side !== m0.side).length;
+    expect(againstOf(eventsOf(r))).toBe(againstOf(m0.events) + 1);
   });
 
   it('chain is never opened when chainDepth > budgetLeft', () => {
@@ -307,14 +306,33 @@ describe('catene di momenti (contesto di prova)', () => {
         expect(chainDepth(t!.id, fctx)).toBeLessThanOrEqual(maxDepth);
       }
     }
-    // In partita: i passi aperti non superano mai il budget estratto e il budget non va sotto 0.
-    for (let seed = 1; seed <= 40; seed++) {
-      const s = toFirstMatch(newCareer(baseOptions, seed, fctx));
-      const begun = beginMatch(s, fctx);
-      const start = begun.state.currentMatch?.director.budgetStart ?? 0;
-      const { seen } = record(s, seed);
-      expect(seen.length).toBeLessThanOrEqual(start);
+    // In partita (tryArm reale): con budget piccolo ogni radice aperta ha chainDepth ≤ budget
+    // residuo, t_pass (profondità 3) non apre mai con budget 2 e il budget non va sotto 0.
+    let roots = 0;
+    for (const budget of [2, 3]) {
+      const c: GameContext = {
+        ...fctx,
+        config: {
+          ...fctx.config,
+          match: { ...cfg, modes: { ...cfg.modes, full: [budget, budget] } },
+        },
+      };
+      for (let seed = 1; seed <= 40; seed++) {
+        const s = toFirstMatch(newCareer(baseOptions, seed, c), c);
+        // Il budget estratto può essere ridotto (minuti in campo), mai superato.
+        const start = beginMatch(s, c).state.currentMatch?.director.budgetStart ?? 0;
+        expect(start).toBeLessThanOrEqual(budget);
+        const { seen } = record(s, seed, c);
+        expect(seen.length).toBeLessThanOrEqual(start);
+        seen.forEach((mo, i) => {
+          if (mo.chain) return;
+          roots++;
+          expect(chainDepth(mo.momentId, c)).toBeLessThanOrEqual(start - i);
+          if (budget === 2) expect(mo.momentId).not.toBe('t_pass');
+        });
+      }
     }
+    expect(roots).toBeGreaterThan(0);
   });
 
   it('chain steps share the root minute and depth never exceeds chainMaxSteps', () => {
@@ -343,14 +361,26 @@ describe('catene di momenti (contesto di prova)', () => {
       const s = toFirstMatch(newCareer(baseOptions, seed, fctx));
       const pick = (mo: KeyMoment, i: number) => (i * 7 + mo.minute) % mo.options.length;
       let i = 0;
-      const continuous = playMatch(s, (mo) => pick(mo, i++), fctx);
+      const shown: KeyMoment[] = [];
+      const continuous = playMatch(
+        s,
+        (mo) => {
+          shown.push(mo);
+          return pick(mo, i++);
+        },
+        fctx,
+      );
       let j = 0;
       let { state: cur, step } = beginMatch(s, fctx);
       while (step.kind === 'moment') {
         if (step.moment.chain) resumedInChain++;
         cur = deserialize(serialize(cur), fctx);
-        ({ state: cur, step } = decideMoment(cur, pick(step.moment, j++), fctx));
+        // Il momento ricostruito dal salvataggio (radice, passo, variante, opzioni) è lo stesso.
+        const pending = getPendingMoment(cur, fctx);
+        expect(pending).toEqual(shown[j]);
+        ({ state: cur, step } = decideMoment(cur, pick(pending!, j++), fctx));
       }
+      expect(j).toBe(shown.length);
       expect(step.report).toEqual(continuous.matchReport);
       expect(cur).toEqual(continuous.state);
     }
@@ -420,13 +450,14 @@ describe('catene di momenti (contesto di prova)', () => {
     const opt2 = (id: string, o: string) =>
       TYPES.find((t) => t.id === id)!.options.find((x) => x.id === o)!;
     expect(onFailOf(opt2('t_pass', 'lose'), fctx)).toBe('counter');
-    expect(onFailOf(opt2('t_pass', 'gamble'), fctx)).toBe('counter');
+    // next.chance 0: il contropiede non arriva mai, resta il gol avversario dell'esito.
+    expect(onFailOf(opt2('t_pass', 'gamble'), fctx)).toBe('lost');
     expect(onFailOf(opt2('t_block', 'block'), fctx)).toBe('lost');
     expect(onFailOf(opt2('t_pass', 'pass'), fctx)).toBe('none');
     // Un seguito in attacco (seconda palla) non è un contropiede.
     expect(onFailOf(opt2('t_cross', 'cross'), fctx)).toBe('none');
     const shown = getPendingMoment(withPending(firstPending(), 't_pass'), fctx)!;
-    expect(shown.options.map((o) => o.onFail)).toEqual(['none', 'counter', 'counter']);
+    expect(shown.options.map((o) => o.onFail)).toEqual(['none', 'counter', 'lost']);
   });
 
   it('content check finds missing moment text keys, chainOnly included', () => {

@@ -22,7 +22,6 @@ import {
   type GameState,
   type KeyMomentDecider,
   type MatchReport,
-  type MatchState,
 } from '../src/index';
 import { baseOptions } from './fixtures';
 
@@ -482,13 +481,45 @@ describe('conseguenze nel resto della partita (dyn)', () => {
     expect(optionChance(plain, option, rating, ctx)).toBe(0.5);
   });
 
-  it('successful dribble raises marking and lowers next dribble chance', () => {
-    const m = applyEffects(m0(), { marking: 1 }, cfg);
-    expect(m.dyn.marking).toBe(1);
-    expect(optionChance(plain, option, rating, ctx, 0, 0.5, m.dyn)).toBeCloseTo(
-      0.5 + cfg.dyn.chanceWeight.marking,
+  /** Contesto di prova: ogni esito aggiunge `fx` agli stati dinamici (la config reale non cambia). */
+  const withFx = (fx: Record<string, number>) => {
+    const types = cfg.moments.types.map((t) => ({
+      ...t,
+      options: t.options.map((o) => ({
+        ...o,
+        success: { ...o.success, effects: fx },
+        failure: { ...o.failure, effects: fx },
+      })),
+    }));
+    return {
+      ...ctx,
+      config: { ...ctx.config, match: { ...cfg, moments: { ...cfg.moments, types } } },
+    };
+  };
+  /** Gioca la partita registrando i momenti mostrati. */
+  const record = (s: GameState, c: typeof ctx) => {
+    const seen: KeyMoment[] = [];
+    const r = playMatch(
+      s,
+      (mo) => {
+        seen.push(mo);
+        return 0;
+      },
+      c,
     );
+    return { seen, state: r.state };
+  };
+
+  it('successful dribble raises marking and lowers next dribble chance', () => {
+    const c = withFx({ marking: 1 });
+    const { seen } = record(toFirstMatch(newCareer(baseOptions, 7)), c);
+    expect(seen.length).toBeGreaterThanOrEqual(2);
+    expect(seen[0]!.dyn.marking).toBe(0);
+    expect(seen[1]!.dyn.marking).toBe(1);
     expect(cfg.dyn.chanceWeight.marking).toBeLessThan(0);
+    expect(optionChance(plain, option, rating, c, 0, 0.5, seen[1]!.dyn)).toBeCloseTo(
+      optionChance(plain, option, rating, c, 0, 0.5, ZERO_DYN) + cfg.dyn.chanceWeight.marking,
+    );
   });
 
   it('fatigue lowers chance', () => {
@@ -505,46 +536,32 @@ describe('conseguenze nel resto della partita (dyn)', () => {
   });
 
   it('decideMoment applies the outcome effects and exposes dyn in the moment', () => {
-    const s0 = toFirstMatch(newCareer(baseOptions, 7));
-    const withFx = (fx: Record<string, number>) => {
-      const types = cfg.moments.types.map((t) => ({
-        ...t,
-        options: t.options.map((o) => ({
-          ...o,
-          success: { ...o.success, effects: fx },
-          failure: { ...o.failure, effects: fx },
-        })),
-      }));
-      return {
-        ...ctx,
-        config: { ...ctx.config, match: { ...cfg, moments: { ...cfg.moments, types } } },
-      };
-    };
     const c = withFx({ marking: 1 });
-    const step = beginMatch(s0, c);
-    if (step.step.kind !== 'moment') throw new Error('nessun momento');
-    expect(step.step.moment.dyn).toEqual(ZERO_DYN);
-    const after = decideMoment(step.state, 0, c);
-    const cm = after.state.currentMatch;
-    expect(cm ? cm.dyn.marking : 1).toBeGreaterThanOrEqual(1);
+    const begun = beginMatch(toFirstMatch(newCareer(baseOptions, 7)), c);
+    if (begun.step.kind !== 'moment') throw new Error('nessun momento');
+    expect(begun.step.moment.dyn).toEqual(ZERO_DYN);
+    const cm = decideMoment(begun.state, 0, c).state.currentMatch;
+    expect(cm).not.toBeNull();
+    expect(cm!.dyn.marking).toBe(1);
   });
 
   it('dyn resets each match', () => {
-    const s = toFirstMatch(newCareer(baseOptions, 7));
-    const first1 = beginMatch(s).state.currentMatch!;
-    const dirty = applyEffects(first1, { marking: 2, fatigue: 2 }, cfg);
-    expect(dirty.dyn.marking).toBe(2);
-    const r = playMatch(s, first);
-    let n = r.state;
-    let cm: MatchState | null | undefined;
-    for (let i = 0; i < 60 && !cm; i++) {
+    const c = withFx({ marking: 1 });
+    const one = record(toFirstMatch(newCareer(baseOptions, 7)), c);
+    // Nella prima partita gli stati si accumulano.
+    expect(Math.max(...one.seen.map((x) => x.dyn.marking))).toBeGreaterThan(0);
+    let n = one.state;
+    let next: KeyMoment[] = [];
+    for (let i = 0; i < 60 && next.length === 0; i++) {
       n = advanceWeek(n).state;
       const f = playerFixture(n);
       if (f && !f.result) {
-        cm = beginMatch(n).state.currentMatch;
-        if (!cm) n = playMatch(n, first).state;
+        const r = record(n, c);
+        next = r.seen;
+        n = r.state;
       }
     }
-    expect(cm?.dyn).toEqual(ZERO_DYN);
+    expect(next.length).toBeGreaterThan(0);
+    expect(next[0]!.dyn).toEqual(ZERO_DYN);
   });
 });

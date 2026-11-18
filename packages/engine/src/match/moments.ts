@@ -62,7 +62,12 @@ export interface KeyMoment {
 }
 
 /** Stati dinamici a inizio partita. */
-export const ZERO_DYN: MatchDyn = { coachTrust: 0, nerves: 0, fatigue: 0, marking: 0 };
+export const ZERO_DYN: Readonly<MatchDyn> = Object.freeze({
+  coachTrust: 0,
+  nerves: 0,
+  fatigue: 0,
+  marking: 0,
+});
 
 /**
  * Applica gli effetti di un esito: somma ai `dyn` (entro `dyn.min`/`dyn.max`) e alla pressione

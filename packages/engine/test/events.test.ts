@@ -61,19 +61,22 @@ describe('estrazione degli eventi', () => {
   });
 
   it('rispetta il massimo settimanale e una categoria per settimana', () => {
-    const max = ctx.config.events.perWeekWeights.length - 1;
+    // Contesto controllato: una sola estrazione per settimana e un evento sempre idoneo.
+    const c = testContext([ev({ id: 'sempre' })], [0, 1]);
+    const max = c.config.events.perWeekWeights.length - 1;
     let s = start();
     let total = 0;
-    for (let i = 0; i < 40; i++) {
-      const { state, events } = drawWeekEvents(s);
+    const weeks = 30;
+    for (let i = 0; i < weeks; i++) {
+      const { state, events } = drawWeekEvents(s, c);
       expect(events.length).toBeLessThanOrEqual(max);
       expect(new Set(events.map((e) => e.category)).size).toBe(events.length);
       total += events.length;
-      s = resolveAll(state);
+      s = resolveAll(state, c);
       while (playerFixture(s)) s = playMatch(s, () => 0).state;
-      s = advanceWeek(s).state;
+      s = advanceWeek(s, c).state;
     }
-    expect(total).toBeGreaterThan(5);
+    expect(total).toBe(weeks);
   });
 
   it('blocca settimana e partita finché gli eventi non hanno risposta', () => {

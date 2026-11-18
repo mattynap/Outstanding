@@ -414,6 +414,11 @@ describe('partita al minuto', () => {
       expect(resumed.matchReport).toEqual(continuous.matchReport);
       expect(resumed.state).toEqual(continuous.state);
       // Eventi e traccia prima della pausa restano identici nel resoconto finale.
+      // La traccia fino alla pausa è conservata: al termine la partita non c'è più, quindi la si
+      // confronta con quella di una seconda pausa dello stesso gioco continuo.
+      const again = beginMatch(toFirstMatch(newCareer(baseOptions, seed)));
+      expect(again.state.currentMatch!.trace.slice(0, m.minute)).toEqual(m.trace);
+      expect(m.trace).toHaveLength(m.minute);
       // Nel minuto di pausa la decisione può ancora aggiungere eventi: si confrontano i minuti prima.
       const settled = (e: { minute: number }) => e.minute < m.minute;
       const before = m.events.filter(settled);

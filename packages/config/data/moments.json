@@ -184,7 +184,7 @@
     },
     {
       "id": "gk_distribution",
-      "phase": "defense",
+      "phase": "attack",
       "weights": {
         "GK": 2
       },
@@ -338,7 +338,7 @@
     },
     {
       "id": "def_set_piece",
-      "phase": "defense",
+      "phase": "attack",
       "weights": {
         "DEF": 1.5
       },
@@ -574,7 +574,7 @@
     },
     {
       "id": "mid_pressing",
-      "phase": "attack",
+      "phase": "defense",
       "weights": {
         "MID": 3,
         "ATT": 1

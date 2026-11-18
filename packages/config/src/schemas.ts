@@ -628,6 +628,16 @@ export const matchSchema = z
           message: `${t.id}: chainOnly moment cannot have role weights`,
         });
       }
+      if (t.chainOnly) {
+        // Regola "insisti o chiudi": una sola uscita sicura per chi non vuole proseguire.
+        const closers = t.options.filter((o) => o.closes);
+        if (closers.length !== 1 || closers[0]!.risk !== 'safe') {
+          ctx.addIssue({
+            code: 'custom',
+            message: `${t.id}: chainOnly moment needs exactly one safe option with closes`,
+          });
+        }
+      }
     }
     validateChains(m.moments.types, m.director.chainMaxSteps, (message) =>
       ctx.addIssue({ code: 'custom', message }),

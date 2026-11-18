@@ -46,15 +46,24 @@ describe('config', () => {
       failure: { rating: -0.3 },
       ...extra,
     });
-    const type = (id: string, extra: Record<string, unknown> = {}, opts?: unknown[]) => ({
-      id,
-      phase: 'attack',
-      weights: {},
-      textVariants: 1,
-      chainOnly: true,
-      options: opts ?? [option('a'), option('b')],
-      ...extra,
-    });
+    const closer = () => option('z', { closes: true, risk: 'safe' });
+    // I tipi chainOnly ricevono di default l'uscita "chiudi" richiesta dallo schema.
+    const type = (id: string, extra: Record<string, unknown> = {}, opts?: unknown[]) => {
+      const t = {
+        id,
+        phase: 'attack',
+        weights: {},
+        textVariants: 1,
+        chainOnly: true,
+        options: opts ?? [option('a'), option('b')],
+        ...extra,
+      };
+      const list = t.options as { closes?: boolean }[];
+      if (t.chainOnly && !opts?.some((o) => (o as { closes?: boolean }).closes)) {
+        t.options = [...list, closer()];
+      }
+      return t;
+    };
     const withTypes = (...types: unknown[]) => {
       const bad = raw();
       bad.moments.types.push(...types);
@@ -81,7 +90,12 @@ describe('config', () => {
       expect(cfg.match.moments.types.length).toBe(
         (rawDefaultConfig.moments as { types: unknown[] }).types.length + 2,
       );
-      expect(cfg.match.moments.types[0]!.phase).toBeDefined();
+      const added = cfg.match.moments.types.find((t) => t.id === 'step_one')!;
+      expect(added.phase).toBe('attack');
+      expect(added.options[0]!.risk).toBe('balanced');
+      expect(added.options[0]!.success.next).toEqual({ momentId: 'step_two', chance: 0.5 });
+      expect(added.options[0]!.failure.effects).toEqual({ nerves: 1, pressure: -0.1 });
+      expect(added.options.some((o) => o.closes && o.risk === 'safe')).toBe(true);
     });
 
     it('rifiuta next verso un momento sconosciuto', () => {
@@ -159,8 +173,43 @@ describe('config', () => {
         ]),
       );
       expect(() => parseConfig(withGoal)).toThrow(/closes/);
-      const fine = withTypes(type('cl3', {}, [option('a', { closes: true }), option('b')]));
+      const onlyFailure = withTypes(
+        type('t3'),
+        type('cl4', {}, [
+          {
+            ...option('a', { closes: true, risk: 'safe' }),
+            failure: { rating: 0, next: { momentId: 't3' } },
+          },
+          option('b'),
+        ]),
+      );
+      expect(() => parseConfig(onlyFailure)).toThrow(/closes/);
+      const fine = withTypes(
+        type('cl3', {}, [option('a', { closes: true, risk: 'safe' }), option('b')]),
+      );
       expect(() => parseConfig(fine)).not.toThrow();
+    });
+
+    it('un tipo chainOnly ha una sola opzione closes e sicura', () => {
+      const none = withTypes(type('nc', { chainOnly: true }, [option('a'), option('b')]));
+      // opts senza closes: il helper aggiunge il closer, quindi si costruisce a mano
+      none.moments.types[none.moments.types.length - 1].options.pop();
+      expect(() => parseConfig(none)).toThrow(/exactly one safe option with closes/);
+      const two = withTypes(
+        type('tc', {}, [
+          option('a', { closes: true, risk: 'safe' }),
+          option('b', { closes: true, risk: 'safe' }),
+        ]),
+      );
+      expect(() => parseConfig(two)).toThrow(/exactly one safe option with closes/);
+      const risky = withTypes(
+        type('rc', {}, [option('a', { closes: true, risk: 'risky' }), option('b')]),
+      );
+      expect(() => parseConfig(risky)).toThrow(/exactly one safe option with closes/);
+      const ok = withTypes(
+        type('oc', {}, [option('a', { closes: true, risk: 'safe' }), option('b')]),
+      );
+      expect(() => parseConfig(ok)).not.toThrow();
     });
 
     it("un'opzione legend deve essere risky", () => {

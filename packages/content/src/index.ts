@@ -39,7 +39,7 @@ import {
 
 export * from './schemas';
 export * from './events';
-export { checkContent } from './check';
+export { BUILDUP_MIN_LINES, BUILDUP_PHASES, buildupLines, checkContent } from './check';
 
 export interface GameContent {
   names: Names;

@@ -5,7 +5,7 @@ import type {
 } from '@outstanding/config';
 import type { GameContext } from '../context';
 import type { Rng } from '../rng';
-import type { Player, Role } from '../types';
+import type { MatchState, Player, Role } from '../types';
 import { clamp } from '../util';
 
 /** Opzione di un momento chiave come la vede l'interfaccia. */
@@ -62,35 +62,77 @@ export function getMomentType(id: string, ctx: GameContext): MomentTypeConfig {
   return type;
 }
 
-/** Sceglie il tipo di momento in base al ruolo (pesi in config/match.json). */
-export function pickMomentType(role: Role, rng: Rng, ctx: GameContext): MomentTypeConfig {
-  const types = ctx.config.match.moments.types.filter((t) => (t.weights[role] ?? 0) > 0);
-  return rng.weighted(types, (t) => t.weights[role] ?? 0);
+export type MomentPhase = MomentTypeConfig['phase'];
+
+/** Fase del momento dal segno della pressione: 0 o più = attacco. */
+export function phaseOf(pressure: number): MomentPhase {
+  return pressure >= 0 ? 'attack' : 'defense';
 }
 
-/** Minuti dei momenti chiave, distinti e ordinati, dentro l'intervallo in cui il giocatore è in campo. */
-export function planMomentMinutes(
+const depthCache = new WeakMap<readonly MomentTypeConfig[], Map<string, number>>();
+
+/** Passi massimi di una catena che parte da questo tipo (1 = nessun seguito), dalla config. */
+export function chainDepth(typeId: string, ctx: GameContext): number {
+  const types = ctx.config.match.moments.types;
+  let cache = depthCache.get(types);
+  if (!cache) {
+    cache = new Map();
+    depthCache.set(types, cache);
+  }
+  const known = cache.get(typeId);
+  if (known !== undefined) return known;
+  // La config è già validata senza cicli: la ricorsione termina.
+  const type = getMomentType(typeId, ctx);
+  const next = type.options.flatMap((o) =>
+    [o.success.next?.momentId, o.failure.next?.momentId].filter((x): x is string => !!x),
+  );
+  const depth = 1 + Math.max(0, ...next.map((id) => chainDepth(id, ctx)));
+  cache.set(typeId, depth);
+  return depth;
+}
+
+/**
+ * Sceglie il tipo della radice. Filtri in ordine: fase (con ripiego sull'altra), niente tipi
+ * `chainOnly`, profondità entro `maxDepth`, niente ripetizione dell'ultimo tipo se c'è
+ * un'alternativa; poi pesi di ruolo, penalità di ripetizione e affinità con gli stati `dyn`.
+ * Null se nessun tipo entra nel budget.
+ */
+export function pickMomentType(
   role: Role,
-  minuteIn: number | null,
-  minuteOut: number,
-  totalMinutes: number,
+  phase: MomentPhase,
+  m: MatchState,
+  maxDepth: number,
   rng: Rng,
   ctx: GameContext,
-): number[] {
-  if (minuteIn === null) return [];
-  const cfg = ctx.config.match.moments;
-  const played = minuteOut - minuteIn;
-  if (played < cfg.minMinutesForMoment) return [];
-  const [min, max] = cfg.countByRole[role];
-  const count = Math.min(
-    played,
-    Math.max(1, Math.round((rng.int(min, max) * played) / totalMinutes)),
-  );
-  const pool = Array.from({ length: played }, (_, i) => minuteIn + 1 + i);
-  return rng
-    .shuffle(pool)
-    .slice(0, count)
-    .sort((a, b) => a - b);
+): MomentTypeConfig | null {
+  const all = ctx.config.match.moments.types;
+  const fits = (p: MomentPhase) =>
+    all.filter(
+      (t) =>
+        t.phase === p &&
+        !t.chainOnly &&
+        (t.weights[role] ?? 0) > 0 &&
+        chainDepth(t.id, ctx) <= maxDepth,
+    );
+  let pool = fits(phase);
+  if (pool.length === 0) pool = fits(phase === 'attack' ? 'defense' : 'attack');
+  if (pool.length === 0) return null;
+  const recent = m.director.lastTypes.slice(-3);
+  const last = recent.at(-1);
+  if (pool.length > 1 && last !== undefined) {
+    const rest = pool.filter((t) => t.id !== last);
+    if (rest.length > 0) pool = rest;
+  }
+  const d = ctx.config.match.director;
+  const weight = (t: MomentTypeConfig) => {
+    let w = t.weights[role] ?? 0;
+    if (recent.includes(t.id)) w *= d.repeatPenalty;
+    if (t.affinity && m.dyn[t.affinity] >= 1) w *= 1 + d.dynAffinity;
+    return w;
+  };
+  // Con repeatPenalty 0 e soli tipi recenti si torna ai pesi di ruolo.
+  const anyPositive = pool.some((t) => weight(t) > 0);
+  return rng.weighted(pool, anyPositive ? weight : (t) => t.weights[role] ?? 0);
 }
 
 /** Somma dei modificatori dei tratti per un'etichetta di momento (`match.all` + `match.tag.<tag>`). */

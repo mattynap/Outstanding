@@ -447,6 +447,7 @@
     {
       "id": "mid_through_ball",
       "phase": "attack",
+      "affinity": "marking",
       "weights": {
         "MID": 3
       },

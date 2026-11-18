@@ -362,20 +362,21 @@ export interface MatchDyn {
 export interface DirectorState {
   budgetStart: number;
   budgetLeft: number;
-  /** Minuti rimasti del finale caldo; null = non ancora valutato. */
+  /** Passi riservati rimasti nel finale caldo; null = non ancora valutato. */
   hotLeft: number | null;
   lastAt: number | null;
   interventions: number;
-  /** Preavviso: il momento si apre al minuto `at`. */
-  armed: { at: number; momentId: string } | null;
+  /**
+   * Preavviso: il momento si apre al minuto `at`. `forced` = minimo garantito, immune ai gol.
+   */
+  armed: { at: number; momentId: string; forced?: boolean } | null;
   /** Respiro dopo un gol o la fine di una catena. */
   relaxUntil: number | null;
   /** Ultimi tipi proposti (massimo 3). */
   lastTypes: string[];
   legendsUsed: number;
+  /** Passo decisivo: il passo aperto a tensione più alta, con il suo esito. */
   peak: { minute: number; momentId: string; tension: number; success: boolean } | null;
-  /** Minuti pianificati ancora da giocare: solo fra A3 e A5, poi rimosso. */
-  plannedMinutes?: number[];
 }
 
 /**

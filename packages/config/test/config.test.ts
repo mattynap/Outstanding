@@ -216,6 +216,22 @@ describe('config', () => {
       expect(() => parseConfig(ok)).not.toThrow();
     });
 
+    it('ogni ruolo ha una radice da un passo in attacco e in difesa', () => {
+      const bad = raw();
+      // Il GK resta senza momenti di attacco: il regista non potrebbe armare.
+      bad.moments.types = bad.moments.types.filter(
+        (t: { phase: string; weights: Record<string, number> }) =>
+          !(t.phase === 'attack' && t.weights.GK),
+      );
+      expect(() => parseConfig(bad)).toThrow(/no single-step attack root moment for role GK/);
+    });
+
+    it('minMinutesForMoment deve superare armLead', () => {
+      const bad = raw();
+      bad.match.director.armLead = bad.match.moments.minMinutesForMoment;
+      expect(() => parseConfig(bad)).toThrow(/minMinutesForMoment must be > director.armLead/);
+    });
+
     it("un'opzione legend deve essere risky", () => {
       const legend = { id: 'leg', minTension: 0.5, skills: { shooting: 1 } };
       const bad = withTypes(type('lg', {}, [option('a', { legend }), option('b')]));

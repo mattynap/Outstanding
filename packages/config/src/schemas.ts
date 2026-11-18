@@ -390,7 +390,7 @@ function validateChains(
   types: z.infer<typeof momentType>[],
   maxSteps: number,
   report: (message: string) => void,
-): void {
+): Map<string, number> | null {
   const byId = new Map(types.map((t) => [t.id, t]));
   const nextOf = (t: z.infer<typeof momentType>) => [
     ...new Set(
@@ -408,7 +408,7 @@ function validateChains(
       }
     }
   }
-  if (broken) return;
+  if (broken) return null;
   const state = new Map<string, 'open' | 'done'>();
   const depth = new Map<string, number>();
   let cyclic = false;
@@ -426,12 +426,13 @@ function validateChains(
     return d;
   };
   for (const t of types) visit(t.id);
-  if (cyclic) return;
+  if (cyclic) return null;
   for (const t of types) {
     if (!t.chainOnly && depth.get(t.id)! > maxSteps) {
       report(`${t.id}: chain depth ${depth.get(t.id)} exceeds chainMaxSteps ${maxSteps}`);
     }
   }
+  return depth;
 }
 
 export const matchSchema = z
@@ -639,9 +640,29 @@ export const matchSchema = z
         }
       }
     }
-    validateChains(m.moments.types, m.director.chainMaxSteps, (message) =>
+    const depth = validateChains(m.moments.types, m.director.chainMaxSteps, (message) =>
       ctx.addIssue({ code: 'custom', message }),
     );
+    // Il regista deve poter sempre armare: per ogni ruolo e fase almeno una radice da un passo.
+    for (const role of ROLES) {
+      if (!m.moments.types.some((t) => t.weights[role])) continue;
+      for (const phase of ['attack', 'defense'] as const) {
+        const single = m.moments.types.some(
+          (t) =>
+            t.phase === phase && !t.chainOnly && t.weights[role] && (depth?.get(t.id) ?? 1) === 1,
+        );
+        if (!single) {
+          ctx.addIssue({
+            code: 'custom',
+            message: `no single-step ${phase} root moment for role ${role}`,
+          });
+        }
+      }
+    }
+    // Il preavviso del minimo garantito deve cadere mentre il giocatore è già in campo.
+    if (m.moments.minMinutesForMoment <= m.director.armLead) {
+      ctx.addIssue({ code: 'custom', message: 'minMinutesForMoment must be > director.armLead' });
+    }
     for (const role of ROLES) {
       if (m.moments.countByRole[role][1] > 0 && !m.moments.types.some((t) => t.weights[role])) {
         ctx.addIssue({ code: 'custom', message: `no key moment available for role ${role}` });

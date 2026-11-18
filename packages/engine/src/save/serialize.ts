@@ -86,7 +86,6 @@ function migrateMatchV1(m: Json, ctx: GameContext): Json {
       lastTypes,
       legendsUsed: 0,
       peak: null,
-      plannedMinutes: planned,
     },
     dyn: { coachTrust: 0, nerves: 0, fatigue: 0, marking: 0 },
     stakes: 0,
@@ -145,6 +144,17 @@ const isNum = (v: unknown) => typeof v === 'number' && Number.isFinite(v);
 const isNumOrNull = (v: unknown) => v === null || isNum(v);
 const isObjOrNull = (v: unknown) => v === null || (typeof v === 'object' && !Array.isArray(v));
 
+function armedOk(a: unknown): boolean {
+  if (a === null) return true;
+  if (typeof a !== 'object' || a === undefined || Array.isArray(a)) return false;
+  const x = a as Json;
+  return (
+    isNum(x['at']) &&
+    typeof x['momentId'] === 'string' &&
+    (x['forced'] === undefined || typeof x['forced'] === 'boolean')
+  );
+}
+
 function directorOk(d: Json): boolean {
   return (
     isNum(d['budgetStart']) &&
@@ -152,8 +162,7 @@ function directorOk(d: Json): boolean {
     isNumOrNull(d['hotLeft']) &&
     isNumOrNull(d['lastAt']) &&
     isNum(d['interventions']) &&
-    isObjOrNull(d['armed']) &&
-    d['armed'] !== undefined &&
+    armedOk(d['armed']) &&
     isNumOrNull(d['relaxUntil']) &&
     Array.isArray(d['lastTypes']) &&
     d['lastTypes'].every((t: unknown) => typeof t === 'string') &&

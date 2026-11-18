@@ -13,7 +13,10 @@ import { getAnyClub, getClub, levelOfClub } from '../world/queries';
 export type StakeSignal =
   'cup' | 'derby' | 'top' | 'debut' | 'contractExpiring' | 'lowTrust' | 'scout' | 'keyOpponent';
 
-/** L'avversario più forte dello stesso ruolo, se è alla pari o sopra il giocatore (meno lo scarto). */
+/**
+ * L'avversario più forte dello stesso ruolo, se il suo OVR è almeno `OVR giocatore − keyOpponentGap`.
+ * Con lo scarto negativo (−9 in config) deve superare il giocatore di almeno 9 punti.
+ */
 export function keyOpponentOf(
   state: GameState,
   fixture: Fixture,

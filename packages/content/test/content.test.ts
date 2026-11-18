@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildupLines,
   checkContent,
   defaultContent,
   parseContent,
@@ -21,6 +22,18 @@ describe('content', () => {
   it('reports missing text keys', () => {
     const broken = { ...defaultContent, i18n: { it: {} } };
     expect(checkContent(broken).some((e) => e.includes('missing text key'))).toBe(true);
+  });
+});
+
+describe('preavviso della partita', () => {
+  it('content:check finds buildup keys', () => {
+    const t = defaultContent.i18n.it;
+    expect(buildupLines(t, 'attack')).toBeGreaterThanOrEqual(4);
+    expect(buildupLines(t, 'defense')).toBeGreaterThanOrEqual(4);
+    // Togliere la seconda riga di difesa interrompe la serie: restano meno di 4 righe valide.
+    const { ['match.buildup.defense.2']: _gone, ...rest } = t;
+    const errors = checkContent({ ...defaultContent, i18n: { it: rest } });
+    expect(errors).toContain('match: 1 buildup lines for "defense", need 4');
   });
 });
 

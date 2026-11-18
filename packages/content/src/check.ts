@@ -1,5 +1,18 @@
 import { EVENT_PLACEHOLDERS, EVENT_TRIGGERS, eventTextKeys, flattenEffects } from './events';
 import type { GameContent } from './index';
+import type { Translations } from './schemas';
+
+/** Fasi delle righe di preavviso della partita (`match.buildup.<fase>.<n>`). */
+export const BUILDUP_PHASES = ['attack', 'defense'] as const;
+/** Righe minime per fase: la cronaca non deve ripetersi troppo presto. */
+export const BUILDUP_MIN_LINES = 4;
+
+/** Quante righe di preavviso consecutive (da 1) esistono per una fase. */
+export function buildupLines(t: Translations, phase: (typeof BUILDUP_PHASES)[number]): number {
+  let n = 0;
+  while (`match.buildup.${phase}.${n + 1}` in t) n++;
+  return n;
+}
 
 /**
  * Controlli incrociati tra file che uno schema da solo non può esprimere.
@@ -114,6 +127,12 @@ export function checkContent(content: GameContent): string[] {
       if (!(`private.jobs.${job}.${g}` in t)) {
         errors.push(`private: missing text key "private.jobs.${job}.${g}"`);
       }
+    }
+  }
+  for (const phase of BUILDUP_PHASES) {
+    const n = buildupLines(t, phase);
+    if (n < BUILDUP_MIN_LINES) {
+      errors.push(`match: ${n} buildup lines for "${phase}", need ${BUILDUP_MIN_LINES}`);
     }
   }
   checkMedia(content, errors);

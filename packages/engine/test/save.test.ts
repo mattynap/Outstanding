@@ -97,7 +97,7 @@ describe('migrazione dei salvataggi v1 -> v2', () => {
     expect(d.budgetStart).toBe(4);
     expect(d.lastAt).toBe(28);
     expect(d.lastTypes).toEqual(['att_box_chance', 'att_counter']);
-    expect(d.plannedMinutes).toEqual([55, 70]);
+    expect(d).not.toHaveProperty('plannedMinutes');
     expect(d.hotLeft).toBeNull();
     expect(d.armed).toBeNull();
     expect(d.relaxUntil).toBeNull();
@@ -153,7 +153,7 @@ describe('ripresa di una partita migrata', () => {
     // Equivale a un salvataggio v1 migrato senza momento aperto.
     const migrated = {
       ...paused,
-      currentMatch: { ...cm, pending: null, director: { ...cm.director, plannedMinutes: [] } },
+      currentMatch: { ...cm, pending: null },
     };
     const first = playMatch(migrated, () => 0);
     const again = playMatch(migrated, () => 0);
@@ -178,6 +178,20 @@ describe('validazione del regista', () => {
       expect(load((m) => delete m['director'][field])).toThrow(/currentMatch/);
     },
   );
+  it('valida la forma di armed', () => {
+    expect(
+      load((m) => (m['director']['armed'] = { at: 30, momentId: 'att_counter' })),
+    ).not.toThrow();
+    expect(
+      load((m) => (m['director']['armed'] = { at: 30, momentId: 'att_counter', forced: true })),
+    ).not.toThrow();
+    expect(load((m) => (m['director']['armed'] = { at: '30', momentId: 'x' }))).toThrow(
+      /currentMatch/,
+    );
+    expect(load((m) => (m['director']['armed'] = { at: 30, momentId: 'x', forced: 1 }))).toThrow(
+      /currentMatch/,
+    );
+  });
   it('rifiuta lastTypes non di stringhe e options non array', () => {
     expect(load((m) => (m['director']['lastTypes'] = [1]))).toThrow(/currentMatch/);
     expect(load((m) => (m['pending']['options'] = 'x'))).toThrow(/currentMatch/);

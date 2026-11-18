@@ -406,7 +406,7 @@ describe('partita al minuto', () => {
     for (let seed = 1; seed <= 40 && checked < 5; seed++) {
       const paused = firstPause(seed);
       const m = paused?.currentMatch;
-      if (!paused || !m || (m.director.plannedMinutes ?? []).length === 0) continue;
+      if (!paused || !m || m.director.budgetLeft === 0) continue;
       checked++;
       const continuous = playMatch(toFirstMatch(newCareer(baseOptions, seed)), first);
       const reloaded = deserialize(serialize(paused));

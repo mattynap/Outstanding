@@ -121,7 +121,7 @@
     "sigma": 0.16
   },
   "director": {
-    "threshold": 0.35,
+    "threshold": 0.25,
     "hazard": 1.5,
     "pMax": 0.6,
     "minGap": 8,

@@ -18,12 +18,22 @@ import { clamp, roundTo } from '../util';
 import { settleKnockout } from '../cups/cups';
 import { interviewContext, pressBonus, recordMatchForMedia } from '../media/media';
 import { clubRatings, getAnyClub, getClub, levelOfClub } from '../world/queries';
+import { buildupLines } from '@outstanding/content';
+import {
+  arm,
+  directorMinute,
+  gate,
+  initialDirector,
+  onChainEnd,
+  onStepOpened,
+  tension,
+} from './director';
 import {
   getMomentType,
   consequenceOf,
   optionChance,
+  phaseOf,
   pickMomentType,
-  planMomentMinutes,
   type KeyMoment,
 } from './moments';
 import { goalChancePerMinute, pushFor, stepPressure } from './pressure';
@@ -356,7 +366,56 @@ function finishMatch(
   };
 }
 
-/** Fa avanzare la partita fino al prossimo momento chiave o alla fine. */
+/** Apre il passo armato al minuto raggiunto: variante del testo e contatori del regista. */
+function openArmed(m: MatchState, rng: Rng, ctx: GameContext): MatchState {
+  const armed = m.director.armed!;
+  const type = getMomentType(armed.momentId, ctx);
+  const textVariant = rng.int(1, type.textVariants);
+  return {
+    ...m,
+    director: onStepOpened(
+      m.director,
+      { minute: m.minute, momentId: type.id, tension: tension(m, ctx.config.match), root: true },
+      ctx.config.match,
+    ),
+    pending: {
+      momentId: type.id,
+      minute: m.minute,
+      textVariant,
+      options: type.options.map((_, i) => i),
+    },
+  };
+}
+
+/**
+ * Il regista valuta il minuto raggiunto: minimo garantito senza estrazione, altrimenti
+ * `rng.chance(p)`; poi il tipo e la riga di preavviso nella cronaca.
+ */
+function tryArm(state: GameState, m: MatchState, rng: Rng, ctx: GameContext): MatchState {
+  const cfg = ctx.config.match;
+  const g = gate(m, cfg);
+  if (g.kind === 'none') return m;
+  if (g.kind === 'roll' && !rng.chance(g.p)) return m;
+  const type = pickMomentType(state.player.role, phaseOf(m.pressure), m, g.maxDepth, rng, ctx);
+  if (!type) return m;
+  const lines = buildupLines(ctx.content.i18n.it, type.phase);
+  const buildup: MatchEvent = {
+    kind: 'buildup',
+    minute: m.minute,
+    momentId: type.id,
+    textKey: `match.buildup.${type.phase}.${rng.int(1, lines)}`,
+  };
+  return {
+    ...m,
+    director: arm(m.director, m.minute, type.id, g.kind === 'forced', cfg),
+    events: [...m.events, buildup],
+  };
+}
+
+/**
+ * Fa avanzare la partita fino al prossimo momento chiave o alla fine. Ordine fisso per minuto:
+ * pressione e gol, contabilità del regista, apertura del passo armato, nuovo preavviso.
+ */
 function run(
   state: GameState,
   m: MatchState,
@@ -374,29 +433,13 @@ function run(
       };
     }
     // Si riparte sempre dal minuto successivo: il minuto del momento già aperto non si rivaluta.
+    const goalsBefore = cur.score.home + cur.score.away;
     cur = simulateMinute(state, cur, clubs, rng, ctx);
-    const planned = cur.director.plannedMinutes ?? [];
-    const nextMoment = planned[0];
-    if (nextMoment !== undefined && nextMoment <= cur.minute) {
-      const type = pickMomentType(state.player.role, rng, ctx);
-      const d = cur.director;
-      cur = {
-        ...cur,
-        director: {
-          ...d,
-          plannedMinutes: planned.slice(1),
-          budgetLeft: d.budgetLeft - 1,
-          interventions: d.interventions + 1,
-          lastAt: nextMoment,
-          lastTypes: [...d.lastTypes, type.id].slice(-3),
-        },
-        pending: {
-          momentId: type.id,
-          minute: nextMoment,
-          textVariant: rng.int(1, type.textVariants),
-          options: type.options.map((_, i) => i),
-        },
-      };
+    cur = directorMinute(cur, cur.score.home + cur.score.away > goalsBefore, ctx.config.match);
+    if (!cur.director.armed) cur = tryArm(state, cur, rng, ctx);
+    // Con armLead 0 il preavviso e l'apertura cadono nello stesso minuto.
+    if (cur.director.armed && cur.director.armed.at <= cur.minute) {
+      cur = openArmed(cur, rng, ctx);
       const paused = { ...state, currentMatch: cur, rngState: rng.getState() };
       return { state: paused, step: { kind: 'moment', moment: describeMoment(paused, cur, ctx) } };
     }
@@ -429,7 +472,9 @@ export function beginMatch(
   if (minuteIn !== null && minuteIn > 0) events.push({ kind: 'subIn', minute: minuteIn });
   if (minuteIn !== null && minuteOut < total) events.push({ kind: 'subOut', minute: minuteOut });
 
-  const plannedMinutes = planMomentMinutes(state.player.role, minuteIn, minuteOut, total, rng, ctx);
+  const mode = 'full';
+  const minutesOnPitch = minuteIn === null ? 0 : minuteOut - minuteIn;
+  const director = initialDirector(mode, minutesOnPitch, rng, ctx.config.match);
   const m: MatchState = {
     fixtureId: fixture.id,
     side,
@@ -438,22 +483,10 @@ export function beginMatch(
     minuteIn,
     minuteOut,
     minute: 0,
-    mode: 'full',
+    mode,
     pressure: 0,
     trace: [],
-    director: {
-      budgetStart: plannedMinutes.length,
-      budgetLeft: plannedMinutes.length,
-      hotLeft: null,
-      lastAt: null,
-      interventions: 0,
-      armed: null,
-      relaxUntil: null,
-      lastTypes: [],
-      legendsUsed: 0,
-      peak: null,
-      plannedMinutes,
-    },
+    director,
     dyn: { coachTrust: 0, nerves: 0, fatigue: 0, marking: 0 },
     stakes: matchStakes(matchSignals(state, fixture, ctx), ctx.config.match.stakes),
     legend: null,
@@ -538,7 +571,16 @@ export function decideMoment(
   if (outcome.goalAgainst !== undefined && rng.chance(outcome.goalAgainst)) {
     cur = addGoal(cur, other(m.side), minute, fullName(pickScorer(opponent, rng, ctx)));
   }
-  return run(state, cur, rng, ctx);
+  // Senza catene (Task A7) ogni momento chiude la sua catena: esito del passo decisivo e respiro.
+  const peak = cur.director.peak;
+  const director = onChainEnd(
+    peak && peak.minute === minute && peak.momentId === type.id
+      ? { ...cur.director, peak: { ...peak, success } }
+      : cur.director,
+    minute,
+    ctx.config.match,
+  );
+  return run(state, { ...cur, director }, rng, ctx);
 }
 
 /**

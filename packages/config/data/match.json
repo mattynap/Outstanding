@@ -8,7 +8,7 @@
   "minutesPerBlock": 15,
   "playerImpact": 0.09,
   "xgScaleWhileOnPitch": {
-    "for": 0.75,
+    "for": 0.85,
     "against": 0.9
   },
   "scorerWeights": {
@@ -121,7 +121,7 @@
     "sigma": 0.16
   },
   "director": {
-    "threshold": 0.25,
+    "threshold": 0.15,
     "hazard": 1.5,
     "pMax": 0.6,
     "minGap": 8,

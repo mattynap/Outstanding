@@ -94,7 +94,11 @@
           "difficulty": -4,
           "tag": "duel",
           "success": {
-            "rating": 0.25
+            "rating": 0.25,
+            "next": {
+              "momentId": "gk_second_save",
+              "chance": 0.5
+            }
           },
           "failure": {
             "rating": -0.5,
@@ -201,10 +205,16 @@
           "success": {
             "rating": 0.25,
             "goalFor": 0.12,
-            "by": "assist"
+            "by": "assist",
+            "next": {
+              "momentId": "gk_outlet"
+            }
           },
           "failure": {
-            "rating": 0
+            "rating": -0.15,
+            "effects": {
+              "pressure": -0.05
+            }
           },
           "risk": "risky"
         },
@@ -244,7 +254,11 @@
           "difficulty": 2,
           "tag": "tackle",
           "success": {
-            "rating": 0.75
+            "rating": 0.75,
+            "next": {
+              "momentId": "loose_ball_cover",
+              "chance": 0.5
+            }
           },
           "failure": {
             "rating": -1,
@@ -293,7 +307,8 @@
       "phase": "defense",
       "weights": {
         "DEF": 3,
-        "MID": 1
+        "MID": 1,
+        "ATT": 0.5
       },
       "textVariants": 2,
       "options": [
@@ -340,7 +355,8 @@
       "id": "def_set_piece",
       "phase": "attack",
       "weights": {
-        "DEF": 1.5
+        "DEF": 1.5,
+        "GK": 0.1
       },
       "textVariants": 2,
       "options": [
@@ -354,7 +370,7 @@
           "tag": "finishing",
           "success": {
             "rating": 0.25,
-            "goalFor": 0.5,
+            "goalFor": 0.33,
             "by": "self"
           },
           "failure": {
@@ -467,7 +483,11 @@
             "by": "assist"
           },
           "failure": {
-            "rating": -0.25
+            "rating": -0.25,
+            "next": {
+              "momentId": "counter_recovery",
+              "chance": 0.6
+            }
           },
           "risk": "balanced"
         },
@@ -482,10 +502,17 @@
           "success": {
             "rating": 0.25,
             "goalFor": 0.2,
-            "by": "assist"
+            "by": "assist",
+            "next": {
+              "momentId": "wing_delivery"
+            }
           },
           "failure": {
-            "rating": -0.25
+            "rating": -0.25,
+            "next": {
+              "momentId": "counter_recovery",
+              "chance": 0.6
+            }
           },
           "risk": "safe"
         },
@@ -500,7 +527,7 @@
           "tag": "finishing",
           "success": {
             "rating": 0.5,
-            "goalFor": 0.5,
+            "goalFor": 0.33,
             "by": "self"
           },
           "failure": {
@@ -528,7 +555,7 @@
           "tag": "finishing",
           "success": {
             "rating": 0.25,
-            "goalFor": 0.5,
+            "goalFor": 0.33,
             "by": "self"
           },
           "failure": {
@@ -594,7 +621,11 @@
           "success": {
             "rating": 0.5,
             "goalFor": 0.1,
-            "by": "team"
+            "by": "team",
+            "next": {
+              "momentId": "loose_ball_cover",
+              "chance": 0.6
+            }
           },
           "failure": {
             "rating": -0.5,
@@ -657,11 +688,21 @@
           "success": {
             "rating": 0.5,
             "goalFor": 0.2,
-            "by": "assist"
+            "by": "assist",
+            "next": {
+              "momentId": "wing_delivery"
+            },
+            "effects": {
+              "marking": 1
+            }
           },
           "failure": {
             "rating": -0.5,
-            "goalAgainst": 0.1
+            "goalAgainst": 0.1,
+            "next": {
+              "momentId": "counter_recovery",
+              "chance": 0.6
+            }
           },
           "risk": "risky"
         },
@@ -679,7 +720,11 @@
             "by": "assist"
           },
           "failure": {
-            "rating": -0.25
+            "rating": -0.25,
+            "next": {
+              "momentId": "counter_recovery",
+              "chance": 0.6
+            }
           },
           "risk": "balanced"
         },
@@ -721,7 +766,7 @@
           "tag": "finishing",
           "success": {
             "rating": 0.5,
-            "goalFor": 0.6,
+            "goalFor": 0.39,
             "by": "self"
           },
           "failure": {
@@ -740,7 +785,7 @@
           "tag": "finishing",
           "success": {
             "rating": 0.25,
-            "goalFor": 0.65,
+            "goalFor": 0.42,
             "by": "self"
           },
           "failure": {
@@ -759,8 +804,11 @@
           "tag": "dribble",
           "success": {
             "rating": 1,
-            "goalFor": 0.8,
-            "by": "self"
+            "goalFor": 0.52,
+            "by": "self",
+            "effects": {
+              "marking": 1
+            }
           },
           "failure": {
             "rating": -0.75
@@ -781,7 +829,11 @@
             "by": "assist"
           },
           "failure": {
-            "rating": -0.25
+            "rating": -0.25,
+            "next": {
+              "momentId": "counter_recovery",
+              "chance": 0.6
+            }
           },
           "risk": "safe"
         }
@@ -805,7 +857,7 @@
           "tag": "finishing",
           "success": {
             "rating": 0.5,
-            "goalFor": 0.6,
+            "goalFor": 0.39,
             "by": "self"
           },
           "failure": {
@@ -824,10 +876,18 @@
           "success": {
             "rating": 0.25,
             "goalFor": 0.4,
-            "by": "assist"
+            "by": "assist",
+            "next": {
+              "momentId": "wing_delivery",
+              "chance": 0.4
+            }
           },
           "failure": {
-            "rating": -0.25
+            "rating": -0.25,
+            "next": {
+              "momentId": "counter_recovery",
+              "chance": 0.6
+            }
           },
           "risk": "safe"
         },
@@ -841,11 +901,18 @@
           "tag": "dribble",
           "success": {
             "rating": 0.5,
-            "goalFor": 0.5,
-            "by": "self"
+            "goalFor": 0.33,
+            "by": "self",
+            "effects": {
+              "marking": 1
+            }
           },
           "failure": {
-            "rating": -0.5
+            "rating": -0.5,
+            "next": {
+              "momentId": "counter_recovery",
+              "chance": 0.6
+            }
           },
           "risk": "balanced"
         }
@@ -855,7 +922,7 @@
       "id": "att_penalty",
       "phase": "attack",
       "weights": {
-        "ATT": 0.5
+        "ATT": 0.2
       },
       "textVariants": 2,
       "options": [
@@ -919,7 +986,8 @@
       "id": "att_wing",
       "phase": "attack",
       "weights": {
-        "ATT": 2
+        "ATT": 2,
+        "DEF": 1
       },
       "textVariants": 2,
       "options": [
@@ -934,10 +1002,21 @@
           "success": {
             "rating": 0.25,
             "goalFor": 0.3,
-            "by": "assist"
+            "by": "assist",
+            "next": {
+              "momentId": "wing_delivery",
+              "chance": 0.5
+            },
+            "effects": {
+              "marking": 1
+            }
           },
           "failure": {
-            "rating": -0.25
+            "rating": -0.25,
+            "next": {
+              "momentId": "counter_recovery",
+              "chance": 0.6
+            }
           },
           "risk": "risky"
         },
@@ -952,10 +1031,18 @@
           "success": {
             "rating": 0.25,
             "goalFor": 0.25,
-            "by": "assist"
+            "by": "assist",
+            "next": {
+              "momentId": "box_second_ball",
+              "chance": 0.6
+            }
           },
           "failure": {
-            "rating": -0.25
+            "rating": -0.25,
+            "next": {
+              "momentId": "counter_recovery",
+              "chance": 0.6
+            }
           },
           "risk": "balanced"
         },
@@ -997,7 +1084,7 @@
           "tag": "duel",
           "success": {
             "rating": 0.25,
-            "goalFor": 0.45,
+            "goalFor": 0.29,
             "by": "self"
           },
           "failure": {
@@ -1020,6 +1107,473 @@
             "rating": 0
           },
           "risk": "safe"
+        }
+      ]
+    },
+    {
+      "id": "gk_outlet",
+      "phase": "attack",
+      "chainOnly": true,
+      "affinity": "coachTrust",
+      "weights": {},
+      "textVariants": 3,
+      "options": [
+        {
+          "id": "guida_ripartenza",
+          "skills": {
+            "vision": 0.7,
+            "passing": 0.3
+          },
+          "difficulty": 3,
+          "tag": "passing",
+          "risk": "balanced",
+          "success": {
+            "rating": 0.15,
+            "goalFor": 0.08,
+            "by": "team",
+            "effects": {
+              "pressure": 0.06
+            }
+          },
+          "failure": {
+            "rating": -0.15,
+            "effects": {
+              "pressure": -0.05
+            }
+          }
+        },
+        {
+          "id": "alza_squadra",
+          "skills": {
+            "vision": 0.6,
+            "goalkeeping": 0.4
+          },
+          "difficulty": 9,
+          "tag": "composure",
+          "risk": "risky",
+          "success": {
+            "rating": 0.25,
+            "effects": {
+              "pressure": 0.12,
+              "fatigue": 0.5
+            }
+          },
+          "failure": {
+            "rating": -0.25,
+            "effects": {
+              "nerves": 0.5,
+              "pressure": -0.1
+            }
+          }
+        },
+        {
+          "id": "resta_appoggio",
+          "skills": {
+            "vision": 0.6,
+            "passing": 0.4
+          },
+          "difficulty": -8,
+          "tag": "composure",
+          "risk": "safe",
+          "success": {
+            "rating": 0.1,
+            "effects": {
+              "pressure": 0.03
+            }
+          },
+          "failure": {
+            "rating": 0
+          },
+          "closes": true
+        }
+      ]
+    },
+    {
+      "id": "gk_second_save",
+      "phase": "defense",
+      "chainOnly": true,
+      "affinity": "nerves",
+      "weights": {},
+      "textVariants": 3,
+      "options": [
+        {
+          "id": "blocca_rimbalzo",
+          "skills": {
+            "goalkeeping": 0.8,
+            "pace": 0.2
+          },
+          "difficulty": 6,
+          "tag": "duel",
+          "risk": "balanced",
+          "success": {
+            "rating": 0.35,
+            "effects": {
+              "nerves": -0.5
+            }
+          },
+          "failure": {
+            "rating": -0.4,
+            "goalAgainst": 0.3
+          }
+        },
+        {
+          "id": "tuffo_sui_piedi",
+          "skills": {
+            "goalkeeping": 0.5,
+            "pace": 0.3,
+            "physical": 0.2
+          },
+          "difficulty": 12,
+          "tag": "duel",
+          "risk": "risky",
+          "success": {
+            "rating": 0.5,
+            "effects": {
+              "fatigue": 0.5
+            }
+          },
+          "failure": {
+            "rating": -0.5,
+            "goalAgainst": 0.4
+          }
+        },
+        {
+          "id": "proteggi_porta",
+          "skills": {
+            "goalkeeping": 0.6,
+            "vision": 0.4
+          },
+          "difficulty": -8,
+          "tag": "composure",
+          "risk": "safe",
+          "success": {
+            "rating": 0.1,
+            "effects": {
+              "pressure": -0.03
+            }
+          },
+          "failure": {
+            "rating": 0
+          },
+          "closes": true
+        }
+      ]
+    },
+    {
+      "id": "wing_delivery",
+      "phase": "attack",
+      "chainOnly": true,
+      "affinity": "marking",
+      "weights": {},
+      "textVariants": 3,
+      "options": [
+        {
+          "id": "cross_teso",
+          "skills": {
+            "passing": 0.7,
+            "vision": 0.3
+          },
+          "difficulty": 4,
+          "tag": "passing",
+          "risk": "balanced",
+          "success": {
+            "rating": 0.15,
+            "next": {
+              "momentId": "box_second_ball",
+              "chance": 0.4
+            },
+            "effects": {
+              "fatigue": 0.5
+            },
+            "goalFor": 0.25,
+            "by": "assist"
+          },
+          "failure": {
+            "rating": -0.2,
+            "next": {
+              "momentId": "counter_recovery",
+              "chance": 0.6
+            }
+          }
+        },
+        {
+          "id": "salta_e_crossa",
+          "skills": {
+            "dribbling": 0.6,
+            "pace": 0.4
+          },
+          "difficulty": 10,
+          "tag": "dribble",
+          "risk": "risky",
+          "success": {
+            "rating": 0.25,
+            "next": {
+              "momentId": "box_second_ball",
+              "chance": 0.4
+            },
+            "effects": {
+              "marking": 1,
+              "fatigue": 0.5
+            },
+            "goalFor": 0.3,
+            "by": "assist"
+          },
+          "failure": {
+            "rating": -0.35,
+            "next": {
+              "momentId": "counter_recovery",
+              "chance": 0.6
+            }
+          }
+        },
+        {
+          "id": "scarica_dietro",
+          "skills": {
+            "passing": 0.7,
+            "vision": 0.3
+          },
+          "difficulty": -8,
+          "tag": "composure",
+          "risk": "safe",
+          "success": {
+            "rating": 0.1,
+            "effects": {
+              "pressure": 0.03
+            }
+          },
+          "failure": {
+            "rating": 0
+          },
+          "closes": true
+        }
+      ]
+    },
+    {
+      "id": "box_second_ball",
+      "phase": "attack",
+      "chainOnly": true,
+      "affinity": "marking",
+      "weights": {},
+      "textVariants": 3,
+      "options": [
+        {
+          "id": "calcia_subito",
+          "skills": {
+            "shooting": 0.7,
+            "vision": 0.3
+          },
+          "difficulty": 9,
+          "tag": "finishing",
+          "risk": "balanced",
+          "success": {
+            "rating": 0.25,
+            "goalFor": 0.12,
+            "by": "self",
+            "effects": {
+              "fatigue": 0.5
+            }
+          },
+          "failure": {
+            "rating": -0.25,
+            "effects": {
+              "pressure": -0.05
+            }
+          }
+        },
+        {
+          "id": "controlla_e_tira",
+          "skills": {
+            "dribbling": 0.4,
+            "shooting": 0.6
+          },
+          "difficulty": 15,
+          "tag": "finishing",
+          "risk": "risky",
+          "success": {
+            "rating": 0.35,
+            "goalFor": 0.16,
+            "by": "self",
+            "effects": {
+              "marking": 1
+            }
+          },
+          "failure": {
+            "rating": -0.35,
+            "effects": {
+              "pressure": -0.08
+            }
+          }
+        },
+        {
+          "id": "rimetti_in_giro",
+          "skills": {
+            "passing": 0.6,
+            "vision": 0.4
+          },
+          "difficulty": -8,
+          "tag": "composure",
+          "risk": "safe",
+          "success": {
+            "rating": 0.1,
+            "effects": {
+              "pressure": 0.04
+            }
+          },
+          "failure": {
+            "rating": 0
+          },
+          "closes": true
+        }
+      ]
+    },
+    {
+      "id": "loose_ball_cover",
+      "phase": "defense",
+      "chainOnly": true,
+      "affinity": "fatigue",
+      "weights": {},
+      "textVariants": 3,
+      "options": [
+        {
+          "id": "aggredisci_pallone",
+          "skills": {
+            "defending": 0.5,
+            "pace": 0.3,
+            "physical": 0.2
+          },
+          "difficulty": 5,
+          "tag": "tackle",
+          "risk": "balanced",
+          "success": {
+            "rating": 0.25,
+            "effects": {
+              "fatigue": 0.5,
+              "pressure": 0.04
+            }
+          },
+          "failure": {
+            "rating": -0.3,
+            "goalAgainst": 0.12
+          }
+        },
+        {
+          "id": "anticipo_deciso",
+          "skills": {
+            "defending": 0.5,
+            "pace": 0.5
+          },
+          "difficulty": 12,
+          "tag": "duel",
+          "risk": "risky",
+          "success": {
+            "rating": 0.4,
+            "effects": {
+              "fatigue": 1,
+              "coachTrust": 0.5
+            }
+          },
+          "failure": {
+            "rating": -0.45,
+            "goalAgainst": 0.2
+          }
+        },
+        {
+          "id": "ricomponi_linea",
+          "skills": {
+            "vision": 0.6,
+            "defending": 0.4
+          },
+          "difficulty": -8,
+          "tag": "composure",
+          "risk": "safe",
+          "success": {
+            "rating": 0.1,
+            "effects": {
+              "pressure": -0.03
+            }
+          },
+          "failure": {
+            "rating": 0
+          },
+          "closes": true
+        }
+      ]
+    },
+    {
+      "id": "counter_recovery",
+      "phase": "defense",
+      "chainOnly": true,
+      "affinity": "fatigue",
+      "weights": {},
+      "textVariants": 3,
+      "options": [
+        {
+          "id": "rincorri",
+          "skills": {
+            "pace": 0.6,
+            "defending": 0.4
+          },
+          "difficulty": 6,
+          "tag": "tackle",
+          "risk": "balanced",
+          "success": {
+            "rating": 0.2,
+            "effects": {
+              "fatigue": 1,
+              "pressure": 0.03
+            }
+          },
+          "failure": {
+            "rating": -0.3,
+            "goalAgainst": 0.12,
+            "effects": {
+              "fatigue": 1
+            }
+          }
+        },
+        {
+          "id": "taglia_traiettoria",
+          "skills": {
+            "vision": 0.6,
+            "pace": 0.4
+          },
+          "difficulty": 12,
+          "tag": "duel",
+          "risk": "risky",
+          "success": {
+            "rating": 0.35,
+            "effects": {
+              "fatigue": 0.5,
+              "coachTrust": 0.5
+            }
+          },
+          "failure": {
+            "rating": -0.45,
+            "goalAgainst": 0.22,
+            "effects": {
+              "nerves": 0.5
+            }
+          }
+        },
+        {
+          "id": "rientra_in_copertura",
+          "skills": {
+            "vision": 0.6,
+            "defending": 0.4
+          },
+          "difficulty": -8,
+          "tag": "composure",
+          "risk": "safe",
+          "success": {
+            "rating": 0.1,
+            "effects": {
+              "pressure": -0.05
+            }
+          },
+          "failure": {
+            "rating": 0
+          },
+          "closes": true
         }
       ]
     }

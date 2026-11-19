@@ -36,12 +36,6 @@
     "subOnMinute": [55, 82]
   },
   "moments": {
-    "countByRole": {
-      "GK": [2, 3],
-      "DEF": [2, 4],
-      "MID": [2, 4],
-      "ATT": [2, 4]
-    },
     "minMinutesForMoment": 8,
     "logisticScale": 10,
     "minChance": 0.05,

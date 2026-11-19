@@ -527,11 +527,6 @@ export const matchSchema = z
       subOnMinute: minuteRange,
     }),
     moments: z.object({
-      countByRole: perRole(
-        z
-          .tuple([z.number().int().min(0), z.number().int().min(0)])
-          .refine(([a, b]) => a <= b, { message: 'range min must be <= max' }),
-      ),
       minMinutesForMoment: z.number().int().min(0),
       logisticScale: z.number().positive(),
       minChance: prob,
@@ -760,7 +755,7 @@ export const matchSchema = z
       ctx.addIssue({ code: 'custom', message: 'minMinutesForMoment must be > director.armLead' });
     }
     for (const role of ROLES) {
-      if (m.moments.countByRole[role][1] > 0 && !m.moments.types.some((t) => t.weights[role])) {
+      if (!m.moments.types.some((t) => t.weights[role])) {
         ctx.addIssue({ code: 'custom', message: `no key moment available for role ${role}` });
       }
     }

@@ -29,6 +29,25 @@ export interface GroupMetrics {
   /** Minuti di gioco stimati per carriera. */
   playMinutes: number;
   seasons: number;
+  time?: TimeMetrics;
+}
+
+/** Distribuzione di una misura di tempo: mediana, media e decili estremi. */
+export interface Distribution {
+  median: number;
+  mean: number;
+  p10: number;
+  p90: number;
+}
+
+/** Tempo di gioco stimato dal ciclo a capitoli (assente nel ciclo a settimane). */
+export interface TimeMetrics {
+  /** Minuti per stagione, su tutte le stagioni di tutte le carriere. */
+  minutesPerSeason: Distribution;
+  /** Ore per carriera. */
+  hoursPerCareer: Distribution;
+  /** Medie per stagione: capitoli, stop per notizie e offerte, partite scelte. */
+  perSeason: { chapters: number; newsStops: number; offerStops: number; picks: number };
 }
 
 export interface SimSummary {
@@ -42,6 +61,62 @@ export interface SimSummary {
 const avg = (xs: readonly number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
 const pct = (n: number, total: number) => (total ? (100 * n) / total : 0);
 const round = (x: number, digits = 1) => Math.round(x * 10 ** digits) / 10 ** digits;
+
+/** Percentile per interpolazione lineare su un campione ordinato. */
+function quantile(sorted: readonly number[], q: number): number {
+  if (sorted.length === 0) return 0;
+  const pos = (sorted.length - 1) * q;
+  const lo = Math.floor(pos);
+  const hi = Math.ceil(pos);
+  return sorted[lo]! + (sorted[hi]! - sorted[lo]!) * (pos - lo);
+}
+
+function distribution(xs: readonly number[], digits: number): Distribution {
+  const sorted = [...xs].sort((a, b) => a - b);
+  return {
+    median: round(quantile(sorted, 0.5), digits),
+    mean: round(avg(xs), digits),
+    p10: round(quantile(sorted, 0.1), digits),
+    p90: round(quantile(sorted, 0.9), digits),
+  };
+}
+
+/** Minuti a stagione e ore a carriera dai secondi grezzi; assenti se nessuna carriera li ha. */
+export function timeMetrics(results: readonly CareerResult[]): TimeMetrics | undefined {
+  const timed = results.filter((r) => r.seasonSeconds && r.chapterStats);
+  if (timed.length === 0) return undefined;
+  const seasons = timed.flatMap((r) => r.seasonSeconds!);
+  const sum = (f: (r: CareerResult) => number) =>
+    timed.reduce((n, r) => n + f(r), 0) / seasons.length;
+  return {
+    minutesPerSeason: distribution(
+      seasons.map((x) => x / 60),
+      1,
+    ),
+    hoursPerCareer: distribution(
+      timed.map((r) => r.seasonSeconds!.reduce((a, b) => a + b, 0) / 3600),
+      2,
+    ),
+    perSeason: {
+      chapters: round(
+        sum((r) => r.chapterStats!.chapters),
+        2,
+      ),
+      newsStops: round(
+        sum((r) => r.chapterStats!.newsStops),
+        2,
+      ),
+      offerStops: round(
+        sum((r) => r.chapterStats!.offerStops),
+        2,
+      ),
+      picks: round(
+        sum((r) => r.chapterStats!.picks),
+        2,
+      ),
+    },
+  };
+}
 
 function countBy(keys: readonly string[], total: number): Record<string, number> {
   const out: Record<string, number> = {};
@@ -90,6 +165,7 @@ export function groupMetrics(results: readonly CareerResult[], ctx: GameContext)
     legendPct: round(pct(results.filter((r) => r.legend).length, n), 2),
     playMinutes: Math.round(avg(results.map((r) => r.playMinutes))),
     seasons: round(avg(results.map((r) => r.totals.seasons))),
+    ...(timeMetrics(results) ? { time: timeMetrics(results) } : {}),
   };
 }
 
@@ -156,6 +232,15 @@ export function formatTable(summary: SimSummary): string {
       ),
     ),
   ];
+  const t = summary.overall.time;
+  if (t) {
+    out.push(
+      '',
+      `Tempo a stagione (min): mediana ${t.minutesPerSeason.median} · media ${t.minutesPerSeason.mean} · p10 ${t.minutesPerSeason.p10} · p90 ${t.minutesPerSeason.p90}`,
+      `Tempo a carriera (ore): mediana ${t.hoursPerCareer.median} · media ${t.hoursPerCareer.mean} · p10 ${t.hoursPerCareer.p10} · p90 ${t.hoursPerCareer.p90}`,
+      `Per stagione: ${t.perSeason.chapters} capitoli · ${t.perSeason.picks} partite scelte · ${t.perSeason.newsStops} stop notizie · ${t.perSeason.offerStops} stop offerte`,
+    );
+  }
   const tiers = Object.entries(summary.overall.tiersPct)
     .map(([id, p]) => `${id} ${p}%`)
     .join(' · ');

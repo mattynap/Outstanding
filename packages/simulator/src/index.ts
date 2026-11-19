@@ -4,14 +4,18 @@ export {
   randomCareerOptions,
   estimateSeconds,
   type CareerResult,
+  type ChapterStats,
   type Decisions,
 } from './run';
 export { careerSeeds, simulate } from './simulate';
 export {
   formatTable,
   groupMetrics,
+  timeMetrics,
   summarize,
+  type Distribution,
   type GroupMetrics,
+  type TimeMetrics,
   type SimSummary,
 } from './metrics';
 export {

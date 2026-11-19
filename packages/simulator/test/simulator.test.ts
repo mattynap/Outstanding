@@ -26,6 +26,7 @@ import {
   simulate,
   STRATEGIES,
   summarize,
+  timeMetrics,
 } from '../src/index';
 
 // Carriere complete (20 stagioni ciascuna): sotto carico superano i 5 s predefiniti.
@@ -333,6 +334,9 @@ describe('CLI', () => {
         'sim-cautious-normal-3-1-isolate-q0.7.json',
         'sim-cautious-normal-3-1.json',
       ]);
+      expect(run(['--loop', 'weeks']).status).toBe(0);
+      expect(readdirSync(out)).toContain('sim-cautious-normal-3-1-weeks.json');
+      expect(run(['--loop', 'x']).status).toBe(1);
       const read = (f: string) => JSON.parse(readFileSync(join(out, f), 'utf8'));
       expect(read(files[0]!)).toMatchObject({ isolate: true, quality: 0.7 });
       expect(read(files[1]!)).not.toHaveProperty('isolate');
@@ -343,6 +347,7 @@ describe('CLI', () => {
 
 describe.runIf(process.env.SIM_CRITERION === '1')('isolated rating criterion', () => {
   it('contextual beats cautious and aggressive over 2000 careers', () => {
+    // Fissato al ciclo a settimane: il criterio misura la qualità della decisione per partita, che i capitoli diluiscono.
     // Il CLI usa i worker thread, che vitest non sa caricare dai sorgenti TypeScript.
     const out = mkdtempSync(join(tmpdir(), 'sim-criterion-'));
     const rating = (id: 'cautious' | 'aggressive' | 'contextual') => {
@@ -352,7 +357,19 @@ describe.runIf(process.env.SIM_CRITERION === '1')('isolated rating criterion', (
           '--import',
           'tsx',
           'packages/simulator/src/cli.ts',
-          ...['--careers', '2000', '--strategy', id, '--seed', '42', '--isolate', '--out', out],
+          ...[
+            '--careers',
+            '2000',
+            '--strategy',
+            id,
+            '--seed',
+            '42',
+            '--isolate',
+            '--loop',
+            'weeks',
+            '--out',
+            out,
+          ],
         ],
         { encoding: 'utf8' },
       );
@@ -371,6 +388,82 @@ describe.runIf(process.env.SIM_CRITERION === '1')('isolated rating criterion', (
     expect(contextual).toBeGreaterThan(aggressive);
     expect(Math.abs(cautious - aggressive)).toBeLessThanOrEqual(0.2 + 1e-9);
   }, 3_600_000);
+});
+
+describe('chapter loop', () => {
+  it(
+    'career loop plays only picked matches manually',
+    () => {
+      const r = runCareer(11, 'cautious');
+      const d = r.decisions;
+      const stats = r.chapterStats!;
+      // Una partita completa e le altre rapide: le giocate di persona sono esattamente le scelte.
+      expect(d.matches + d.quickMatches).toBe(stats.picks);
+      expect(d.matches).toBeGreaterThan(0);
+      expect(d.quickMatches).toBeGreaterThan(0);
+      expect(d.matches).toBeLessThanOrEqual(stats.chapters);
+      // La maggior parte delle partite è simulata e i passi sono quelli delle modalità.
+      expect(d.simulatedMatches).toBeGreaterThan(d.matches + d.quickMatches);
+      expect(d.weeks).toBe(stats.chapters);
+      expect(runCareer(11, 'cautious')).toEqual(r);
+      // Il ciclo a capitoli ignora --mode: le scelte decidono la modalità.
+      expect(runCareer(11, 'cautious', defaultContext, undefined, { mode: 'quick' })).toEqual(r);
+    },
+    CAREER_TIMEOUT,
+  );
+
+  it(
+    'reports minutes per season and hours per career',
+    () => {
+      const results = ['cautious', 'contextual'].map((s) => runCareer(5, s as 'cautious'));
+      for (const r of results) {
+        const total = r.seasonSeconds!.reduce((a, b) => a + b, 0);
+        expect(r.seasonSeconds!.length).toBeGreaterThanOrEqual(r.totals.seasons);
+        expect(Math.round(total / 60)).toBe(r.playMinutes);
+      }
+      const t = timeMetrics(results)!;
+      expect(t.minutesPerSeason.p10).toBeLessThanOrEqual(t.minutesPerSeason.median);
+      expect(t.minutesPerSeason.median).toBeLessThanOrEqual(t.minutesPerSeason.p90);
+      expect(t.hoursPerCareer.median).toBeGreaterThan(0);
+      const summary = summarize(results, 'cautious', 5, defaultContext);
+      expect(summary.overall.time).toEqual(t);
+      expect(formatTable(summary)).toContain('Tempo a stagione (min)');
+      expect(formatTable(summary)).toContain('Tempo a carriera (ore)');
+    },
+    CAREER_TIMEOUT,
+  );
+
+  it(
+    'weeks loop is unchanged from Part A',
+    () => {
+      // Valori misurati prima del ciclo a capitoli (HEAD 46b48e6).
+      const weeks = { loop: 'weeks' } as const;
+      const run = (seed: number, id: 'cautious' | 'contextual' | 'random') =>
+        runCareer(seed, id, defaultContext, undefined, weeks);
+      const a = run(11, 'cautious');
+      expect(a.decisions).toEqual({
+        weeks: 1204,
+        events: 344,
+        moments: 1955,
+        chainSteps: 89,
+        matches: 632,
+        quickMatches: 0,
+        simulatedMatches: 268,
+        offers: 23,
+      });
+      expect([a.playMinutes, a.totals.appearances, a.score.total, a.retirement.age]).toEqual([
+        2032, 757, 2343, 39,
+      ]);
+      const b = run(11, 'contextual');
+      expect(b.decisions.moments).toBe(2206);
+      expect([b.playMinutes, b.score.total]).toEqual([1991, 3108]);
+      const c = run(7, 'random');
+      expect(c.decisions.offers).toBe(65);
+      expect([c.playMinutes, c.score.total]).toEqual([1202, 284]);
+      expect(a).not.toHaveProperty('seasonSeconds');
+    },
+    CAREER_TIMEOUT,
+  );
 });
 
 describe('stima del tempo', () => {
@@ -419,13 +512,14 @@ describe('stima del tempo', () => {
   it(
     'mode quick switches manual matches to quick',
     () => {
-      const r = runCareer(11, 'cautious', defaultContext, undefined, { mode: 'quick' });
+      const weeks = { loop: 'weeks' } as const;
+      const r = runCareer(11, 'cautious', defaultContext, undefined, { ...weeks, mode: 'quick' });
       expect(r.decisions.matches).toBe(0);
       expect(r.decisions.quickMatches).toBeGreaterThan(0);
       expect(r.decisions.moments + r.decisions.chainSteps).toBeLessThanOrEqual(
         2 * r.decisions.quickMatches,
       );
-      const full = runCareer(11, 'cautious');
+      const full = runCareer(11, 'cautious', defaultContext, undefined, weeks);
       expect(full.decisions.quickMatches).toBe(0);
       expect(full.decisions.matches).toBeGreaterThan(0);
       expect(r.playMinutes).toBeLessThan(full.playMinutes);

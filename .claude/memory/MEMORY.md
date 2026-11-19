@@ -24,3 +24,4 @@ Indice delle note di progetto. Questa cartella è versionata in git.
 - [UI ibrida](ui-ibrido.md) — giornale + pixel: regole, modalità partita, guida corta; ondata 3 dopo prova iPhone
 - [Lingua delle risposte](lingua-risposte.md) — rispondere sempre in italiano, anche nei report
 - [Regista della partita](regista-partita.md) — Parte A: decisioni stabili, taratura A10, numeri e tempo stimato
+- [Regista della stagione](regista-stagione.md) — Parte B: simulatore a capitoli, tempo misurato, guardrail fuori tolleranza

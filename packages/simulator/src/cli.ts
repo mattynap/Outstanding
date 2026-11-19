@@ -1,10 +1,12 @@
 /**
  * CLI del simulatore di carriere:
  *   pnpm sim --careers 1000 --strategy cautious --seed 42 [--difficulty normal] [--workers 8] [--out sim-output]
- *     [--isolate] [--quality 0..1] [--mode full|quick]
+ *     [--isolate] [--quality 0..1] [--mode full|quick] [--loop chapters|weeks]
  * `--strategy all` esegue tutte le strategie. `--isolate`: tutte usano le scelte fuori campo della
  * prudente e cambiano solo i momenti chiave. `--quality`: qualità del gesto (0..1) per ogni momento.
  * `--mode quick`: le partite giocate di persona sono rapide (1–2 passi) invece che complete.
+ * `--loop`: ciclo di carriera, a capitoli (default: si giocano solo le partite scelte dal regista, nella
+ * loro modalità; `--mode` viene ignorato) o a settimane (il ciclo della Parte A; il nome del file ha `-weeks`).
  * Scrive un riepilogo JSON e stampa una tabella.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -37,6 +39,7 @@ const { values } = parseArgs({
     isolate: { type: 'boolean', default: false },
     quality: { type: 'string' },
     mode: { type: 'string', default: 'full' },
+    loop: { type: 'string', default: 'chapters' },
     details: { type: 'boolean', default: false },
   },
 });
@@ -64,6 +67,11 @@ if (values.mode !== 'full' && values.mode !== 'quick') {
   process.exit(1);
 }
 const mode = values.mode;
+if (values.loop !== 'chapters' && values.loop !== 'weeks') {
+  console.error('--loop deve essere chapters o weeks');
+  process.exit(1);
+}
+const loop = values.loop;
 
 const careers = int('careers', values.careers, 1);
 const seed = int('seed', values.seed, 0);
@@ -97,7 +105,7 @@ for (const strategy of strategies) {
       }
     },
     difficulty,
-    { isolate: values.isolate, quality, mode },
+    { isolate: values.isolate, quality, mode, loop },
   );
   if (tty) process.stderr.write('\n');
   const summary = {
@@ -105,9 +113,10 @@ for (const strategy of strategies) {
     difficulty,
     ...(values.isolate ? { isolate: true } : {}),
     ...(quality !== undefined ? { quality } : {}),
-    ...(mode === 'quick' ? { mode } : {}),
+    ...(mode === 'quick' && loop === 'weeks' ? { mode } : {}),
+    ...(loop === 'weeks' ? { loop } : {}),
   };
-  const suffix = `${values.isolate ? '-isolate' : ''}${quality !== undefined ? `-q${quality}` : ''}${mode === 'quick' ? '-quick' : ''}`;
+  const suffix = `${values.isolate ? '-isolate' : ''}${quality !== undefined ? `-q${quality}` : ''}${mode === 'quick' && loop === 'weeks' ? '-quick' : ''}${loop === 'weeks' ? '-weeks' : ''}`;
   const file = join(values.out, `sim-${strategy}-${difficulty}-${seed}-${careers}${suffix}.json`);
   writeFileSync(
     file,

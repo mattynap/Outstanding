@@ -2,6 +2,7 @@ import type { SimulatorConfig } from '@outstanding/config';
 import {
   acceptOffer,
   acceptSponsor,
+  advanceToStop,
   advanceWeek,
   careerScore,
   careerTotals,
@@ -9,6 +10,7 @@ import {
   drawWeekEvents,
   endSeason,
   getAgentCandidates,
+  getPendingEvents,
   getOffers,
   hireAgent,
   isLegend,
@@ -20,6 +22,7 @@ import {
   playMatch,
   resolveEvent,
   ROLES,
+  setChapterPlan,
   Rng,
   simulateMatch,
   type CareerScore,
@@ -30,7 +33,7 @@ import {
   type Retirement,
   type Role,
 } from '@outstanding/engine';
-import { getStrategy, type StrategyId, type StrategyOptions } from './strategies';
+import { getStrategy, type Strategy, type StrategyId, type StrategyOptions } from './strategies';
 
 /**
  * Stima del tempo di gioco: secondi per decisione da `config/data/simulator.json > secondsPer`
@@ -83,6 +86,17 @@ export interface CareerResult {
   decisions: Decisions;
   /** Minuti di gioco stimati. */
   playMinutes: number;
+  /** Secondi stimati per stagione (solo ciclo a capitoli): la base di minuti a stagione e ore a carriera. */
+  seasonSeconds?: number[];
+  /** Capitoli giocati, stop per notizie e offerte, partite scelte (solo ciclo a capitoli). */
+  chapterStats?: ChapterStats;
+}
+
+export interface ChapterStats {
+  chapters: number;
+  newsStops: number;
+  offerStops: number;
+  picks: number;
 }
 
 /** Opzioni di creazione casuali ma riproducibili dal seme della carriera. */
@@ -116,39 +130,33 @@ function manageLife(state: GameState, ctx: GameContext): GameState {
   return s;
 }
 
-/** Gioca una carriera completa senza interfaccia, dalla creazione al ritiro. */
-export function runCareer(
-  seed: number,
-  strategyId: StrategyId,
-  ctx: GameContext = defaultContext,
-  difficulty?: Difficulty,
-  options: StrategyOptions = {},
-): CareerResult {
-  const strategy = getStrategy(strategyId, options);
-  // Le partite giocate di persona sono complete o rapide; le altre sono simulate.
-  const mode = options.mode ?? 'full';
-  // Le scelte della strategia usano un generatore separato: lo stato del gioco resta deterministico.
-  const rng = Rng.fromSeed(seed ^ 0x5bd1e995);
-  // In isolamento le estrazioni dei momenti non spostano quelle delle scelte fuori campo.
-  const momentRng = options.isolate ? Rng.fromSeed(seed) : rng;
-  let s = newCareer({ ...randomCareerOptions(rng, ctx), difficulty }, seed, ctx);
-  const d: Decisions = {
-    weeks: 0,
-    events: 0,
-    moments: 0,
-    chainSteps: 0,
-    matches: 0,
-    quickMatches: 0,
-    simulatedMatches: 0,
-    offers: 0,
-  };
-  const potential = s.player.potential;
+interface LoopInput {
+  s: GameState;
+  d: Decisions;
+  strategy: Strategy;
+  mode: 'full' | 'quick';
+  rng: Rng;
+  momentRng: Rng;
+  ctx: GameContext;
+}
+
+interface LoopOutput {
+  state: GameState;
+  peakOvr: number;
+  seasonSeconds?: number[];
+  chapterStats?: ChapterStats;
+}
+
+/** Ciclo a settimane (quello di prima dei capitoli): resta com'è per il confronto con la Parte A. */
+function playWeeks(input: LoopInput): LoopOutput {
+  const { d, strategy, mode, rng, momentRng, ctx } = input;
+  let s = input.s;
   let peakOvr = 0;
   let seasons = 0;
 
   while (!s.retired) {
     if (isSeasonOver(s, ctx)) {
-      if (++seasons > MAX_SEASONS) throw new Error(`Career ${seed} did not end`);
+      if (++seasons > MAX_SEASONS) throw new Error(`Career ${input.s.seed} did not end`);
       s = endSeason(s, ctx).state;
       peakOvr = Math.max(peakOvr, s.player.history.at(-1)!.ovr);
       continue;
@@ -197,6 +205,125 @@ export function runCareer(
     }
     s = advanceWeek(s, ctx).state;
   }
+  return { state: s, peakOvr };
+}
+
+/**
+ * Ciclo a capitoli: il giocatore imposta il piano a inizio capitolo, legge le notizie personali,
+ * firma le offerte e gioca solo le partite scelte dal regista (nella modalità della scelta);
+ * le altre le simula `advanceToStop`. `--mode` qui non conta.
+ */
+function playChapters(input: LoopInput): LoopOutput {
+  const { d, strategy, rng, momentRng, ctx } = input;
+  const sp = ctx.config.simulator.secondsPer;
+  let s = input.s;
+  let peakOvr = 0;
+  let seasons = 0;
+  let planned = '';
+  let seconds = 0;
+  const seasonSeconds: number[] = [];
+  const chapterStats: ChapterStats = { chapters: 0, newsStops: 0, offerStops: 0, picks: 0 };
+  // Rete di sicurezza contro uno stop che non fa avanzare lo stato.
+  let guard = 0;
+
+  while (!s.retired) {
+    if (isSeasonOver(s, ctx)) {
+      if (++seasons > MAX_SEASONS) throw new Error(`Career ${input.s.seed} did not end`);
+      const now = estimateSeconds(d, sp);
+      seasonSeconds.push(now - seconds);
+      seconds = now;
+      s = endSeason(s, ctx).state;
+      peakOvr = Math.max(peakOvr, s.player.history.at(-1)!.ovr);
+      continue;
+    }
+    if (++guard > 500_000) throw new Error(`Career ${input.s.seed}: chapter loop stalled`);
+    s = manageLife(s, ctx);
+    const offers = getOffers(s);
+    if (offers.length > 0) {
+      const pick = strategy.pickOffer(s, offers, rng, ctx);
+      if (pick) {
+        try {
+          s = acceptOffer(s, pick.id, ctx);
+          d.offers++;
+        } catch {
+          // Offerta non firmabile adesso (es. finestra chiusa): si riprova al prossimo stop.
+        }
+      }
+    }
+    // Un piano per capitolo: a inizio capitolo (o stagione) si imposta, poi si avanza.
+    const key = `${s.season}:${s.chapter.id}`;
+    if (planned !== key) {
+      s = setChapterPlan(s, strategy.planWeek(s, rng, ctx), ctx);
+      planned = key;
+      d.weeks++;
+      chapterStats.chapters++;
+    }
+    const out = advanceToStop(s, ctx);
+    s = out.state;
+    d.simulatedMatches += out.report.summary.length;
+    if (out.report.stop === 'chapterEnd') continue;
+    if (out.report.stop === 'news' || out.report.stop === 'offers') {
+      if (out.report.stop === 'news') chapterStats.newsStops++;
+      else chapterStats.offerStops++;
+    }
+    for (const e of getPendingEvents(s, ctx)) {
+      s = resolveEvent(s, e.eventId, strategy.chooseEvent(e.choices.length, rng), ctx).state;
+      d.events++;
+    }
+    if (out.report.stop === 'pick') {
+      const f = playerFixture(s)!;
+      const mode = s.chapter.picks.find((p) => p.fixtureId === f.id)?.mode ?? 'full';
+      chapterStats.picks++;
+      s = playMatch(
+        s,
+        (moment) => {
+          if (moment.chain) d.chainSteps++;
+          else d.moments++;
+          return strategy.decideMoment(moment, momentRng);
+        },
+        ctx,
+        { mode },
+      ).state;
+      if (mode === 'quick') d.quickMatches++;
+      else d.matches++;
+    }
+  }
+  const rest = estimateSeconds(d, sp) - seconds;
+  if (rest > 0) seasonSeconds.push(rest);
+  return { state: s, peakOvr, seasonSeconds, chapterStats };
+}
+
+/** Gioca una carriera completa senza interfaccia, dalla creazione al ritiro. */
+export function runCareer(
+  seed: number,
+  strategyId: StrategyId,
+  ctx: GameContext = defaultContext,
+  difficulty?: Difficulty,
+  options: StrategyOptions = {},
+): CareerResult {
+  const strategy = getStrategy(strategyId, options);
+  // Le partite giocate di persona sono complete o rapide; le altre sono simulate.
+  const mode = options.mode ?? 'full';
+  // Le scelte della strategia usano un generatore separato: lo stato del gioco resta deterministico.
+  const rng = Rng.fromSeed(seed ^ 0x5bd1e995);
+  // In isolamento le estrazioni dei momenti non spostano quelle delle scelte fuori campo.
+  const momentRng = options.isolate ? Rng.fromSeed(seed) : rng;
+  let s = newCareer({ ...randomCareerOptions(rng, ctx), difficulty }, seed, ctx);
+  const d: Decisions = {
+    weeks: 0,
+    events: 0,
+    moments: 0,
+    chainSteps: 0,
+    matches: 0,
+    quickMatches: 0,
+    simulatedMatches: 0,
+    offers: 0,
+  };
+  const potential = s.player.potential;
+  const loop = options.loop === 'weeks' ? playWeeks : playChapters;
+  const out = loop({ s, d, strategy, mode, rng, momentRng, ctx });
+  s = out.state;
+  const peakOvr = out.peakOvr;
 
   const history = s.player.history;
   const totals = careerTotals(history);
@@ -216,5 +343,8 @@ export function runCareer(
     bestLevel: levels.length ? Math.min(...levels.map((h) => h.leagueLevel!)) : null,
     decisions: d,
     playMinutes: Math.round(seconds / 60),
+    ...(out.seasonSeconds
+      ? { seasonSeconds: out.seasonSeconds, chapterStats: out.chapterStats }
+      : {}),
   };
 }

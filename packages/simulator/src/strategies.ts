@@ -202,6 +202,8 @@ export interface StrategyOptions {
   quality?: number;
   /** Modalità delle partite giocate di persona (default completa). */
   mode?: 'full' | 'quick';
+  /** Ciclo di carriera: a capitoli (default) o a settimane (quello della Parte A, per i confronti). */
+  loop?: 'chapters' | 'weeks';
 }
 
 export function getStrategy(id: StrategyId, options: StrategyOptions = {}): Strategy {

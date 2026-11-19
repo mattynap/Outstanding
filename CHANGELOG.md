@@ -26,6 +26,17 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
 - Stima del tempo: completa circa 85 min a stagione e 29,5 h a carriera (sopra il bersaglio 20-30 min e
   6-8 h), rapida 22,5 min e 7,9 h; da decidere con l'utente.
 
+### Regista della stagione (Parte B): simulatore a capitoli (B3)
+
+- Simulatore: `--loop chapters|weeks`, default `chapters` (piano a inizio capitolo, notizie e offerte agli stop,
+  di persona solo le partite scelte dal regista, le altre simulate da `advanceToStop`); `weeks` è il ciclo della
+  Parte A e dà il nome file con `-weeks`. `pnpm sim:criterion` resta sul ciclo a settimane.
+- Tempo di gioco: secondi grezzi per stagione, mediana (media, p10, p90) a stagione e a carriera nel riepilogo.
+- Taratura: `calendar.chapterMatches.max` da 3 a 4. Mediana 20,1 minuti a stagione e 7,0 ore a carriera
+  (5000 carriere prudente). I guardrail di carriera della prudente escono dalla tolleranza di A0 (gol 41,5,
+  assist 42,5, trofei 0,64): le partite rapide hanno meno passi di quelle simulate. Dettaglio e cause in
+  `reports/regista/stagione-B3.md`.
+
 ### Interfaccia ibrida giornale e pixel (ondata 2)
 
 - Momenti chiave: ogni opzione dice cosa succede se va e se non va, con percentuale in pixel e

@@ -24,6 +24,8 @@ import {
   type MatchReport,
 } from '../src/index';
 import { baseOptions } from './fixtures';
+import { chainDepth } from '../src/match/moments';
+import { availableOptions } from '../src/match/match';
 
 const ctx = defaultContext;
 const first: KeyMomentDecider = () => 0;
@@ -634,6 +636,22 @@ describe('modalità della partita e passo decisivo', () => {
     expect(played).toBeGreaterThan(5);
   });
 
+  it('quick: almeno un passo visibile se il giocatore resta in campo abbastanza, mai oltre quota + catena', () => {
+    const { visibleSteps, moments } = ctx.config.match;
+    const maxDepth = Math.max(...moments.types.map((t) => chainDepth(t.id, ctx)));
+    let eligible = 0;
+    for (let seed = 1; seed <= 120; seed++) {
+      const { n, report } = steps(seed, 'quick');
+      const minutes = report.minutesPlayed;
+      if (minutes >= moments.minMinutesForMoment) {
+        eligible++;
+        expect(n, `seed ${seed}`).toBeGreaterThanOrEqual(1);
+      }
+      expect(n).toBeLessThanOrEqual(visibleSteps[1] + maxDepth - 1);
+    }
+    expect(eligible).toBeGreaterThan(20);
+  });
+
   /** Eventi `moment` della partita, divisi in visibili e automatici. */
   const split = (r: MatchReport) => {
     const ms = r.events.filter((e) => e.kind === 'moment');
@@ -695,13 +713,41 @@ describe('modalità della partita e passo decisivo', () => {
     expect(checked).toBeGreaterThan(0);
   });
 
+  it('availableOptions non offre leggende a un passo nascosto e non consuma la quota', () => {
+    let checked = 0;
+    for (let seed = 1; seed <= 40 && checked < 3; seed++) {
+      const s = toFirstMatch(newCareer(baseOptions, seed));
+      const m = beginMatch(s, ctx, { mode: 'quick' }).state.currentMatch;
+      if (!m) continue;
+      const lt = ctx.config.match.moments.types.find((t) => t.options.some((o) => o.legend));
+      if (!lt) continue;
+      const strong = {
+        ...s.player,
+        skills: Object.fromEntries(Object.keys(s.player.skills).map((k) => [k, 99])),
+      } as typeof s.player;
+      const chain = { rootId: lt.id, step: 2 };
+      const shown = availableOptions(m, lt, chain, strong, 100, ctx, false);
+      const hidden = availableOptions(m, lt, chain, strong, 100, ctx, true);
+      const used = m.director.legendsUsed;
+      expect(hidden.legendsOffered).toBe(0);
+      expect(m.director.legendsUsed).toBe(used);
+      expect(hidden.options.length).toBeLessThanOrEqual(shown.options.length);
+      expect(hidden.options.every((i) => !lt.options[i]!.legend)).toBe(true);
+      checked++;
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+
   it('le leggende non sono mai offerte ai passi nascosti', () => {
+    let hiddenSteps = 0;
     for (let seed = 1; seed <= 40; seed++) {
       const s = toFirstMatch(newCareer(baseOptions, seed));
       const r = playMatch(s, first, ctx, { mode: 'sim' });
       expect(r.matchReport.legend).toBeUndefined();
+      hiddenSteps += r.matchReport.events.filter((e) => e.kind === 'moment' && e.auto).length;
       expect(r.state.currentMatch).toBeUndefined();
     }
+    expect(hiddenSteps).toBeGreaterThan(20);
   });
 
   it('default mode is full', () => {

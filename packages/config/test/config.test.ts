@@ -189,6 +189,15 @@ describe('config', () => {
       expect(() => parseConfig(bad)).toThrow(/match\.json/);
     });
 
+    it('visibleSteps rifiuta un minimo sotto 1', () => {
+      const bad = raw();
+      bad.match.visibleSteps = [0, 2];
+      expect(() => parseConfig(bad)).toThrow(/match\.json/);
+      const ok = raw();
+      ok.match.visibleSteps = [1, 2];
+      expect(() => parseConfig(ok)).not.toThrow();
+    });
+
     it('la tabella close ha chiavi intere', () => {
       const bad = raw();
       bad.match.director.close = { '-1': 1, '0.5': 1 };

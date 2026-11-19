@@ -84,6 +84,20 @@ export function initialDirector(
 export function rootVisible(m: MatchState, depth: number, cfg: MatchConfig): boolean {
   const left = m.director.visibleLeft;
   if (left === undefined) return true;
+  // Garanzia: finché nessun passo visibile è stato usato, la prima radice della partita, il minimo
+  // garantito e il finale caldo sono visibili a prescindere dalla profondità; la catena resta
+  // visibile fino in fondo, anche oltre la quota. Così ogni rapida con minuti sufficienti ha
+  // almeno un passo visibile.
+  const unused = !m.events.some((e) => e.kind === 'moment' && !e.auto);
+  if (
+    unused &&
+    left > 0 &&
+    (m.director.interventions === 0 ||
+      m.director.armed?.forced === true ||
+      m.minute >= cfg.director.hotFrom)
+  ) {
+    return true;
+  }
   if (left <= 0 || depth > left) return false;
   const hotAhead = m.minuteOut > cfg.director.hotFrom;
   return (

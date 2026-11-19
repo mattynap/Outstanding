@@ -647,9 +647,37 @@ function run(
   }
 }
 
-/** Scelta automatica di un passo nascosto: `autoDecider` con qualità neutra. */
+/**
+ * Scelta automatica di un passo nascosto: stessa scelta di `prudentMomentChoice` su `describeMoment`,
+ * ma calcolata solo dalle probabilità (niente testi né valori). Non estrae.
+ */
 function autoMomentDecision(state: GameState, m: MatchState, ctx: GameContext): MatchDecision {
-  return { optionIndex: prudentMomentChoice(describeMoment(state, m, ctx)), quality: 0.5 };
+  const pending = m.pending;
+  if (!pending) throw new Error('No key moment pending');
+  const type = getMomentType(pending.momentId, ctx);
+  const opponent = getAnyClub(state.world, m.opponentId);
+  const bonus = difficultyMods(state, ctx).matchChance + pressBonus(state, m.fixtureId);
+  const options = pending.options.map((index) => {
+    const o = type.options[index]!;
+    const chance = o.closes
+      ? 1
+      : optionChance(
+          state.player,
+          o,
+          opponent.rating,
+          ctx,
+          bonus,
+          0.5,
+          m.dyn,
+          riskBonus(o.risk, goalDiff(m), pending.minute, ctx.config.match.risk),
+        );
+    return {
+      chance,
+      chanceBand: chanceBandOf(chance, ctx.config.match.chanceBands),
+      ...(o.closes ? { closes: true as const } : {}),
+    };
+  });
+  return { optionIndex: prudentChoice(options), quality: 0.5 };
 }
 
 /** Opzioni di una partita: modalità (completa di default, rapida, simulata). */
@@ -851,14 +879,17 @@ function decide(
  * è la scelta prudente, chi gioca di persona può insistere per ottenere di più.
  */
 export function prudentMomentChoice(moment: KeyMoment): number {
-  const best = (keep: (o: KeyMoment['options'][number]) => boolean) =>
-    moment.options.reduce(
-      (b, o, i, all) => (keep(o) && (b < 0 || o.chance > all[b]!.chance) ? i : b),
-      -1,
-    );
+  return prudentChoice(moment.options);
+}
+
+type ChoiceOption = Pick<KeyMoment['options'][number], 'chance' | 'chanceBand' | 'closes'>;
+
+function prudentChoice(options: readonly ChoiceOption[]): number {
+  const best = (keep: (o: ChoiceOption) => boolean) =>
+    options.reduce((b, o, i, all) => (keep(o) && (b < 0 || o.chance > all[b]!.chance) ? i : b), -1);
   const open = best((o) => !o.closes);
   const close = best((o) => o.closes === true);
-  if (close >= 0 && (open < 0 || moment.options[open]!.chanceBand === 'low')) return close;
+  if (close >= 0 && (options[open]?.chanceBand === 'low' || open < 0)) return close;
   return open;
 }
 

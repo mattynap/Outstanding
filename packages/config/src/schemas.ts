@@ -576,7 +576,7 @@ export const matchSchema = z
     /** Passi del regista per partita (uguali in ogni modalità): [min, max]. */
     steps: countRange,
     /** Quota di passi mostrati al giocatore nella partita rapida: [min, max]; gli altri si risolvono da soli. */
-    visibleSteps: countRange,
+    visibleSteps: countRange.refine(([a]) => a >= 1, { message: 'visibleSteps min must be >= 1' }),
     /** Riga di chiusura della pagella dal passo decisivo: varianti di `match.peak.<success|failure>.<n>`. */
     peak: z.object({ variants: z.number().int().min(1) }),
     /** Soglie delle fasce di probabilità mostrate (derivano dalla probabilità vera). */

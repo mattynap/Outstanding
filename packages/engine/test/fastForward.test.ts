@@ -18,7 +18,7 @@ import {
   type GameState,
 } from '../src/index';
 import { baseOptions } from './fixtures';
-import { emptyChapterLog } from '../src/season/director';
+import { chapterOf, emptyChapterLog } from '../src/season/director';
 import { buildHeadlines } from '../src/season/headlines';
 import { drawWeekEvents, resolveEvent, getEvent } from '../src/events/events';
 import { advanceWeek } from '../src/season/week';
@@ -441,4 +441,44 @@ describe('fine capitolo e stop mancanti', () => {
     expect(hits).toBeGreaterThan(0);
     // Scorre 60 carriere: il limite predefinito di 5 s è stretto con la suite intera.
   }, 20000);
+});
+
+describe('avanti veloce e capitoli', () => {
+  it('attraversa i capitoli: id coerente con la settimana, obiettivo liquidato e nuovo estratto', () => {
+    const cal = ctx.config.calendar;
+    let s = start(6);
+    const ids = new Set<string>([s.chapter.id]);
+    for (let i = 0; i < 60 && !isSeasonOver(s, ctx); i++) {
+      const before = s.chapter;
+      s = fastForward(s, 'seasonEnd', ctx).state;
+      for (const pe of [...s.pendingEvents]) s = resolveEvent(s, pe.eventId, 0, ctx).state;
+      if (isSeasonOver(s, ctx)) break;
+      expect(s.chapter.id).toBe(chapterOf(weekOfSeason(s.week, cal), cal));
+      if (s.chapter.id !== before.id) {
+        // Il capitolo lasciato aveva un obiettivo (liquidato): il nuovo ne ha già uno e lo ricorda.
+        expect(s.chapter.goal).not.toBeNull();
+        expect(s.chapter.goal!.settled).toBe(false);
+        if (before.goal) expect(s.chapter.lastGoalId).toBe(before.goal.id);
+      }
+      ids.add(s.chapter.id);
+    }
+    expect(isSeasonOver(s, ctx)).toBe(true);
+    expect(ids.size).toBeGreaterThan(1);
+    expect(s.chapter.id).not.toBe('preseason');
+    expect(s.chapter.goal).not.toBeNull();
+    expect(s.chapter.lastGoalId).not.toBeNull();
+  });
+
+  it('con chapterPlan vuoto ripete il piano ricordato prima del piano delle settimane saltate', () => {
+    const plan = [{ actionId: 'train_intense' }];
+    const remembered = { ...start(6), chapterPlan: [], lastPlan: plan };
+    const explicit = { ...start(6), chapterPlan: plan, lastPlan: plan };
+    const a = advanceToStop(remembered, ctx);
+    const b = advanceToStop(explicit, ctx);
+    expect(a.state.player).toEqual(b.state.player);
+    expect(a.state.rngState).toEqual(b.state.rngState);
+    // Senza ricordo si ricade su skipWeekPlan: il giocatore cambia.
+    const none = advanceToStop({ ...start(6), chapterPlan: [], lastPlan: undefined }, ctx);
+    expect(none.state.player).not.toEqual(a.state.player);
+  });
 });

@@ -138,6 +138,29 @@ function resultOf(score: Score, home: boolean): 'win' | 'draw' | 'loss' {
 }
 
 /**
+ * Chiude il capitolo corrente (obiettivo liquidato) e apre quello della settimana di `state`,
+ * con scelte e obiettivo nuovi. Il registro del tratto passa al capitolo nuovo. Condiviso da
+ * `advanceToStop` e `fastForward`.
+ */
+function openNextChapter(
+  state: GameState,
+  ctx: GameContext,
+): { state: GameState; headline: Headline | null } {
+  const out = settleChapter(state, ctx);
+  const closed = out.state;
+  const next = {
+    ...createChapter(closed, ctx),
+    lastGoalId: closed.chapter.goal?.id ?? closed.chapter.lastGoalId,
+    stretch: closed.chapter.stretch,
+  };
+  return { state: startChapterGoal({ ...closed, chapter: next }, ctx), headline: out.headline };
+}
+
+/** Il piano del capitolo; se è vuoto, quello ricordato dall'ultima scelta (spec §8.2). */
+const chapterPlanOf = (s: GameState): readonly WeekChoice[] | undefined =>
+  s.chapterPlan.length > 0 ? s.chapterPlan : s.lastPlan;
+
+/**
  * Avanti veloce: gioca le settimane da solo (piano ripetuto, notizie con la scelta più prudente,
  * partite simulate) e si ferma prima di una partita importante (se richiesto), a fine stagione,
  * quando arrivano offerte nuove, quando c'è una notizia personale o a fine carriera. La settimana
@@ -170,6 +193,10 @@ export function fastForward(
       report.stop = 'seasonEnd';
       break;
     }
+    // Confine di capitolo: stessa transizione di `advanceToStop`, senza fermarsi.
+    if (chapterOf(weekOfSeason(s.week, ctx.config.calendar), ctx.config.calendar) !== s.chapter.id)
+      s = openNextChapter(s, ctx).state;
+    s = { ...s, chapter: { ...s.chapter, picks: refreshChapterPicks(s, ctx) } };
     if (report.weeks > 0) {
       if (s.offers.some((o) => !offersAtStart.has(o.id) && worthStopping(s, o))) {
         report.stop = 'offers';
@@ -184,7 +211,7 @@ export function fastForward(
 
     if (s.plannedWeek !== s.week) {
       // Il piano automatico non sostituisce quello scelto dal giocatore.
-      s = { ...planWeek(s, repeatPlan(s, ctx), ctx).state, lastPlan: s.lastPlan };
+      s = { ...planWeek(s, repeatPlan(s, ctx, chapterPlanOf(s)), ctx).state, lastPlan: s.lastPlan };
     }
     s = drawWeekEvents(s, ctx).state;
     if (report.weeks > 0 && hasPersonalNews(s, ctx)) {
@@ -284,21 +311,16 @@ export function advanceToStop(
       // così la prima settimana del capitolo nuovo usa il piano scelto dopo questo stop. Un'offerta
       // arrivata con l'ultima settimana non si perde: si ferma prima, il cambio capitolo al giro dopo.
       if (newOffer()) return finish('offers');
-      settle();
-      const closed = s;
-      const next = {
-        ...createChapter(closed, ctx),
-        lastGoalId: closed.chapter.goal?.id ?? closed.chapter.lastGoalId,
-        stretch: closed.chapter.stretch,
-      };
-      s = startChapterGoal({ ...closed, chapter: next }, ctx);
+      const opened = openNextChapter(s, ctx);
+      s = opened.state;
+      goalHeadline = opened.headline ?? goalHeadline;
       return finish('chapterEnd');
     }
     s = { ...s, chapter: { ...s.chapter, picks: refreshChapterPicks(s, ctx) } };
 
     if (s.plannedWeek !== s.week) {
       // Il piano del capitolo non sostituisce quello scelto a mano dal giocatore.
-      const plan = repeatPlan(s, ctx, s.chapterPlan);
+      const plan = repeatPlan(s, ctx, chapterPlanOf(s));
       s = { ...planWeek(s, plan, ctx).state, lastPlan: s.lastPlan };
     }
     s = drawWeekEvents(s, ctx).state;

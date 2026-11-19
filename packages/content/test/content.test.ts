@@ -126,4 +126,31 @@ describe('prima pagina', () => {
     // Chiedere più varianti di quelle scritte è un errore.
     expect(checkHeadlineKeys(9, t).length).toBeGreaterThan(0);
   });
+
+  it('rejects chapter goals whose metric is impossible for the allowed roles', () => {
+    const base = defaultContent.chapterGoals.find((g) => g.metric === 'goals')!;
+    const bad = [
+      { ...base, id: 'x_gk', conditions: { roles: ['GK' as const] } },
+      { ...base, id: 'x_any', conditions: undefined },
+      {
+        ...base,
+        id: 'x_clean',
+        metric: 'cleanSheets' as const,
+        conditions: { roles: ['ATT' as const] },
+      },
+    ];
+    const t = { ...defaultContent.i18n.it };
+    for (const g of bad) {
+      for (const sfx of ['text', 'met', 'missed']) t[`chapterGoals.${g.id}.${sfx}`] = 'x';
+    }
+    const errors = checkContent({
+      ...defaultContent,
+      chapterGoals: [
+        ...defaultContent.chapterGoals,
+        ...bad.map((g) => ({ ...g, textKey: `chapterGoals.${g.id}.text` })),
+      ],
+      i18n: { it: t },
+    });
+    expect(errors.filter((e) => e.includes('chapterGoals.x_'))).toHaveLength(3);
+  });
 });

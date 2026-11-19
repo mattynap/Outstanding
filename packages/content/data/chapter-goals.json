@@ -66,7 +66,7 @@
     "textKey": "chapterGoals.continuita_dilettanti.text"
   },
   {
-    "id": "attaccante_due_reti",
+    "id": "attaccante_giovane_gol",
     "weight": 4,
     "conditions": {
       "roles": ["ATT"],
@@ -76,20 +76,20 @@
     },
     "metric": "goals",
     "target": 1,
-    "textKey": "chapterGoals.attaccante_due_reti.text"
+    "textKey": "chapterGoals.attaccante_giovane_gol.text"
   },
   {
-    "id": "attaccante_quattro_reti",
+    "id": "attaccante_gol",
     "weight": 4,
     "conditions": {
       "roles": ["ATT"]
     },
     "metric": "goals",
     "target": 3,
-    "textKey": "chapterGoals.attaccante_quattro_reti.text"
+    "textKey": "chapterGoals.attaccante_gol.text"
   },
   {
-    "id": "attaccante_sei_reti",
+    "id": "attaccante_esperto_gol",
     "weight": 1,
     "conditions": {
       "roles": ["ATT"],
@@ -103,7 +103,7 @@
     },
     "metric": "goals",
     "target": 4,
-    "textKey": "chapterGoals.attaccante_sei_reti.text"
+    "textKey": "chapterGoals.attaccante_esperto_gol.text"
   },
   {
     "id": "centrocampista_ultimo_passaggio",
@@ -139,7 +139,7 @@
     "textKey": "chapterGoals.punta_di_sponda.text"
   },
   {
-    "id": "rifinitore_quattro_assist",
+    "id": "rifinitore_assist_pro",
     "weight": 2,
     "conditions": {
       "roles": ["MID", "ATT"],
@@ -147,7 +147,7 @@
     },
     "metric": "assists",
     "target": 2,
-    "textKey": "chapterGoals.rifinitore_quattro_assist.text"
+    "textKey": "chapterGoals.rifinitore_assist_pro.text"
   },
   {
     "id": "pagella_senza_strappi",
@@ -198,17 +198,17 @@
     "textKey": "chapterGoals.pagella_massima_serie.text"
   },
   {
-    "id": "portiere_due_porte_inviolate",
+    "id": "portiere_porte_inviolate",
     "weight": 4,
     "conditions": {
       "roles": ["GK"]
     },
     "metric": "cleanSheets",
     "target": 1,
-    "textKey": "chapterGoals.portiere_due_porte_inviolate.text"
+    "textKey": "chapterGoals.portiere_porte_inviolate.text"
   },
   {
-    "id": "portiere_quattro_porte_inviolate",
+    "id": "portiere_porte_inviolate_pro",
     "weight": 2,
     "conditions": {
       "roles": ["GK"],
@@ -216,20 +216,20 @@
     },
     "metric": "cleanSheets",
     "target": 2,
-    "textKey": "chapterGoals.portiere_quattro_porte_inviolate.text"
+    "textKey": "chapterGoals.portiere_porte_inviolate_pro.text"
   },
   {
-    "id": "difensore_tre_porte_inviolate",
+    "id": "difensore_porte_inviolate",
     "weight": 4,
     "conditions": {
       "roles": ["DEF"]
     },
     "metric": "cleanSheets",
     "target": 2,
-    "textKey": "chapterGoals.difensore_tre_porte_inviolate.text"
+    "textKey": "chapterGoals.difensore_porte_inviolate.text"
   },
   {
-    "id": "difensore_quattro_porte_inviolate",
+    "id": "difensore_esperto_porte_inviolate",
     "weight": 2,
     "conditions": {
       "roles": ["DEF"],
@@ -239,7 +239,7 @@
     },
     "metric": "cleanSheets",
     "target": 2,
-    "textKey": "chapterGoals.difensore_quattro_porte_inviolate.text"
+    "textKey": "chapterGoals.difensore_esperto_porte_inviolate.text"
   },
   {
     "id": "punta_gol_partita_scelta",
@@ -252,7 +252,7 @@
     "textKey": "chapterGoals.punta_gol_partita_scelta.text"
   },
   {
-    "id": "classifica_prime_tre",
+    "id": "classifica_zona_alta",
     "weight": 2,
     "conditions": {
       "level": {
@@ -263,10 +263,10 @@
     },
     "metric": "tablePosition",
     "target": 5,
-    "textKey": "chapterGoals.classifica_prime_tre.text"
+    "textKey": "chapterGoals.classifica_zona_alta.text"
   },
   {
-    "id": "classifica_prime_sei",
+    "id": "classifica_meta_alta",
     "weight": 3,
     "conditions": {
       "level": {
@@ -277,10 +277,10 @@
     },
     "metric": "tablePosition",
     "target": 8,
-    "textKey": "chapterGoals.classifica_prime_sei.text"
+    "textKey": "chapterGoals.classifica_meta_alta.text"
   },
   {
-    "id": "classifica_prime_dieci",
+    "id": "classifica_meta_classifica",
     "weight": 4,
     "conditions": {
       "level": {
@@ -290,6 +290,6 @@
     },
     "metric": "tablePosition",
     "target": 10,
-    "textKey": "chapterGoals.classifica_prime_dieci.text"
+    "textKey": "chapterGoals.classifica_meta_classifica.text"
   }
 ]

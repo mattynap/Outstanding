@@ -50,7 +50,7 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
 ### Regista della stagione (Parte B): obiettivo del capitolo (B4)
 
 - A ogni inizio di capitolo (non in preparazione) mister e procuratore assegnano un obiettivo scelto a peso
-  da `content/data/chapter-goals.json` (28 obiettivi: titolare, gol, assist, voto medio, porta inviolata,
+  da `content/data/chapter-goals.json` (25 obiettivi: titolare, gol, assist, voto medio, porta inviolata,
   gol in una partita scelta, posizione in classifica), filtrato con le stesse condizioni degli eventi e
   senza ripetere quello precedente. Il progresso si legge dal registro del capitolo.
 - Liquidazione unica (`settleChapter`, idempotente) allo stop di fine capitolo e a fine stagione: se

@@ -13,7 +13,6 @@ import {
   simulateMatch,
   CURRENT_SAVE_VERSION,
   type FastForwardReport,
-  type GameContext,
   type GameState,
 } from '../src/index';
 import { getEvent } from '../src/events/events';
@@ -169,10 +168,10 @@ describe('obiettivo del capitolo', () => {
         },
         ctx,
       );
-    expect(at('attaccante_quattro_reti', { goals: 2 })).toEqual({ met: false, progress: 2 });
-    expect(at('attaccante_quattro_reti', { goals: 3 }).met).toBe(true);
+    expect(at('attaccante_gol', { goals: 2 })).toEqual({ met: false, progress: 2 });
+    expect(at('attaccante_gol', { goals: 3 }).met).toBe(true);
     expect(at('centrocampista_ultimo_passaggio', { assists: 2 }).met).toBe(true);
-    expect(at('difensore_tre_porte_inviolate', { cleanSheets: 2 }).met).toBe(true);
+    expect(at('difensore_porte_inviolate', { cleanSheets: 2 }).met).toBe(true);
     expect(at('punta_gol_partita_scelta', { pickedGoals: 1 }).met).toBe(true);
     // Senza voti la media non è raggiunta; con i voti è somma / numero.
     expect(at('pagella_senza_strappi', {}).met).toBe(false);
@@ -183,9 +182,23 @@ describe('obiettivo del capitolo', () => {
     expect(at('pagella_senza_strappi', { ratingSum: 12, ratingCount: 2 }).met).toBe(false);
   });
 
+  it('prints the rating target with a decimal comma', () => {
+    const s = withGoal(true);
+    const rated = {
+      ...s,
+      chapter: { ...s.chapter, goal: { id: 'pagella_giovane', target: 6, settled: false } },
+    };
+    expect(settleChapter(rated, ctx).headline?.params.target).toBe('6,0');
+    const starts = {
+      ...s,
+      chapter: { ...s.chapter, goal: { id: 'presenza_costante', target: 7, settled: false } },
+    };
+    expect(settleChapter(starts, ctx).headline?.params.target).toBe('7');
+  });
+
   it('table goal uses the position and is never met without a club', () => {
     const s = withGoal(true);
-    const goal = { id: 'classifica_prime_dieci', target: 10, settled: false };
+    const goal = { id: 'classifica_meta_classifica', target: 10, settled: false };
     const noClub = {
       ...s,
       player: { ...s.player, clubId: undefined },
@@ -282,7 +295,11 @@ describe('obiettivo del capitolo', () => {
         expect(t[k], k).toBeTruthy();
       }
     }
-    const custom: GameContext = ctx;
-    expect(custom.content.chapterGoals.length).toBe(25);
+    const goals = ctx.content.chapterGoals;
+    expect(new Set(goals.map((g) => g.id)).size).toBe(goals.length);
+    for (const role of ['GK', 'DEF', 'MID', 'ATT'] as const) {
+      const some = goals.some((g) => !g.conditions?.roles || g.conditions.roles.includes(role));
+      expect(some, role).toBe(true);
+    }
   });
 });

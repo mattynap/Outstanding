@@ -323,6 +323,14 @@ function checkChapterGoals(content: GameContent, errors: string[]): void {
     errors,
   );
   for (const g of content.chapterGoals) {
+    const roles = g.conditions?.roles;
+    const scorers = ['goals', 'assists', 'pickGoal'].includes(g.metric);
+    if (scorers && (!roles || roles.includes('GK'))) {
+      errors.push(`chapterGoals.${g.id}: "${g.metric}" needs roles that exclude GK`);
+    }
+    if (g.metric === 'cleanSheets' && (!roles || roles.some((r) => r !== 'GK' && r !== 'DEF'))) {
+      errors.push(`chapterGoals.${g.id}: "cleanSheets" needs roles limited to GK and DEF`);
+    }
     const keys = [g.textKey, chapterGoalOutcomeKey(g, true), chapterGoalOutcomeKey(g, false)];
     if (new Set(keys).size !== 3) errors.push(`chapterGoals.${g.id}: textKey must end in ".text"`);
     for (const key of keys) {

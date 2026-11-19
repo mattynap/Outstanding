@@ -109,15 +109,18 @@ export function settleChapter(
     const rel = clamp((p.relationships[coachId] ?? 0) + cfg.rewardTrust, -100, 100);
     player = { ...player, relationships: { ...player.relationships, [coachId]: rel } };
   }
+  const def = chapterGoalDef(goal.id, ctx);
   const club = p.clubId ? getClub(state.world, p.clubId).shortName : '';
   const headline: Headline = {
     kind: 'event',
-    textKey: chapterGoalOutcomeKey(chapterGoalDef(goal.id, ctx), met),
+    textKey: chapterGoalOutcomeKey(def, met),
     params: {
       firstName: p.firstName,
       lastName: p.lastName,
       club,
-      target: goal.target,
+      // Italiano: la media voto ha la virgola (6,5), gli altri bersagli sono interi.
+      target:
+        def.metric === 'avgRating' ? goal.target.toFixed(1).replace('.', ',') : String(goal.target),
     },
   };
   return {

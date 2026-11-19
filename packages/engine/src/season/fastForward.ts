@@ -1,18 +1,31 @@
 import type { EventEffect, GameEvent } from '@outstanding/content';
 import { defaultContext, type GameContext } from '../context';
 import { drawWeekEvents, getEvent, resolveEvent } from '../events/events';
-import { simulateMatch } from '../match/match';
+import { simulateMatch, type MatchReport } from '../match/match';
 import { clubLevel } from '../market/offers';
 import { bigMatchKind } from '../media/media';
 import type { ContractOffer, GameState, Score } from '../types';
+import { weekOfSeason } from '../time';
+import { chapterOf, createChapter, emptyChapterLog, refreshChapterPicks } from './director';
+import { buildHeadlines, tableZone, type Headline } from './headlines';
 import { getWeekOptions, planWeek, type WeekChoice } from './plan';
 import { advanceWeek, isSeasonOver, playerFixture } from './week';
+
+export type { Headline, HeadlineKind } from './headlines';
 
 /** Fin dove correre: alla prossima partita importante (o a fine stagione) o a fine stagione. */
 export type FastForwardTarget = 'bigMatch' | 'seasonEnd';
 
 /** Perché l'avanti veloce si è fermato. */
-export type FastForwardStop = 'bigMatch' | 'seasonEnd' | 'offers' | 'news' | 'retired';
+export type FastForwardStop =
+  'bigMatch' | 'seasonEnd' | 'offers' | 'news' | 'retired' | 'pick' | 'chapterEnd';
+
+/** Una partita simulata del giocatore, per il riepilogo. */
+export interface MatchSummary {
+  fixtureId: string;
+  result: 'win' | 'draw' | 'loss';
+  rating: number | null;
+}
 
 export interface FastForwardReport {
   weeks: number;
@@ -21,19 +34,27 @@ export interface FastForwardReport {
   record: { win: number; draw: number; loss: number };
   /** Notizie decise in automatico. */
   events: number;
+  /** Le partite del giocatore simulate durante l'avanzamento, con il voto. */
+  summary: MatchSummary[];
+  /** Titoli di prima pagina del tratto (solo `advanceToStop`; vuoti in `fastForward`). */
+  headlines: Headline[];
 }
 
 /**
  * Il piano da ripetere: quello della settimana scorsa, senza le azioni non disponibili e senza
  * serate (i rischi si scelgono di persona); se non resta nulla, il piano delle settimane saltate.
  */
-export function repeatPlan(state: GameState, ctx: GameContext = defaultContext): WeekChoice[] {
+export function repeatPlan(
+  state: GameState,
+  ctx: GameContext = defaultContext,
+  remembered: readonly WeekChoice[] | undefined = state.lastPlan,
+): WeekChoice[] {
   const options = getWeekOptions(state, ctx);
   const ok = (id: string) => {
     const o = options.find((x) => x.id === id);
     return Boolean(o?.available) && o?.kind !== 'party';
   };
-  const last = (state.lastPlan ?? []).filter((c) => ok(c.actionId));
+  const last = (remembered ?? []).filter((c) => ok(c.actionId));
   if (last.length > 0) return last;
   return ctx.config.progression.skipWeekPlan.filter(ok).map((actionId) => ({ actionId }));
 }
@@ -105,6 +126,10 @@ function worthStopping(state: GameState, offer: ContractOffer): boolean {
   return clubLevel(state, offer.clubId) < clubLevel(state, state.player.clubId);
 }
 
+function summaryOf(r: MatchReport): MatchSummary {
+  return { fixtureId: r.fixtureId, result: r.result, rating: r.rating };
+}
+
 function resultOf(score: Score, home: boolean): 'win' | 'draw' | 'loss' {
   const mine = home ? score.home : score.away;
   const theirs = home ? score.away : score.home;
@@ -130,6 +155,8 @@ export function fastForward(
     stop: 'seasonEnd',
     record: { win: 0, draw: 0, loss: 0 },
     events: 0,
+    summary: [],
+    headlines: [],
   };
   const offersAtStart = new Set(state.offers.map((o) => o.id));
 
@@ -173,9 +200,115 @@ export function fastForward(
       const out = simulateMatch(s, ctx);
       s = out.state;
       report.record[resultOf(out.matchReport.score, home)]++;
+      report.summary.push(summaryOf(out.matchReport));
     }
     s = advanceWeek(s, ctx).state;
     report.weeks++;
   }
   return { state: s, report };
+}
+
+/** Imposta il piano del capitolo: le settimane simulate lo ripetono (con le regole di `repeatPlan`). */
+export function setChapterPlan(
+  state: GameState,
+  choices: WeekChoice[],
+  ctx: GameContext = defaultContext,
+): GameState {
+  const known = new Set(getWeekOptions(state, ctx).map((o) => o.id));
+  for (const c of choices)
+    if (!known.has(c.actionId)) throw new Error(`Unknown action "${c.actionId}"`);
+  return { ...state, chapterPlan: choices.map((c) => ({ ...c })) };
+}
+
+/**
+ * Punto d'ingresso della chiusura di un capitolo: qui B4 liquiderà l'obiettivo, prima che il
+ * capitolo successivo prenda il posto di quello che si chiude.
+ */
+function onChapterClose(state: GameState): GameState {
+  return state;
+}
+
+/**
+ * Avanti fino al prossimo stop: ripete il piano del capitolo, risolve da solo le notizie e
+ * simula le partite non scelte. Si ferma (anche a zero settimane trascorse) per ritiro, fine
+ * stagione, notizia personale, offerta che vale, cambio di capitolo (il nuovo capitolo è già
+ * creato: il chiamante imposta il suo piano) e prima di ogni partita scelta, in ordine di
+ * calendario. Alla restituzione non c'è mai una partita aperta e, senza notizie in sospeso, la
+ * prossima partita da giocare è sempre una scelta. Il tratto (`chapter.stretch`) si azzera.
+ * Il cambio di capitolo precede la partita scelta della stessa settimana: il capitolo nuovo
+ * nasce all'inizio della sua prima settimana, che si gioca col piano del capitolo precedente.
+ */
+export function advanceToStop(
+  state: GameState,
+  ctx: GameContext = defaultContext,
+): { state: GameState; report: FastForwardReport } {
+  if (state.retired) throw new Error('The career is over');
+  if (state.currentMatch) throw new Error('A match is in progress');
+  let s = state;
+  const report: FastForwardReport = {
+    weeks: 0,
+    stop: 'seasonEnd',
+    record: { win: 0, draw: 0, loss: 0 },
+    events: 0,
+    summary: [],
+    headlines: [],
+  };
+  const offersAtStart = new Set(state.offers.map((o) => o.id));
+  const zoneFrom = tableZone(state, ctx);
+  const cal = ctx.config.calendar;
+  const isPick = (id: string) => s.chapter.picks.some((p) => p.fixtureId === id);
+
+  const finish = (stop: FastForwardStop): { state: GameState; report: FastForwardReport } => {
+    report.stop = stop;
+    report.headlines = buildHeadlines(s, s.chapter.stretch, zoneFrom, tableZone(s, ctx), ctx);
+    s = { ...s, chapter: { ...s.chapter, stretch: emptyChapterLog() } };
+    return { state: s, report };
+  };
+
+  for (;;) {
+    if (s.retired) return finish('retired');
+    if (isSeasonOver(s, ctx)) return finish('seasonEnd');
+
+    // Capitolo nuovo: il registro del tratto passa con lo stato, così i titoli lo leggono intero.
+    let boundary = false;
+    if (chapterOf(weekOfSeason(s.week, cal), cal) !== s.chapter.id) {
+      const closed = onChapterClose(s);
+      s = {
+        ...closed,
+        chapter: { ...createChapter(closed, ctx), stretch: closed.chapter.stretch },
+      };
+      boundary = true;
+    } else {
+      s = { ...s, chapter: { ...s.chapter, picks: refreshChapterPicks(s, ctx) } };
+    }
+
+    if (s.plannedWeek !== s.week) {
+      // Il piano del capitolo non sostituisce quello scelto a mano dal giocatore.
+      const plan = repeatPlan(s, ctx, s.chapterPlan);
+      s = { ...planWeek(s, plan, ctx).state, lastPlan: s.lastPlan };
+    }
+    s = drawWeekEvents(s, ctx).state;
+    if (hasPersonalNews(s, ctx)) return finish('news');
+    while (s.pendingEvents.length > 0) {
+      const pe = s.pendingEvents[0]!;
+      s = resolveEvent(s, pe.eventId, prudentChoice(getEvent(pe.eventId, ctx), s), ctx).state;
+      report.events++;
+    }
+    // Le partite non scelte si simulano, in ordine di calendario, fino alla prima scelta.
+    for (let f = playerFixture(s); f && !isPick(f.id); f = playerFixture(s)) {
+      const out = simulateMatch(s, ctx);
+      s = out.state;
+      report.record[resultOf(out.matchReport.score, f.homeId === s.player.clubId)]++;
+      report.summary.push(summaryOf(out.matchReport));
+    }
+
+    if (report.weeks > 0 && s.offers.some((o) => !offersAtStart.has(o.id) && worthStopping(s, o))) {
+      return finish('offers');
+    }
+    if (boundary) return finish('chapterEnd');
+    if (playerFixture(s)) return finish('pick');
+
+    s = advanceWeek(s, ctx).state;
+    report.weeks++;
+  }
 }

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildupLines,
   checkContent,
+  checkHeadlineKeys,
   defaultContent,
   parseContent,
   rawDefaultContent,
@@ -111,5 +112,18 @@ describe('eventi', () => {
         i18n: { it: [...rawDefaultContent.i18n.it, { file: 'i18n/dup.json', data: dup }] },
       }),
     ).toThrow(/duplicate text key/);
+  });
+});
+
+describe('prima pagina', () => {
+  it('content:check finds headline keys', () => {
+    const t = defaultContent.i18n.it;
+    expect(checkHeadlineKeys(3, t)).toEqual([]);
+    const { ['headlines.legend.success.2']: _gone, ...rest } = t;
+    expect(checkHeadlineKeys(3, rest)).toContain(
+      'headlines: missing text "headlines.legend.success.2"',
+    );
+    // Chiedere più varianti di quelle scritte è un errore.
+    expect(checkHeadlineKeys(9, t).length).toBeGreaterThan(0);
   });
 });

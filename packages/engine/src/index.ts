@@ -163,12 +163,18 @@ export {
   type EventReport,
   type EventView,
 } from './events/events';
+export { tableZone, type TableZone } from './season/headlines';
 export { getStat } from './events/stats';
 export {
+  advanceToStop,
   fastForward,
   prudentChoice,
   repeatPlan,
+  setChapterPlan,
   type FastForwardReport,
+  type Headline,
+  type HeadlineKind,
+  type MatchSummary,
   type FastForwardStop,
   type FastForwardTarget,
 } from './season/fastForward';

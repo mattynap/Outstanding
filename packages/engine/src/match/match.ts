@@ -5,6 +5,7 @@ import { applyMatchAftermath } from '../player/condition';
 import { computeOvr } from '../player/ratings';
 import { Rng } from '../rng';
 import { expectedGoals } from '../season/quickSim';
+import { recordChapterMatch } from '../season/director';
 import { playerFixture } from '../season/week';
 import type {
   ClubBase,
@@ -500,32 +501,30 @@ function finishMatch(
         )}`,
       }
     : null;
-  return {
-    state: next,
-    report: {
-      peak,
-      fixtureId: m.fixtureId,
-      homeId: fixture.homeId,
-      awayId: fixture.awayId,
-      side: m.side,
-      score: { ...m.score },
-      result,
-      events,
-      selection: m.selection,
-      minutesPlayed,
-      rating,
-      ...(ratingParts ? { ratingParts } : {}),
-      commentKey,
-      goals: m.goals,
-      assists: m.assists,
-      cleanSheet,
-      ...(settled.extraTime ? { extraTime: { ...settled.extraTime } } : {}),
-      ...(settled.penalties ? { penalties: { ...settled.penalties } } : {}),
-      ...(fixture.cup ? { competitionId: fixture.cup.competitionId } : {}),
-      ...(m.legend ? { legend: { ...m.legend } } : {}),
-      ...(after.injured && after.player.injury ? { injury: { ...after.player.injury } } : {}),
-    },
+  const report: MatchReport = {
+    peak,
+    fixtureId: m.fixtureId,
+    homeId: fixture.homeId,
+    awayId: fixture.awayId,
+    side: m.side,
+    score: { ...m.score },
+    result,
+    events,
+    selection: m.selection,
+    minutesPlayed,
+    rating,
+    ...(ratingParts ? { ratingParts } : {}),
+    commentKey,
+    goals: m.goals,
+    assists: m.assists,
+    cleanSheet,
+    ...(settled.extraTime ? { extraTime: { ...settled.extraTime } } : {}),
+    ...(settled.penalties ? { penalties: { ...settled.penalties } } : {}),
+    ...(fixture.cup ? { competitionId: fixture.cup.competitionId } : {}),
+    ...(m.legend ? { legend: { ...m.legend } } : {}),
+    ...(after.injured && after.player.injury ? { injury: { ...after.player.injury } } : {}),
   };
+  return { state: recordChapterMatch(next, report), report };
 }
 
 /**

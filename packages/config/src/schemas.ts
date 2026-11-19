@@ -70,6 +70,9 @@ const seasonWeek = z.number().int().min(0);
 export const chapterIdSchema = z.enum(['preseason', 'autumn', 'winter', 'spring', 'finale']);
 export type ChapterId = z.infer<typeof chapterIdSchema>;
 
+export const HEADLINE_KINDS = ['legend', 'peak', 'rating', 'table', 'event', 'result'] as const;
+export type HeadlineKind = (typeof HEADLINE_KINDS)[number];
+
 export const calendarSchema = z
   .object({
     weeksPerSeason: z.number().int().min(20),
@@ -95,7 +98,21 @@ export const calendarSchema = z
         relegation: z.number().min(0).max(1),
       }),
     }),
+    /** Titoli di prima pagina del riepilogo: quanti, da che voto, in che ordine, quante varianti. */
+    headlines: z.object({
+      max: z.number().int().min(1),
+      ratingFrom: z.number().min(4).max(10),
+      /** Varianti di testo per ogni tipo (`headlines.<tipo>[.<esito>].<n>`). */
+      variants: z.number().int().min(2),
+      priority: z.array(z.enum(HEADLINE_KINDS)),
+    }),
   })
+  .refine(
+    (c) =>
+      c.headlines.priority.length === HEADLINE_KINDS.length &&
+      new Set(c.headlines.priority).size === HEADLINE_KINDS.length,
+    { message: 'headlines.priority must list every kind once' },
+  )
   .refine((c) => c.firstMatchWeek < c.weeksPerSeason, {
     message: 'firstMatchWeek must be inside the season',
   })

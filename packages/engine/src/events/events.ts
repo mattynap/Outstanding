@@ -415,6 +415,11 @@ export function resolveEvent(
       event.cooldownWeeks > 0
         ? { ...s.cooldowns, [eventId]: state.week + event.cooldownWeeks }
         : s.cooldowns,
+    chapter: {
+      ...s.chapter,
+      log: { ...s.chapter.log, events: s.chapter.log.events + 1 },
+      stretch: { ...s.chapter.stretch, events: s.chapter.stretch.events + 1 },
+    },
     rngState: rng.getState(),
   };
   return { state: s, report: { eventId, choiceIndex, changes } };

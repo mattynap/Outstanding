@@ -439,6 +439,20 @@ export interface ChapterLog {
   legends: number;
   /** Passo decisivo più recente: settimana, partita ed esito. */
   decisive: { week: number; fixtureId: string; success: boolean } | null;
+  /** Notizie risolte (di persona o in automatico). */
+  events: number;
+  /** Voto migliore (a parità, il più recente). */
+  bestRating: { week: number; fixtureId: string; rating: number } | null;
+  /** Ultima partita del giocatore: esito e gol (per i titoli di prima pagina). */
+  lastResult: {
+    week: number;
+    fixtureId: string;
+    result: 'win' | 'draw' | 'loss';
+    goalsFor: number;
+    goalsAgainst: number;
+  } | null;
+  /** Ultimo momento da leggenda vissuto. */
+  lastLegend: { week: number; fixtureId: string; id: string; success: boolean } | null;
 }
 
 /** Il capitolo corrente della stagione e le partite che il giocatore vivrà in prima persona. */

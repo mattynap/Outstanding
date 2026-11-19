@@ -1,5 +1,6 @@
 import type { CalendarConfig } from '@outstanding/config';
 import { defaultContext, type GameContext } from '../context';
+import type { MatchReport } from '../match/match';
 import { matchSignals, matchStakes } from '../match/stakes';
 import { weekOfSeason } from '../time';
 import type {
@@ -25,6 +26,10 @@ export function emptyChapterLog(): ChapterLog {
     pickedGoals: 0,
     legends: 0,
     decisive: null,
+    events: 0,
+    bestRating: null,
+    lastResult: null,
+    lastLegend: null,
   };
 }
 
@@ -44,7 +49,7 @@ export function chapterOf(seasonWeek: number, cal: CalendarConfig): ChapterId {
 }
 
 /** Classifica del girone del giocatore, nulla senza club. */
-function playerTable(state: GameState, ctx: GameContext): StandingRow[] | null {
+export function playerTable(state: GameState, ctx: GameContext): StandingRow[] | null {
   const clubId = state.player.clubId;
   if (!clubId) return null;
   const { group } = getGroup(state.world, getClub(state.world, clubId).groupId);
@@ -232,4 +237,54 @@ export function blankChapter(id: ChapterId): ChapterState {
 export function createChapter(state: GameState, ctx: GameContext = defaultContext): ChapterState {
   const id = chapterOf(weekOfSeason(state.week, ctx.config.calendar), ctx.config.calendar);
   return { ...blankChapter(id), picks: pickChapterMatches(state, id, ctx) };
+}
+
+function addToLog(log: ChapterLog, r: MatchReport, week: number, picked: boolean): ChapterLog {
+  const rated = r.rating !== null;
+  const best = log.bestRating;
+  const mine = r.side === 'home' ? r.score.home : r.score.away;
+  const theirs = r.side === 'home' ? r.score.away : r.score.home;
+  return {
+    ...log,
+    starts: log.starts + (r.selection === 'starter' ? 1 : 0),
+    goals: log.goals + r.goals,
+    assists: log.assists + r.assists,
+    ratingSum: log.ratingSum + (r.rating ?? 0),
+    ratingCount: log.ratingCount + (rated ? 1 : 0),
+    cleanSheets: log.cleanSheets + (r.cleanSheet ? 1 : 0),
+    pickedGoals: log.pickedGoals + (picked ? r.goals : 0),
+    legends: log.legends + (r.legend ? 1 : 0),
+    decisive: r.peak ? { week, fixtureId: r.fixtureId, success: r.peak.success } : log.decisive,
+    bestRating:
+      r.rating !== null && (!best || r.rating >= best.rating)
+        ? { week, fixtureId: r.fixtureId, rating: r.rating }
+        : best,
+    lastResult: {
+      week,
+      fixtureId: r.fixtureId,
+      result: r.result,
+      goalsFor: mine,
+      goalsAgainst: theirs,
+    },
+    lastLegend: r.legend
+      ? { week, fixtureId: r.fixtureId, id: r.legend.id, success: r.legend.success }
+      : log.lastLegend,
+  };
+}
+
+/**
+ * Registra una partita del giocatore, giocata o simulata, nel registro del capitolo e in quello
+ * del tratto. Nessuna estrazione: non sposta la sequenza di `Rng`.
+ */
+export function recordChapterMatch(state: GameState, report: MatchReport): GameState {
+  const picked = state.chapter.picks.some((p) => p.fixtureId === report.fixtureId);
+  const { chapter } = state;
+  return {
+    ...state,
+    chapter: {
+      ...chapter,
+      log: addToLog(chapter.log, report, state.week, picked),
+      stretch: addToLog(chapter.stretch, report, state.week, picked),
+    },
+  };
 }

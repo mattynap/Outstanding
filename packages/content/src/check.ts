@@ -26,6 +26,30 @@ export function checkPeakKeys(variants: number, t: Translations): string[] {
   return errors;
 }
 
+/** Esiti di ogni titolo di prima pagina: le chiavi sono `headlines.<tipo>[.<esito>].<n>`. */
+export const HEADLINE_SUBS: Record<string, readonly string[]> = {
+  legend: ['success', 'failure'],
+  peak: ['success', 'failure'],
+  rating: [],
+  table: ['promotion', 'relegation', 'safe', 'slip'],
+  event: [],
+  result: ['win', 'draw', 'loss'],
+};
+
+/** Testi dei titoli di prima pagina: ogni tipo ed esito ha tutte le varianti. */
+export function checkHeadlineKeys(variants: number, t: Translations): string[] {
+  const errors: string[] = [];
+  for (const [kind, subs] of Object.entries(HEADLINE_SUBS)) {
+    for (const sub of subs.length > 0 ? subs : [null]) {
+      for (let i = 1; i <= variants; i++) {
+        const key = `headlines.${kind}${sub ? `.${sub}` : ''}.${i}`;
+        if (!(key in t)) errors.push(`headlines: missing text "${key}"`);
+      }
+    }
+  }
+  return errors;
+}
+
 /** Testi di ogni gesto da leggenda (`match.legends.<id>.<parte>`). */
 export const LEGEND_KEYS = ['option', 'success', 'failure', 'headline'] as const;
 

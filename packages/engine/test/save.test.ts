@@ -9,6 +9,7 @@ import {
   newCareer,
   playerFixture,
   playMatch,
+  simulateMatch,
   serialize,
   type GameState,
 } from '../src/index';
@@ -215,5 +216,14 @@ describe('salvataggio v2', () => {
     const s = JSON.parse(serialize(newCareer(baseOptions, 7))) as Raw;
     s['currentMatch'] = { minute: 'x' };
     expect(() => deserialize(JSON.stringify(s))).toThrow(/currentMatch/);
+  });
+
+  it('keeps the chapter log and stretch after a played match', () => {
+    let s: GameState = newCareer(baseOptions, 7);
+    while (!playerFixture(s)) s = advanceWeek(s).state;
+    s = simulateMatch(s).state;
+    expect(s.chapter.log.lastResult).not.toBeNull();
+    expect(s.chapter.stretch.lastResult).toEqual(s.chapter.log.lastResult);
+    expect(deserialize(serialize(s))).toEqual(s);
   });
 });

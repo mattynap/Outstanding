@@ -23,3 +23,4 @@ Indice delle note di progetto. Questa cartella è versionata in git.
 - [Scene pixel art](pixel-art-scene.md) — campo e sala stampa disegnati dal codice, approvati il 2026-11-17
 - [UI ibrida](ui-ibrido.md) — giornale + pixel: regole, modalità partita, guida corta; ondata 3 dopo prova iPhone
 - [Lingua delle risposte](lingua-risposte.md) — rispondere sempre in italiano, anche nei report
+- [Regista della partita](regista-partita.md) — Parte A: decisioni stabili, taratura A10, numeri e tempo stimato

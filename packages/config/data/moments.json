@@ -51,7 +51,7 @@
           "difficulty": 5,
           "tag": "duel",
           "success": {
-            "rating": 1
+            "rating": 1.25
           },
           "failure": {
             "rating": -0.5,
@@ -77,7 +77,7 @@
           },
           "difficulty": 0,
           "success": {
-            "rating": 0.5
+            "rating": 0.75
           },
           "failure": {
             "rating": -0.75,
@@ -176,10 +176,10 @@
           "difficulty": 15,
           "tag": "penalty",
           "success": {
-            "rating": 1.75
+            "rating": 2.0
           },
           "failure": {
-            "rating": 0,
+            "rating": 0.0,
             "goalAgainst": 1
           },
           "risk": "risky"
@@ -203,7 +203,7 @@
           "difficulty": 4,
           "tag": "passing",
           "success": {
-            "rating": 0.25,
+            "rating": 0.5,
             "next": {
               "momentId": "gk_outlet"
             }
@@ -302,14 +302,14 @@
           "difficulty": 2,
           "tag": "tackle",
           "success": {
-            "rating": 0.75,
+            "rating": 1.0,
             "next": {
               "momentId": "loose_ball_cover",
               "chance": 0.5
             }
           },
           "failure": {
-            "rating": -1,
+            "rating": -1.0,
             "goalAgainst": 0.35
           },
           "risk": "risky"
@@ -370,7 +370,7 @@
           "difficulty": 3,
           "tag": "tackle",
           "success": {
-            "rating": 0.5,
+            "rating": 0.75,
             "goalFor": 0.1,
             "by": "team"
           },
@@ -416,12 +416,12 @@
           "difficulty": 12,
           "tag": "finishing",
           "success": {
-            "rating": 0.25,
+            "rating": 0.5,
             "goalFor": 0.33,
             "by": "self"
           },
           "failure": {
-            "rating": 0
+            "rating": 0.0
           },
           "risk": "risky"
         },
@@ -497,7 +497,7 @@
           "difficulty": 2,
           "tag": "composure",
           "success": {
-            "rating": 0.5
+            "rating": 0.75
           },
           "failure": {
             "rating": -0.75,
@@ -571,7 +571,7 @@
           "difficulty": 12,
           "tag": "finishing",
           "success": {
-            "rating": 0.5,
+            "rating": 0.75,
             "goalFor": 0.33,
             "by": "self"
           },
@@ -599,7 +599,7 @@
           "difficulty": 16,
           "tag": "finishing",
           "success": {
-            "rating": 0.25,
+            "rating": 0.5,
             "goalFor": 0.33,
             "by": "self"
           },
@@ -687,7 +687,7 @@
           "difficulty": 4,
           "tag": "tackle",
           "success": {
-            "rating": 0.75
+            "rating": 1.0
           },
           "failure": {
             "rating": -0.75,
@@ -731,7 +731,7 @@
           "difficulty": 5,
           "tag": "dribble",
           "success": {
-            "rating": 0.5,
+            "rating": 0.75,
             "next": {
               "momentId": "wing_delivery"
             },
@@ -846,7 +846,7 @@
           "difficulty": 14,
           "tag": "dribble",
           "success": {
-            "rating": 1,
+            "rating": 1.25,
             "goalFor": 0.52,
             "by": "self",
             "effects": {
@@ -899,7 +899,7 @@
           "difficulty": 11,
           "tag": "finishing",
           "success": {
-            "rating": 0.5,
+            "rating": 0.75,
             "goalFor": 0.39,
             "by": "self"
           },
@@ -1014,7 +1014,7 @@
           "difficulty": -5,
           "tag": "composure",
           "success": {
-            "rating": 0.5,
+            "rating": 0.75,
             "goalFor": 0.8,
             "by": "self"
           },
@@ -1043,7 +1043,7 @@
           "difficulty": 3,
           "tag": "dribble",
           "success": {
-            "rating": 0.25,
+            "rating": 0.5,
             "goalFor": 0.3,
             "by": "assist",
             "next": {
@@ -1126,12 +1126,12 @@
           "difficulty": 12,
           "tag": "duel",
           "success": {
-            "rating": 0.25,
+            "rating": 0.5,
             "goalFor": 0.29,
             "by": "self"
           },
           "failure": {
-            "rating": 0
+            "rating": 0.0
           },
           "risk": "risky"
         },
@@ -1195,7 +1195,7 @@
           "tag": "composure",
           "risk": "risky",
           "success": {
-            "rating": 0.25,
+            "rating": 0.5,
             "effects": {
               "pressure": 0.12,
               "fatigue": 0.5
@@ -1270,7 +1270,7 @@
           "tag": "duel",
           "risk": "risky",
           "success": {
-            "rating": 0.5,
+            "rating": 0.75,
             "effects": {
               "fatigue": 0.5
             }
@@ -1430,7 +1430,7 @@
           "tag": "dribble",
           "risk": "risky",
           "success": {
-            "rating": 0.25,
+            "rating": 0.5,
             "next": {
               "momentId": "box_second_ball",
               "chance": 0.4
@@ -1570,7 +1570,7 @@
           "tag": "finishing",
           "risk": "risky",
           "success": {
-            "rating": 0.35,
+            "rating": 0.6,
             "goalFor": 0.16,
             "by": "self",
             "effects": {
@@ -1757,7 +1757,7 @@
           "tag": "duel",
           "risk": "risky",
           "success": {
-            "rating": 0.4,
+            "rating": 0.65,
             "effects": {
               "fatigue": 1,
               "coachTrust": 0.5
@@ -1859,7 +1859,7 @@
           "tag": "duel",
           "risk": "risky",
           "success": {
-            "rating": 0.35,
+            "rating": 0.6,
             "effects": {
               "fatigue": 0.5,
               "coachTrust": 0.5

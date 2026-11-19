@@ -5,6 +5,25 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
 
 ## [Non rilasciato]
 
+### Regista della partita (Parte A)
+
+- Regista (`match/director.ts`): decide quando fermare la partita e quale momento proporre in base a
+  tensione, posta in gioco e pressione; mai l'esito. Momenti con preavviso di un minuto, respiro dopo gol
+  e catene, passo decisivo e riga di chiusura in pagella.
+- Catene di momenti con "insisti o chiudi", conseguenze mostrate per ogni opzione (`onFail`, fascia di
+  probabilità vera), stati dinamici (`dyn`), rischio contestuale e valore atteso delle opzioni.
+- Momenti da leggenda: gesti rari e rischiosi nell'ultimo passo di una catena, al massimo uno a partita.
+- Simulatore: strategie prudente, aggressiva, casuale e contestuale, opzioni `--isolate` (stesse scelte
+  fuori campo), `--quality` e `--mode full|quick`, stima del tempo con i secondi in `simulator.json`.
+- Modalità della partita: completa (5-7 passi) e rapida (1-2 passi); salvataggio v2 per tutta la Parte A.
+- Taratura (A10): premio al successo delle opzioni rischiose +0,25 e fattori di punteggio GK 1,8 e DEF 1,0.
+  A 5000 carriere, voto isolato contestuale 6,444 > prudente 6,313 > aggressiva 6,181 (differenza
+  prudente-aggressiva 0,13). Guardrail della prudente contro la baseline A0: gol 50,6 (50,1), assist 56,6
+  (61,1), trofei 0,77 (0,81), massima serie 59,2% (60,4%), leggende 3,54% (3,26%). Dettaglio in
+  `reports/regista/confronto-A10.md`.
+- Stima del tempo: completa circa 85 min a stagione e 29,5 h a carriera (sopra il bersaglio 20-30 min e
+  6-8 h), rapida 22,5 min e 7,9 h; da decidere con l'utente.
+
 ### Interfaccia ibrida giornale e pixel (ondata 2)
 
 - Momenti chiave: ogni opzione dice cosa succede se va e se non va, con percentuale in pixel e

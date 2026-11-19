@@ -366,30 +366,46 @@ describe('fine capitolo e stop mancanti', () => {
   });
 
   it('simulates a due non-picked match after a news stop', () => {
-    for (let seed = 1; seed < 30; seed++) {
+    // La notizia personale è iniettata a mano (evento con trigger) in stati di ramo, costruiti
+    // dagli stop reali portando avanti le settimane senza giocare: così si trovano settimane
+    // con una partita non scelta.
+    let hits = 0;
+    for (let seed = 1; seed < 4; seed++) {
       let s = setChapterPlan(start(seed), [{ actionId: 'train_normal' }], ctx);
-      for (let i = 0; i < 80; i++) {
-        const out = advanceToStop(s, ctx);
-        s = out.state;
-        if (out.report.stop === 'seasonEnd') break;
-        if (out.report.stop === 'pick') s = simulateMatch(s, ctx).state;
-        if (out.report.stop === 'news') {
-          const f = playerFixture(s);
-          const due = !!f && !s.chapter.picks.some((p) => p.fixtureId === f.id);
-          s = answerNews(s);
-          const next = advanceToStop(s, ctx);
-          if (due) {
-            expect(next.report.summary.some((m) => m.fixtureId === f!.id)).toBe(true);
+      for (let i = 0; i < 40; i++) {
+        let b = s;
+        for (let k = 0; k < 6 && !isSeasonOver(b, ctx) && b.pendingEvents.length === 0; k++) {
+          const probe = advanceToStop(
+            {
+              ...b,
+              eventsWeek: b.week,
+              pendingEvents: [{ eventId: 'amore_addio_01', textVariant: 1 }],
+            },
+            ctx,
+          );
+          const f = playerFixture(probe.state);
+          if (
+            probe.report.stop === 'news' &&
+            probe.report.weeks === 0 &&
+            f &&
+            !probe.state.chapter.picks.some((p) => p.fixtureId === f.id)
+          ) {
+            const next = advanceToStop(answerNews(probe.state), ctx);
+            expect(next.report.summary.some((m) => m.fixtureId === f.id)).toBe(true);
             const g = playerFixture(next.state);
             expect(!g || next.state.chapter.picks.some((p) => p.fixtureId === g.id)).toBe(true);
-            return;
+            hits++;
           }
-          s = next.state;
-          if (next.report.stop === 'pick') s = simulateMatch(s, ctx).state;
+          b = playerFixture(b) ? simulateMatch(b, ctx).state : advanceWeek(b, ctx).state;
         }
+        const out = advanceToStop(s, ctx);
+        s = out.state;
+        if (out.report.stop === 'seasonEnd' || out.report.stop === 'retired') break;
+        if (out.report.stop === 'pick') s = simulateMatch(s, ctx).state;
+        if (out.report.stop === 'news') s = answerNews(s);
       }
     }
-    // Nessuna notizia personale con una partita non scelta dovuta: niente da verificare.
+    expect(hits).toBeGreaterThan(0);
   });
 
   it('never loses a worthwhile offer behind another stop', () => {
@@ -397,7 +413,8 @@ describe('fine capitolo e stop mancanti', () => {
       !s.player.clubId ||
       o.kind === 'renewal' ||
       clubLevel(s, o.clubId) < clubLevel(s, s.player.clubId);
-    for (let seed = 1; seed < 15; seed++) {
+    let hits = 0;
+    for (let seed = 1; seed < 60; seed++) {
       let s = setChapterPlan(start(seed), [{ actionId: 'train_normal' }], ctx);
       let seen = new Set(s.offers.map((o) => o.id));
       let weeksSinceSeen = 0;
@@ -408,7 +425,10 @@ describe('fine capitolo e stop mancanti', () => {
         const fresh = s.offers.filter((o) => !seen.has(o.id) && worth(s, o));
         // Un'offerta nuova che vale, dopo almeno una settimana, o ha fermato questo giro o
         // era già visibile al giro prima: non resta "nuova" e muta.
-        if (weeksSinceSeen > 0 && fresh.length > 0) expect(out.report.stop).toBe('offers');
+        if (weeksSinceSeen > 0 && fresh.length > 0) {
+          hits++;
+          expect(out.report.stop).toBe('offers');
+        }
         seen = new Set(s.offers.map((o) => o.id));
         weeksSinceSeen = 0;
         if (out.report.stop === 'seasonEnd' || out.report.stop === 'retired') break;
@@ -416,5 +436,6 @@ describe('fine capitolo e stop mancanti', () => {
         if (out.report.stop === 'news') s = answerNews(s);
       }
     }
+    expect(hits).toBeGreaterThan(0);
   });
 });

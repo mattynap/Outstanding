@@ -636,6 +636,7 @@ describe('modalità della partita e passo decisivo', () => {
 
   it('default mode is full', () => {
     let checked = 0;
+    let quickChecked = 0;
     for (let seed = 1; seed <= 40 && checked < 3; seed++) {
       const s = toFirstMatch(newCareer(baseOptions, seed));
       const a = beginMatch(s, ctx);
@@ -644,11 +645,15 @@ describe('modalità della partita e passo decisivo', () => {
       checked++;
       expect(a.state.currentMatch!.mode).toBe('full');
       expect(a.state).toEqual(b.state);
-      expect(beginMatch(s, ctx, { mode: 'quick' }).state.currentMatch?.mode ?? 'quick').toBe(
-        'quick',
-      );
+      // La rapida può non fermarsi mai: senza partita in corso non c'è modalità da confrontare.
+      const quick = beginMatch(s, ctx, { mode: 'quick' });
+      if (quick.step.kind === 'moment') {
+        expect(quick.state.currentMatch!.mode).toBe('quick');
+        quickChecked++;
+      }
     }
     expect(checked).toBeGreaterThan(0);
+    expect(quickChecked).toBeGreaterThan(0);
   });
 
   it('sim mode decides with autoDecider and never pauses', () => {
@@ -684,7 +689,10 @@ describe('modalità della partita e passo decisivo', () => {
       expect(ev).toBeDefined();
       expect(report.peak.success).toBe((ev as { success: boolean }).success);
       const kind = report.peak.success ? 'success' : 'failure';
-      expect(report.peak.closingKey).toMatch(new RegExp(`^match\\.peak\\.${kind}\\.[1-3]$`));
+      expect(report.peak.closingKey).toMatch(new RegExp(`^match\\.peak\\.${kind}\\.([1-9]\\d*)$`));
+      const variant = Number(report.peak.closingKey.split('.').at(-1));
+      expect(variant).toBeGreaterThanOrEqual(1);
+      expect(variant).toBeLessThanOrEqual(ctx.config.match.peak.variants);
       expect(report.peak.closingKey in ctx.content.i18n.it).toBe(true);
     }
     expect(checked).toBeGreaterThan(5);

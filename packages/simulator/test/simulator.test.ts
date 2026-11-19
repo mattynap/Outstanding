@@ -4,8 +4,14 @@ import { mkdtempSync, readdirSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
+  advanceWeek,
   defaultContext,
+  endSeason,
+  getOffers,
+  isSeasonOver,
   newCareer,
+  playerFixture,
+  simulateMatch,
   Rng,
   type KeyMoment,
   type MatchDecision,
@@ -225,6 +231,15 @@ describe('match strategies', () => {
       }));
     };
     for (const id of STRATEGIES) expect(decisions(id)).toEqual(decisions('cautious'));
+    // Le scelte fuori campo sono le stesse funzioni della prudente, non copie che per ora coincidono.
+    const base = getStrategy('cautious', { isolate: true });
+    for (const id of STRATEGIES) {
+      const iso = getStrategy(id, { isolate: true });
+      expect(iso.planWeek).toBe(base.planWeek);
+      expect(iso.playsManually).toBe(base.playsManually);
+      expect(iso.chooseEvent).toBe(base.chooseEvent);
+      expect(iso.pickOffer).toBe(base.pickOffer);
+    }
     // Senza isolamento le scelte fuori campo dell'aggressiva cambiano: il confronto è significativo.
     const free = getStrategy('aggressive');
     const rngFree = Rng.fromSeed(42);
@@ -241,6 +256,44 @@ describe('match strategies', () => {
       indexOf(getStrategy('aggressive', { isolate: true }).decideMoment(moment, Rng.fromSeed(1))),
     ).toBe(2);
   });
+
+  it(
+    'with isolate, off-pitch decisions match along a whole career, and differ without it',
+    () => {
+      const ctx = defaultContext;
+      let state = newCareer(randomCareerOptions(Rng.fromSeed(5), ctx), 5, ctx);
+      const trace = (id: (typeof STRATEGIES)[number], isolate: boolean, st: typeof state) => {
+        const strategy = getStrategy(id, { isolate });
+        const rng = Rng.fromSeed(9);
+        return {
+          plan: strategy.planWeek(st, rng, ctx),
+          event: strategy.chooseEvent(3, rng),
+          offer: strategy.pickOffer(st, getOffers(st), rng, ctx),
+        };
+      };
+      let freeDiffers = false;
+      // Stati reali di tre stagioni, con infortuni, offerte e livelli diversi.
+      for (let week = 0; week < 150 && !state.retired; week++) {
+        for (const id of STRATEGIES) {
+          expect(trace(id, true, state)).toEqual(trace('cautious', true, state));
+        }
+        if (
+          JSON.stringify(trace('aggressive', false, state)) !==
+          JSON.stringify(trace('cautious', false, state))
+        ) {
+          freeDiffers = true;
+        }
+        for (let f = playerFixture(state); f; f = playerFixture(state)) {
+          state = simulateMatch(state, ctx).state;
+        }
+        state = isSeasonOver(state, ctx)
+          ? endSeason(state, ctx).state
+          : advanceWeek(state, ctx).state;
+      }
+      expect(freeDiffers).toBe(true);
+    },
+    CAREER_TIMEOUT,
+  );
 
   it.each(['-0.1', '1.1', 'NaN', 'Infinity', 'abc', ''])(
     'CLI rejects invalid quality %s',

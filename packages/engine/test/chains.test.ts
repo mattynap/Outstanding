@@ -314,7 +314,7 @@ describe('catene di momenti (contesto di prova)', () => {
         ...fctx,
         config: {
           ...fctx.config,
-          match: { ...cfg, modes: { ...cfg.modes, full: [budget, budget] } },
+          match: { ...cfg, steps: [budget, budget] },
         },
       };
       for (let seed = 1; seed <= 40; seed++) {

@@ -28,6 +28,8 @@ export interface GroupMetrics {
   legendPct: number;
   /** Minuti di gioco stimati per carriera. */
   playMinutes: number;
+  /** Passi per partita giocata di persona: visibili (decisi dal giocatore) e totali (con gli automatici). */
+  stepsPerMatch: { visible: number; total: number };
   seasons: number;
   time?: TimeMetrics;
 }
@@ -164,9 +166,25 @@ export function groupMetrics(results: readonly CareerResult[], ctx: GameContext)
     tiersPct,
     legendPct: round(pct(results.filter((r) => r.legend).length, n), 2),
     playMinutes: Math.round(avg(results.map((r) => r.playMinutes))),
+    stepsPerMatch: stepsPerMatch(results),
     seasons: round(avg(results.map((r) => r.totals.seasons))),
     ...(timeMetrics(results) ? { time: timeMetrics(results) } : {}),
   };
+}
+
+function stepsPerMatch(results: readonly CareerResult[]): { visible: number; total: number } {
+  let visible = 0;
+  let auto = 0;
+  let matches = 0;
+  for (const r of results) {
+    const d = r.decisions;
+    visible += d.moments + d.chainSteps;
+    auto += d.autoSteps;
+    matches += d.matches + d.quickMatches;
+  }
+  return matches
+    ? { visible: round(visible / matches, 2), total: round((visible + auto) / matches, 2) }
+    : { visible: 0, total: 0 };
 }
 
 export function summarize(
@@ -214,6 +232,8 @@ export function formatTable(summary: SimSummary): string {
     ['Punteggio medio', (m) => fmt(m.score)],
     ['Leggende', (m) => fmt(m.legendPct, '%')],
     ['Tempo di gioco (min)', (m) => fmt(m.playMinutes)],
+    ['Passi a partita, visibili', (m) => fmt(m.stepsPerMatch.visible)],
+    ['Passi a partita, totali', (m) => fmt(m.stepsPerMatch.total)],
   ];
   const width = Math.max(...rows.map(([label]) => label.length)) + 2;
   const colWidth = 9;

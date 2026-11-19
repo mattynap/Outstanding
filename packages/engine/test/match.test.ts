@@ -408,7 +408,7 @@ describe('partita simulata', () => {
   it('equivale a giocare la partita con la scelta automatica', () => {
     const s = toFirstMatch(newCareer(baseOptions, 3));
     const simulated = simulateMatch(s);
-    expect(simulated).toEqual(playMatch(s, autoDecider));
+    expect(simulated).toEqual(playMatch(s, autoDecider, ctx, { mode: 'sim' }));
     expect(
       simulated.state.calendar.find((f) => f.id === simulated.matchReport.fixtureId)!.result,
     ).toBeDefined();
@@ -621,8 +621,8 @@ describe('modalità della partita e passo decisivo', () => {
     return { n, report: matchReport, state };
   }
 
-  it('quick mode has 1–2 steps', () => {
-    const [min, max] = ctx.config.match.modes.quick;
+  it('quick mode shows 1–2 steps', () => {
+    const [min, max] = ctx.config.match.visibleSteps;
     let played = 0;
     for (let seed = 1; seed <= 40; seed++) {
       const { n } = steps(seed, 'quick');
@@ -632,6 +632,76 @@ describe('modalità della partita e passo decisivo', () => {
       expect(n).toBeLessThanOrEqual(max);
     }
     expect(played).toBeGreaterThan(5);
+  });
+
+  /** Eventi `moment` della partita, divisi in visibili e automatici. */
+  const split = (r: MatchReport) => {
+    const ms = r.events.filter((e) => e.kind === 'moment');
+    return { all: ms.length, auto: ms.filter((e) => e.auto).length };
+  };
+
+  it('quick: il budget totale è quello di full e i passi visibili restano nella quota', () => {
+    const [, maxVisible] = ctx.config.match.visibleSteps;
+    let hidden = 0;
+    for (let seed = 1; seed <= 40; seed++) {
+      const q = steps(seed, 'quick');
+      const f = steps(seed, 'full');
+      const { all, auto } = split(q.report);
+      expect(q.n).toBe(all - auto);
+      expect(q.n).toBeLessThanOrEqual(maxVisible);
+      hidden += auto;
+      // stessa estrazione del budget: la quick non ha più passi totali di full
+      expect(all).toBeLessThanOrEqual(ctx.config.match.steps[1]);
+      expect(split(f.report).auto).toBe(0);
+    }
+    expect(hidden).toBeGreaterThan(20);
+  });
+
+  it('quick e sim: con lo stesso decisore automatico stesso punteggio, gol, assist, voto', () => {
+    // I gesti da leggenda compaiono solo nei passi visibili: il decisore li scarta per confronto.
+    const noLegend: KeyMomentDecider = (m) => {
+      const ok = { ...m, options: m.options.map((o) => (o.legendId ? { ...o, chance: -1 } : o)) };
+      return autoDecider(ok, undefined as never);
+    };
+    for (let seed = 1; seed <= 30; seed++) {
+      const s = toFirstMatch(newCareer(baseOptions, seed));
+      const q = playMatch(s, noLegend, ctx, { mode: 'quick' }).matchReport;
+      const sim = playMatch(s, noLegend, ctx, { mode: 'sim' }).matchReport;
+      expect(q.score).toEqual(sim.score);
+      expect(q.goals).toBe(sim.goals);
+      expect(q.assists).toBe(sim.assists);
+      expect(q.rating).toBe(sim.rating);
+    }
+  });
+
+  it('quick: la ripresa dal pending equivale al gioco continuo; v3 senza visibleLeft riprende', () => {
+    let checked = 0;
+    for (let seed = 1; seed <= 40 && checked < 5; seed++) {
+      const s = toFirstMatch(newCareer(baseOptions, seed));
+      const begun = beginMatch(s, ctx, { mode: 'quick' });
+      if (begun.step.kind !== 'moment') continue;
+      checked++;
+      const continuous = playMatch(s, first, ctx, { mode: 'quick' });
+      const resumed = playMatch(deserialize(serialize(begun.state)), first, ctx);
+      expect(resumed.matchReport).toEqual(continuous.matchReport);
+      expect(resumed.state).toEqual(continuous.state);
+      // salvataggio senza `visibleLeft`: tutti i passi restano visibili, la partita finisce
+      const m = begun.state.currentMatch!;
+      const { visibleLeft: _v, ...director } = m.director;
+      const legacy = { ...begun.state, currentMatch: { ...m, director } };
+      const done = playMatch(deserialize(serialize(legacy)), first, ctx);
+      expect(done.state.currentMatch).toBeUndefined();
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+
+  it('le leggende non sono mai offerte ai passi nascosti', () => {
+    for (let seed = 1; seed <= 40; seed++) {
+      const s = toFirstMatch(newCareer(baseOptions, seed));
+      const r = playMatch(s, first, ctx, { mode: 'sim' });
+      expect(r.matchReport.legend).toBeUndefined();
+      expect(r.state.currentMatch).toBeUndefined();
+    }
   });
 
   it('default mode is full', () => {
@@ -657,21 +727,20 @@ describe('modalità della partita e passo decisivo', () => {
   });
 
   it('sim mode decides with autoDecider and never pauses', () => {
-    let checked = 0;
+    let hidden = 0;
     for (let seed = 1; seed <= 20; seed++) {
       const s = toFirstMatch(newCareer(baseOptions, seed));
       const sim = simulateMatch(s, ctx);
       expect(sim.state.currentMatch).toBeUndefined();
       expect(sim.matchReport.fixtureId).toBe(playerFixture(s)!.id);
+      // Nessun passo visibile: la partita non si ferma mai, i passi sono tutti automatici.
       const begun = beginMatch(s, ctx, { mode: 'sim' });
-      if (begun.step.kind === 'moment') {
-        checked++;
-        expect(begun.state.currentMatch!.mode).toBe('sim');
-      }
+      expect(begun.step.kind).toBe('finished');
+      hidden += sim.matchReport.events.filter((e) => e.kind === 'moment' && e.auto).length;
       // Stesso risultato giocando di persona con autoDecider in modalità sim.
       expect(playMatch(s, autoDecider, ctx, { mode: 'sim' })).toEqual(sim);
     }
-    expect(checked).toBeGreaterThan(0);
+    expect(hidden).toBeGreaterThan(0);
   });
 
   it('report.peak is the highest-tension step with its outcome', () => {

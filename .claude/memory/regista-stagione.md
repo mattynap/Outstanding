@@ -15,3 +15,14 @@ type: project
   Non è colpa del ciclo: con le scelte solo simulate i numeri tornano (gol 58,9). Il confronto con A0 va rifatto o
   la base di riferimento va ridefinita per il ciclo a capitoli.
 - Non provato: `match.modes.quick` [2,2] rompe test del motore (1-2 passi per spec).
+
+## B3b: la partita rapida conserva l'apporto
+
+- Budget del regista uguale in ogni modalità (`match.steps` [5,7]); `match.visibleSteps` [1,2] è la quota visibile
+  della rapida (derivata dalla stessa estrazione del budget: nessuna estrazione in più, rapida e sim consumano il
+  Rng allo stesso modo). `match.modes` non esiste più.
+- I passi nascosti si risolvono dentro `run` con `prudentMomentChoice` e qualità 0,5 (eventi `moment` con
+  `auto: true`), senza leggende. `DirectorState.visibleLeft` opzionale: assente = tutti visibili (full e salvataggi
+  precedenti); sim = 0. Regola in `rootVisible` (director.ts): una catena che non entra nei visibili rimasti si nasconde.
+- Esito misurato (cautious, 5000, capitoli): gol 48,8, assist 54,9, trofei 0,72: assist e trofei appena sotto la
+  tolleranza A0 di 10%. Tempo 19,9 min a stagione e 6,9 h a carriera. Il tempo conta solo i passi visibili.

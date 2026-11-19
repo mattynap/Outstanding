@@ -32,6 +32,7 @@ import {
   initialDirector,
   onChainEnd,
   onStepOpened,
+  rootVisible,
   tension,
 } from './director';
 import {
@@ -45,6 +46,7 @@ import {
   optionValue,
   riskBonus,
   pickMomentType,
+  chainDepth,
   type KeyMoment,
 } from './moments';
 import { goalChancePerMinute, pushFor, stepPressure } from './pressure';
@@ -237,8 +239,10 @@ export function availableOptions(
   player: Player,
   tens: number,
   ctx: GameContext,
+  hidden = false,
 ): { options: number[]; legendsOffered: number } {
-  const room = Math.max(0, ctx.config.match.legends.perMatch - m.director.legendsUsed);
+  // I gesti da leggenda sono solo per i passi visibili.
+  const room = hidden ? 0 : Math.max(0, ctx.config.match.legends.perMatch - m.director.legendsUsed);
   const eligible: { index: number; margin: number }[] = [];
   type.options.forEach((o, index) => {
     const lg = o.legend;
@@ -538,23 +542,36 @@ function openStep(
   player: Player,
   rng: Rng,
   ctx: GameContext,
+  hidden = false,
 ): MatchState {
   const type = getMomentType(momentId, ctx);
   const textVariant = rng.int(1, type.textVariants);
   const stepTension = tension(m, ctx.config.match);
-  const { options, legendsOffered } = availableOptions(m, type, chain, player, stepTension, ctx);
+  const { options, legendsOffered } = availableOptions(
+    m,
+    type,
+    chain,
+    player,
+    stepTension,
+    ctx,
+    hidden,
+  );
+  const opened = onStepOpened(
+    { ...m.director, legendsUsed: m.director.legendsUsed + legendsOffered },
+    {
+      minute: m.minute,
+      momentId: type.id,
+      tension: stepTension,
+      root: chain === undefined,
+    },
+    ctx.config.match,
+  );
   return {
     ...m,
-    director: onStepOpened(
-      { ...m.director, legendsUsed: m.director.legendsUsed + legendsOffered },
-      {
-        minute: m.minute,
-        momentId: type.id,
-        tension: stepTension,
-        root: chain === undefined,
-      },
-      ctx.config.match,
-    ),
+    director:
+      hidden || opened.visibleLeft === undefined
+        ? opened
+        : { ...opened, visibleLeft: Math.max(0, opened.visibleLeft - 1) },
     pending: {
       momentId: type.id,
       minute: m.minute,
@@ -619,11 +636,20 @@ function run(
     if (!cur.director.armed) cur = tryArm(state, cur, rng, ctx);
     // Con armLead 0 il preavviso e l'apertura cadono nello stesso minuto.
     if (cur.director.armed && cur.director.armed.at <= cur.minute) {
-      cur = openStep(cur, cur.director.armed.momentId, undefined, state.player, rng, ctx);
+      const rootId = cur.director.armed.momentId;
+      const hidden = !rootVisible(cur, chainDepth(rootId, ctx), ctx.config.match);
+      cur = openStep(cur, rootId, undefined, state.player, rng, ctx, hidden);
       const paused = { ...state, currentMatch: cur, rngState: rng.getState() };
+      // Passo nascosto: si risolve subito come in `sim`, senza fermare la partita.
+      if (hidden) return decide(paused, autoMomentDecision(paused, cur, ctx), ctx, true);
       return { state: paused, step: { kind: 'moment', moment: describeMoment(paused, cur, ctx) } };
     }
   }
+}
+
+/** Scelta automatica di un passo nascosto: `autoDecider` con qualità neutra. */
+function autoMomentDecision(state: GameState, m: MatchState, ctx: GameContext): MatchDecision {
+  return { optionIndex: prudentMomentChoice(describeMoment(state, m, ctx)), quality: 0.5 };
 }
 
 /** Opzioni di una partita: modalità (completa di default, rapida, simulata). */
@@ -701,6 +727,16 @@ export function decideMoment(
   decision: number | MatchDecision,
   ctx: GameContext = defaultContext,
 ): { state: GameState; step: MatchStep } {
+  return decide(state, decision, ctx, false);
+}
+
+/** `hidden`: il passo è stato risolto in automatico e il suo seguito resta nascosto. */
+function decide(
+  state: GameState,
+  decision: number | MatchDecision,
+  ctx: GameContext,
+  hidden: boolean,
+): { state: GameState; step: MatchStep } {
   const m = state.currentMatch;
   if (!m?.pending) throw new Error('No key moment pending');
   const type = getMomentType(m.pending.momentId, ctx);
@@ -751,7 +787,15 @@ export function decideMoment(
     legend: legend ? { id: legend.id, success } : m.legend,
     events: [
       ...m.events,
-      { kind: 'moment', minute, momentId: type.id, optionId: option.id, success, quality },
+      {
+        kind: 'moment',
+        minute,
+        momentId: type.id,
+        optionId: option.id,
+        success,
+        quality,
+        ...(hidden ? { auto: true as const } : {}),
+      },
     ],
   };
   cur = applyEffects(cur, outcome.effects, ctx.config.match);
@@ -773,8 +817,9 @@ export function decideMoment(
       step: (m.pending.chain?.step ?? 1) + 1,
     };
     // Stesso minuto della radice, nessun avanzamento: niente gol dell'esito, niente intervallo.
-    cur = openStep(cur, outcome.next.momentId, chain, state.player, rng, ctx);
+    cur = openStep(cur, outcome.next.momentId, chain, state.player, rng, ctx, hidden);
     const paused = { ...state, currentMatch: cur, rngState: rng.getState() };
+    if (hidden) return decide(paused, autoMomentDecision(paused, cur, ctx), ctx, true);
     return { state: paused, step: { kind: 'moment', moment: describeMoment(paused, cur, ctx) } };
   }
 

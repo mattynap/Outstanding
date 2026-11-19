@@ -63,6 +63,8 @@ export interface Decisions {
   moments: number;
   /** Passi di catena dopo il primo. */
   chainSteps: number;
+  /** Passi risolti in automatico nelle partite giocate di persona (non contano nel tempo). */
+  autoSteps: number;
   /** Partite giocate di persona in modalità completa e rapida; partite simulate. */
   matches: number;
   quickMatches: number;
@@ -190,7 +192,7 @@ function playWeeks(input: LoopInput): LoopOutput {
         d.simulatedMatches++;
         continue;
       }
-      s = playMatch(
+      const played = playMatch(
         s,
         (moment) => {
           if (moment.chain) d.chainSteps++;
@@ -199,7 +201,9 @@ function playWeeks(input: LoopInput): LoopOutput {
         },
         ctx,
         { mode },
-      ).state;
+      );
+      s = played.state;
+      d.autoSteps += played.matchReport.events.filter((e) => e.kind === 'moment' && e.auto).length;
       if (mode === 'quick') d.quickMatches++;
       else d.matches++;
     }
@@ -274,7 +278,7 @@ function playChapters(input: LoopInput): LoopOutput {
       const f = playerFixture(s)!;
       const mode = s.chapter.picks.find((p) => p.fixtureId === f.id)?.mode ?? 'full';
       chapterStats.picks++;
-      s = playMatch(
+      const played = playMatch(
         s,
         (moment) => {
           if (moment.chain) d.chainSteps++;
@@ -283,7 +287,9 @@ function playChapters(input: LoopInput): LoopOutput {
         },
         ctx,
         { mode },
-      ).state;
+      );
+      s = played.state;
+      d.autoSteps += played.matchReport.events.filter((e) => e.kind === 'moment' && e.auto).length;
       if (mode === 'quick') d.quickMatches++;
       else d.matches++;
     }
@@ -314,6 +320,7 @@ export function runCareer(
     events: 0,
     moments: 0,
     chainSteps: 0,
+    autoSteps: 0,
     matches: 0,
     quickMatches: 0,
     simulatedMatches: 0,

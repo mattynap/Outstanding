@@ -151,11 +151,8 @@
     "phaseTilt": 0.3,
     "phaseMin": 0.05
   },
-  "modes": {
-    "full": [5, 7],
-    "quick": [1, 2],
-    "sim": [5, 7]
-  },
+  "steps": [5, 7],
+  "visibleSteps": [1, 2],
   "peak": {
     "variants": 3
   },

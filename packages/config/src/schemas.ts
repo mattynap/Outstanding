@@ -573,8 +573,10 @@ export const matchSchema = z
       /** Quota minima di ciascuna fase. */
       phaseMin: z.number().min(0).max(0.5),
     }),
-    /** Passi interattivi per modalità di partita: [min, max]. */
-    modes: z.object({ full: countRange, quick: countRange, sim: countRange }),
+    /** Passi del regista per partita (uguali in ogni modalità): [min, max]. */
+    steps: countRange,
+    /** Quota di passi mostrati al giocatore nella partita rapida: [min, max]; gli altri si risolvono da soli. */
+    visibleSteps: countRange,
     /** Riga di chiusura della pagella dal passo decisivo: varianti di `match.peak.<success|failure>.<n>`. */
     peak: z.object({ variants: z.number().int().min(1) }),
     /** Soglie delle fasce di probabilità mostrate (derivano dalla probabilità vera). */

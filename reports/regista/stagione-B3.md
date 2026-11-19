@@ -79,3 +79,45 @@ Contextual per ruolo (5000, senza isolamento): GK 1,53, DEF 2,42, MID 1,49, ATT 
 - I guardrail A0 non reggono: va decisa la strada (a), (b) o (c) prima di proseguire.
 - Il test del motore ha timeout di 5 s: con simulazioni in background tre test del motore sono andati in timeout;
   rieseguiti da soli passano.
+
+## B3b: la partita rapida conserva l'apporto del giocatore
+
+Modifica: budget del regista uguale in ogni modalità (`match.steps` [5,7]); `match.visibleSteps` [1,2] è la quota di
+passi visibili della rapida. I passi nascosti si risolvono subito con `autoDecider` e qualità 0,5 (eventi `auto: true`,
+nessun gesto da leggenda); completa tutti visibili, simulata nessuno. Seme 42, 5000 carriere, ciclo a capitoli.
+
+| Strategia  | Voto | Gol  | Assist | Trofei | Massima serie | Leggende | Passi a partita (visibili / totali) | Min/stagione mediana | Ore/carriera mediana |
+| ---------- | ---- | ---- | ------ | ------ | ------------- | -------- | ----------------------------------- | -------------------- | -------------------- |
+| cautious   | 6,28 | 48,8 | 54,9   | 0,72   | 57,1%         | 2,32%    | 1,66 / 3,30                         | 19,9                 | 6,90                 |
+| contextual | 6,32 | 50,8 | 59,8   | 0,76   | 57,6%         | 3,00%    | 1,67 / 3,31                         | 19,9                 | 6,87                 |
+| aggressive | 6,07 | 47,2 | 35,0   | 0,63   | 62,4%         | 2,02%    | 1,43 / 2,79                         | 19,4                 | 6,88                 |
+| random     | 6,13 | 38,7 | 46,4   | 0,67   | 0,5%          | 0%       | 1,59 / 3,19                         | 17,2                 | 6,07                 |
+
+Guardrail su cautious (A0, tolleranza 10%; leggende 2 punti):
+
+| Misura             | A0                        | B3b                       | Verdetto                           |
+| ------------------ | ------------------------- | ------------------------- | ---------------------------------- |
+| Gol                | 50,1                      | 48,8 (-2,6%)              | dentro                             |
+| Assist             | 61,1                      | 54,9 (-10,1%)             | fuori di 0,1 punti sulla soglia    |
+| Trofei             | 0,81                      | 0,72 (-11,1%)             | fuori di 0,001 sulla soglia        |
+| Massima serie      | 60,4%                     | 57,1% (-5,5%)             | dentro                             |
+| Leggende totali    | 3,26%                     | 2,32%                     | dentro (-0,94 punti)               |
+| Leggende per ruolo | 1,78 / 4,20 / 4,16 / 2,88 | 0,89 / 3,15 / 2,75 / 2,48 | dentro (scarto massimo 1,41 punti) |
+
+Prima di B3b: gol 41,5, assist 42,5, trofei 0,64. Gol da -17% a -2,6%, assist da -30% a -10,1%, trofei da -21% a
+-11,1%. Assist e trofei restano a un soffio dalla tolleranza; la Parte A non è stata ritarata.
+Causa residua plausibile: i gol e assist nascono solo dai passi, e un passo nascosto vale come uno simulato ma la
+partita rapida ha comunque meno passi totali (3,3 a partita in media, perché il budget si scala sui minuti in campo).
+
+Tempo: mediana 19,9 min a stagione (p10-p90 15,2-23,3) e 6,9 h a carriera (6,15-7,47) per cautious; contextual 19,9
+e 6,87; aggressive 19,4 e 6,88 (sotto i 20 min, come in B3); random 17,2 e 6,07. Bersaglio 6-8 h rispettato; i 20-30
+minuti a stagione sono sul bordo basso, aggressive e random appena sotto.
+
+Criterio a settimane (`pnpm sim:criterion`): rispettato (33 test passati). Criterio a capitoli, `--isolate`, 2000
+carriere, informativo: contextual 6,32, cautious 6,28, aggressive 6,26, random 6,25. Contextual batte cautious di
+0,04 (in B3 0,046); |cautious - aggressive| = 0,02.
+
+Decisioni di dettaglio: la quota visibile segue la stessa estrazione del budget (posizione nell'intervallo, scalata sui
+minuti in campo), così quick e sim consumano il Rng allo stesso modo; una radice è nascosta anche se la sua catena
+non entra nei passi visibili rimasti (altrimenti si supererebbe la quota); la riserva per il finale caldo vale solo se
+il giocatore resta in campo oltre `hotFrom`. Il ciclo a settimane e il suo test a valori fissi sono invariati.

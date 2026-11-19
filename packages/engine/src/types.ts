@@ -335,6 +335,8 @@ export type MatchEvent =
       success: boolean;
       /** Qualità del gesto del giocatore, 0–1 (0,5 neutro). */
       quality: number;
+      /** Passo risolto in automatico, non mostrato al giocatore (rapida, simulata). */
+      auto?: true;
     }
   /** Preavviso: il momento si apre poco dopo (Task A5). */
   | { kind: 'buildup'; minute: number; momentId: string; textKey: string };
@@ -365,6 +367,8 @@ export interface MatchDyn {
 export interface DirectorState {
   budgetStart: number;
   budgetLeft: number;
+  /** Passi ancora mostrati al giocatore (rapida, simulata); assente = tutti visibili. */
+  visibleLeft?: number;
   /** Passi riservati rimasti nel finale caldo; null = non ancora valutato. */
   hotLeft: number | null;
   lastAt: number | null;

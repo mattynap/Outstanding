@@ -47,13 +47,23 @@ export function initialDirector(
   cfg: MatchConfig,
 ): DirectorState {
   let budget = 0;
+  let visible = 0;
   if (eligibleForMoments(minutesOnPitch, cfg)) {
-    const [min, max] = cfg.modes[mode];
-    budget = Math.max(1, Math.round((rng.int(min, max) * minutesOnPitch) / totalMinutes(cfg)));
+    const [min, max] = cfg.steps;
+    const raw = rng.int(min, max);
+    const scale = minutesOnPitch / totalMinutes(cfg);
+    budget = Math.max(1, Math.round(raw * scale));
+    // I passi visibili della rapida seguono la stessa estrazione del budget (posizione nel
+    // intervallo): nessuna estrazione in più, così rapida e simulata consumano il Rng allo stesso modo.
+    const [vMin, vMax] = cfg.visibleSteps;
+    const t = max > min ? (raw - min) / (max - min) : 0;
+    visible = Math.min(budget, Math.max(1, Math.round((vMin + t * (vMax - vMin)) * scale)));
   }
   return {
     budgetStart: budget,
     budgetLeft: budget,
+    // Completa: tutti visibili (campo assente); simulata: nessuno; rapida: la quota.
+    ...(mode === 'full' ? {} : { visibleLeft: mode === 'sim' ? 0 : visible }),
     hotLeft: null,
     lastAt: null,
     interventions: 0,
@@ -63,6 +73,22 @@ export function initialDirector(
     legendsUsed: 0,
     peak: null,
   };
+}
+
+/**
+ * La radice che si sta per aprire è visibile al giocatore? Campo `visibleLeft` assente = tutte
+ * visibili (partita completa, salvataggi precedenti). Una catena che non ci sta nei passi
+ * visibili rimasti si nasconde; prima del finale caldo resta riservato un passo visibile per il
+ * finale o per il minimo garantito. Non estrae.
+ */
+export function rootVisible(m: MatchState, depth: number, cfg: MatchConfig): boolean {
+  const left = m.director.visibleLeft;
+  if (left === undefined) return true;
+  if (left <= 0 || depth > left) return false;
+  const hotAhead = m.minuteOut > cfg.director.hotFrom;
+  return (
+    left > 1 || !hotAhead || m.minute >= cfg.director.hotFrom || m.director.armed?.forced === true
+  );
 }
 
 /** Finale caldo attivo: ci sono ancora passi riservati al bilico degli ultimi minuti. */

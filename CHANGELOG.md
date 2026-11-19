@@ -37,6 +37,16 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
   assist 42,5, trofei 0,64): le partite rapide hanno meno passi di quelle simulate. Dettaglio e cause in
   `reports/regista/stagione-B3.md`.
 
+### Regista della stagione (Parte B): la partita rapida conserva l'apporto (B3b)
+
+- Il budget del regista è lo stesso in ogni modalità (`match.steps` [5, 7], al posto di `match.modes`);
+  `match.visibleSteps` [1, 2] è la quota di passi mostrati nella rapida. Gli altri passi si risolvono subito con
+  `autoDecider` e qualità 0,5, come in `sim`, e nella cronaca hanno `auto: true`. Completa: tutti visibili;
+  simulata: nessuno. Gesti da leggenda solo sui passi visibili.
+- `DirectorState.visibleLeft` opzionale (assente = tutti visibili): nessun cambio di `saveVersion`.
+- Simulatore: il tempo conta solo i passi visibili; il riepilogo riporta passi a partita visibili e totali.
+- Effetto: gol e assist delle rapide tornano vicini alle simulate. Misure e guardrail in `reports/regista/stagione-B3.md`.
+
 ### Interfaccia ibrida giornale e pixel (ondata 2)
 
 - Momenti chiave: ogni opzione dice cosa succede se va e se non va, con percentuale in pixel e

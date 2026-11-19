@@ -141,7 +141,7 @@ confermato le scelte sotto.
   con `close(d)` tabella in config. Intervento se `T ≥ soglia`, passati `minGap` minuti, con probabilità
   `min(pMax, (T−soglia)·hazard)` estratta con `Rng` (niente cadenza fissa). Tutto in `match.json > director`.
 - **Budget:** contato a **passi interattivi** (ogni passo di catena consuma budget; l'intervallo
-  minimo vale fra inizi di catena). Completa 5–7, rapida 1–2. Finale caldo: dopo il 75' con scarto ≤ 1
+  minimo vale fra inizi di catena). Il budget è 5–7 in ogni modalità; la rapida ne mostra 1–2 (gli altri si risolvono da soli con `autoDecider`, senza gesti da leggenda), la simulata nessuno. Finale caldo: dopo il 75' con scarto ≤ 1
   si riservano 2–3 passi e `minGap` scende. Vietato aprire una catena che non entra nel budget.
   Garantito 1 intervento se il giocatore resta in campo almeno `minMinutesForMoment`.
 - **Catene:** in `config/data/moments.json` (i tipi di momento escono da `match.json`), testi in

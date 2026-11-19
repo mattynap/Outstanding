@@ -1,5 +1,6 @@
 import { defaultContext, type GameContext } from '../context';
 import { completeAppearance } from '../player/look';
+import { chainDepth } from '../match/moments';
 import { createChapter } from '../season/director';
 import type { GameState } from '../types';
 
@@ -64,10 +65,13 @@ function migrateMatchV1(m: Json, ctx: GameContext): Json {
       : null;
 
   let nextPending: Json | null = null;
+  let budgetLeft = planned.length;
   if (pending) {
     const type = ctx.config.match.moments.types.find((t) => t.id === pending['momentId']);
     if (!type) throw new Error(`Invalid save: unknown key moment "${pending['momentId']}"`);
     nextPending = { ...pending, options: type.options.map((_, i) => i) };
+    // I passi di una catena già aperta non hanno riserva: il budget copre quelli ancora possibili.
+    budgetLeft = Math.max(budgetLeft, chainDepth(type.id, ctx) - 1);
   }
 
   return {
@@ -77,8 +81,8 @@ function migrateMatchV1(m: Json, ctx: GameContext): Json {
     pressure: 0,
     trace: Array<number>(minute).fill(0),
     director: {
-      budgetStart: planned.length + interventions,
-      budgetLeft: planned.length,
+      budgetStart: budgetLeft + interventions,
+      budgetLeft,
       hotLeft: null,
       lastAt,
       interventions,

@@ -163,6 +163,45 @@ describe('ripresa di una partita migrata', () => {
   });
 });
 
+describe('ripresa v1 a budget esaurito', () => {
+  it('un momento in attesa con catena e nessun momento pianificato si gioca fino in fondo', () => {
+    let st = newCareer(baseOptions, 5);
+    while (!playerFixture(st)) st = advanceWeek(st).state;
+    const cm = beginMatch(st).state.currentMatch as unknown as Loose;
+    const m = {
+      fixtureId: cm['fixtureId'],
+      side: cm['side'],
+      opponentId: cm['opponentId'],
+      selection: cm['selection'],
+      minuteIn: 0,
+      minuteOut: 90,
+      blocksDone: 2,
+      score: { home: 0, away: 0 },
+      events: [],
+      momentMinutes: [],
+      pending: { momentId: 'att_counter', minute: 28, textVariant: 0 },
+      ratingDelta: 0,
+      goals: 0,
+      assists: 0,
+    };
+    const base = JSON.parse(serialize({ ...st, currentMatch: undefined })) as Raw;
+    const migrated = deserialize(JSON.stringify({ ...base, saveVersion: 1, currentMatch: m }));
+    expect(migrated.currentMatch!.director.budgetLeft).toBeGreaterThanOrEqual(2);
+    // Sceglie le opzioni che aprono un seguito (id delle catene), altrimenti la prima.
+    const chainy = (mo: { options: { id: string }[] }) =>
+      Math.max(
+        0,
+        mo.options.findIndex((o) =>
+          ['aspetta_compagni', 'dribbling', 'cross_teso', 'cross'].includes(o.id),
+        ),
+      );
+    for (let seed = 1; seed <= 40; seed++) {
+      const s = { ...migrated, rngState: [seed, seed + 1, seed + 2, seed + 3] };
+      expect(() => playMatch(s, (mo) => chainy(mo))).not.toThrow();
+    }
+  });
+});
+
 describe('validazione del regista', () => {
   const load = (edit: (m: Loose) => void) => {
     const base = JSON.parse(serialize(newCareer(baseOptions, 5))) as Raw;

@@ -13,7 +13,7 @@
     { "id": "spring", "fromWeek": 32 },
     { "id": "finale", "fromWeek": 44 }
   ],
-  "chapterMatches": { "min": 2, "max": 3 },
+  "chapterMatches": { "min": 2, "max": 4 },
   "chapterWeights": {
     "table": { "fromMatchday": 8, "window": 3, "promotion": 0.4, "relegation": 0.5 }
   },

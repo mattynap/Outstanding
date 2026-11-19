@@ -75,7 +75,7 @@ describe('capitoli della stagione', () => {
       ['spring', 32],
       ['finale', 44],
     ]);
-    expect(cal.chapterMatches).toEqual({ min: 2, max: 3 });
+    expect(cal.chapterMatches).toEqual({ min: 2, max: 4 });
   });
 
   it('lo schema rifiuta capitoli non crescenti o che non partono da 0', () => {

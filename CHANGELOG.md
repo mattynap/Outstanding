@@ -63,6 +63,13 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
 - Ritocchi ai testi: "Apri sulla fascia e accompagna", fallimento della doppia parata, righe di chiusura
   della pagella e titoli di prima pagina.
 
+### Regista (revisione finale)
+
+- Ripresa dei salvataggi v1 con una catena aperta e budget esaurito: il budget migrato copre i passi ancora possibili.
+- `fastForward` chiude e apre i capitoli (obiettivo liquidato e nuovo estratto) con gli stessi passaggi di
+  `advanceToStop`; con piano del capitolo vuoto si ripete il piano ricordato prima di `skipWeekPlan`.
+- Tolto `match.moments.countByRole`, non più letto dal motore.
+
 ### Interfaccia ibrida giornale e pixel (ondata 2)
 
 - Momenti chiave: ogni opzione dice cosa succede se va e se non va, con percentuale in pixel e

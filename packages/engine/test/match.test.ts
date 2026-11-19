@@ -726,9 +726,9 @@ describe('modalità della partita e passo decisivo', () => {
         skills: Object.fromEntries(Object.keys(s.player.skills).map((k) => [k, 99])),
       } as typeof s.player;
       const chain = { rootId: lt.id, step: 2 };
+      const used = m.director.legendsUsed;
       const shown = availableOptions(m, lt, chain, strong, 100, ctx, false);
       const hidden = availableOptions(m, lt, chain, strong, 100, ctx, true);
-      const used = m.director.legendsUsed;
       expect(hidden.legendsOffered).toBe(0);
       expect(m.director.legendsUsed).toBe(used);
       expect(hidden.options.length).toBeLessThanOrEqual(shown.options.length);

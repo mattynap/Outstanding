@@ -1,32 +1,31 @@
 # Handoff
 
 ## Stato
-Piano del regista di partita e stagione scritto, rivisto (ricerca + review Codex, 10 problemi corretti)
-e **approvato dall'utente il 2026-11-18**. Nessuna modifica al codice.
-Piano: `docs/superpowers/plans/2026-11-18-regista-partita-stagione.md` (task A0–A10, A7b, B1–B4).
-Spec: `docs/superpowers/specs/2026-11-18-regista-partita-stagione-design.md` (§8.4 = meccaniche aggiunte).
-Ricerca: `reports/Meccaniche regista partita e stagione.md`.
-Esecuzione scelta: subagent-driven, review dopo ogni task.
+Piano del regista di partita e stagione eseguito tutto (A0–A10, A7b, B1–B4, più B3b), subagent-driven,
+con review per task (Sonnet + Codex) e revisione finale del branch (Opus + Codex) chiusa senza P1/P2 aperti.
+Suite: 552 test passati, 1 saltato; content:check ok. Report: `reports/regista/confronto-A10.md`, `reports/regista/stagione-B3.md`.
+Numeri finali (ciclo a capitoli, prudente, 1000 carriere): gol 54,2, assist 57,8, trofei 0,83, massima serie 56,8%,
+leggende 2,5%; 20,1 min a stagione, 7,0 h a carriera. Criterio fra strategie (ciclo settimane) rispettato.
 
 ## Prossimo passo
-Eseguire il piano con `subagent-driven-development`, partendo dal Task A0 (baseline del simulatore).
-Checkpoint con l'utente alla fine della Parte A (numeri del simulatore), prima della Parte B.
-Prompt di partenza: è nell'ultima risposta della sessione del 2026-11-18 (vedi anche TASKS).
+1. L'utente decide sul push dei commit locali di `ciro-dev` (non pushati).
+2. Portare l'app su `advanceToStop` (oggi usa `fastForward`) e mostrare annuncio ed esito dell'obiettivo di capitolo.
+3. Prova su iPhone del nuovo ritmo (partite scelte per capitolo, rapida con 1–2 passi visibili).
 
 ## Blocchi e domande aperte
-- Push: 7 commit locali su `ciro-dev` (da 91ca0ff a 8b08822) non pushati. Chiedere prima di pushare.
-- File non di questo lavoro, da non committare senza richiesta: `packages/app/ios/`, modifiche iOS
-  (.gitignore, README, package.json, pnpm-lock, make-art.mjs, eslint, CHANGELOG), report e research_notes precedenti, .DS_Store.
-- Restano aperte: offerta (`founder/offer.md`), prova con i tester, feedback iPhone dell'interfaccia ibrida.
+- Push non fatto: serve il via dell'utente.
+- Da confermare dall'utente: scarti marginali su 5000 carriere dopo B3b (assist −10,1%, trofei −11,1% vs A0), poi rientrati a 1000 dopo B4; tempo al bordo basso (20,1 min).
+- Parcheggiati: tablePosition valutato sul nuovo club dopo un trasferimento a metà capitolo; test della collisione offerta+notizia; obiettivi di classifica raggiunti solo nel 27% dei casi.
+- Non committare: `packages/app/ios/`, modifiche iOS (.gitignore, .prettierignore, README, package.json, pnpm-lock, make-art.mjs, eslint, hunk iOS del CHANGELOG), report e research_notes precedenti, .DS_Store.
 
 ## File toccati
-- `docs/superpowers/specs/2026-11-18-regista-partita-stagione-design.md`
-- `docs/superpowers/plans/2026-11-18-regista-partita-stagione.md`
-- `reports/Meccaniche regista partita e stagione.md`
-- `~/.ai/cache/ricerche/regista-partita-stagione-meccaniche-2026-11-18.md`
+- `packages/engine/src/match/` (director, match, moments), `packages/engine/src/season/` (director, goals, fastForward, endSeason), `packages/engine/src/save/serialize.ts`
+- `packages/config/data/` (match, moments, calendar, career), `packages/config/src/schemas.ts`
+- `packages/content/data/chapter-goals.json`, `packages/content/data/i18n/it*.json`, `packages/content/src/check.ts`
+- `packages/simulator/src/`, `reports/regista/`, `CHANGELOG.md`, `.claude/memory/regista-*.md`
 
 ## Skill consigliate
-- subagent-driven-development, test-driven-development, verification-before-completion.
+- frontend-design (app), verification-before-completion.
 
 ## Firma
-Claude Code, Opus 5.5, 2026-11-18. Deleghe Codex oggi: 14 (leggero 10, standard 3, forte 1).
+Claude Code, Opus 5.5, 2026-11-19 sera. Deleghe Codex oggi: 34 (7 giorni: standard 51, leggero 12, forte 7).

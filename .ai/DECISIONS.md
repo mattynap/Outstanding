@@ -31,3 +31,8 @@ Decisioni con il cliente o commerciali: proporle per il registro di base-azienda
 - Decisione: preavviso solo sulle radici, respiro dopo gol e catene, "chiudi" sicuro nelle catene, momenti per funzione (mai lo stesso tipo due volte di fila), passo decisivo in pagella, momenti da leggenda solo come archetipi, prima pagina e obiettivo di capitolo. Gesto ±0,10 con tetto 0,15. Nessun aggiustamento nascosto degli esiti. Un formato di salvataggio per parte: v2 Parte A, v3 Parte B. `rival` riservato al rivale di carriera, in partita `keyOpponent`.
 - Perché: ricerca in `reports/Meccaniche regista partita e stagione.md` e scelte dell'utente; review Codex sul piano.
 - Alternative scartate: richiami in cronaca (P6), gesto a ±15, leggende con riferimenti reali, una versione di salvataggio per task.
+
+## 2026-11-19 — Partita rapida e ciclo a capitoli
+- Decisione: la rapida ha lo stesso budget del regista di full e sim (5–7 momenti), ne mostra 1–2 e risolve gli altri col decisore automatico; leggende solo sui passi visibili; almeno un passo visibile garantito. 4 partite scelte per capitolo (`chapterMatches.max`). `fastForward` resta un ciclo suo ma gestisce i confini di capitolo con gli stessi helper di `advanceToStop`.
+- Perché: con budget 1–2 giocare una partita rendeva meno che simularla (41,5 gol contro 58,9); pareri concordi di architetto e Codex forte. Durata nel bersaglio senza toccare `secondsPer`.
+- Alternative scartate: più xG in config (gonfia la squadra, non il giocatore); nuova baseline accettando il calo; `fastForward` come wrapper (sposterebbe criterio e baseline).

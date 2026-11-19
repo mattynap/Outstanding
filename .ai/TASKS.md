@@ -2,10 +2,13 @@
 
 ## In corso
 <!-- max 3 -->
-- [ ] Regista partita e stagione: eseguire il piano approvato, subagent-driven, da Task A0 (2026-11-18)
+- [ ] Push di ciro-dev dopo il via dell'utente (2026-11-19)
 
 ## Prossimi
 <!-- l'ordine è la priorità -->
+- [ ] App su advanceToStop e obiettivo di capitolo visibile (annuncio ed esito) (2026-11-19)
+- [ ] Prova su iPhone del nuovo ritmo di partita e stagione (2026-11-19)
+- [ ] Regista: parcheggiati — tablePosition dopo trasferimento a metà capitolo, test collisione offerta+notizia, obiettivi di classifica al 27% (2026-11-19)
 - [ ] Brainstorming settimana e allenamento leggibili (nucleo, approccio B punto 3) (2026-11-18)
 - [ ] Brainstorming collegamenti fra sistemi: vita, soldi, media e prestazioni (approccio B punto 4) (2026-11-18)
 - [ ] Decisioni sull'offerta: codice sfida, esportazione salvataggio gratis, nome "Contratto a vita" (founder/offer.md) (2026-11-18)
@@ -23,6 +26,7 @@
 
 ## Fatti
 <!-- ultimi 10; i più vecchi restano in git -->
+- [x] Regista partita e stagione: piano A0–B4 eseguito, B3b rapida, revisione finale (2026-11-19)
 - [x] Piano regista partita e stagione: builder check, ricerca meccaniche, review, approvazione (2026-11-18)
 - [x] Design regista partita e stagione, approccio B scelto (2026-11-18)
 - [x] Validazione commerciale con il founder pack, offerta e business plan in founder/ (2026-11-18)
@@ -32,4 +36,3 @@
 - [x] Dividere i 47 momenti per posizione nel gioco, gruppi P1–P8 (2026-11-17)
 - [x] Ricerca cultura pop del calcio italiano: interviste, conferenze, tormentoni (2026-11-17)
 - [x] Ricerca psicologia del giocatore e design (2026-11-17)
-- [x] Correzioni Kuroko nel documento di design (2026-11-17)

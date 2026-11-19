@@ -196,7 +196,10 @@ describe('ripresa v1 a budget esaurito', () => {
         ),
       );
     for (let seed = 1; seed <= 40; seed++) {
-      const s = { ...migrated, rngState: [seed, seed + 1, seed + 2, seed + 3] };
+      const s = {
+        ...migrated,
+        rngState: [seed, seed + 1, seed + 2, seed + 3] as unknown as GameState['rngState'],
+      };
       expect(() => playMatch(s, (mo) => chainy(mo))).not.toThrow();
     }
   });

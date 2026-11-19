@@ -29,12 +29,12 @@ recuperi in copertura che riescono sempre). Le opzioni rischiose rendevano meno 
 
 ## Giri di taratura (1000 carriere, `--isolate`, cautious e aggressive)
 
-| Giro | Parametro                                                                      | Prima -> dopo           | cautious  | aggressive | Differenza | Esito                                                                                                                     |
-| ---- | ------------------------------------------------------------------------------ | ----------------------- | --------- | ---------- | ---------- | ------------------------------------------------------------------------------------------------------------------------- |
-| 1    | difficoltà delle opzioni rischiose MID (inserimento, tiro da fuori, dribbling) | 12/16/5 -> 9/12/4       | 6,263     | 5,948      | 0,32       | annullato: effetto +0,01 sul voto (MID 5,49 -> 5,54)                                                                      |
-| 2    | voto al successo delle 27 opzioni rischiose non leggenda (`moments.json`)      | +0,25                   | 6,313     | 6,163      | 0,15       | tenuto                                                                                                                    |
-| 3    | `career.json > score.roleFactors` GK, DEF                                      | 2,33 -> 1,8; 1,1 -> 1,0 | invariato | invariato  |            | tenuto (solo leggende, vedi sotto)                                                                                        |
-| 4    | `match.json > legends.ratingBonus`                                             | 1 -> 0,5                |           |            |            | annullato: contextual a 2000 carriere GK 6,4% DEF 10,3% totale 6,2%, nessun effetto misurabile sulle leggende, voto 6,462 |
+| Giro | Parametro                                                                      | Prima -> dopo           | cautious  | aggressive | Differenza | Esito                                                                                                                                                              |
+| ---- | ------------------------------------------------------------------------------ | ----------------------- | --------- | ---------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1    | difficoltà delle opzioni rischiose MID (inserimento, tiro da fuori, dribbling) | 12/16/5 -> 9/12/4       | 6,263     | 5,948      | 0,32       | annullato: effetto +0,01 sul voto (MID 5,49 -> 5,54)                                                                                                               |
+| 2    | voto al successo delle 23 opzioni rischiose non leggenda (`moments.json`)      | +0,25                   | 6,313     | 6,163      | 0,15       | tenuto                                                                                                                                                             |
+| 3    | `career.json > score.roleFactors` GK, DEF                                      | 2,33 -> 1,8; 1,1 -> 1,0 | invariato | invariato  |            | tenuto (solo leggende, vedi sotto)                                                                                                                                 |
+| 4    | `match.json > legends.ratingBonus`                                             | 1 -> 0,5                |           |            |            | annullato: contextual (prova a 2000 carriere, non 1000 come nell'intestazione) GK 6,4% DEF 10,3% totale 6,2%, nessun effetto misurabile sulle leggende, voto 6,462 |
 
 Giro 2, guardrail della cautious a 5000 carriere prima del giro 3: gol 50,6, assist 56,6, trofei 0,77,
 massima serie 59,2%, voto 6,313, leggende 4,46% con GK 4,68 e DEF 6,54 (fuori: GK > 3,78, DEF > 6,2).
@@ -77,6 +77,8 @@ dei gesti: nessun effetto. Resta oltre il doppio sui GK solo per la strategia co
 i gesti da leggenda quando il valore atteso li giustifica; non tocca il guardrail della prudente. Se si
 vuole più vicina, la leva è `score.roleFactors.GK` (1,7 dà GK 5,7 contextual e 2,2 cautious), non il gioco in campo.
 
+Punto aperto: leggende contextual 6,1% (GK 2,6 volte la prudente); leva `score.roleFactors.GK`.
+
 ## Voci rimandate da A10
 
 - a. `value` usa gesto neutro 0,5: tenuto. Il gesto si sceglie dopo aver visto le opzioni e `chance` mostrata
@@ -85,8 +87,8 @@ vuole più vicina, la leva è `score.roleFactors.GK` (1,7 dà GK 5,7 contextual 
 - b. Contropiede e `onFail`: già modellato. Un seguito (`failure.next`, es. `counter_recovery` con
   probabilità 0,6) entra in `optionValue` come `c * continuation`, e il valore del seguito include il
   gol subito pesato (`goalAgainst * w * goalValue`) della miglior risposta. Nessuna modifica.
-- c. Test dell'isolamento: rafforzato (stesse funzioni della prudente, e per 150 settimane di una carriera
-  reale le stesse decisioni fuori campo per le quattro strategie isolate, mentre senza isolamento
+- c. Test dell'isolamento: rafforzato (stesse funzioni della prudente, e su tre stagioni simulate (stati reali, partite uguali per tutti)
+  le stesse decisioni fuori campo per le quattro strategie isolate, mentre senza isolamento
   l'aggressiva diverge).
 - d. `?? 'quick'` rimosso (la rapida si verifica solo se si ferma, con un contatore che deve essere > 0) e
   l'espressione `[1-3]` del picco sostituita dal controllo contro `config.match.peak.variants`.
@@ -97,7 +99,7 @@ vuole più vicina, la leva è `score.roleFactors.GK` (1,7 dà GK 5,7 contextual 
 
 Passi interattivi per partita in modalità completa (60 carriere cautious, titolare): media 5,05; 5-7 passi
 nel 69% delle partite da titolare e nell'81,5% di quelle con almeno 85 minuti (1:10 2:17 3:43 4:83 5:249 6:246 7:181);
-mai oltre 7. Rapida: 1-2 passi, 1,43 in media (428 da 1, 397 da 2).
+mai oltre 7. Rapida: 1-2 passi, 1,48 in media (428 da 1, 397 da 2).
 
 Stima del tempo (secondi per decisione invariati, non tarati). Cautious, 5000 carriere, 20,9 stagioni:
 

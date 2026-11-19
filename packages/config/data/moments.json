@@ -176,10 +176,10 @@
           "difficulty": 15,
           "tag": "penalty",
           "success": {
-            "rating": 2.0
+            "rating": 2
           },
           "failure": {
-            "rating": 0.0,
+            "rating": 0,
             "goalAgainst": 1
           },
           "risk": "risky"
@@ -302,14 +302,14 @@
           "difficulty": 2,
           "tag": "tackle",
           "success": {
-            "rating": 1.0,
+            "rating": 1,
             "next": {
               "momentId": "loose_ball_cover",
               "chance": 0.5
             }
           },
           "failure": {
-            "rating": -1.0,
+            "rating": -1,
             "goalAgainst": 0.35
           },
           "risk": "risky"
@@ -421,7 +421,7 @@
             "by": "self"
           },
           "failure": {
-            "rating": 0.0
+            "rating": 0
           },
           "risk": "risky"
         },
@@ -687,7 +687,7 @@
           "difficulty": 4,
           "tag": "tackle",
           "success": {
-            "rating": 1.0
+            "rating": 1
           },
           "failure": {
             "rating": -0.75,
@@ -1131,7 +1131,7 @@
             "by": "self"
           },
           "failure": {
-            "rating": 0.0
+            "rating": 0
           },
           "risk": "risky"
         },

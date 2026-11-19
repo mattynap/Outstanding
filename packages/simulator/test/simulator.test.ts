@@ -258,7 +258,7 @@ describe('match strategies', () => {
   });
 
   it(
-    'with isolate, off-pitch decisions match along a whole career, and differ without it',
+    'with isolate, the strategies take the same off-pitch decisions on the same states over three simulated seasons, and differ without it',
     () => {
       const ctx = defaultContext;
       let state = newCareer(randomCareerOptions(Rng.fromSeed(5), ctx), 5, ctx);
@@ -272,7 +272,8 @@ describe('match strategies', () => {
         };
       };
       let freeDiffers = false;
-      // Stati reali di tre stagioni, con infortuni, offerte e livelli diversi.
+      // Stati reali di tre stagioni (partite simulate, uguali per tutti): non è una carriera giocata
+      // con le strategie, perché le decisioni in partita ne farebbero divergere gli stati.
       for (let week = 0; week < 150 && !state.retired; week++) {
         for (const id of STRATEGIES) {
           expect(trace(id, true, state)).toEqual(trace('cautious', true, state));

@@ -17,6 +17,8 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
   fuori campo), `--quality` e `--mode full|quick`, stima del tempo con i secondi in `simulator.json`.
 - Modalità della partita: completa (5-7 passi) e rapida (1-2 passi); salvataggio v2 per tutta la Parte A.
 - Taratura (A10): premio al successo delle opzioni rischiose +0,25 e fattori di punteggio GK 1,8 e DEF 1,0.
+  Ritarata la formula del punteggio di carriera (`score.roleFactors` GK 2,33 -> 1,8, DEF 1,1 -> 1,0);
+  `dyn.chanceWeight`, `risk.*` e `pressure.goalBoost` restano ai pesi iniziali perché guardrail e criterio già tenevano.
   A 5000 carriere, voto isolato contestuale 6,444 > prudente 6,313 > aggressiva 6,181 (differenza
   prudente-aggressiva 0,13). Guardrail della prudente contro la baseline A0: gol 50,6 (50,1), assist 56,6
   (61,1), trofei 0,77 (0,81), massima serie 59,2% (60,4%), leggende 3,54% (3,26%). Dettaglio in

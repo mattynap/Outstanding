@@ -459,12 +459,21 @@ export interface ChapterLog {
   lastLegend: { week: number; fixtureId: string; id: string; success: boolean } | null;
 }
 
+/** Obiettivo del capitolo corrente: la definizione sta in `content/data/chapter-goals.json`. */
+export interface ChapterGoalState {
+  id: string;
+  target: number;
+  /** Già liquidato (ricompensa o calo di morale applicati): non si liquida due volte. */
+  settled: boolean;
+}
+
 /** Il capitolo corrente della stagione e le partite che il giocatore vivrà in prima persona. */
 export interface ChapterState {
   id: ChapterId;
   picks: ChapterPick[];
-  /** Obiettivo del capitolo (Task B4): per ora sempre assente. */
-  goal: null;
+  /** Obiettivo assegnato a inizio capitolo (assente in preparazione); il progresso si legge da `log`. */
+  goal: ChapterGoalState | null;
+  /** Obiettivo del capitolo precedente, escluso dalla prossima estrazione. */
   lastGoalId: string | null;
   log: ChapterLog;
   /** Come `log`, dal precedente stop: si azzera quando il controllo torna al giocatore. */

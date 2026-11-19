@@ -50,6 +50,8 @@ export interface TimeMetrics {
   hoursPerCareer: Distribution;
   /** Medie per stagione: capitoli, stop per notizie e offerte, partite scelte. */
   perSeason: { chapters: number; newsStops: number; offerStops: number; picks: number };
+  /** Obiettivi dei capitoli per metrica: quanti liquidati e quanti raggiunti (%). */
+  goals: Record<string, { total: number; metPct: number }>;
 }
 
 export interface SimSummary {
@@ -90,7 +92,26 @@ export function timeMetrics(results: readonly CareerResult[]): TimeMetrics | und
   const seasons = timed.flatMap((r) => r.seasonSeconds!);
   const sum = (f: (r: CareerResult) => number) =>
     timed.reduce((n, r) => n + f(r), 0) / seasons.length;
+  const goalRows: Record<string, { met: number; total: number }> = {};
+  for (const r of timed) {
+    for (const [metric, g] of Object.entries(r.chapterStats!.goals)) {
+      const row = (goalRows[metric] ??= { met: 0, total: 0 });
+      row.met += g.met;
+      row.total += g.total;
+    }
+  }
+  const all = Object.values(goalRows).reduce(
+    (a, g) => ({ met: a.met + g.met, total: a.total + g.total }),
+    { met: 0, total: 0 },
+  );
+  const goals: TimeMetrics['goals'] = {
+    all: { total: all.total, metPct: round(pct(all.met, all.total)) },
+  };
+  for (const [metric, g] of Object.entries(goalRows).sort()) {
+    goals[metric] = { total: g.total, metPct: round(pct(g.met, g.total)) };
+  }
   return {
+    goals,
     minutesPerSeason: distribution(
       seasons.map((x) => x / 60),
       1,
@@ -258,6 +279,9 @@ export function formatTable(summary: SimSummary): string {
       '',
       `Tempo a stagione (min): mediana ${t.minutesPerSeason.median} · media ${t.minutesPerSeason.mean} · p10 ${t.minutesPerSeason.p10} · p90 ${t.minutesPerSeason.p90}`,
       `Tempo a carriera (ore): mediana ${t.hoursPerCareer.median} · media ${t.hoursPerCareer.mean} · p10 ${t.hoursPerCareer.p10} · p90 ${t.hoursPerCareer.p90}`,
+      `Obiettivi raggiunti: ${Object.entries(t.goals)
+        .map(([m, g]) => `${m} ${g.metPct}% (${g.total})`)
+        .join(' · ')}`,
       `Per stagione: ${t.perSeason.chapters} capitoli · ${t.perSeason.picks} partite scelte · ${t.perSeason.newsStops} stop notizie · ${t.perSeason.offerStops} stop offerte`,
     );
   }

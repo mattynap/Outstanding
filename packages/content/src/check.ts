@@ -1,3 +1,4 @@
+import { CHAPTER_GOAL_PLACEHOLDERS, chapterGoalOutcomeKey } from './chapterGoals';
 import { EVENT_PLACEHOLDERS, EVENT_TRIGGERS, eventTextKeys, flattenEffects } from './events';
 import type { GameContent } from './index';
 import type { Translations } from './schemas';
@@ -208,6 +209,7 @@ export function checkContent(content: GameContent): string[] {
     }
   }
   checkMedia(content, errors);
+  checkChapterGoals(content, errors);
   checkEvents(content, errors);
   return errors;
 }
@@ -308,5 +310,30 @@ function dupesOf(label: string, values: readonly string[], errors: string[]): vo
   for (const v of values) {
     if (seen.has(v)) errors.push(`${label}: duplicate "${v}"`);
     seen.add(v);
+  }
+}
+
+/** Obiettivi dei capitoli: id unici, testi di richiesta ed esito, segnaposto noti. */
+function checkChapterGoals(content: GameContent, errors: string[]): void {
+  const t = content.i18n.it;
+  const allowed = new Set<string>(CHAPTER_GOAL_PLACEHOLDERS);
+  dupesOf(
+    'chapterGoals',
+    content.chapterGoals.map((g) => g.id),
+    errors,
+  );
+  for (const g of content.chapterGoals) {
+    const keys = [g.textKey, chapterGoalOutcomeKey(g, true), chapterGoalOutcomeKey(g, false)];
+    if (new Set(keys).size !== 3) errors.push(`chapterGoals.${g.id}: textKey must end in ".text"`);
+    for (const key of keys) {
+      const text = t[key];
+      if (text === undefined) {
+        errors.push(`chapterGoals.${g.id}: missing text key "${key}"`);
+        continue;
+      }
+      for (const [, name] of text.matchAll(/\{(\w+)\}/g)) {
+        if (!allowed.has(name!)) errors.push(`chapterGoals.${g.id}: unknown placeholder {${name}}`);
+      }
+    }
   }
 }

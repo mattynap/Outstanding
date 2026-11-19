@@ -8,6 +8,7 @@ import type { ContractOffer, GameState, Score } from '../types';
 import { weekOfSeason } from '../time';
 import { chapterOf, createChapter, emptyChapterLog, refreshChapterPicks } from './director';
 import { buildHeadlines, tableZone, type Headline } from './headlines';
+import { settleChapter, startChapterGoal } from './goals';
 import { getWeekOptions, planWeek, type WeekChoice } from './plan';
 import { advanceWeek, isSeasonOver, playerFixture } from './week';
 
@@ -221,14 +222,6 @@ export function setChapterPlan(
 }
 
 /**
- * Punto d'ingresso della chiusura di un capitolo: qui B4 liquiderà l'obiettivo, prima che il
- * capitolo successivo prenda il posto di quello che si chiude.
- */
-function onChapterClose(state: GameState): GameState {
-  return state;
-}
-
-/**
  * Avanti fino al prossimo stop: ripete il piano del capitolo, risolve da solo le notizie e
  * simula le partite non scelte. Si ferma (anche a zero settimane trascorse) per ritiro, fine
  * stagione, notizia personale, offerta che vale, cambio di capitolo e prima di ogni partita
@@ -261,16 +254,29 @@ export function advanceToStop(
     report.weeks > 0 && s.offers.some((o) => !offersAtStart.has(o.id) && worthStopping(s, o));
   const isPick = (id: string) => s.chapter.picks.some((p) => p.fixtureId === id);
 
+  // Esito dell'obiettivo liquidato in questo tratto: titolo in testa, nel limite dei titoli.
+  let goalHeadline: Headline | null = null;
+  const settle = () => {
+    const out = settleChapter(s, ctx);
+    s = out.state;
+    goalHeadline = out.headline ?? goalHeadline;
+  };
+
   const finish = (stop: FastForwardStop): { state: GameState; report: FastForwardReport } => {
     report.stop = stop;
-    report.headlines = buildHeadlines(s, s.chapter.stretch, zoneFrom, tableZone(s, ctx), ctx);
+    const news = buildHeadlines(s, s.chapter.stretch, zoneFrom, tableZone(s, ctx), ctx);
+    report.headlines = (goalHeadline ? [goalHeadline, ...news] : news).slice(0, cal.headlines.max);
     s = { ...s, chapter: { ...s.chapter, stretch: emptyChapterLog() } };
     return { state: s, report };
   };
 
   for (;;) {
     if (s.retired) return finish('retired');
-    if (isSeasonOver(s, ctx)) return finish('seasonEnd');
+    if (isSeasonOver(s, ctx)) {
+      // L'ultimo capitolo si chiude con la stagione: l'esito entra nei titoli di questo stop.
+      settle();
+      return finish('seasonEnd');
+    }
 
     // Capitolo nuovo: il registro del tratto passa con lo stato, così i titoli lo leggono intero.
     if (chapterOf(weekOfSeason(s.week, cal), cal) !== s.chapter.id) {
@@ -278,11 +284,14 @@ export function advanceToStop(
       // così la prima settimana del capitolo nuovo usa il piano scelto dopo questo stop. Un'offerta
       // arrivata con l'ultima settimana non si perde: si ferma prima, il cambio capitolo al giro dopo.
       if (newOffer()) return finish('offers');
-      const closed = onChapterClose(s);
-      s = {
-        ...closed,
-        chapter: { ...createChapter(closed, ctx), stretch: closed.chapter.stretch },
+      settle();
+      const closed = s;
+      const next = {
+        ...createChapter(closed, ctx),
+        lastGoalId: closed.chapter.goal?.id ?? closed.chapter.lastGoalId,
+        stretch: closed.chapter.stretch,
       };
+      s = startChapterGoal({ ...closed, chapter: next }, ctx);
       return finish('chapterEnd');
     }
     s = { ...s, chapter: { ...s.chapter, picks: refreshChapterPicks(s, ctx) } };

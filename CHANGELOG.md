@@ -47,6 +47,22 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
 - Simulatore: il tempo conta solo i passi visibili; il riepilogo riporta passi a partita visibili e totali.
 - Effetto: gol e assist delle rapide tornano vicini alle simulate. Misure e guardrail in `reports/regista/stagione-B3.md`.
 
+### Regista della stagione (Parte B): obiettivo del capitolo (B4)
+
+- A ogni inizio di capitolo (non in preparazione) mister e procuratore assegnano un obiettivo scelto a peso
+  da `content/data/chapter-goals.json` (28 obiettivi: titolare, gol, assist, voto medio, porta inviolata,
+  gol in una partita scelta, posizione in classifica), filtrato con le stesse condizioni degli eventi e
+  senza ripetere quello precedente. Il progresso si legge dal registro del capitolo.
+- Liquidazione unica (`settleChapter`, idempotente) allo stop di fine capitolo e a fine stagione: se
+  raggiunto, fiducia del mister e morale (`calendar.chapterGoals`), se mancato solo un piccolo calo di
+  morale. L'esito è un titolo di prima pagina di tipo `event`; `SeasonReport.headlines` lo porta se la
+  stagione chiude senza che sia già stato mostrato.
+- Salvataggio v3: `chapter.goal` è `{ id, target, settled }` (nessun `baseline`).
+- Il validatore dei contenuti controlla id, chiavi di testo e segnaposto degli obiettivi.
+- Il simulatore riporta la percentuale di obiettivi raggiunti per metrica.
+- Ritocchi ai testi: "Apri sulla fascia e accompagna", fallimento della doppia parata, righe di chiusura
+  della pagella e titoli di prima pagina.
+
 ### Interfaccia ibrida giornale e pixel (ondata 2)
 
 - Momenti chiave: ogni opzione dice cosa succede se va e se non va, con percentuale in pixel e

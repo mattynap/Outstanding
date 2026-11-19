@@ -163,6 +163,13 @@ export {
   type EventReport,
   type EventView,
 } from './events/events';
+export {
+  chapterGoalDef,
+  evaluateChapterGoal,
+  pickChapterGoal,
+  settleChapter,
+  startChapterGoal,
+} from './season/goals';
 export { tableZone, type TableZone } from './season/headlines';
 export { getStat } from './events/stats';
 export {

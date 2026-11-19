@@ -1,4 +1,5 @@
 import type { SimulatorConfig } from '@outstanding/config';
+import { chapterGoalOutcomeKey } from '@outstanding/content';
 import {
   acceptOffer,
   acceptSponsor,
@@ -99,6 +100,8 @@ export interface ChapterStats {
   newsStops: number;
   offerStops: number;
   picks: number;
+  /** Obiettivi dei capitoli liquidati, per metrica: raggiunti e totali. */
+  goals: Record<string, { met: number; total: number }>;
 }
 
 /** Opzioni di creazione casuali ma riproducibili dal seme della carriera. */
@@ -226,7 +229,13 @@ function playChapters(input: LoopInput): LoopOutput {
   let planned = '';
   let seconds = 0;
   const seasonSeconds: number[] = [];
-  const chapterStats: ChapterStats = { chapters: 0, newsStops: 0, offerStops: 0, picks: 0 };
+  const chapterStats: ChapterStats = {
+    chapters: 0,
+    newsStops: 0,
+    offerStops: 0,
+    picks: 0,
+    goals: {},
+  };
   // Rete di sicurezza contro uno stop che non fa avanzare lo stato.
   let guard = 0;
 
@@ -265,6 +274,16 @@ function playChapters(input: LoopInput): LoopOutput {
     const out = advanceToStop(s, ctx);
     s = out.state;
     d.simulatedMatches += out.report.summary.length;
+    // L'esito dell'obiettivo liquidato è il titolo `chapterGoals.<id>.met|missed` di questo stop.
+    for (const h of out.report.headlines) {
+      for (const g of ctx.content.chapterGoals) {
+        const met = h.textKey === chapterGoalOutcomeKey(g, true);
+        if (!met && h.textKey !== chapterGoalOutcomeKey(g, false)) continue;
+        const row = (chapterStats.goals[g.metric] ??= { met: 0, total: 0 });
+        row.total++;
+        if (met) row.met++;
+      }
+    }
     if (out.report.stop === 'chapterEnd') continue;
     if (out.report.stop === 'news' || out.report.stop === 'offers') {
       if (out.report.stop === 'news') chapterStats.newsStops++;

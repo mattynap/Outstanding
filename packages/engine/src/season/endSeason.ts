@@ -12,6 +12,8 @@ import { clamp } from '../util';
 import { clubRatingFromRoster } from '../world/club';
 import { IdGen } from '../world/generate';
 import { createChapter } from './director';
+import { settleChapter } from './goals';
+import type { Headline } from './headlines';
 import { buildSeasonCalendar } from './schedule';
 import { computeStandings, type StandingRow } from './standings';
 import { isSeasonOver } from './week';
@@ -34,6 +36,8 @@ export interface SeasonReport {
   /** Vincitrice di ogni coppa. */
   cupWinners: { competitionId: string; clubId: string }[];
   movements: ClubMovement[];
+  /** Esito dell'obiettivo dell'ultimo capitolo, se non era già stato liquidato prima. */
+  headlines: Headline[];
 }
 
 /** Aree ordinate per vicinanza geografica, usate quando un girone è pieno. */
@@ -109,11 +113,13 @@ function evolveRoster<C extends ClubBase>(
  * storico del giocatore e calendario della stagione successiva.
  */
 export function endSeason(
-  state: GameState,
+  input: GameState,
   ctx: GameContext = defaultContext,
 ): { state: GameState; seasonReport: SeasonReport } {
-  if (state.retired) throw new Error('The career is over');
-  if (!isSeasonOver(state, ctx)) throw new Error('The season is not over yet');
+  if (input.retired) throw new Error('The career is over');
+  if (!isSeasonOver(input, ctx)) throw new Error('The season is not over yet');
+  // L'obiettivo dell'ultimo capitolo si liquida qui se non l'ha già fatto lo stop di fine stagione.
+  const { state, headline: goalHeadline } = settleChapter(input, ctx);
   const cfg = ctx.config;
   const rng = Rng.fromState(state.rngState);
   const ids = new IdGen(state.nextId);
@@ -266,7 +272,14 @@ export function endSeason(
   const transitioned = seasonMarketTransition(next, ctx);
   return {
     // La stagione nuova riparte dal primo capitolo, con un piano da scegliere.
-    state: { ...transitioned, chapter: createChapter(transitioned, ctx), chapterPlan: [] },
+    state: {
+      ...transitioned,
+      chapter: {
+        ...createChapter(transitioned, ctx),
+        lastGoalId: state.chapter.goal?.id ?? state.chapter.lastGoalId,
+      },
+      chapterPlan: [],
+    },
     seasonReport: {
       season: state.season,
       record,
@@ -274,6 +287,7 @@ export function endSeason(
       champions,
       cupWinners,
       movements,
+      headlines: goalHeadline ? [goalHeadline] : [],
     },
   };
 }

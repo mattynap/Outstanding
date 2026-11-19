@@ -17,6 +17,7 @@
   "chapterWeights": {
     "table": { "fromMatchday": 8, "window": 3, "promotion": 0.4, "relegation": 0.5 }
   },
+  "chapterGoals": { "rewardTrust": 4, "rewardMorale": 5, "missMorale": -2 },
   "headlines": {
     "max": 3,
     "ratingFrom": 7.5,

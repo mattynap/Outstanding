@@ -98,6 +98,15 @@ export const calendarSchema = z
         relegation: z.number().min(0).max(1),
       }),
     }),
+    /** Ricompense dell'obiettivo del capitolo: piccole di proposito, non cambiano la progressione. */
+    chapterGoals: z.object({
+      /** Fiducia del mister guadagnata raggiungendo l'obiettivo. */
+      rewardTrust: z.number().min(0).max(20),
+      /** Morale guadagnato raggiungendo l'obiettivo. */
+      rewardMorale: z.number().min(0).max(20),
+      /** Morale perso (negativo) se l'obiettivo è mancato. */
+      missMorale: z.number().min(-20).max(0),
+    }),
     /** Titoli di prima pagina del riepilogo: quanti, da che voto, in che ordine, quante varianti. */
     headlines: z.object({
       max: z.number().int().min(1),

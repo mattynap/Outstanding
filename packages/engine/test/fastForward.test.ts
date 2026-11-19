@@ -107,7 +107,7 @@ describe('avanti veloce', () => {
 });
 
 /** Carriera guidata da advanceToStop: pick simulate, notizie prudenti, piano fisso. */
-function driveSeason(seed: number) {
+function driveSeason(seed: number, ctx = defaultContext) {
   let s = setChapterPlan(start(seed), [{ actionId: 'train_normal' }], ctx);
   const stops: { stop: string; weeks: number; pendingIsPick: boolean; untouched: boolean }[] = [];
   const reports: ReturnType<typeof advanceToStop>['report'][] = [];
@@ -226,8 +226,10 @@ describe('avanti fino al prossimo stop', () => {
 
   it('every week still runs advanceWeek', () => {
     // Stesso seme e stesso piano: la stagione guidata da advanceToStop coincide con quella manuale.
+    // Senza obiettivi: l'estrazione dell'obiettivo sposta l'`Rng` e le ricompense il morale.
+    const noGoals = { ...ctx, content: { ...ctx.content, chapterGoals: [] } };
     const plan = [{ actionId: 'train_normal' }];
-    const driven = driveSeason(6).state;
+    const driven = driveSeason(6, noGoals).state;
     let m = setChapterPlan(start(6), plan, ctx);
     while (!isSeasonOver(m, ctx)) {
       if (m.plannedWeek !== m.week) {
@@ -437,5 +439,6 @@ describe('fine capitolo e stop mancanti', () => {
       }
     }
     expect(hits).toBeGreaterThan(0);
-  });
+    // Scorre 60 carriere: il limite predefinito di 5 s è stretto con la suite intera.
+  }, 20000);
 });

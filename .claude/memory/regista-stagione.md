@@ -26,3 +26,18 @@ type: project
   precedenti); sim = 0. Regola in `rootVisible` (director.ts): una catena che non entra nei visibili rimasti si nasconde.
 - Esito misurato (cautious, 5000, capitoli): gol 48,8, assist 54,9, trofei 0,72: assist e trofei appena sotto la
   tolleranza A0 di 10%. Tempo 19,9 min a stagione e 6,9 h a carriera. Il tempo conta solo i passi visibili.
+
+## B4: obiettivo del capitolo
+
+- A ogni cambio di capitolo (mai in preparazione, mai senza club) si estrae a peso un obiettivo da
+  `content/data/chapter-goals.json` (25 voci, filtrate con `eventConditionsSchema`/`checkConditions`, mai lo stesso
+  del capitolo precedente: `chapter.lastGoalId`). Stato nel salvataggio: `chapter.goal = { id, target, settled }`,
+  nessun `baseline`: il progresso si legge da `chapter.log` (partenze, gol, assist, voti, porte inviolate,
+  gol nelle partite scelte) e da `playerTable` per la classifica.
+- `settleChapter` è idempotente (`goal.settled`) e gira allo stop `chapterEnd`, allo stop `seasonEnd` e in
+  `endSeason`. Esito come Headline `event` con chiavi `chapterGoals.<id>.met|missed`; `SeasonReport.headlines` lo porta.
+- Premi in `calendar.chapterGoals`: fiducia mister +4, morale +5; mancato solo morale -2.
+- L'estrazione usa l'Rng dello stato: cambia le sequenze rispetto a prima di B4 (solo a fine capitolo).
+- Taratura: gli obiettivi per i centrocampisti basati sui gol erano irraggiungibili (0,7 gol a carriera), tolti.
+  Soglie ritarate perché ogni metrica fosse raggiunta in circa 40-60% dei casi; il simulatore stampa la
+  percentuale per metrica ("Obiettivi raggiunti").

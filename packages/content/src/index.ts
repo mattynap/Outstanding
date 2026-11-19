@@ -5,9 +5,12 @@ import avatarJson from '../data/avatar.json';
 import clubsJson from '../data/clubs.json';
 import foreignJson from '../data/foreign.json';
 import itJson from '../data/i18n/it.json';
+import chapterGoalsJson from '../data/chapter-goals.json';
+import itChapterGoalsJson from '../data/i18n/it.chapterGoals.json';
 import itEventsJson from '../data/i18n/it.events.json';
 import itLegendsJson from '../data/i18n/it.legends.json';
 import itUiJson from '../data/i18n/it.ui.json';
+import { chapterGoalsSchema, type ChapterGoal } from './chapterGoals';
 import { rawEvents } from './eventFiles';
 import { eventsSchema, type GameEvent } from './events';
 import namesJson from '../data/names.json';
@@ -40,6 +43,7 @@ import {
 
 export * from './schemas';
 export * from './events';
+export * from './chapterGoals';
 export {
   BUILDUP_MIN_LINES,
   BUILDUP_PHASES,
@@ -66,6 +70,8 @@ export interface GameContent {
   /** Tifosi e testi dei media. */
   media: MediaContent;
   events: GameEvent[];
+  /** Obiettivi che mister e procuratore assegnano a inizio capitolo. */
+  chapterGoals: ChapterGoal[];
   i18n: { it: Translations };
 }
 
@@ -81,6 +87,7 @@ export interface RawContent {
   media: unknown;
   /** Un array di eventi per file, con il nome del file per i messaggi di errore. */
   events: { file: string; data: unknown }[];
+  chapterGoals: unknown;
   /** Le traduzioni sono divise in più file e unite al caricamento. */
   i18n: { it: { file: string; data: unknown }[] };
 }
@@ -119,6 +126,7 @@ export function parseContent(raw: RawContent): GameContent {
     private: parse('private.json', privateContentSchema, raw.private),
     media: parse('media.json', mediaContentSchema, raw.media),
     events: raw.events.flatMap((f) => parse(f.file, eventsSchema, f.data)),
+    chapterGoals: parse('chapter-goals.json', chapterGoalsSchema, raw.chapterGoals),
     i18n: { it: mergeTranslations(raw.i18n.it) },
   };
 }
@@ -135,10 +143,12 @@ export const rawDefaultContent: RawContent = {
   private: privateJson,
   media: mediaJson,
   events: rawEvents,
+  chapterGoals: chapterGoalsJson,
   i18n: {
     it: [
       { file: 'i18n/it.json', data: itJson },
       { file: 'i18n/it.events.json', data: itEventsJson },
+      { file: 'i18n/it.chapterGoals.json', data: itChapterGoalsJson },
       { file: 'i18n/it.legends.json', data: itLegendsJson },
       { file: 'i18n/it.ui.json', data: itUiJson },
     ],

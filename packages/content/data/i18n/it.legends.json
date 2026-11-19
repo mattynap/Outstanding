@@ -37,7 +37,7 @@
   "match.legends.leg_anticipo_testa.headline": "{lastName}, la difesa mette le ali",
   "match.legends.leg_doppia_parata.option": "Rialzati e para ancora",
   "match.legends.leg_doppia_parata.success": "Dopo la respinta ti rialzi di scatto e chiudi lo specchio sul secondo tiro.",
-  "match.legends.leg_doppia_parata.failure": "Ti rialzi per il bis, ma stavolta il pallone è più rapido di te.",
+  "match.legends.leg_doppia_parata.failure": "Ti rialzi, ma non riesci nella seconda parata.",
   "match.legends.leg_doppia_parata.headline": "{lastName}, due parate nello stesso respiro",
   "match.legends.leg_reni_incrocio.option": "Vola sotto l'incrocio",
   "match.legends.leg_reni_incrocio.success": "Sul secondo tiro spingi con le reni e devii sopra la traversa il pallone diretto all'incrocio.",

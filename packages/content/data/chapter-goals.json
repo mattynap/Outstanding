@@ -1,0 +1,295 @@
+[
+  {
+    "id": "spazio_giovane",
+    "weight": 4,
+    "conditions": {
+      "age": {
+        "max": 21
+      }
+    },
+    "metric": "starts",
+    "target": 5,
+    "textKey": "chapterGoals.spazio_giovane.text"
+  },
+  {
+    "id": "presenza_costante",
+    "weight": 4,
+    "metric": "starts",
+    "target": 7,
+    "textKey": "chapterGoals.presenza_costante.text"
+  },
+  {
+    "id": "esperienza_in_campo",
+    "weight": 3,
+    "conditions": {
+      "age": {
+        "min": 28
+      },
+      "coachRelationship": {
+        "min": 20
+      }
+    },
+    "metric": "starts",
+    "target": 7,
+    "textKey": "chapterGoals.esperienza_in_campo.text"
+  },
+  {
+    "id": "guanti_da_titolare",
+    "weight": 3,
+    "conditions": {
+      "roles": ["GK"]
+    },
+    "metric": "starts",
+    "target": 6,
+    "textKey": "chapterGoals.guanti_da_titolare.text"
+  },
+  {
+    "id": "ricucire_col_mister",
+    "weight": 3,
+    "conditions": {
+      "coachRelationship": {
+        "max": -20
+      }
+    },
+    "metric": "starts",
+    "target": 3,
+    "textKey": "chapterGoals.ricucire_col_mister.text"
+  },
+  {
+    "id": "continuita_dilettanti",
+    "weight": 3,
+    "conditions": {
+      "professional": false
+    },
+    "metric": "starts",
+    "target": 6,
+    "textKey": "chapterGoals.continuita_dilettanti.text"
+  },
+  {
+    "id": "attaccante_due_reti",
+    "weight": 4,
+    "conditions": {
+      "roles": ["ATT"],
+      "age": {
+        "max": 21
+      }
+    },
+    "metric": "goals",
+    "target": 1,
+    "textKey": "chapterGoals.attaccante_due_reti.text"
+  },
+  {
+    "id": "attaccante_quattro_reti",
+    "weight": 4,
+    "conditions": {
+      "roles": ["ATT"]
+    },
+    "metric": "goals",
+    "target": 3,
+    "textKey": "chapterGoals.attaccante_quattro_reti.text"
+  },
+  {
+    "id": "attaccante_sei_reti",
+    "weight": 1,
+    "conditions": {
+      "roles": ["ATT"],
+      "professional": true,
+      "level": {
+        "max": 2
+      },
+      "age": {
+        "min": 28
+      }
+    },
+    "metric": "goals",
+    "target": 4,
+    "textKey": "chapterGoals.attaccante_sei_reti.text"
+  },
+  {
+    "id": "centrocampista_ultimo_passaggio",
+    "weight": 4,
+    "conditions": {
+      "roles": ["MID"]
+    },
+    "metric": "assists",
+    "target": 2,
+    "textKey": "chapterGoals.centrocampista_ultimo_passaggio.text"
+  },
+  {
+    "id": "giovane_rifinitore",
+    "weight": 3,
+    "conditions": {
+      "roles": ["MID"],
+      "age": {
+        "max": 21
+      }
+    },
+    "metric": "assists",
+    "target": 2,
+    "textKey": "chapterGoals.giovane_rifinitore.text"
+  },
+  {
+    "id": "punta_di_sponda",
+    "weight": 3,
+    "conditions": {
+      "roles": ["ATT"]
+    },
+    "metric": "assists",
+    "target": 1,
+    "textKey": "chapterGoals.punta_di_sponda.text"
+  },
+  {
+    "id": "rifinitore_quattro_assist",
+    "weight": 2,
+    "conditions": {
+      "roles": ["MID", "ATT"],
+      "professional": true
+    },
+    "metric": "assists",
+    "target": 2,
+    "textKey": "chapterGoals.rifinitore_quattro_assist.text"
+  },
+  {
+    "id": "pagella_senza_strappi",
+    "weight": 5,
+    "metric": "avgRating",
+    "target": 6.2,
+    "textKey": "chapterGoals.pagella_senza_strappi.text"
+  },
+  {
+    "id": "pagella_giovane",
+    "weight": 4,
+    "conditions": {
+      "age": {
+        "max": 21
+      }
+    },
+    "metric": "avgRating",
+    "target": 6.0,
+    "textKey": "chapterGoals.pagella_giovane.text"
+  },
+  {
+    "id": "pagella_esperto",
+    "weight": 3,
+    "conditions": {
+      "age": {
+        "min": 28
+      },
+      "coachRelationship": {
+        "min": 20
+      }
+    },
+    "metric": "avgRating",
+    "target": 6.5,
+    "textKey": "chapterGoals.pagella_esperto.text"
+  },
+  {
+    "id": "pagella_massima_serie",
+    "weight": 2,
+    "conditions": {
+      "level": {
+        "min": 1,
+        "max": 1
+      },
+      "professional": true
+    },
+    "metric": "avgRating",
+    "target": 6.4,
+    "textKey": "chapterGoals.pagella_massima_serie.text"
+  },
+  {
+    "id": "portiere_due_porte_inviolate",
+    "weight": 4,
+    "conditions": {
+      "roles": ["GK"]
+    },
+    "metric": "cleanSheets",
+    "target": 1,
+    "textKey": "chapterGoals.portiere_due_porte_inviolate.text"
+  },
+  {
+    "id": "portiere_quattro_porte_inviolate",
+    "weight": 2,
+    "conditions": {
+      "roles": ["GK"],
+      "professional": true
+    },
+    "metric": "cleanSheets",
+    "target": 2,
+    "textKey": "chapterGoals.portiere_quattro_porte_inviolate.text"
+  },
+  {
+    "id": "difensore_tre_porte_inviolate",
+    "weight": 4,
+    "conditions": {
+      "roles": ["DEF"]
+    },
+    "metric": "cleanSheets",
+    "target": 2,
+    "textKey": "chapterGoals.difensore_tre_porte_inviolate.text"
+  },
+  {
+    "id": "difensore_quattro_porte_inviolate",
+    "weight": 2,
+    "conditions": {
+      "roles": ["DEF"],
+      "age": {
+        "min": 28
+      }
+    },
+    "metric": "cleanSheets",
+    "target": 2,
+    "textKey": "chapterGoals.difensore_quattro_porte_inviolate.text"
+  },
+  {
+    "id": "punta_gol_partita_scelta",
+    "weight": 3,
+    "conditions": {
+      "roles": ["ATT"]
+    },
+    "metric": "pickGoal",
+    "target": 1,
+    "textKey": "chapterGoals.punta_gol_partita_scelta.text"
+  },
+  {
+    "id": "classifica_prime_tre",
+    "weight": 2,
+    "conditions": {
+      "level": {
+        "min": 1,
+        "max": 1
+      },
+      "professional": true
+    },
+    "metric": "tablePosition",
+    "target": 5,
+    "textKey": "chapterGoals.classifica_prime_tre.text"
+  },
+  {
+    "id": "classifica_prime_sei",
+    "weight": 3,
+    "conditions": {
+      "level": {
+        "min": 2,
+        "max": 3
+      },
+      "professional": true
+    },
+    "metric": "tablePosition",
+    "target": 8,
+    "textKey": "chapterGoals.classifica_prime_sei.text"
+  },
+  {
+    "id": "classifica_prime_dieci",
+    "weight": 4,
+    "conditions": {
+      "level": {
+        "min": 4
+      },
+      "professional": false
+    },
+    "metric": "tablePosition",
+    "target": 10,
+    "textKey": "chapterGoals.classifica_prime_dieci.text"
+  }
+]

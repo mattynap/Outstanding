@@ -67,6 +67,9 @@ export const playerConfigSchema = z.object({
 
 const seasonWeek = z.number().int().min(0);
 
+export const chapterIdSchema = z.enum(['preseason', 'autumn', 'winter', 'spring', 'finale']);
+export type ChapterId = z.infer<typeof chapterIdSchema>;
+
 export const calendarSchema = z
   .object({
     weeksPerSeason: z.number().int().min(20),
@@ -76,9 +79,40 @@ export const calendarSchema = z
       summer: z.object({ fromWeek: seasonWeek, toWeek: seasonWeek }),
       winter: z.object({ fromWeek: seasonWeek, toWeek: seasonWeek }),
     }),
+    /** Capitoli della stagione: settimane di inizio (da 0) crescenti, il primo parte da 0. */
+    chapters: z.array(z.object({ id: chapterIdSchema, fromWeek: seasonWeek })).min(1),
+    /** Quota di partite giocate dal giocatore per capitolo (comprende quelle già giocate). */
+    chapterMatches: z.object({ min: z.number().int().min(0), max: z.number().int().min(1) }),
+    /** Pesi che si sommano alla posta della partita nella scelta del regista della stagione. */
+    chapterWeights: z.object({
+      table: z.object({
+        /** Prima giornata da cui la classifica pesa (prima è ancora troppo presto). */
+        fromMatchday: z.number().int().min(1),
+        /** Distanza in posizioni oltre la quale il peso si annulla. */
+        window: z.number().positive(),
+        promotion: z.number().min(0).max(1),
+        relegation: z.number().min(0).max(1),
+      }),
+    }),
   })
   .refine((c) => c.firstMatchWeek < c.weeksPerSeason, {
     message: 'firstMatchWeek must be inside the season',
+  })
+  .refine((c) => c.chapters[0]!.fromWeek === 0, { message: 'the first chapter must start at 0' })
+  .refine(
+    (c) => c.chapters.every((ch, i) => i === 0 || ch.fromWeek > c.chapters[i - 1]!.fromWeek),
+    {
+      message: 'chapters must start in increasing weeks',
+    },
+  )
+  .refine((c) => c.chapters.every((ch) => ch.fromWeek < c.weeksPerSeason), {
+    message: 'chapters must start inside the season',
+  })
+  .refine((c) => new Set(c.chapters.map((ch) => ch.id)).size === c.chapters.length, {
+    message: 'chapter ids must be unique',
+  })
+  .refine((c) => c.chapterMatches.min <= c.chapterMatches.max, {
+    message: 'chapterMatches.min must not exceed max',
   });
 
 export const areaSchema = z.enum(['N', 'C', 'S']);

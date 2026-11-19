@@ -1,4 +1,7 @@
-import type { Difficulty, Interest, InterviewContext } from '@outstanding/config';
+import type { ChapterId, Difficulty, Interest, InterviewContext } from '@outstanding/config';
+import type { WeekChoice } from './season/plan';
+
+export type { ChapterId };
 import type { PartnerHair, TattooZone } from '@outstanding/content';
 import type { RngState } from './rng';
 
@@ -415,6 +418,41 @@ export interface MatchState {
   assists: number;
 }
 
+/** Una partita scelta dal regista della stagione: `full` è la più importante del capitolo. */
+export interface ChapterPick {
+  fixtureId: string;
+  mode: 'full' | 'quick';
+}
+
+/** Registro delle partite del giocatore in un tratto di stagione (capitolo o tratto fra due stop). */
+export interface ChapterLog {
+  /** Partite giocate da titolare. */
+  starts: number;
+  goals: number;
+  assists: number;
+  ratingSum: number;
+  ratingCount: number;
+  cleanSheets: number;
+  /** Gol segnati nelle partite scelte. */
+  pickedGoals: number;
+  /** Momenti da leggenda vissuti. */
+  legends: number;
+  /** Passo decisivo più recente: settimana, partita ed esito. */
+  decisive: { week: number; fixtureId: string; success: boolean } | null;
+}
+
+/** Il capitolo corrente della stagione e le partite che il giocatore vivrà in prima persona. */
+export interface ChapterState {
+  id: ChapterId;
+  picks: ChapterPick[];
+  /** Obiettivo del capitolo (Task B4): per ora sempre assente. */
+  goal: null;
+  lastGoalId: string | null;
+  log: ChapterLog;
+  /** Come `log`, dal precedente stop: si azzera quando il controllo torna al giocatore. */
+  stretch: ChapterLog;
+}
+
 /** Evento estratto per la settimana, in attesa della scelta del giocatore. */
 export interface PendingEvent {
   eventId: string;
@@ -493,6 +531,10 @@ export interface GameState {
   plannedWeek: number;
   /** Ultimo piano settimanale scelto: l'app lo ripropone, l'avanti veloce lo ripete. */
   lastPlan?: { actionId: string; focus?: Skill }[];
+  /** Capitolo corrente della stagione (v3). */
+  chapter: ChapterState;
+  /** Piano di allenamento valido per tutto il capitolo (v3); vuoto finché non è scelto. */
+  chapterPlan: WeekChoice[];
   offers: ContractOffer[];
   sponsorOffers: SponsorOffer[];
   /** Settimana in cui il mercato è già stato aggiornato (-1 = mai). */

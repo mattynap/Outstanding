@@ -127,6 +127,16 @@ export {
   type RatingPartKey,
   type MatchStep,
 } from './match/match';
+export {
+  blankChapter,
+  chapterOf,
+  chapterWeekRange,
+  createChapter,
+  emptyChapterLog,
+  pickChapterMatches,
+  refreshChapterPicks,
+  scoreFixture,
+} from './season/director';
 export { keyOpponentOf, matchSignals, matchStakes, type StakeSignal } from './match/stakes';
 export {
   applyEffects,

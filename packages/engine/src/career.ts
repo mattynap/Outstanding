@@ -6,6 +6,7 @@ import { setupSeasonCups } from './cups/cups';
 import { createFinance } from './finance/finance';
 import { createPrivateLife } from './private/private';
 import { createMedia } from './media/media';
+import { blankChapter, createChapter } from './season/director';
 import { buildSeasonCalendar } from './season/schedule';
 import type { Difficulty, GameState, Interest, Player, World } from './types';
 import { generateWorld, groupId, IdGen } from './world/generate';
@@ -98,7 +99,7 @@ export function newCareer(
     .sort((a, b) => rating.get(b)! - rating.get(a)! || (a < b ? -1 : 1));
   const cups = setupSeasonCups(world, season, ranking, undefined, rng, ctx);
 
-  return {
+  const base: GameState = {
     saveVersion: CURRENT_SAVE_VERSION,
     seed: normalizedSeed,
     rngState: rng.getState(),
@@ -123,5 +124,8 @@ export function newCareer(
     finance: createFinance(ctx),
     privateLife: createPrivateLife(options.interest, ctx),
     media: createMedia(),
+    chapter: blankChapter('preseason'),
+    chapterPlan: [],
   };
+  return { ...base, chapter: createChapter(base, ctx) };
 }

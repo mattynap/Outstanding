@@ -33,12 +33,12 @@ function withoutPending(): Raw {
 }
 
 describe('migrazione dei salvataggi v1 -> v2', () => {
-  it('la versione corrente è 2', () => {
-    expect(CURRENT_SAVE_VERSION).toBe(2);
+  it('la versione corrente è 3', () => {
+    expect(CURRENT_SAVE_VERSION).toBe(3);
   });
 
   it('migrates v1 save without match', () => {
-    const out = migrate({ saveVersion: 1, week: 3 });
+    const out = migrate({ saveVersion: 1, week: 3 }, 2);
     expect(out).toEqual({ saveVersion: 2, week: 3 });
   });
 
@@ -50,7 +50,7 @@ describe('migrazione dei salvataggi v1 -> v2', () => {
   });
 
   it('migrates v1 mid-match without pending: minute = blocksDone·15', () => {
-    const m = matchOf(migrate(withoutPending()));
+    const m = matchOf(migrate(withoutPending(), 2));
     expect(m['minute']).toBe(45);
     expect(m['blocksDone']).toBeUndefined();
     expect(m['momentMinutes']).toBeUndefined();
@@ -62,11 +62,11 @@ describe('migrazione dei salvataggi v1 -> v2', () => {
   it('limita a 90 il minuto di un salvataggio a fine partita', () => {
     const raw = withoutPending();
     matchOf(raw)['blocksDone'] = 7;
-    expect(matchOf(migrate(raw))['minute']).toBe(90);
+    expect(matchOf(migrate(raw, 2))['minute']).toBe(90);
   });
 
   it('migrates v1 mid-match with pending: minute = pending.minute, goals after it removed and score recomputed', () => {
-    const m = matchOf(migrate(v1()));
+    const m = matchOf(migrate(v1(), 2));
     expect(m['minute']).toBe(28);
     const goals = m['events'].filter((e: { kind: string }) => e.kind === 'goal');
     expect(goals.map((g: { minute: number }) => g.minute)).toEqual([10, 25, 28]);
@@ -86,11 +86,11 @@ describe('migrazione dei salvataggi v1 -> v2', () => {
       byPlayer: true,
       assistByPlayer: false,
     });
-    expect(() => migrate(raw)).toThrow(/goal/);
+    expect(() => migrate(raw, 2)).toThrow(/goal/);
   });
 
   it('budgetLeft = momentMinutes.length (the pending moment is already spent)', () => {
-    const m = matchOf(migrate(v1()));
+    const m = matchOf(migrate(v1(), 2));
     const d = m['director'];
     expect(d.budgetLeft).toBe(2);
     expect(d.interventions).toBe(2); // un momento già giocato più quello in attesa
@@ -106,7 +106,7 @@ describe('migrazione dei salvataggi v1 -> v2', () => {
   });
 
   it('senza pending: lastAt è il minuto dell ultimo momento giocato', () => {
-    const d = matchOf(migrate(withoutPending()))['director'];
+    const d = matchOf(migrate(withoutPending(), 2))['director'];
     expect(d.budgetLeft).toBe(1);
     expect(d.interventions).toBe(1);
     expect(d.budgetStart).toBe(2);
@@ -115,7 +115,7 @@ describe('migrazione dei salvataggi v1 -> v2', () => {
   });
 
   it('pressure 0, trace [], dyn zero, pending kept', () => {
-    const m = matchOf(migrate(v1()));
+    const m = matchOf(migrate(v1(), 2));
     expect(m['pressure']).toBe(0);
     expect(m['mode']).toBe('full');
     expect(m['stakes']).toBe(0);
@@ -129,17 +129,17 @@ describe('migrazione dei salvataggi v1 -> v2', () => {
       textVariant: 2,
       options: Array.from({ length: n }, (_, i) => i),
     });
-    expect(matchOf(migrate(v1()))['events'].find((e: Loose) => e.kind === 'moment').quality).toBe(
-      0.5,
-    );
-    expect(matchOf(migrate(v1()))['events'].some((e: Loose) => e.kind === 'subIn')).toBe(true);
+    expect(
+      matchOf(migrate(v1(), 2))['events'].find((e: Loose) => e.kind === 'moment').quality,
+    ).toBe(0.5);
+    expect(matchOf(migrate(v1(), 2))['events'].some((e: Loose) => e.kind === 'subIn')).toBe(true);
   });
 
   it('un salvataggio migrato passa la deserializzazione', () => {
     const base = JSON.parse(serialize(newCareer(baseOptions, 5))) as Raw;
     const raw = { ...base, saveVersion: 1, currentMatch: matchOf(v1()) };
     const s = deserialize(JSON.stringify(raw));
-    expect(s.saveVersion).toBe(2);
+    expect(s.saveVersion).toBe(3);
     expect(s.currentMatch?.minute).toBe(28);
   });
 });
@@ -165,7 +165,7 @@ describe('ripresa di una partita migrata', () => {
 describe('validazione del regista', () => {
   const load = (edit: (m: Loose) => void) => {
     const base = JSON.parse(serialize(newCareer(baseOptions, 5))) as Raw;
-    const migrated = migrate({ ...base, saveVersion: 1, currentMatch: matchOf(v1()) });
+    const migrated = migrate({ ...base, saveVersion: 1, currentMatch: matchOf(v1()) }, 2);
     edit(matchOf(migrated));
     return () => deserialize(JSON.stringify(migrated));
   };

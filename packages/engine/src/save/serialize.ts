@@ -1,9 +1,10 @@
 import { defaultContext, type GameContext } from '../context';
 import { completeAppearance } from '../player/look';
+import { createChapter } from '../season/director';
 import type { GameState } from '../types';
 
 /** Versione corrente del formato di salvataggio. Va incrementata, con una migrazione, a ogni cambio di forma di GameState. */
-export const CURRENT_SAVE_VERSION = 2;
+export const CURRENT_SAVE_VERSION = 3;
 
 /** Una migrazione aggiorna un salvataggio grezzo dalla versione N alla versione N + 1. */
 export type Migration = (raw: Record<string, unknown>, ctx: GameContext) => Record<string, unknown>;
@@ -106,6 +107,20 @@ export const migrations: Record<number, Migration> = {
     const next: Json = { ...raw, saveVersion: 2 };
     if (m !== undefined && m !== null) next['currentMatch'] = migrateMatchV1(m as Json, ctx);
     return next;
+  },
+  /**
+   * Parte B: la stagione si divide in capitoli. Il capitolo si ricava dalla settimana e le scelte
+   * da `createChapter`, che non estrae nulla: `rngState` resta com'è e due migrazioni dello
+   * stesso salvataggio coincidono. Il caricamento di un v3 non riestrae mai le scelte.
+   */
+  2: (raw, ctx) => {
+    const state = raw as unknown as GameState;
+    return {
+      ...raw,
+      saveVersion: 3,
+      chapter: createChapter(state, ctx),
+      chapterPlan: state.lastPlan ? state.lastPlan.map((c) => ({ ...c })) : [],
+    };
   },
 };
 

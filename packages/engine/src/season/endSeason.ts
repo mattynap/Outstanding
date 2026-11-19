@@ -11,6 +11,7 @@ import type { Area, Club, ClubBase, GameState, League, RosterPlayer, SeasonRecor
 import { clamp } from '../util';
 import { clubRatingFromRoster } from '../world/club';
 import { IdGen } from '../world/generate';
+import { createChapter } from './director';
 import { buildSeasonCalendar } from './schedule';
 import { computeStandings, type StandingRow } from './standings';
 import { isSeasonOver } from './week';
@@ -261,9 +262,11 @@ export function endSeason(
     nextId: ids.next,
   };
 
+  // Contratti scaduti, prestiti finiti, ritiro e mercato della nuova stagione.
+  const transitioned = seasonMarketTransition(next, ctx);
   return {
-    // Contratti scaduti, prestiti finiti, ritiro e mercato della nuova stagione.
-    state: seasonMarketTransition(next, ctx),
+    // La stagione nuova riparte dal primo capitolo, con un piano da scegliere.
+    state: { ...transitioned, chapter: createChapter(transitioned, ctx), chapterPlan: [] },
     seasonReport: {
       season: state.season,
       record,

@@ -111,7 +111,8 @@ export const migrations: Record<number, Migration> = {
   /**
    * Parte B: la stagione si divide in capitoli. Il capitolo si ricava dalla settimana e le scelte
    * da `createChapter`, che non estrae nulla: `rngState` resta com'è e due migrazioni dello
-   * stesso salvataggio coincidono. Il caricamento di un v3 non riestrae mai le scelte.
+   * stesso salvataggio coincidono. Un salvataggio a metà capitolo riestrae fino a `max` partite
+   * fra quelle future: non si sa quali giocate fossero scelte. Il caricamento di un v3 non riestrae mai le scelte.
    */
   2: (raw, ctx) => {
     const state = raw as unknown as GameState;

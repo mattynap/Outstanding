@@ -82,6 +82,7 @@ export const calendarSchema = z
     /** Capitoli della stagione: settimane di inizio (da 0) crescenti, il primo parte da 0. */
     chapters: z.array(z.object({ id: chapterIdSchema, fromWeek: seasonWeek })).min(1),
     /** Quota di partite giocate dal giocatore per capitolo (comprende quelle già giocate). */
+    // `min` è solo validato, non entra nella quota (decisione 4): la quota è sempre `max`.
     chapterMatches: z.object({ min: z.number().int().min(0), max: z.number().int().min(1) }),
     /** Pesi che si sommano alla posta della partita nella scelta del regista della stagione. */
     chapterWeights: z.object({

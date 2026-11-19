@@ -7,9 +7,12 @@ import {
   migrate,
   newCareer,
   serialize,
+  type ChapterPick,
   type Fixture,
+  type GameContext,
   type GameState,
 } from '../src/index';
+import { levelOfClub } from '../src/world/queries';
 import {
   chapterOf,
   chapterWeekRange,
@@ -282,6 +285,164 @@ describe('rivalutazione a ogni stop', () => {
       currentMatch: { fixtureId: target.id, mode: 'full' } as unknown as GameState['currentMatch'],
     };
     expect(refreshChapterPicks(s, ctx).map((p) => p.fixtureId)).toContain(target.id);
+  });
+});
+
+describe('rivalutazione: sostituzione uno a uno', () => {
+  const cfgCtx = (max: number): GameContext => ({
+    ...ctx,
+    config: {
+      ...ctx.config,
+      calendar: {
+        ...cal,
+        chapterMatches: { min: 1, max },
+        chapterWeights: { table: { ...cal.chapterWeights.table, promotion: 0, relegation: 0 } },
+      },
+    },
+  });
+
+  /** Stato senza segnali: ogni partita di campionato vale 0, salvo `scout` (0,8). */
+  function quietAt(seed: number, week = 6): GameState {
+    const s = at(seed, week);
+    const clubId = clubOf(s);
+    const coachId = s.world.clubs.find((c) => c.id === clubId)!.coachId;
+    return {
+      ...s,
+      player: {
+        ...s.player,
+        seasonStats: { ...s.player.seasonStats, appearances: 5 },
+        seasonLevelApps: { [levelOfClub(s.world, clubId)!]: 5 },
+        relationships: { ...s.player.relationships, [coachId]: 0 },
+        contract: s.player.contract && { ...s.player.contract, untilSeason: 99 },
+      },
+      world: {
+        ...s.world,
+        clubs: s.world.clubs.map((c) =>
+          c.id === clubId ? c : { ...c, roster: c.roster.map((r) => ({ ...r, ovr: 0 })) },
+        ),
+      },
+    };
+  }
+  const league = (s: GameState) =>
+    s.calendar
+      .filter(
+        (f) =>
+          mine(s, f) && !f.cup && weekOfSeason(f.week, cal) >= 6 && weekOfSeason(f.week, cal) <= 19,
+      )
+      .sort((a, b) => a.week - b.week);
+  const withScout = (s: GameState, ids: string[]): GameState => ({
+    ...s,
+    calendar: s.calendar.map((f) => (ids.includes(f.id) ? { ...f, scout: true } : f)),
+  });
+  const withChapter = (s: GameState, picks: ChapterPick[], c: GameContext): GameState => ({
+    ...s,
+    chapter: { ...createChapter({ ...s, calendar: [] }, c), id: 'autumn', picks },
+  });
+
+  it('due nuove partite più forti sostituiscono solo le due più basse, le altre restano', () => {
+    const c = cfgCtx(3);
+    const s0 = quietAt(51);
+    const [a, b, d] = league(s0);
+    const cups = [cupFixture(s0, 14, 'cup-1'), cupFixture(s0, 15, 'cup-2')];
+    // Le tre vecchie valgono 0,8 (osservatore): nessun'altra partita di campionato le supera.
+    const s = withChapter(
+      withScout({ ...s0, calendar: [...s0.calendar, ...cups] }, [a!.id, b!.id, d!.id]),
+      [a!, b!, d!].map((f) => ({ fixtureId: f.id, mode: 'quick' as const })),
+      c,
+    );
+    const next = refreshChapterPicks(s, c);
+    // Resta la migliore delle tre vecchie (punteggio, poi settimana).
+    const keep = [a!, b!, d!].sort(
+      (x, y) => scoreFixture(s, y, c) - scoreFixture(s, x, c) || x.week - y.week,
+    )[0]!;
+    expect(next.map((p) => p.fixtureId).sort()).toEqual([keep.id, 'cup-1', 'cup-2'].sort());
+    expect(next.find((p) => p.fixtureId === 'cup-1')!.mode).toBe('full');
+  });
+
+  it('se i punteggi cambiano ma nessuna nuova supera la più bassa, non cambia nulla', () => {
+    const c = cfgCtx(3);
+    const s0 = quietAt(52);
+    const [a, b, d, e] = league(s0);
+    // Le tre scelte e la candidata valgono ora lo stesso (0,8), prima valevano 0.
+    const s = withScout(
+      withChapter(
+        s0,
+        [a!, b!, d!].map((f) => ({ fixtureId: f.id, mode: 'quick' as const })),
+        c,
+      ),
+      [a!.id, b!.id, d!.id, e!.id],
+    );
+    expect(scoreFixture(s, e!, c)).toBe(scoreFixture(s, a!, c));
+    const next = refreshChapterPicks(s, c);
+    expect(next.map((p) => p.fixtureId)).toEqual([a!.id, b!.id, d!.id]);
+  });
+
+  it('con un posto libero la nuova entra e la full va alla settimana più vicina, non alla tenuta', () => {
+    const c = cfgCtx(2);
+    const s0 = quietAt(53);
+    const fx = league(s0);
+    const early = fx[1]!; // settimana 7
+    const late = fx[3]!; // settimana 9
+    expect(early.week).toBeLessThan(late.week);
+    const s = withScout(withChapter(s0, [{ fixtureId: late.id, mode: 'quick' }], c), [
+      early.id,
+      late.id,
+    ]);
+    const next = refreshChapterPicks(s, c);
+    expect(next.map((p) => p.fixtureId)).toEqual([early.id, late.id]);
+    expect(next.find((p) => p.fixtureId === early.id)!.mode).toBe('full');
+    expect(next.find((p) => p.fixtureId === late.id)!.mode).toBe('quick');
+  });
+
+  it('una full non ancora giocata viene tolta se una nuova partita vale di più', () => {
+    const c = cfgCtx(2);
+    const s0 = quietAt(54);
+    const [a, b] = league(s0);
+    const cup = cupFixture(s0, 14, 'cup-z');
+    const s = withScout(
+      withChapter(
+        { ...s0, calendar: [...s0.calendar, cup] },
+        [
+          { fixtureId: a!.id, mode: 'full' },
+          { fixtureId: b!.id, mode: 'quick' },
+        ],
+        c,
+      ),
+      [a!.id, b!.id],
+    );
+    const next = refreshChapterPicks(s, c);
+    expect(next.map((p) => p.fixtureId)).toEqual([a!.id, 'cup-z']);
+    expect(next.find((p) => p.fixtureId === 'cup-z')!.mode).toBe('full');
+    expect(next.find((p) => p.fixtureId === a!.id)!.mode).toBe('quick');
+  });
+
+  it('una scelta passata e non giocata resta bloccata e occupa la quota', () => {
+    const c = cfgCtx(3);
+    const s0 = quietAt(55, 10);
+    const all = league(s0);
+    const past = all.find((f) => f.week < 10)!;
+    const future = all.filter((f) => f.week >= 10);
+    const cups = [cupFixture(s0, 14, 'cup-1'), cupFixture(s0, 15, 'cup-2')];
+    const s = withChapter(
+      { ...s0, calendar: [...s0.calendar, ...cups] },
+      [
+        { fixtureId: past.id, mode: 'full' },
+        { fixtureId: future[0]!.id, mode: 'quick' },
+        { fixtureId: future[1]!.id, mode: 'quick' },
+      ],
+      c,
+    );
+    const next = refreshChapterPicks(s, c);
+    expect(next).toHaveLength(3);
+    expect(next[0]).toEqual({ fixtureId: past.id, mode: 'full' });
+    // Restano due posti: entrambe le coppe li prendono.
+    expect(
+      next
+        .slice(1)
+        .map((p) => p.fixtureId)
+        .sort(),
+    ).toEqual(['cup-1', 'cup-2']);
+    expect(next.filter((p) => p.mode === 'full')).toHaveLength(1);
   });
 });
 

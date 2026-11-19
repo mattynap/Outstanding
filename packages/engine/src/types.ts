@@ -1,9 +1,9 @@
 import type { ChapterId, Difficulty, Interest, InterviewContext } from '@outstanding/config';
 import type { WeekChoice } from './season/plan';
-
-export type { ChapterId };
 import type { PartnerHair, TattooZone } from '@outstanding/content';
 import type { RngState } from './rng';
+
+export type { ChapterId };
 
 export type { Difficulty, Interest, InterviewContext, PartnerHair, TattooZone };
 

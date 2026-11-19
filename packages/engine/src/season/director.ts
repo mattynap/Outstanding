@@ -97,7 +97,7 @@ export function scoreFixture(
 interface Scored {
   fixture: Fixture;
   score: number;
-  /** Già fra le scelte future: a pari punteggio resta, per non far oscillare le scelte. */
+  /** Già fra le scelte future: resta finché una nuova non la supera strettamente. */
   kept: boolean;
 }
 
@@ -140,12 +140,24 @@ function select(
         }))
     : [];
 
-  const taken = [...pool]
-    .sort(
-      (a, b) =>
-        b.score - a.score || Number(b.kept) - Number(a.kept) || byCalendar(a.fixture, b.fixture),
-    )
+  const rank = (x: Scored, y: Scored) => y.score - x.score || byCalendar(x.fixture, y.fixture);
+  // Si tengono le scelte future attuali; i posti liberi si riempiono per graduatoria.
+  const taken = pool
+    .filter((x) => x.kept)
+    .sort(rank)
     .slice(0, quota);
+  const rest = pool.filter((x) => !x.kept).sort(rank);
+  while (taken.length < quota && rest.length > 0) taken.push(rest.shift()!);
+  // Una nuova entra solo se supera strettamente la più bassa fra le tenute, che esce (uno a uno).
+  for (;;) {
+    taken.sort(rank);
+    const lowest = taken[taken.length - 1];
+    const best = rest[0];
+    if (!lowest || !best || best.score <= lowest.score) break;
+    taken[taken.length - 1] = rest.shift()!;
+  }
+  taken.sort(rank);
+  // La full va alla più importante (punteggio, settimana, id), senza preferenze per le tenute.
   const fullId = locked.some((p) => p.mode === 'full') ? null : taken[0]?.fixture.id;
 
   const fresh: ChapterPick[] = taken.map((t) => ({

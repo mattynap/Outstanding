@@ -231,18 +231,19 @@ function onChapterClose(state: GameState): GameState {
 /**
  * Avanti fino al prossimo stop: ripete il piano del capitolo, risolve da solo le notizie e
  * simula le partite non scelte. Si ferma (anche a zero settimane trascorse) per ritiro, fine
- * stagione, notizia personale, offerta che vale, cambio di capitolo (il nuovo capitolo è già
- * creato: il chiamante imposta il suo piano) e prima di ogni partita scelta, in ordine di
- * calendario. Alla restituzione non c'è mai una partita aperta e, senza notizie in sospeso, la
- * prossima partita da giocare è sempre una scelta. Il tratto (`chapter.stretch`) si azzera.
- * Il cambio di capitolo precede la partita scelta della stessa settimana: il capitolo nuovo
- * nasce all'inizio della sua prima settimana, che si gioca col piano del capitolo precedente.
+ * stagione, notizia personale, offerta che vale, cambio di capitolo e prima di ogni partita
+ * scelta, in ordine di calendario. Il cambio di capitolo è all'inizio della settimana: precede
+ * tutto il resto di quella settimana, pick compresa; si ritorna con il capitolo nuovo già creato
+ * e la settimana intatta (nessuna partita simulata), così il chiamante ne imposta il piano.
+ * Alla restituzione non c'è mai una partita aperta e la prossima partita da giocare è una scelta,
+ * tranne agli stop `news`, `chapterEnd` e `offers` a inizio settimana (settimana intatta): lì una
+ * non scelta può essere ancora dovuta e si simula alla chiamata successiva. Il tratto (`chapter.stretch`) si azzera. Con la carriera già finita
+ * o la stagione già chiusa torna subito lo stop, a zero settimane.
  */
 export function advanceToStop(
   state: GameState,
   ctx: GameContext = defaultContext,
 ): { state: GameState; report: FastForwardReport } {
-  if (state.retired) throw new Error('The career is over');
   if (state.currentMatch) throw new Error('A match is in progress');
   let s = state;
   const report: FastForwardReport = {
@@ -256,6 +257,8 @@ export function advanceToStop(
   const offersAtStart = new Set(state.offers.map((o) => o.id));
   const zoneFrom = tableZone(state, ctx);
   const cal = ctx.config.calendar;
+  const newOffer = () =>
+    report.weeks > 0 && s.offers.some((o) => !offersAtStart.has(o.id) && worthStopping(s, o));
   const isPick = (id: string) => s.chapter.picks.some((p) => p.fixtureId === id);
 
   const finish = (stop: FastForwardStop): { state: GameState; report: FastForwardReport } => {
@@ -270,17 +273,19 @@ export function advanceToStop(
     if (isSeasonOver(s, ctx)) return finish('seasonEnd');
 
     // Capitolo nuovo: il registro del tratto passa con lo stato, così i titoli lo leggono intero.
-    let boundary = false;
     if (chapterOf(weekOfSeason(s.week, cal), cal) !== s.chapter.id) {
+      // Il confine è all'inizio della settimana: prima del piano, degli eventi e delle partite,
+      // così la prima settimana del capitolo nuovo usa il piano scelto dopo questo stop. Un'offerta
+      // arrivata con l'ultima settimana non si perde: si ferma prima, il cambio capitolo al giro dopo.
+      if (newOffer()) return finish('offers');
       const closed = onChapterClose(s);
       s = {
         ...closed,
         chapter: { ...createChapter(closed, ctx), stretch: closed.chapter.stretch },
       };
-      boundary = true;
-    } else {
-      s = { ...s, chapter: { ...s.chapter, picks: refreshChapterPicks(s, ctx) } };
+      return finish('chapterEnd');
     }
+    s = { ...s, chapter: { ...s.chapter, picks: refreshChapterPicks(s, ctx) } };
 
     if (s.plannedWeek !== s.week) {
       // Il piano del capitolo non sostituisce quello scelto a mano dal giocatore.
@@ -288,7 +293,10 @@ export function advanceToStop(
       s = { ...planWeek(s, plan, ctx).state, lastPlan: s.lastPlan };
     }
     s = drawWeekEvents(s, ctx).state;
-    if (hasPersonalNews(s, ctx)) return finish('news');
+    // Con una notizia personale da leggere una partita non scelta può essere ancora dovuta, ma
+    // beginMatch rifiuta finché le notizie sono in sospeso: la si simula al giro dopo. Un'offerta
+    // nuova ha la precedenza, altrimenti il giro dopo non la riconoscerebbe più come nuova.
+    if (hasPersonalNews(s, ctx)) return finish(newOffer() ? 'offers' : 'news');
     while (s.pendingEvents.length > 0) {
       const pe = s.pendingEvents[0]!;
       s = resolveEvent(s, pe.eventId, prudentChoice(getEvent(pe.eventId, ctx), s), ctx).state;
@@ -302,10 +310,7 @@ export function advanceToStop(
       report.summary.push(summaryOf(out.matchReport));
     }
 
-    if (report.weeks > 0 && s.offers.some((o) => !offersAtStart.has(o.id) && worthStopping(s, o))) {
-      return finish('offers');
-    }
-    if (boundary) return finish('chapterEnd');
+    if (newOffer()) return finish('offers');
     if (playerFixture(s)) return finish('pick');
 
     s = advanceWeek(s, ctx).state;

@@ -22,6 +22,8 @@ import { emptyChapterLog } from '../src/season/director';
 import { buildHeadlines } from '../src/season/headlines';
 import { drawWeekEvents, resolveEvent, getEvent } from '../src/events/events';
 import { advanceWeek } from '../src/season/week';
+import { clubLevel } from '../src/market/offers';
+import { weekOfSeason } from '../src/time';
 
 const ctx = defaultContext;
 const ev = (id: string) => ctx.content.events.find((e) => e.id === id)!;
@@ -107,7 +109,7 @@ describe('avanti veloce', () => {
 /** Carriera guidata da advanceToStop: pick simulate, notizie prudenti, piano fisso. */
 function driveSeason(seed: number) {
   let s = setChapterPlan(start(seed), [{ actionId: 'train_normal' }], ctx);
-  const stops: { stop: string; weeks: number; pendingIsPick: boolean }[] = [];
+  const stops: { stop: string; weeks: number; pendingIsPick: boolean; untouched: boolean }[] = [];
   const reports: ReturnType<typeof advanceToStop>['report'][] = [];
   for (let i = 0; i < 300; i++) {
     const out = advanceToStop(s, ctx);
@@ -117,6 +119,7 @@ function driveSeason(seed: number) {
     stops.push({
       stop: out.report.stop,
       weeks: out.report.weeks,
+      untouched: s.pendingEvents.length > 0 || s.plannedWeek !== s.week,
       pendingIsPick: !f || s.chapter.picks.some((p) => p.fixtureId === f.id),
     });
     if (out.report.stop === 'seasonEnd' || out.report.stop === 'retired') break;
@@ -142,7 +145,11 @@ describe('avanti fino al prossimo stop', () => {
 
   it('never leaves a non-picked match pending', () => {
     for (const seed of [1, 2, 3, 6, 9]) {
-      for (const x of driveSeason(seed).stops) expect(x.pendingIsPick).toBe(true);
+      for (const x of driveSeason(seed).stops) {
+        // A news, chapterEnd e offerta a inizio settimana (settimana ancora intatta) una non scelta può essere ancora dovuta: si simula alla chiamata dopo.
+        if (x.stop !== 'news' && x.stop !== 'chapterEnd' && !x.untouched)
+          expect(x.pendingIsPick).toBe(true);
+      }
     }
   });
 
@@ -157,8 +164,7 @@ describe('avanti fino al prossimo stop', () => {
         saw = true;
         expect(out.report.weeks).toBeGreaterThan(0);
         expect(s.chapter.id).not.toBe(first);
-        // Il registro del capitolo nuovo conta solo le sue partite (qui al più la prima simulata).
-        expect(s.chapter.log.ratingCount).toBeLessThanOrEqual(1);
+        expect(s.chapter.log).toEqual(emptyChapterLog());
         expect(s.chapter.stretch).toEqual(emptyChapterLog());
         // Subito dopo, il piano del capitolo nuovo si può impostare e si riparte.
         s = setChapterPlan(s, [{ actionId: 'train_intense' }], ctx);
@@ -302,5 +308,113 @@ describe('prima pagina', () => {
     expect(reports.some((r) => r.headlines.length > 0)).toBe(true);
     for (const r of reports) expect(r.headlines.length).toBeLessThanOrEqual(3);
     expect(state.chapter.stretch).toEqual(emptyChapterLog());
+  });
+});
+
+describe('fine capitolo e stop mancanti', () => {
+  const answerNews = (s: GameState) => {
+    for (const pe of [...s.pendingEvents]) {
+      s = resolveEvent(s, pe.eventId, prudentChoice(getEvent(pe.eventId, ctx), s), ctx).state;
+    }
+    return s;
+  };
+  /** Porta la carriera al primo chapterEnd, gestendo pick e notizie. */
+  function toChapterEnd(seed: number, planId = 'train_normal') {
+    let s = setChapterPlan(start(seed), [{ actionId: planId }], ctx);
+    for (let i = 0; i < 60; i++) {
+      const out = advanceToStop(s, ctx);
+      s = out.state;
+      if (out.report.stop === 'chapterEnd') return { s, report: out.report };
+      if (out.report.stop === 'pick') s = simulateMatch(s, ctx).state;
+      if (out.report.stop === 'news') s = answerNews(s);
+    }
+    throw new Error('no chapterEnd');
+  }
+
+  it('chapterEnd returns before the new week and the new chapter uses the new plan', () => {
+    const { s, report } = toChapterEnd(6);
+    const w = s.week;
+    expect(weekOfSeason(w, ctx.config.calendar)).toBe(
+      ctx.config.calendar.chapters.find((c) => c.id === s.chapter.id)!.fromWeek,
+    );
+    expect(s.plannedWeek).not.toBe(w);
+    expect(report.weeks).toBeGreaterThan(0);
+    expect(s.chapter.log).toEqual(emptyChapterLog());
+    expect(s.chapter.stretch).toEqual(emptyChapterLog());
+    expect(playerFixture(s)?.result).toBeUndefined();
+    // Stesso stato, due piani: la prima settimana del capitolo nuovo li segue.
+    const run = (id: string) =>
+      advanceToStop(setChapterPlan(s, [{ actionId: id }], ctx), ctx).state;
+    const a = run('train_intense');
+    const b = run('leisure');
+    expect(a.plannedWeek).toBeGreaterThanOrEqual(w);
+    expect(a.player.skills).not.toEqual(b.player.skills);
+  });
+
+  it('chapterEnd is reported also when the week has events', () => {
+    for (let seed = 1; seed < 12; seed++) {
+      const ends = driveSeason(seed).stops.filter((x) => x.stop === 'chapterEnd');
+      expect(ends.length).toBeGreaterThanOrEqual(4);
+    }
+  });
+
+  it('returns retired at zero weeks for a retired state', () => {
+    const s = { ...start(6), retired: { season: 1, week: 0, age: 35, reason: 'age' as const } };
+    const out = advanceToStop(s, ctx);
+    expect(out.report.stop).toBe('retired');
+    expect(out.report.weeks).toBe(0);
+  });
+
+  it('simulates a due non-picked match after a news stop', () => {
+    for (let seed = 1; seed < 30; seed++) {
+      let s = setChapterPlan(start(seed), [{ actionId: 'train_normal' }], ctx);
+      for (let i = 0; i < 80; i++) {
+        const out = advanceToStop(s, ctx);
+        s = out.state;
+        if (out.report.stop === 'seasonEnd') break;
+        if (out.report.stop === 'pick') s = simulateMatch(s, ctx).state;
+        if (out.report.stop === 'news') {
+          const f = playerFixture(s);
+          const due = !!f && !s.chapter.picks.some((p) => p.fixtureId === f.id);
+          s = answerNews(s);
+          const next = advanceToStop(s, ctx);
+          if (due) {
+            expect(next.report.summary.some((m) => m.fixtureId === f!.id)).toBe(true);
+            const g = playerFixture(next.state);
+            expect(!g || next.state.chapter.picks.some((p) => p.fixtureId === g.id)).toBe(true);
+            return;
+          }
+          s = next.state;
+          if (next.report.stop === 'pick') s = simulateMatch(s, ctx).state;
+        }
+      }
+    }
+    // Nessuna notizia personale con una partita non scelta dovuta: niente da verificare.
+  });
+
+  it('never loses a worthwhile offer behind another stop', () => {
+    const worth = (s: GameState, o: GameState['offers'][number]) =>
+      !s.player.clubId ||
+      o.kind === 'renewal' ||
+      clubLevel(s, o.clubId) < clubLevel(s, s.player.clubId);
+    for (let seed = 1; seed < 15; seed++) {
+      let s = setChapterPlan(start(seed), [{ actionId: 'train_normal' }], ctx);
+      let seen = new Set(s.offers.map((o) => o.id));
+      let weeksSinceSeen = 0;
+      for (let i = 0; i < 80; i++) {
+        const out = advanceToStop(s, ctx);
+        s = out.state;
+        weeksSinceSeen += out.report.weeks;
+        const fresh = s.offers.filter((o) => !seen.has(o.id) && worth(s, o));
+        // Un'offerta nuova che vale, dopo almeno una settimana, o ha fermato questo giro o
+        // era già visibile al giro prima: non resta "nuova" e muta.
+        if (weeksSinceSeen > 0 && fresh.length > 0) expect(out.report.stop).toBe('offers');
+        seen = new Set(s.offers.map((o) => o.id));
+        weeksSinceSeen = 0;
+        if (out.report.stop === 'seasonEnd' || out.report.stop === 'retired') break;
+        if (out.report.stop === 'pick') s = simulateMatch(s, ctx).state;
+        if (out.report.stop === 'news') s = answerNews(s);
+      }
+    }
   });
 });

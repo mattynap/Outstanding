@@ -27,6 +27,11 @@
 - [ ] Account Google Play: personale o aziendale; se personale Prova 1 con ≥12 tester per 14 giorni (2026-11-20)
 - [ ] CLAUDE.md §3: Phaser 4.2.1 e rimando ai tipi locali; allineare docs/design/README.md a CLAUDE.md (2026-11-20)
 - [ ] Decidere su pnpm lint rosso (Prettier su 127 file preesistenti) e sul versionamento delle founder-* (2026-11-20)
+- [ ] Cursori di game feel nel Campo prova e andrew_game_perf su Android (report Skill e tecnologie, 3.3–3.4) (2026-11-20)
+- [ ] Privacy prima di Crashlytics: informativa, privacy manifest iOS, scheda dati di Play; analytics reali per D1/D7 (2026-11-20)
+- [ ] Registrazione del marchio dopo la ricerca del nome di S−8 (2026-11-20)
+- [ ] Domande fiscali al commercialista: report Skill e tecnologie, sezione 5 (2026-11-20)
+- [ ] A M12: skill accessibilità e localizzazione, checklist store in founder-launch (2026-11-20)
 
 ## Fatti
 <!-- ultimi 10; i più vecchi restano in git -->

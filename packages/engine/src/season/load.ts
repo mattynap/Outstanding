@@ -1,0 +1,86 @@
+import type { GameContext } from '../context';
+import { endOfWeekFreshness, injuryFreshnessFactor } from '../player/freshness';
+import { applyLoadGrowth, injure, rollInjury } from '../player/progression';
+import type { Rng } from '../rng';
+import type { EffectiveLoad, Load, Player, Skill, Skills } from '../types';
+
+/** Da infortunato il carico scelto non conta: la settimana è di recupero. */
+export function effectiveLoad(player: Player, load: Load): EffectiveLoad {
+  return player.injury ? 'recovery' : load;
+}
+
+export interface LoadWeekResult {
+  player: Player;
+  rng: Rng;
+  gains: Partial<Skills>;
+  injury?: { type: string; weeksLeft: number };
+  healed: boolean;
+  freshnessDelta: number;
+}
+
+/**
+ * Parte del carico nella settimana: crescita, tiro d'infortunio in seduta, guarigione in recupero.
+ * La freschezza non si tocca qui (F0 resta quella di inizio settimana per tutti i calcoli): si
+ * restituisce solo il delta, che `closeWeekFreshness` applica una volta a fine settimana.
+ * Il generatore è mutabile: lo si restituisce per comodità del chiamante.
+ */
+export function applyLoadWeek(
+  player: Player,
+  week: number,
+  load: Load,
+  focus: Skill | undefined,
+  rng: Rng,
+  ctx: GameContext,
+): LoadWeekResult {
+  const eff = effectiveLoad(player, load);
+  const cfg = ctx.config.progression.loads[eff];
+  const freshnessDelta = cfg.freshness;
+
+  if (eff === 'recovery') {
+    let next = player;
+    let healed = false;
+    const heal = ctx.config.progression.loads.recovery.healChance ?? 0;
+    if (player.injury && rng.chance(heal)) {
+      const weeksLeft = player.injury.weeksLeft - 1;
+      if (weeksLeft > 0) next = { ...player, injury: { ...player.injury, weeksLeft } };
+      else {
+        const { injury: _healed, ...rest } = player;
+        next = rest;
+      }
+      healed = true;
+    }
+    return { player: next, rng, gains: {}, healed, freshnessDelta };
+  }
+
+  const grown = applyLoadGrowth(player, week, eff, focus, ctx);
+  let next = grown.player;
+  let injury: { type: string; weeksLeft: number } | undefined;
+  const p = cfg.sessionInjury * injuryFreshnessFactor(player.condition.energy, ctx);
+  if (p > 0 && rng.chance(Math.min(1, p))) {
+    injury = rollInjury(rng, ctx);
+    next = injure(next, injury, ctx);
+  }
+  return { player: next, rng, gains: grown.gains, injury, healed: false, freshnessDelta };
+}
+
+/** Chiude la settimana: F0 + somma dei delta (carico, vita, partita, eventi), un solo clamp al tetto del carico. */
+export function closeWeekFreshness(
+  player: Player,
+  deltas: number,
+  load: EffectiveLoad,
+  ctx: GameContext,
+): Player {
+  const cap = ctx.config.progression.loads[load].freshnessCap;
+  return {
+    ...player,
+    condition: {
+      ...player.condition,
+      energy: endOfWeekFreshness(player.condition.energy, deltas, cap),
+    },
+  };
+}
+
+/** Variazione di forma nelle settimane in cui non si gioca. */
+export function formWhenNotPlaying(load: EffectiveLoad, ctx: GameContext): number {
+  return ctx.config.progression.loads[load].formNotPlaying;
+}

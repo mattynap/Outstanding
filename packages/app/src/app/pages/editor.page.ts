@@ -638,7 +638,12 @@ interface PersonRow extends PersonRef {
       align-items: center;
       gap: 14px;
       padding: 12px;
-      border-radius: var(--o-radius-md);
+      --px-b: var(--o-border);
+      box-shadow:
+        0 calc(-1 * var(--o-px)) 0 0 var(--px-b),
+        0 var(--o-px) 0 0 var(--px-b),
+        calc(-1 * var(--o-px)) 0 0 0 var(--px-b),
+        var(--o-px) 0 0 0 var(--px-b);
       background:
         repeating-linear-gradient(
           90deg,
@@ -683,20 +688,20 @@ interface PersonRow extends PersonRef {
       cursor: pointer;
     }
     .swatch__dot {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
+      width: 28px;
+      height: 28px;
       background: var(--sw);
+      /* Tessera di colore con cornice pixel; scelta: anello oro staccato di un pixel. */
       box-shadow:
-        inset 0 0 0 1px rgba(255, 255, 255, 0.18),
-        0 0 0 1px var(--o-border-strong);
-      transition: transform var(--o-fast) var(--o-ease);
+        inset 0 0 0 var(--o-px) rgba(255, 255, 255, 0.18),
+        0 0 0 var(--o-px) var(--o-border-strong);
+      transition: transform var(--o-fast) steps(2, end);
     }
     .swatch[aria-checked='true'] .swatch__dot {
-      transform: scale(1.12);
+      transform: scale(1.1);
       box-shadow:
-        0 0 0 3px var(--o-bg),
-        0 0 0 5px var(--o-accent-fg);
+        0 0 0 var(--o-px) var(--o-bg),
+        0 0 0 calc(2 * var(--o-px)) var(--o-accent-fg);
     }
     .swatch:disabled {
       cursor: not-allowed;
@@ -706,7 +711,6 @@ interface PersonRow extends PersonRef {
     .pattern:focus-visible {
       outline: 3px solid var(--o-accent-fg);
       outline-offset: 1px;
-      border-radius: var(--o-radius-sm);
     }
     .patterns {
       display: flex;
@@ -718,13 +722,18 @@ interface PersonRow extends PersonRef {
       min-height: 56px;
       display: grid;
       place-items: center;
-      border-radius: var(--o-radius-md);
-      border: 1px solid var(--o-border-strong);
+      border: none;
+      --px-b: var(--o-border-strong);
+      box-shadow:
+        0 calc(-1 * var(--o-px)) 0 0 var(--px-b),
+        0 var(--o-px) 0 0 var(--px-b),
+        calc(-1 * var(--o-px)) 0 0 0 var(--px-b),
+        var(--o-px) 0 0 0 var(--px-b);
       background: var(--o-bg-deep);
       cursor: pointer;
     }
     .pattern[aria-checked='true'] {
-      border-color: var(--o-accent);
+      --px-b: var(--o-accent);
       background: var(--o-accent-soft);
     }
     .comp {

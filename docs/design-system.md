@@ -161,10 +161,19 @@ Interfaccia ibrida (ondata 3, schede del giocatore):
   `#C2304A` per la vita privata. Le cifre di prezzo non vanno mai a capo.
 - **Patrimonio**: netto in `.o-num` 44 px con la moneta pixel; prezzi dei beni in `.o-num`.
 - **Vignette**: niente angoli tondi, cornice pixel `--o-border-strong` con ombra a gradino di 4 px.
+- **Avvio**: stemma del gioco 72 px (scudo, pallone, colori del tema) sopra il titolo in `.o-num`
+  58 px color `--o-accent-fg` con ombra a gradino piena di due pixel; numeri degli slot in `.o-num`.
+- **Avatar**: la figurina ha sempre angoli vivi e cornice pixel (`--px-b` sovrascrivibile; oro nel
+  profilo social), in ogni schermata.
+- **Social e conferenza**: tessere dei post e microfoni con cornice pixel (oro al passaggio e sul
+  microfono centrale), bolle del feed squadrate che rientrano (i propri post da destra), cuore dei
+  "mi piace" pixel. **Crea ed editor**: interruttori a blocchi che scattano, tessere di colore
+  quadrate con anello oro staccato di un pixel, motivi della maglia in cornice pixel. Il conto del
+  barbiere è un `.o-paper`.
 
 Correzioni dell'editor ("Redazione"): il nome originale resta sopra quello nuovo, piccolo e barrato
 con una riga rossa (`--o-headline-red`), più il segno ✎ a destra della riga; i colori si scelgono
-da cerchi della tavolozza (44 px di area tattile), il motivo da miniature della maglia.
+da tessere quadrate della tavolozza (44 px di area tattile), il motivo da miniature della maglia.
 
 Settimana guidata: ogni nota è un foglio di carta (`--o-paper`, `--o-ink`) appuntato con una
 graffetta, leggermente ruotato, con il filo rosso (`--o-headline-red`) a sinistra e l'occhiello

@@ -35,7 +35,7 @@ import { ToastService } from '../core/toast.service';
         @if (conf(); as c) {
           <div class="mics" aria-hidden="true">
             @for (m of [0, 1, 2, 3, 4]; track m) {
-              <span class="mic" [style.--i]="m"><ion-icon name="mic"></ion-icon></span>
+              <span class="mic o-px" [style.--i]="m"><ion-icon name="mic"></ion-icon></span>
             }
           </div>
           <span class="o-label occasion">{{ 'ui.press.kind.' + c.kind | t: c.params }}</span>
@@ -99,20 +99,25 @@ import { ToastService } from '../core/toast.service';
     .mic {
       width: 40px;
       height: 40px;
-      border-radius: 50%;
+      --px-b: var(--o-border);
+      --px-d: var(--o-px);
       display: grid;
       place-items: center;
       background: var(--o-surface-raised);
-      border: 1px solid var(--o-border);
       font-size: 20px;
       color: var(--o-text-soft);
       transform: translateY(calc(var(--i) * 0px));
-      animation: lean 300ms ease-out both;
+      animation: lean 300ms steps(3, end) both;
       animation-delay: calc(var(--i) * 40ms);
     }
     .mic:nth-child(3) {
+      --px-b: var(--o-accent);
       color: var(--o-accent-fg);
-      border-color: var(--o-accent);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .mic {
+        animation: none;
+      }
     }
     @keyframes lean {
       from {
@@ -139,10 +144,10 @@ import { ToastService } from '../core/toast.service';
     .effect {
       margin: 0;
       font-weight: 700;
-      color: #145c32;
+      color: var(--o-ink-pos);
     }
     .effect.neg {
-      color: #8c1d17;
+      color: var(--o-ink-neg);
     }
   `,
 })

@@ -7,7 +7,6 @@ import {
   chevronBack,
   flameOutline,
   giftOutline,
-  heart,
   heartOutline,
   newspaperOutline,
 } from 'ionicons/icons';
@@ -24,6 +23,7 @@ import { formatDelta, formatInt, formatMoney } from '../core/text';
 import { ToastService } from '../core/toast.service';
 import { playerAge } from '../core/views';
 import { AvatarComponent } from '../ui/avatar.component';
+import { PxIconComponent } from '../ui/px-icon.component';
 
 const POST_ICONS: Readonly<Record<string, string>> = {
   training: 'barbell-outline',
@@ -49,7 +49,7 @@ export function handleOf(first: string, last: string): string {
  */
 @Component({
   selector: 'app-social',
-  imports: [IonContent, IonIcon, TranslatePipe, AvatarComponent],
+  imports: [IonContent, IonIcon, TranslatePipe, AvatarComponent, PxIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ion-content class="o-page">
@@ -77,12 +77,12 @@ export function handleOf(first: string, last: string): string {
             />
             <div class="who">
               <span class="handle">&#64;{{ v.handle }}</span>
-              <span class="o-number followers">{{ v.followers }}</span>
+              <span class="o-num followers">{{ v.followers }}</span>
               <span class="small soft">{{ 'ui.social.followers' | t }}</span>
             </div>
             <div class="worth">
               <span class="o-label">{{ 'ui.social.value' | t }}</span>
-              <span class="o-number bonus">+{{ v.bonus }}%</span>
+              <span class="o-num bonus">+{{ v.bonus }}%</span>
             </div>
           </section>
           <p class="small o-muted none">
@@ -99,7 +99,7 @@ export function handleOf(first: string, last: string): string {
             <div class="posts">
               @for (o of v.posts; track o.id) {
                 <button
-                  class="post"
+                  class="post o-px"
                   type="button"
                   [disabled]="busy() || !o.available"
                   (click)="publish(o.id)"
@@ -141,7 +141,7 @@ export function handleOf(first: string, last: string): string {
                     </div>
                     <p class="text">{{ item.textKey | t: item.params }}</p>
                     <span class="likes" [class.neg]="item.tone === 'neg'">
-                      <ion-icon name="heart" aria-hidden="true"></ion-icon>
+                      <app-px-icon name="heart" />
                       {{ int(item.likes) }}
                     </span>
                   </article>
@@ -168,10 +168,7 @@ export function handleOf(first: string, last: string): string {
       gap: 14px;
     }
     .pic {
-      flex: none;
-      border-radius: 50%;
-      overflow: hidden;
-      box-shadow: 0 0 0 2px var(--o-accent);
+      --px-b: var(--o-accent);
     }
     .who {
       flex: 1 1 auto;
@@ -225,22 +222,19 @@ export function handleOf(first: string, last: string): string {
       gap: 4px;
       padding: 12px;
       min-height: 132px;
-      border-radius: var(--o-radius-md);
-      border: 1px solid var(--o-border);
+      --px-b: var(--o-border);
       background: var(--o-surface);
       color: var(--o-text);
       font: inherit;
       text-align: left;
       cursor: pointer;
-      transition:
-        border-color 150ms ease-out,
-        transform 150ms ease-out;
+      transition: transform 150ms ease-out;
     }
     .post:not(:disabled):active {
       transform: scale(0.98);
     }
     .post:not(:disabled):hover {
-      border-color: var(--o-accent);
+      --px-b: var(--o-accent);
     }
     .post:disabled {
       opacity: 0.45;
@@ -265,11 +259,13 @@ export function handleOf(first: string, last: string): string {
     .bubble {
       gap: 4px;
       padding: 12px 14px;
-      border-radius: 16px 16px 16px 4px;
+      margin-right: var(--o-space-5);
     }
+    /* Chat a blocchi: i propri post rientrano da destra con cornice oro. */
     .bubble.mine {
       --px-b: var(--o-accent);
-      border-radius: 16px 16px 4px 16px;
+      margin-right: 0;
+      margin-left: var(--o-space-5);
     }
     .bubble-head {
       display: flex;
@@ -357,7 +353,6 @@ export class SocialPage {
       heartOutline,
       giftOutline,
       flameOutline,
-      heart,
       newspaperOutline,
     });
   }

@@ -66,10 +66,10 @@ import { LookEditorComponent } from '../ui/look-editor.component';
             <app-look-editor [value]="draft()" [state]="s" (changed)="draft.set($event)" />
           </section>
 
-          <section class="bill" [attr.aria-label]="'ui.look.bill' | t">
+          <section class="o-paper bill" [attr.aria-label]="'ui.look.bill' | t">
             <div class="bill-row">
               <span>{{ 'ui.look.bill' | t }}</span>
-              <span class="o-number amount">{{ money(cost()) }}</span>
+              <span class="o-num amount">{{ money(cost()) }}</span>
             </div>
             <div class="bill-row small">
               <span>{{ 'ui.look.cash' | t }}</span>
@@ -148,10 +148,6 @@ import { LookEditorComponent } from '../ui/look-editor.component';
       flex-direction: column;
       gap: 6px;
       padding: 14px 16px;
-      border-radius: var(--o-radius-md);
-      background: var(--o-paper);
-      color: var(--o-ink);
-      box-shadow: var(--o-shadow-paper);
     }
     .bill-row {
       display: flex;

@@ -20,7 +20,7 @@ import { avatarShapes, VIEW_H, VIEW_W } from './avatar-art';
     >
       <defs>
         <clipPath [attr.id]="clipId">
-          <rect [attr.width]="viewW" [attr.height]="viewH" rx="16" />
+          <rect [attr.width]="viewW" [attr.height]="viewH" />
         </clipPath>
       </defs>
       <g [attr.clip-path]="'url(#' + clipId + ')'">
@@ -90,9 +90,17 @@ import { avatarShapes, VIEW_H, VIEW_W } from './avatar-art';
     </svg>
   `,
   styles: `
+    /* Figurina in cornice pixel: angoli vivi, bordo a gradino e ombra corta (--px-b sovrascrivibile). */
     :host {
+      --px-b: var(--o-border-strong);
       display: inline-flex;
       flex: 0 0 auto;
+      box-shadow:
+        0 calc(-1 * var(--o-px)) 0 0 var(--px-b),
+        0 var(--o-px) 0 0 var(--px-b),
+        calc(-1 * var(--o-px)) 0 0 0 var(--px-b),
+        var(--o-px) 0 0 0 var(--px-b),
+        calc(2 * var(--o-px)) calc(2 * var(--o-px)) 0 0 var(--o-px-shadow);
     }
   `,
 })

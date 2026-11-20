@@ -5,6 +5,8 @@ import { GameService } from '../core/game.service';
 import { I18nService, TranslatePipe } from '../core/i18n.service';
 import type { SlotSummary } from '../core/saves/slots';
 import { ToastService } from '../core/toast.service';
+import type { Crest } from '@outstanding/engine';
+import { CrestComponent } from '../ui/crest.component';
 
 const savedFormat = new Intl.DateTimeFormat('it-IT', {
   day: 'numeric',
@@ -16,12 +18,15 @@ const savedFormat = new Intl.DateTimeFormat('it-IT', {
 /** Schermata iniziale: prima pagina del giornale e le carriere salvate negli slot. */
 @Component({
   selector: 'app-start',
-  imports: [IonContent, RouterLink, TranslatePipe],
+  imports: [IonContent, RouterLink, TranslatePipe, CrestComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ion-content class="o-page">
       <main class="o-wrap o-enter start">
-        <p class="wordmark">{{ 'ui.app.name' | t }}</p>
+        <header class="brand">
+          <app-crest class="emblem" [crest]="emblem" [size]="72" />
+          <p class="wordmark o-num">{{ 'ui.app.name' | t }}</p>
+        </header>
 
         <article class="o-paper front">
           <div class="o-masthead">
@@ -49,7 +54,7 @@ const savedFormat = new Intl.DateTimeFormat('it-IT', {
             @if (v.summary; as s) {
               <article class="o-card slot" [class.current]="v.slot === game.slot()">
                 <div class="slot-head">
-                  <span class="o-number num">{{ v.slot }}</span>
+                  <span class="o-num num">{{ v.slot }}</span>
                   <div class="grow">
                     <span class="name">{{ s.playerName }}</span>
                     <span class="o-muted small">{{ line(s) }}</span>
@@ -79,7 +84,7 @@ const savedFormat = new Intl.DateTimeFormat('it-IT', {
               </article>
             } @else {
               <a class="o-card slot empty" routerLink="/crea" [queryParams]="{ slot: v.slot }">
-                <span class="o-number num">{{ v.slot }}</span>
+                <span class="o-num num">{{ v.slot }}</span>
                 <span class="grow o-muted">{{ 'ui.slots.empty' | t }}</span>
                 <span class="new">{{ 'ui.start.new' | t }}</span>
               </a>
@@ -99,15 +104,24 @@ const savedFormat = new Intl.DateTimeFormat('it-IT', {
       justify-content: center;
       gap: var(--o-space-5);
     }
+    .brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--o-space-2);
+    }
+    /* Titolo da cabinato: font pixel e ombra a gradino piena, senza sfocatura. */
     .wordmark {
       margin: 0;
       text-align: center;
-      font-family: var(--o-font-display);
-      font-weight: 800;
-      font-size: 22px;
-      letter-spacing: 6px;
+      font-size: 58px;
+      line-height: 0.9;
+      letter-spacing: 2px;
       text-transform: uppercase;
       color: var(--o-accent-fg);
+      text-shadow:
+        var(--o-px) var(--o-px) 0 var(--o-px-shadow),
+        calc(2 * var(--o-px)) calc(2 * var(--o-px)) 0 var(--o-px-shadow);
     }
     .front {
       transform: rotate(-1.2deg);
@@ -182,6 +196,14 @@ export class StartPage {
   private readonly toast = inject(ToastService);
   private readonly alerts = inject(AlertController);
   protected readonly busy = signal(false);
+  /** Stemma del gioco: colori del tema (accento su verde campo), simbolo del pallone. */
+  protected readonly emblem: Crest = {
+    shape: 'shield',
+    primary: '#f2b830',
+    secondary: '#0b1f15',
+    symbol: 'ball',
+    initials: 'O',
+  };
 
   /** La carriera salvata più di recente (non ritirata) per il pulsante "Continua". */
   protected readonly latest = computed(

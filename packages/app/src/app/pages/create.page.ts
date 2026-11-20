@@ -94,7 +94,7 @@ import { LookEditorComponent } from '../ui/look-editor.component';
             />
             @if (citySuggestions().length > 0) {
               <!-- mousedown.preventDefault: il tocco non toglie il focus prima della scelta -->
-              <ul class="suggest" role="listbox">
+              <ul class="suggest o-px" role="listbox">
                 @for (c of citySuggestions(); track c) {
                   <li>
                     <button
@@ -306,8 +306,7 @@ import { LookEditorComponent } from '../ui/look-editor.component';
       list-style: none;
       margin: 6px 0 0;
       padding: 4px;
-      border: 1px solid var(--o-border-strong);
-      border-radius: var(--o-radius-md);
+      --px-d: var(--o-px);
       background: var(--o-surface-raised);
     }
     .suggest button {
@@ -315,7 +314,7 @@ import { LookEditorComponent } from '../ui/look-editor.component';
       min-height: var(--o-touch);
       padding: 0 var(--o-space-3);
       border: 0;
-      border-radius: var(--o-radius-sm);
+      border-radius: 0;
       background: transparent;
       color: var(--o-text);
       font: inherit;
@@ -360,7 +359,6 @@ import { LookEditorComponent } from '../ui/look-editor.component';
     }
     .pip {
       width: 6px;
-      border-radius: 2px;
       background: var(--o-border-strong);
     }
     .pip:nth-child(1) {
@@ -385,17 +383,16 @@ import { LookEditorComponent } from '../ui/look-editor.component';
       width: 44px;
       height: 26px;
       padding: 3px;
-      border-radius: 13px;
       background: var(--o-border-strong);
-      transition: background var(--o-fast) var(--o-ease);
+      transition: background var(--o-fast) steps(2, end);
     }
+    /* Interruttore a blocchi: cursore quadrato che scatta, come un selettore da cabinato. */
     .toggle span {
       display: block;
       width: 20px;
       height: 20px;
-      border-radius: 50%;
       background: var(--o-text);
-      transition: transform var(--o-fast) var(--o-ease);
+      transition: transform var(--o-fast) steps(3, end);
     }
     .toggle.on {
       background: var(--o-accent);

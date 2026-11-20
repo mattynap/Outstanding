@@ -34,7 +34,13 @@ import {
   type Retirement,
   type Role,
 } from '@outstanding/engine';
-import { getStrategy, type Strategy, type StrategyId, type StrategyOptions } from './strategies';
+import {
+  formatPlan,
+  getStrategy,
+  type Strategy,
+  type StrategyId,
+  type StrategyOptions,
+} from './strategies';
 
 /**
  * Stima del tempo di gioco: secondi per decisione da `config/data/simulator.json > secondsPer`
@@ -50,7 +56,8 @@ export function estimateSeconds(d: Decisions, sp: SimulatorConfig['secondsPer'])
     d.matches * sp.fullMatch +
     d.quickMatches * sp.quickMatch +
     d.simulatedMatches * sp.simulatedMatch +
-    d.offers * sp.offer
+    d.offers * sp.offer +
+    (d.planPreviews ?? 0) * sp.planPreview
   );
 }
 
@@ -71,6 +78,8 @@ export interface Decisions {
   quickMatches: number;
   simulatedMatches: number;
   offers: number;
+  /** Letture dell'anteprima del piano (una per capitolo; solo ciclo a capitoli). */
+  planPreviews?: number;
 }
 
 export interface CareerResult {
@@ -93,6 +102,8 @@ export interface CareerResult {
   seasonSeconds?: number[];
   /** Capitoli giocati, stop per notizie e offerte, partite scelte (solo ciclo a capitoli). */
   chapterStats?: ChapterStats;
+  /** Solo con un piano fisso: quale, quanti capitoli e in quanti la vita non era disponibile. */
+  fixedPlan?: { plan: string; chapters: number; lifeFallbacks: number };
 }
 
 export interface ChapterStats {
@@ -269,6 +280,7 @@ function playChapters(input: LoopInput): LoopOutput {
       s = setChapterPlan(s, strategy.planWeek(s, rng, ctx), ctx);
       planned = key;
       d.weeks++;
+      d.planPreviews = (d.planPreviews ?? 0) + 1;
       chapterStats.chapters++;
     }
     const out = advanceToStop(s, ctx);
@@ -369,6 +381,9 @@ export function runCareer(
     bestLevel: levels.length ? Math.min(...levels.map((h) => h.leagueLevel!)) : null,
     decisions: d,
     playMinutes: Math.round(seconds / 60),
+    ...(options.plan && strategy.planStats
+      ? { fixedPlan: { plan: formatPlan(options.plan), ...strategy.planStats } }
+      : {}),
     ...(out.seasonSeconds
       ? { seasonSeconds: out.seasonSeconds, chapterStats: out.chapterStats }
       : {}),

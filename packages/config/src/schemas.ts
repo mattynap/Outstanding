@@ -1462,6 +1462,37 @@ export const simulatorSchema = z.object({
     quickMatch: z.number().min(0),
     simulatedMatch: z.number().min(0),
     offer: z.number().min(0),
+    /** Lettura dell'anteprima del piano, una volta per capitolo. */
+    planPreview: z.number().min(0),
+  }),
+  /** Soglie delle regole del piano di `contextual` e della strategia aggressiva (congelate prima della taratura). */
+  plan: z.object({
+    aggressiveLowFreshness: z.number().min(0).max(100),
+    contextualLowFreshness: z.number().min(0).max(100),
+    contextualHighFreshness: z.number().min(0).max(100),
+    heavyChapterShare: z.number().min(0).max(1),
+    lightChapterShare: z.number().min(0).max(1),
+    lowMorale: z.number().min(0).max(100),
+    lowCash: z.number().min(0),
+  }),
+  /** Soglie dei criteri di accettazione della settimana leggibile (spec §5.10) e baseline di riferimento. */
+  criteria: z.object({
+    /** Criterio 2: punteggio massimo della Spinta fissa, in quota di `contextual`. */
+    pushMaxShare: z.number().min(0).max(1),
+    /** Criterio 3: punteggio minimo di Scarico fisso e nessuna vita, in quota di Equilibrio. */
+    trapFloorShare: z.number().min(0).max(1),
+    /** Criterio 5: scarto relativo ammesso dalla baseline. */
+    baselineTolerance: z.number().min(0).max(1),
+    legendMinPct: z.number().min(0).max(100),
+    legendMaxPct: z.number().min(0).max(100),
+    baseline: z.record(
+      z.string(),
+      z.object({
+        reachedTopPct: z.number(),
+        peakOvr: z.number(),
+        appearances: z.number(),
+      }),
+    ),
   }),
 });
 export type SimulatorConfig = z.infer<typeof simulatorSchema>;

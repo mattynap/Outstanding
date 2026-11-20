@@ -2,6 +2,8 @@
  * CLI del simulatore di carriere:
  *   pnpm sim --careers 1000 --strategy cautious --seed 42 [--difficulty normal] [--workers 8] [--out sim-output]
  *     [--isolate] [--quality 0..1] [--mode full|quick] [--loop chapters|weeks]
+ * `--plan <carico>+<vita|none>[+<abilità>]` (es. push+none) ripete un piano fisso con le scelte di
+ * `contextual` per momenti, offerte ed eventi; sostituisce `--strategy`.
  * `--strategy all` esegue tutte le strategie. `--isolate`: tutte usano le scelte fuori campo della
  * prudente e cambiano solo i momenti chiave. `--quality`: qualità del gesto (0..1) per ogni momento.
  * `--mode quick`: le partite giocate di persona sono rapide (1–2 passi) invece che complete.
@@ -16,7 +18,7 @@ import { parseArgs } from 'node:util';
 import { defaultContext, DIFFICULTIES, type Difficulty } from '@outstanding/engine';
 import { formatTable, summarize } from './metrics';
 import { careerSeeds, simulate } from './simulate';
-import { STRATEGIES, type StrategyId } from './strategies';
+import { formatPlan, parsePlan, STRATEGIES, type StrategyId } from './strategies';
 
 const args = process.argv.slice(2);
 for (let i = 0; i < args.length; i++) {
@@ -31,7 +33,8 @@ const { values } = parseArgs({
   args,
   options: {
     careers: { type: 'string', default: '100' },
-    strategy: { type: 'string', default: 'cautious' },
+    strategy: { type: 'string' },
+    plan: { type: 'string' },
     seed: { type: 'string', default: '42' },
     difficulty: { type: 'string', default: defaultContext.config.difficulty.default },
     workers: { type: 'string', default: String(Math.max(1, availableParallelism() - 1)) },
@@ -76,8 +79,24 @@ const loop = values.loop;
 const careers = int('careers', values.careers, 1);
 const seed = int('seed', values.seed, 0);
 const workers = Math.min(int('workers', values.workers, 1), careers);
+if (values.plan !== undefined && values.strategy !== undefined) {
+  console.error('--plan sostituisce --strategy: non usarli insieme');
+  process.exit(1);
+}
+let plan;
+try {
+  plan = values.plan === undefined ? undefined : parsePlan(values.plan);
+} catch (e) {
+  console.error((e as Error).message);
+  process.exit(1);
+}
+if (plan && values.isolate) {
+  console.error('--plan e --isolate non si combinano');
+  process.exit(1);
+}
+const strategyArg = values.strategy ?? (plan ? 'contextual' : 'cautious');
 const strategies: StrategyId[] =
-  values.strategy === 'all' ? [...STRATEGIES] : [values.strategy as StrategyId];
+  strategyArg === 'all' ? [...STRATEGIES] : [strategyArg as StrategyId];
 if (!strategies.every((s) => STRATEGIES.includes(s))) {
   console.error(`--strategy deve essere uno tra: ${STRATEGIES.join(', ')}, all`);
   process.exit(1);
@@ -105,18 +124,18 @@ for (const strategy of strategies) {
       }
     },
     difficulty,
-    { isolate: values.isolate, quality, mode, loop },
+    { isolate: values.isolate, quality, mode, loop, ...(plan ? { plan } : {}) },
   );
   if (tty) process.stderr.write('\n');
   const summary = {
-    ...summarize(results, strategy, seed, defaultContext),
+    ...summarize(results, plan ? `plan ${formatPlan(plan)}` : strategy, seed, defaultContext),
     difficulty,
     ...(values.isolate ? { isolate: true } : {}),
     ...(quality !== undefined ? { quality } : {}),
     ...(mode === 'quick' && loop === 'weeks' ? { mode } : {}),
     ...(loop === 'weeks' ? { loop } : {}),
   };
-  const suffix = `${values.isolate ? '-isolate' : ''}${quality !== undefined ? `-q${quality}` : ''}${mode === 'quick' && loop === 'weeks' ? '-quick' : ''}${loop === 'weeks' ? '-weeks' : ''}`;
+  const suffix = `${plan ? `-plan-${formatPlan(plan).replaceAll('+', '-')}` : ''}${values.isolate ? '-isolate' : ''}${quality !== undefined ? `-q${quality}` : ''}${mode === 'quick' && loop === 'weeks' ? '-quick' : ''}${loop === 'weeks' ? '-weeks' : ''}`;
   const file = join(values.out, `sim-${strategy}-${difficulty}-${seed}-${careers}${suffix}.json`);
   writeFileSync(
     file,

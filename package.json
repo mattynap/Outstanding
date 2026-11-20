@@ -15,7 +15,8 @@
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
     "content:check": "tsx packages/content/scripts/check.ts",
-    "sim": "tsx packages/simulator/src/cli.ts"
+    "sim": "tsx packages/simulator/src/cli.ts",
+    "sim:criteria": "tsx packages/simulator/src/criterion.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

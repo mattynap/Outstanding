@@ -60,6 +60,8 @@ export interface SimSummary {
   careers: number;
   overall: GroupMetrics;
   byRole: Record<Role, GroupMetrics>;
+  /** Solo con `--plan`. */
+  fixedPlan?: { plan: string; lifeFallbackPct: number };
 }
 
 const avg = (xs: readonly number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
@@ -227,6 +229,7 @@ export function summarize(
     careers: results.length,
     overall: groupMetrics(results, ctx),
     byRole,
+    ...(fixedPlanSummary(results) ? { fixedPlan: fixedPlanSummary(results) } : {}),
   };
 }
 
@@ -273,6 +276,12 @@ export function formatTable(summary: SimSummary): string {
       ),
     ),
   ];
+  if (summary.fixedPlan) {
+    out.push(
+      '',
+      `Piano fisso ${summary.fixedPlan.plan}: vita non disponibile (giocato senza) nel ${summary.fixedPlan.lifeFallbackPct}% dei capitoli`,
+    );
+  }
   const t = summary.overall.time;
   if (t) {
     out.push(
@@ -294,4 +303,15 @@ export function formatTable(summary: SimSummary): string {
     .join(' · ');
   out.push('', `Fasce: ${tiers}`, `Trofei per carriera: ${trophies || 'nessuno'}`);
   return out.join('\n');
+}
+
+/** Con un piano fisso: quale e in che % dei capitoli la vita è stata saltata perché non disponibile. */
+export function fixedPlanSummary(
+  results: readonly CareerResult[],
+): { plan: string; lifeFallbackPct: number } | undefined {
+  const fixed = results.filter((r) => r.fixedPlan);
+  if (fixed.length === 0) return undefined;
+  const chapters = fixed.reduce((n, r) => n + r.fixedPlan!.chapters, 0);
+  const skipped = fixed.reduce((n, r) => n + r.fixedPlan!.lifeFallbacks, 0);
+  return { plan: fixed[0]!.fixedPlan!.plan, lifeFallbackPct: round(pct(skipped, chapters)) };
 }

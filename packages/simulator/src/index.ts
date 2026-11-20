@@ -19,9 +19,21 @@ export {
   type SimSummary,
 } from './metrics';
 export {
+  contextualStrategy,
+  fixedPlanStrategy,
+  formatPlan,
+  parsePlan,
   getStrategy,
   STRATEGIES,
   type Strategy,
   type StrategyId,
   type StrategyOptions,
 } from './strategies';
+export {
+  aggregate,
+  criteria,
+  FIXED_PLAN_GRID,
+  type Criterion,
+  type CriteriaInput,
+  type RunAggregate,
+} from './criteria';

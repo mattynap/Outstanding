@@ -13,14 +13,30 @@ import {
   playerFixture,
   simulateMatch,
   Rng,
+  advanceToStop,
+  getPendingEvents,
+  getPlanOptions,
+  playMatch,
+  prudentMomentChoice,
+  resolveEvent,
+  setChapterPlan,
+  type GameState,
   type KeyMoment,
+  type LifeAction,
+  type NewCareerOptions,
   type MatchDecision,
+  type WeekPlan,
 } from '@outstanding/engine';
 import {
   careerSeeds,
+  contextualStrategy,
+  criteria,
   estimateSeconds,
+  fixedPlanStrategy,
+  formatPlan,
   formatTable,
   getStrategy,
+  parsePlan,
   randomCareerOptions,
   runCareer,
   simulate,
@@ -483,6 +499,7 @@ describe('stima del tempo', () => {
       quickMatch: 25,
       simulatedMatch: 3,
       offer: 10,
+      planPreview: 6,
     });
   });
 
@@ -530,5 +547,323 @@ describe('stima del tempo', () => {
       expect(r.playMinutes).toBeLessThan(full.playMinutes);
     },
     CAREER_TIMEOUT,
+  );
+});
+
+describe('piani fissi', () => {
+  it('parsePlan e formatPlan: carico, vita o none, focus facoltativo', () => {
+    expect(parsePlan('push+none')).toEqual({ load: 'push' });
+    expect(parsePlan('balanced+family')).toEqual({ load: 'balanced', life: 'family' });
+    expect(parsePlan('rest+party+vision')).toEqual({
+      load: 'rest',
+      life: 'party',
+      focus: 'vision',
+    });
+    expect(formatPlan({ load: 'push' })).toBe('push+none');
+    expect(formatPlan({ load: 'rest', life: 'party', focus: 'vision' })).toBe('rest+party+vision');
+    for (const bad of ['push', 'sprint+none', 'push+disco', 'push+none+x', 'a+b+c+d'])
+      expect(() => parsePlan(bad), bad).toThrow();
+  });
+
+  it(
+    '--plan push+none gioca sempre Spinta senza vita, e il report lo conta',
+    () => {
+      const r = runCareer(5, 'contextual', defaultContext, undefined, {
+        plan: parsePlan('push+none'),
+      });
+      expect(r.fixedPlan).toEqual({
+        plan: 'push+none',
+        chapters: r.chapterStats!.chapters,
+        lifeFallbacks: 0,
+      });
+      expect(r.decisions.weeks).toBe(r.chapterStats!.chapters);
+      // Una carriera con Spinta fissa non è quella di contextual.
+      expect(r.score.total).not.toBe(runCareer(5, 'contextual').score.total);
+    },
+    CAREER_TIMEOUT,
+  );
+
+  it(
+    'se la vita non è disponibile si gioca lo stesso piano senza vita, e si conta',
+    () => {
+      // Sponsor senza ingaggi non è disponibile: ogni capitolo ricade sul piano senza vita.
+      const r = runCareer(5, 'contextual', defaultContext, undefined, {
+        plan: parsePlan('balanced+sponsor'),
+      });
+      expect(r.fixedPlan!.lifeFallbacks).toBeGreaterThan(0);
+      expect(r.fixedPlan!.lifeFallbacks).toBeLessThanOrEqual(r.fixedPlan!.chapters);
+    },
+    CAREER_TIMEOUT,
+  );
+
+  it('a parità di stato sceglie nei momenti, nelle offerte e negli eventi come contextual', () => {
+    const contextual = contextualStrategy;
+    const fixed = fixedPlanStrategy({ load: 'push' });
+    expect(fixed.decideMoment).toBe(contextual.decideMoment);
+    expect(fixed.pickOffer).toBe(contextual.pickOffer);
+    expect(fixed.chooseEvent).toBe(contextual.chooseEvent);
+    expect(fixed.playsManually).toBe(contextual.playsManually);
+    const moment: KeyMoment = {
+      options: [
+        { value: 1, chance: 0.5, risk: 'safe' },
+        { value: 3, chance: 0.4, risk: 'risky' },
+        { value: 2, chance: 0.9, risk: 'balanced' },
+      ],
+    } as unknown as KeyMoment;
+    expect(fixed.decideMoment(moment, Rng.fromSeed(1))).toBe(
+      contextual.decideMoment(moment, Rng.fromSeed(1)),
+    );
+    const state = newCareer(
+      { firstName: 'A', lastName: 'B', hometown: 'Bergamo', role: 'ATT', traits: [] },
+      3,
+    );
+    expect(fixed.planWeek(state, Rng.fromSeed(1), defaultContext)).toEqual({ load: 'push' });
+  });
+});
+
+describe('criteri', () => {
+  const agg = (score: number, over: Partial<Record<string, number>> = {}) => ({
+    careers: 100,
+    score,
+    reachedTopPct: 57,
+    peakOvr: 67.8,
+    appearances: 638,
+    legendPct: 3,
+    ...over,
+  });
+  const base = () => ({
+    contextual: agg(1600),
+    cautious: agg(1500),
+    fixed: {
+      'balanced+family': agg(1500),
+      'rest+family': agg(1200),
+      'balanced+none': agg(1300),
+      'push+family': agg(1400),
+      'push+none': agg(1300),
+    },
+  });
+  const byId = (input: ReturnType<typeof base>, scenarios?: boolean) =>
+    Object.fromEntries(
+      criteria(input, defaultContext.config.simulator, scenarios).map((c) => [c.id, c]),
+    );
+
+  it('tutti verdi su dati sani; il criterio 4 non è misurato qui', () => {
+    const c = byId(base());
+    expect([1, 2, 3, 5].every((id) => c[id]!.pass)).toBe(true);
+    expect(c[4]!.pass).toBe(false);
+    expect(c[4]!.detail).toContain('vedi test');
+    expect(byId(base(), true)[4]!.pass).toBe(true);
+  });
+
+  it('1: un piano fisso sopra contextual fa fallire', () => {
+    const i = base();
+    i.fixed['push+family'] = agg(1601);
+    expect(byId(i)[1]!.pass).toBe(false);
+    expect(byId(i)[1]!.detail).toContain('push+family');
+  });
+
+  it('2: Spinta fissa al 95% di contextual passa, oltre fallisce', () => {
+    const i = base();
+    i.fixed['push+family'] = agg(1520);
+    expect(byId(i)[2]!.pass).toBe(true);
+    i.fixed['push+family'] = agg(1521);
+    expect(byId(i)[2]!.pass).toBe(false);
+  });
+
+  it('3: Scarico e nessuna vita peggiori di Equilibrio ma non sotto il 50%', () => {
+    const i = base();
+    i.fixed['rest+family'] = agg(1500);
+    expect(byId(i)[3]!.pass).toBe(false);
+    i.fixed['rest+family'] = agg(749);
+    expect(byId(i)[3]!.pass).toBe(false);
+    i.fixed['rest+family'] = agg(750);
+    expect(byId(i)[3]!.pass).toBe(true);
+    i.fixed['balanced+none'] = agg(1600);
+    expect(byId(i)[3]!.pass).toBe(false);
+  });
+
+  it('5: metriche entro il 10% della baseline e leggende fra 1% e 5%', () => {
+    const i = base();
+    expect(byId(i)[5]!.pass).toBe(true);
+    i.contextual = agg(1600, { reachedTopPct: 63 });
+    expect(byId(i)[5]!.pass).toBe(false);
+    i.contextual = agg(1600, { legendPct: 5.5 });
+    expect(byId(i)[5]!.pass).toBe(false);
+    i.contextual = agg(1600, { legendPct: 0.5 });
+    expect(byId(i)[5]!.pass).toBe(false);
+  });
+
+  it('piani mancanti: i criteri che li usano falliscono e lo dicono', () => {
+    const i = base();
+    delete (i.fixed as Record<string, unknown>)['rest+family'];
+    expect(byId(i)[3]!.pass).toBe(false);
+    expect(byId(i)[3]!.detail).toContain('rest+family');
+  });
+});
+
+/**
+ * Criterio 4: per ogni azione della vita uno scenario costruito in cui, su 200 carriere, è la
+ * migliore fra le cinque scelte (le quattro azioni e nessuna) nel valore che deve muovere, misurato
+ * alla fine del capitolo. Stesso carico (Equilibrio) e stessi semi per tutte le scelte.
+ */
+describe('criterio 4: ogni azione della vita è la migliore da qualche parte', () => {
+  const SEEDS = 200;
+  const ctx = defaultContext;
+  const CHOICES: (LifeAction | 'none')[] = ['none', 'family', 'leisure', 'sponsor', 'party'];
+  const options: NewCareerOptions = {
+    firstName: 'A',
+    lastName: 'B',
+    hometown: 'Bergamo',
+    role: 'ATT',
+    traits: [],
+  };
+
+  /** Gioca un capitolo con il piano dato fino al suo termine: eventi al primo ramo, partite scelte prudenti. */
+  function playChapter(s0: GameState, plan: WeekPlan): GameState {
+    let s = setChapterPlan(s0, plan, ctx);
+    const id = s.chapter.id;
+    const season = s.season;
+    for (let guard = 0; guard < 500; guard++) {
+      const out = advanceToStop(s, ctx);
+      s = out.state;
+      if (out.report.stop === 'chapterEnd' || out.report.stop === 'seasonEnd' || s.retired)
+        return s;
+      if (s.chapter.id !== id || s.season !== season) return s;
+      for (const e of getPendingEvents(s, ctx)) s = resolveEvent(s, e.eventId, 0, ctx).state;
+      if (out.report.stop === 'pick') {
+        const mode =
+          s.chapter.picks.find((p) => p.fixtureId === playerFixtureId(s))?.mode ?? 'full';
+        s = playMatch(s, (m) => prudentMomentChoice(m), ctx, { mode }).state;
+      }
+    }
+    throw new Error('chapter did not end');
+  }
+  const playerFixtureId = (s: GameState) => playerFixture(s)!.id;
+
+  /** Un capitolo di partenza per seme, giocato una volta sola e condiviso dagli scenari. */
+  const starts = new Map<number, GameState>();
+  function startOf(seed: number): GameState {
+    let s = starts.get(seed);
+    if (!s) {
+      s = playChapter(newCareer(options, seed, ctx), { load: 'balanced' });
+      starts.set(seed, s);
+    }
+    return s;
+  }
+
+  /** Media su `SEEDS` carriere del valore per ciascuna scelta; la migliore e il distacco dalla seconda. */
+  function measure(setup: (s: GameState) => GameState, value: (s: GameState) => number) {
+    const sums: Record<string, number> = {};
+    for (let seed = 1; seed <= SEEDS; seed++) {
+      const base = setup(startOf(seed));
+      const open = getPlanOptions(base, ctx)
+        .life.filter((l) => l.available)
+        .map((l) => l.id);
+      for (const c of CHOICES) {
+        // Senza ingaggi lo Sponsor non è una scelta possibile: non entra nel confronto.
+        if (c !== 'none' && !open.includes(c)) continue;
+        const plan: WeekPlan = c === 'none' ? { load: 'balanced' } : { load: 'balanced', life: c };
+        sums[c] = (sums[c] ?? 0) + value(playChapter(base, plan));
+      }
+    }
+    const means = Object.fromEntries(Object.entries(sums).map(([k, v]) => [k, v / SEEDS]));
+    const ranked = Object.entries(means).sort((a, b) => b[1] - a[1]);
+    return { means, best: ranked[0]![0] };
+  }
+
+  const THRESHOLD_TIMEOUT = 120_000;
+
+  // Misurato (200 semi, HEAD d5a1885): Famiglia 73,0 batte Svago 72,6 anche con morale 35, perché dimezza
+  // i cali. Non si ritocca la config per farlo passare: lo risolve la taratura (Task 12). Quando Svago
+  // diventa la migliore questo test smette di fallire e va riportato a `it`.
+  it.fails(
+    'Svago: morale 35 dopo tre sconfitte, vince il morale a fine capitolo',
+    () => {
+      const r = measure(
+        (s) => ({
+          ...s,
+          player: { ...s.player, condition: { ...s.player.condition, morale: 35 } },
+        }),
+        (s) => s.player.condition.morale,
+      );
+      console.log('svago', r.means);
+      expect(r.best).toBe('leisure');
+    },
+    THRESHOLD_TIMEOUT,
+  );
+
+  it(
+    'Famiglia: partner con affinità 30, vince l affinità a fine capitolo',
+    () => {
+      const r = measure(
+        (s) => ({
+          ...s,
+          privateLife: {
+            ...s.privateLife!,
+            partner: {
+              firstName: 'Giulia',
+              lastName: 'Rinaldi',
+              gender: 'f',
+              job: 'architect',
+              skin: 0,
+              hairColor: 0,
+              hair: 'long',
+              stage: 'dating',
+              sinceWeek: -100,
+              stageWeek: -100,
+              affinity: 30,
+            },
+          },
+        }),
+        (s) => s.privateLife?.partner?.affinity ?? 0,
+      );
+      console.log('famiglia', r.means);
+      expect(r.best).toBe('family');
+    },
+    THRESHOLD_TIMEOUT,
+  );
+
+  it(
+    'Sponsor: cassa 0 con uno sponsor, vince la cassa a fine capitolo',
+    () => {
+      const r = measure(
+        (s) => ({
+          ...s,
+          player: {
+            ...s.player,
+            money: { ...s.player.money, cash: 0 },
+            sponsors: [
+              {
+                sponsorId: ctx.content.sponsors[0]!.id,
+                weeklyIncome: 400,
+                untilSeason: s.season + 3,
+              },
+            ],
+          },
+        }),
+        (s) => s.player.money.cash,
+      );
+      console.log('sponsor', r.means);
+      expect(r.best).toBe('sponsor');
+    },
+    THRESHOLD_TIMEOUT,
+  );
+
+  it(
+    'Serata: popolarità a 2 punti dalla soglia degli sponsor, vince la quota che la supera',
+    () => {
+      const min = ctx.config.economy.sponsors.minPopularity;
+      const r = measure(
+        (s) => ({
+          ...s,
+          sponsorOffers: [],
+          player: { ...s.player, sponsors: [], image: { ...s.player.image, popularity: min - 2 } },
+        }),
+        (s) => (s.player.image.popularity >= min ? 1 : 0) + s.player.image.popularity / 1000,
+      );
+      console.log('serata', r.means);
+      expect(r.best).toBe('party');
+    },
+    THRESHOLD_TIMEOUT,
   );
 });

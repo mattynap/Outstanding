@@ -4,6 +4,7 @@ import {
   computeOvr,
   getOffers,
   getPlanOptions,
+  LIFE_ACTIONS,
   LOADS,
   SKILLS,
   weekOfSeason,
@@ -26,6 +27,8 @@ export const STRATEGIES: readonly StrategyId[] = ['cautious', 'aggressive', 'ran
 export interface Strategy {
   id: StrategyId;
   planWeek(state: GameState, rng: Rng, ctx: GameContext): WeekPlan;
+  /** Solo i piani fissi: capitoli pianificati e capitoli in cui la vita non era disponibile. */
+  planStats?: { chapters: number; lifeFallbacks: number };
   decideMoment(moment: KeyMoment, rng: Rng): number | MatchDecision;
   /**
    * Vero se la partita si gioca di persona (momenti chiave decisi dalla strategia), falso se si
@@ -43,20 +46,6 @@ export interface Strategy {
   ): OfferView | undefined;
 }
 
-/** Freschezza sotto la quale anche la strategia aggressiva scarica. */
-const LOW_FRESHNESS = 35;
-/** Freschezza sotto la quale la strategia adattiva scarica comunque. */
-const CONTEXTUAL_LOW_FRESHNESS = 50;
-/** Freschezza da cui la strategia adattiva spinge, se il capitolo è leggero. */
-const HIGH_FRESHNESS = 80;
-/** Capitolo "di peso": almeno questa quota delle partite rimaste è contro avversari forti o in coppa. */
-const HEAVY_CHAPTER_SHARE = 0.5;
-/** Capitolo "leggero": al massimo questa quota di partite di peso. */
-const LIGHT_CHAPTER_SHARE = 0.25;
-/** Morale sotto il quale la strategia adattiva sceglie lo svago. */
-const LOW_MORALE = 50;
-/** Cassa sotto la quale la strategia adattiva fa lo sponsor, se ne ha uno. */
-const LOW_CASH = 1000;
 /** Probabilità che la strategia casuale giochi di persona una partita. */
 const RANDOM_MANUAL_CHANCE = 0.5;
 /** Probabilità settimanale con cui la strategia casuale firma un'offerta aperta. */
@@ -159,7 +148,7 @@ const aggressive: Strategy = {
   playsManually: (state, fixture) => bigMatch(state, fixture),
   planWeek(state, _rng, ctx) {
     const focus = keySkill(state, ctx);
-    if (state.player.condition.energy < LOW_FRESHNESS)
+    if (state.player.condition.energy < ctx.config.simulator.plan.aggressiveLowFreshness)
       return { load: 'rest', focus, life: 'party' };
     return { load: 'push', focus, life: 'party' };
   },
@@ -209,30 +198,35 @@ const random: Strategy = {
 };
 
 /**
- * Adattiva: Scarico prima di un capitolo di peso o con poca freschezza, Spinta con freschezza alta
- * e capitolo leggero, altrimenti Equilibrio; Sponsor con poca cassa, Svago col morale basso,
- * Famiglia altrimenti. Regole fissate prima della taratura (spec §5.10).
+ * Adattiva (spec §5.10). Regole del piano congelate prima della taratura (Task 12): non si
+ * ritoccano per farla vincere; le soglie stanno in `config/data/simulator.json > plan`.
+ *  - Carico: Scarico se il capitolo ha partite di peso (quota >= heavyChapterShare) o la freschezza
+ *    è sotto contextualLowFreshness; Spinta se la freschezza è >= contextualHighFreshness e il
+ *    capitolo è leggero (quota <= lightChapterShare); altrimenti Equilibrio.
+ *  - Vita, in quest'ordine: Sponsor con cassa sotto lowCash (se ha ingaggi), Svago con morale sotto
+ *    lowMorale, Famiglia altrimenti. Nessun focus.
  */
-const contextual: Strategy = {
+export const contextualStrategy: Strategy = {
   ...cautious,
   id: 'contextual',
   planWeek(state, _rng, ctx) {
+    const t = ctx.config.simulator.plan;
     const share = bigMatchShare(state, ctx);
     const freshness = state.player.condition.energy;
     const load =
-      share >= HEAVY_CHAPTER_SHARE || freshness < CONTEXTUAL_LOW_FRESHNESS
+      share >= t.heavyChapterShare || freshness < t.contextualLowFreshness
         ? 'rest'
-        : freshness >= HIGH_FRESHNESS && share <= LIGHT_CHAPTER_SHARE
+        : freshness >= t.contextualHighFreshness && share <= t.lightChapterShare
           ? 'push'
           : 'balanced';
     const plan: WeekPlan = { load };
-    if (state.player.money.cash < LOW_CASH && availableLife(state, ctx).includes('sponsor')) {
+    if (state.player.money.cash < t.lowCash && availableLife(state, ctx).includes('sponsor')) {
       return { ...plan, life: 'sponsor' };
     }
     return withLife(
       state,
       plan,
-      state.player.condition.morale < LOW_MORALE ? 'leisure' : 'family',
+      state.player.condition.morale < t.lowMorale ? 'leisure' : 'family',
       ctx,
     );
   },
@@ -246,6 +240,52 @@ const contextual: Strategy = {
     return pick;
   },
 };
+const contextual = contextualStrategy;
+
+/**
+ * Piano fisso: ripete lo stesso piano a ogni capitolo; momenti, partite scelte, offerte ed eventi
+ * sono quelli di `contextual` (le stesse funzioni), così nei confronti vince o perde solo il piano.
+ * Se l'azione della vita non è disponibile quando il piano va impostato (Sponsor senza ingaggi),
+ * si gioca lo stesso piano senza vita e il capitolo si conta in `planStats.lifeFallbacks`.
+ */
+export function fixedPlanStrategy(plan: WeekPlan): Strategy {
+  const stats = { chapters: 0, lifeFallbacks: 0 };
+  return {
+    ...contextualStrategy,
+    planStats: stats,
+    planWeek(state, _rng, ctx) {
+      stats.chapters++;
+      if (plan.life === undefined || availableLife(state, ctx).includes(plan.life))
+        return { ...plan };
+      stats.lifeFallbacks++;
+      const { life: _life, ...withoutLife } = plan;
+      return withoutLife;
+    },
+  };
+}
+
+/** `push+none`, `balanced+family`, `rest+party+vision`: carico, vita (o none) e focus facoltativo. */
+export function parsePlan(spec: string): WeekPlan {
+  const [load, life, focus, ...extra] = spec.split('+');
+  if (!LOADS.includes(load as never) || life === undefined || extra.length > 0) {
+    throw new Error(`--plan deve essere <carico>+<vita|none>[+<abilità>] (ricevuto "${spec}")`);
+  }
+  if (life !== 'none' && !LIFE_ACTIONS.includes(life as LifeAction)) {
+    throw new Error(`--plan: vita "${life}" sconosciuta (${LIFE_ACTIONS.join(', ')}, none)`);
+  }
+  if (focus !== undefined && !SKILLS.includes(focus as Skill)) {
+    throw new Error(`--plan: abilità "${focus}" sconosciuta`);
+  }
+  return {
+    load: load as WeekPlan['load'],
+    ...(focus ? { focus: focus as Skill } : {}),
+    ...(life !== 'none' ? { life: life as LifeAction } : {}),
+  };
+}
+
+export function formatPlan(plan: WeekPlan): string {
+  return [plan.load, plan.life ?? 'none', ...(plan.focus ? [plan.focus] : [])].join('+');
+}
 
 const GESTURE_QUALITY = { cautious: 0.5, aggressive: 0.5, contextual: 0.5 } as const;
 
@@ -256,10 +296,15 @@ export interface StrategyOptions {
   mode?: 'full' | 'quick';
   /** Ciclo di carriera: a capitoli (default) o a settimane (quello della Parte A, per i confronti). */
   loop?: 'chapters' | 'weeks';
+  /** Piano fisso al posto del piano della strategia (resto come `contextual`). */
+  plan?: WeekPlan;
 }
 
 export function getStrategy(id: StrategyId, options: StrategyOptions = {}): Strategy {
-  const selected = { cautious, aggressive, random, contextual }[id];
+  if (options.plan && options.isolate) throw new Error('--plan e --isolate non si combinano');
+  const selected = options.plan
+    ? fixedPlanStrategy(options.plan)
+    : { cautious, aggressive, random, contextual }[id];
   const quality = options.quality ?? (id === 'random' ? undefined : GESTURE_QUALITY[id]);
   if (quality !== undefined && (!Number.isFinite(quality) || quality < 0 || quality > 1)) {
     throw new Error('--quality deve essere un numero tra 0 e 1');

@@ -1,5 +1,5 @@
 {
-  "_comment": "Stime del simulatore, non parametri del gioco: secondi medi per decisione davanti allo schermo. La partita completa vale 2,5 minuti di cronaca più i passi. Da confrontare con 20-30 minuti a stagione e 6-8 ore a carriera.",
+  "_comment": "Stime del simulatore, non parametri del gioco: secondi medi per decisione davanti allo schermo. La partita completa vale 2,5 minuti di cronaca più i passi. Da confrontare con 20-30 minuti a stagione e 6-8 ore a carriera. `criteria.baseline`: numeri di reports/settimana-leggibile/baseline.md (5000 carriere, seme 42, stato B3b).",
   "secondsPer": {
     "week": 4,
     "event": 15,
@@ -8,6 +8,35 @@
     "fullMatch": 150,
     "quickMatch": 25,
     "simulatedMatch": 3,
-    "offer": 10
+    "offer": 10,
+    "planPreview": 6
+  },
+  "plan": {
+    "aggressiveLowFreshness": 35,
+    "contextualLowFreshness": 50,
+    "contextualHighFreshness": 80,
+    "heavyChapterShare": 0.5,
+    "lightChapterShare": 0.25,
+    "lowMorale": 50,
+    "lowCash": 1000
+  },
+  "criteria": {
+    "pushMaxShare": 0.95,
+    "trapFloorShare": 0.5,
+    "baselineTolerance": 0.1,
+    "legendMinPct": 1,
+    "legendMaxPct": 5,
+    "baseline": {
+      "cautious": {
+        "reachedTopPct": 57.2,
+        "peakOvr": 67.8,
+        "appearances": 637.4
+      },
+      "contextual": {
+        "reachedTopPct": 57.1,
+        "peakOvr": 67.8,
+        "appearances": 638.9
+      }
+    }
   }
 }

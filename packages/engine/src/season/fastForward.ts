@@ -4,7 +4,14 @@ import { drawWeekEvents, getEvent, resolveEvent } from '../events/events';
 import { simulateMatch, type MatchReport } from '../match/match';
 import { clubLevel } from '../market/offers';
 import { bigMatchKind } from '../media/media';
-import type { ContractOffer, GameState, LifeAction, Score, WeekPlan } from '../types';
+import type {
+  ChapterPlanLog,
+  ContractOffer,
+  GameState,
+  LifeAction,
+  Score,
+  WeekPlan,
+} from '../types';
 import { weekOfSeason } from '../time';
 import { chapterOf, createChapter, emptyChapterLog, refreshChapterPicks } from './director';
 import { buildHeadlines, tableZone, type Headline } from './headlines';
@@ -52,6 +59,8 @@ export interface FastForwardReport {
   headlines: Headline[];
   /** Settimane in cui l'azione fuori dal campo del piano non era disponibile ed è saltata. */
   planIssues: PlanIssue[];
+  /** Cosa ha fatto il piano nel tratto, prima che si azzeri (solo `advanceToStop`). */
+  planLog?: ChapterPlanLog;
 }
 
 export interface PlanIssue {
@@ -313,6 +322,7 @@ export function advanceToStop(
     report.stop = stop;
     const news = buildHeadlines(s, s.chapter.stretch, zoneFrom, tableZone(s, ctx), ctx);
     report.headlines = (goalHeadline ? [goalHeadline, ...news] : news).slice(0, cal.headlines.max);
+    if (s.chapter.stretch.plan) report.planLog = s.chapter.stretch.plan;
     s = { ...s, chapter: { ...s.chapter, stretch: emptyChapterLog() } };
     return { state: s, report };
   };

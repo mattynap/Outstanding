@@ -5,6 +5,7 @@ import { SKILLS } from '../player/ratings';
 import { Rng } from '../rng';
 import type { EffectiveLoad, GameState, LifeAction, Load, Skills, WeekPlan } from '../types';
 import { clamp } from '../util';
+import { recordChapterPlan } from './director';
 import { applyLifeWeek, LIFE_ACTIONS, lifeModifiers } from './life';
 import { applyLoadWeek, effectiveLoad } from './load';
 import { advanceWeek, isSeasonOver, playerFixture, playerFixtures } from './week';
@@ -31,6 +32,8 @@ export interface WeekPlanReport {
   party?: PartyReport;
   /** Soldi incassati dagli sponsor (già accreditati: solo da mostrare). */
   sponsorIncome?: number;
+  /** Popolarità guadagnata dalla serata (gossip compreso), se c'era. */
+  popularityGained?: number;
   /** Morale non perso grazie alla famiglia in questa fase della settimana. */
   moraleProtected: number;
   /** Azione fuori dal campo del piano non disponibile questa settimana, quindi saltata. */
@@ -128,20 +131,19 @@ export function planWeek(
       freshnessDelta: (prev?.freshnessDelta ?? 0) + loadOut.freshnessDelta + lifeOut.freshnessDelta,
     },
   };
-  return {
-    state: next,
-    report: {
-      plan: { ...plan },
-      effectiveLoad: eff,
-      gains: loadOut.gains,
-      ...(loadOut.injury ? { injury: loadOut.injury } : {}),
-      healed: loadOut.healed,
-      ...(lifeOut.party ? { party: lifeOut.party } : {}),
-      ...(lifeOut.sponsorIncome !== undefined ? { sponsorIncome: lifeOut.sponsorIncome } : {}),
-      moraleProtected,
-      ...(skipped ? { lifeSkipped: plan.life } : {}),
-    },
+  const report: WeekPlanReport = {
+    plan: { ...plan },
+    effectiveLoad: eff,
+    gains: loadOut.gains,
+    ...(loadOut.injury ? { injury: loadOut.injury } : {}),
+    healed: loadOut.healed,
+    ...(lifeOut.party ? { party: lifeOut.party } : {}),
+    ...(lifeOut.sponsorIncome !== undefined ? { sponsorIncome: lifeOut.sponsorIncome } : {}),
+    moraleProtected,
+    ...(lifeOut.popularity !== undefined ? { popularityGained: lifeOut.popularity } : {}),
+    ...(skipped ? { lifeSkipped: plan.life } : {}),
   };
+  return { state: recordChapterPlan(next, state.player.skills, report), report };
 }
 
 /**

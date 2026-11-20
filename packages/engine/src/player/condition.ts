@@ -57,12 +57,15 @@ export function applyMatchAftermath(
   lifeMods: Pick<LifeModifiers, 'moraleLossFactor'> = { moraleLossFactor: 1 },
   /** Carico della settimana: decide la forma quando non si gioca. */
   load: EffectiveLoad = 'balanced',
-): { player: Player; injured: boolean; freshnessDelta: number } {
+): { player: Player; injured: boolean; freshnessDelta: number; moraleProtected: number } {
   const c = ctx.config.progression.condition;
   const played = outcome.minutesPlayed > 0;
   const share =
     outcome.minutesPlayed / (ctx.config.match.blocks * ctx.config.match.minutesPerBlock);
   const ratingDiff = outcome.rating === null ? 0 : outcome.rating - ctx.config.match.rating.base;
+  const rawMorale =
+    c.moraleBySelection[outcome.selection] +
+    (played ? c.moraleByResult[outcome.result] + ratingDiff * c.moralePerRatingPoint : 0);
 
   let p: Player = {
     ...player,
@@ -72,14 +75,7 @@ export function applyMatchAftermath(
         player.condition.form +
           (played ? ratingDiff * c.formPerRatingPoint : formWhenNotPlaying(load, ctx)),
       ),
-      morale: pct(
-        player.condition.morale +
-          scaleLoss(
-            c.moraleBySelection[outcome.selection] +
-              (played ? c.moraleByResult[outcome.result] + ratingDiff * c.moralePerRatingPoint : 0),
-            lifeMods.moraleLossFactor,
-          ),
-      ),
+      morale: pct(player.condition.morale + scaleLoss(rawMorale, lifeMods.moraleLossFactor)),
     },
   };
   if (coachId) {
@@ -102,7 +98,14 @@ export function applyMatchAftermath(
     p = injure(p, rollInjury(rng, ctx), ctx, lifeMods.moraleLossFactor);
     injured = true;
   }
-  return { player: p, injured, freshnessDelta: -matchFreshnessCost(share, ctx) };
+  // Morale non perso grazie al fattore dell'azione fuori dal campo (cali di partita e d'infortunio).
+  const moraleProtected =
+    Math.max(0, -rawMorale) * (1 - lifeMods.moraleLossFactor) +
+    (injured
+      ? Math.max(0, -ctx.config.progression.injuries.moraleOnInjury) *
+        (1 - lifeMods.moraleLossFactor)
+      : 0);
+  return { player: p, injured, freshnessDelta: -matchFreshnessCost(share, ctx), moraleProtected };
 }
 
 /**

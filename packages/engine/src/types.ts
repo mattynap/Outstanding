@@ -455,6 +455,25 @@ export interface ChapterPick {
   mode: 'full' | 'quick';
 }
 
+/** Cosa ha fatto il piano settimanale in un tratto: serve al riepilogo "Dal piano" dopo uno stop. */
+export interface ChapterPlanLog {
+  /** Abilità all'inizio del tratto (frazionarie). */
+  skillsAtStart: Skills;
+  /** Freschezza di inizio settimana letta da ogni partita giocata, in ordine. */
+  freshnessAtMatches: number[];
+  /** Morale che la Famiglia ha evitato di far perdere (partite e infortuni). */
+  moraleProtected: number;
+  sponsorIncome: number;
+  /** Popolarità guadagnata dalle serate. */
+  popularity: number;
+  /** Serate finite sui giornali. */
+  gossip: number;
+  /** Multe del club per le serate. */
+  fines: number;
+  /** Punti interi (floor) guadagnati per abilità dall'inizio del tratto; solo quelle cambiate. */
+  pointsGained: Partial<Record<Skill, number>>;
+}
+
 /** Registro delle partite del giocatore in un tratto di stagione (capitolo o tratto fra due stop). */
 export interface ChapterLog {
   /** Partite giocate da titolare. */
@@ -484,6 +503,8 @@ export interface ChapterLog {
   } | null;
   /** Ultimo momento da leggenda vissuto. */
   lastLegend: { week: number; fixtureId: string; id: string; success: boolean } | null;
+  /** Cosa ha fatto il piano; assente nei vecchi salvataggi e finché non c'è una settimana pianificata. */
+  plan?: ChapterPlanLog;
 }
 
 /** Obiettivo del capitolo corrente: la definizione sta in `content/data/chapter-goals.json`. */

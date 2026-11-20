@@ -578,3 +578,77 @@ describe('piano a due binari nel capitolo', () => {
     expect(run()).toEqual(run());
   });
 });
+
+describe('registro del piano nel tratto', () => {
+  /** Sei settimane (dalla prima con una partita) col piano dato: pianifica, simula le partite, chiude la settimana. */
+  function run(plan: WeekPlan, seed = 6) {
+    let s = skipToNextMatch(start(seed), ctx).state;
+    const energies: number[] = [];
+    let matches = 0;
+    for (let i = 0; i < 6; i++) {
+      s = planWeek(s, plan, ctx).state;
+      for (let f = playerFixture(s); f; f = playerFixture(s)) {
+        energies.push(s.player.condition.energy);
+        matches++;
+        s = simulateMatch(s, ctx).state;
+      }
+      s = advanceWeek(s, ctx).state;
+    }
+    return { s, energies, matches };
+  }
+
+  it('un tratto senza piano registrato non ha il campo (vecchi salvataggi)', () => {
+    expect(emptyChapterLog().plan).toBeUndefined();
+  });
+
+  it('Famiglia: il morale protetto si somma nel tratto e nel capitolo', () => {
+    const fam = run({ load: 'push', focus: 'shooting', life: 'family' });
+    const none = run({ load: 'push', focus: 'shooting' });
+    const p = fam.s.chapter.stretch.plan!;
+    expect(p.moraleProtected).toBeGreaterThan(0);
+    expect(none.s.chapter.stretch.plan!.moraleProtected).toBe(0);
+    expect(fam.s.chapter.log.plan).toEqual(p);
+  });
+
+  it('pointsGained = differenza dei floor fra inizio e fine; solo abilità cambiate', () => {
+    const { s } = run({ load: 'push', focus: 'shooting' });
+    const p = s.chapter.stretch.plan!;
+    for (const k of Object.keys(p.skillsAtStart) as (keyof typeof p.skillsAtStart)[]) {
+      const d = Math.floor(s.player.skills[k]) - Math.floor(p.skillsAtStart[k]);
+      expect(p.pointsGained[k]).toBe(d === 0 ? undefined : d);
+    }
+    expect(p.pointsGained.shooting).toBeGreaterThan(0);
+  });
+
+  it('freschezza delle partite: una per partita, quella di inizio settimana', () => {
+    const { s, energies, matches } = run({ load: 'balanced' });
+    expect(matches).toBeGreaterThan(0);
+    expect(s.chapter.stretch.plan!.freshnessAtMatches).toEqual(energies);
+  });
+
+  it('serata: gossip, multe e popolarità vengono dai report', () => {
+    let s = start(6);
+    let gossip = 0;
+    let fines = 0;
+    let pop = 0;
+    for (let i = 0; i < 6; i++) {
+      const out = planWeek(s, { load: 'balanced', life: 'party' }, ctx);
+      gossip += out.report.party?.gossip ? 1 : 0;
+      fines += out.report.party?.fine ? 1 : 0;
+      pop += out.report.popularityGained ?? 0;
+      s = advanceWeek(out.state, ctx).state;
+    }
+    const p = s.chapter.stretch.plan!;
+    expect(p.gossip).toBe(gossip);
+    expect(p.fines).toBe(fines);
+    expect(p.popularity).toBe(pop);
+    expect(p.popularity).toBeGreaterThan(0);
+  });
+
+  it('lo stop riporta il registro del tratto e poi si azzera', () => {
+    const s = setChapterPlan(start(6), { load: 'push', focus: 'shooting' }, ctx);
+    const out = advanceToStop(s, ctx);
+    expect(out.report.planLog).toBeDefined();
+    expect(out.state.chapter.stretch.plan).toBeUndefined();
+  });
+});

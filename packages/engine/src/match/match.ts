@@ -533,7 +533,14 @@ function finishMatch(
     ...(m.legend ? { legend: { ...m.legend } } : {}),
     ...(after.injured && after.player.injury ? { injury: { ...after.player.injury } } : {}),
   };
-  return { state: recordChapterMatch(next, report), report };
+  return {
+    state: recordChapterMatch(next, report, {
+      freshness: state.player.condition.energy,
+      moraleProtected: after.moraleProtected,
+      startSkills: state.player.skills,
+    }),
+    report,
+  };
 }
 
 /**

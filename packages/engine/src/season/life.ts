@@ -52,6 +52,8 @@ export interface LifeWeekResult {
   freshnessDelta: number;
   party?: PartyReport;
   sponsorIncome?: number;
+  /** Popolarità guadagnata dalla serata (già clampata). */
+  popularity?: number;
 }
 
 /**
@@ -111,6 +113,8 @@ export function applyLifeWeek(
       rng,
       freshnessDelta: 0,
       party: out.report,
+      popularity:
+        clamp(player.image.popularity + p.popularity, 0, 100) - state.player.image.popularity,
     };
   }
   return { state, rng, freshnessDelta: 0 };

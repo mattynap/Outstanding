@@ -6,12 +6,16 @@ import { weekOfSeason } from '../time';
 import type {
   ChapterId,
   ChapterLog,
+  ChapterPlanLog,
   ChapterPick,
   ChapterState,
   Fixture,
   GameState,
+  Skill,
+  Skills,
 } from '../types';
 import { getClub, getGroup, levelOfClub } from '../world/queries';
+import type { WeekPlanReport } from './plan';
 import { computeStandings, type StandingRow } from './standings';
 
 /** Registro vuoto: lo aggiorna chi chiude una partita del giocatore (Task B2). */
@@ -272,19 +276,82 @@ function addToLog(log: ChapterLog, r: MatchReport, week: number, picked: boolean
   };
 }
 
+/** Aggiorna il registro del piano di un registro (lo crea da `startSkills` se manca). */
+function withPlanLog(
+  log: ChapterLog,
+  startSkills: Skills,
+  endSkills: Skills,
+  patch: (p: ChapterPlanLog) => ChapterPlanLog,
+): ChapterLog {
+  const base: ChapterPlanLog = log.plan ?? {
+    skillsAtStart: { ...startSkills },
+    freshnessAtMatches: [],
+    moraleProtected: 0,
+    sponsorIncome: 0,
+    popularity: 0,
+    gossip: 0,
+    fines: 0,
+    pointsGained: {},
+  };
+  const next = patch(base);
+  const gained: Partial<Record<Skill, number>> = {};
+  for (const k of Object.keys(endSkills) as Skill[]) {
+    const d = Math.floor(endSkills[k]) - Math.floor(next.skillsAtStart[k]);
+    if (d !== 0) gained[k] = d;
+  }
+  return { ...log, plan: { ...next, pointsGained: gained } };
+}
+
 /**
  * Registra una partita del giocatore, giocata o simulata, nel registro del capitolo e in quello
- * del tratto. Nessuna estrazione: non sposta la sequenza di `Rng`.
+ * del tratto. Nessuna estrazione: non sposta la sequenza di `Rng`. `plan` porta la freschezza di
+ * inizio settimana letta dalla partita e il morale che la Famiglia ha protetto.
  */
-export function recordChapterMatch(state: GameState, report: MatchReport): GameState {
+export function recordChapterMatch(
+  state: GameState,
+  report: MatchReport,
+  plan: { freshness: number; moraleProtected: number; startSkills: Skills },
+): GameState {
   const picked = state.chapter.picks.some((p) => p.fixtureId === report.fixtureId);
   const { chapter } = state;
+  const note = (log: ChapterLog) =>
+    withPlanLog(
+      addToLog(log, report, state.week, picked),
+      plan.startSkills,
+      state.player.skills,
+      (p) => ({
+        ...p,
+        freshnessAtMatches: [...p.freshnessAtMatches, plan.freshness],
+        moraleProtected: p.moraleProtected + plan.moraleProtected,
+      }),
+    );
   return {
     ...state,
-    chapter: {
-      ...chapter,
-      log: addToLog(chapter.log, report, state.week, picked),
-      stretch: addToLog(chapter.stretch, report, state.week, picked),
-    },
+    chapter: { ...chapter, log: note(chapter.log), stretch: note(chapter.stretch) },
+  };
+}
+
+/**
+ * Registra nel capitolo e nel tratto quello che il piano della settimana ha fatto (dal report di
+ * `planWeek`). `startSkills` sono le abilità prima delle sedute. Nessuna estrazione.
+ */
+export function recordChapterPlan(
+  state: GameState,
+  startSkills: Skills,
+  r: WeekPlanReport,
+): GameState {
+  const { chapter } = state;
+  const note = (log: ChapterLog) =>
+    withPlanLog(log, startSkills, state.player.skills, (p) => ({
+      ...p,
+      moraleProtected: p.moraleProtected + r.moraleProtected,
+      sponsorIncome: p.sponsorIncome + (r.sponsorIncome ?? 0),
+      popularity: p.popularity + (r.popularityGained ?? 0),
+      gossip: p.gossip + (r.party?.gossip ? 1 : 0),
+      fines: p.fines + (r.party?.fine ? 1 : 0),
+    }));
+  return {
+    ...state,
+    chapter: { ...chapter, log: note(chapter.log), stretch: note(chapter.stretch) },
   };
 }

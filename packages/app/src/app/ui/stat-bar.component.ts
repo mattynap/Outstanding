@@ -18,7 +18,7 @@ import { levelTone } from '../core/text';
       </span>
     </div>
     <div
-      class="o-bar"
+      class="o-bar steps"
       role="meter"
       [attr.aria-label]="label()"
       aria-valuemin="0"
@@ -34,6 +34,23 @@ import { levelTone } from '../core/text';
       flex-direction: column;
       gap: 6px;
       min-width: 0;
+    }
+    /* Dieci tacche pixel: il riempimento resta continuo (valore esatto), la maschera apre le
+       fessure trasparenti, così la barra funziona su qualunque fondo. */
+    .steps {
+      height: 8px;
+      border-radius: 0;
+      -webkit-mask: repeating-linear-gradient(90deg, #000 0 calc(10% - 2px), transparent 0 10%);
+      mask: repeating-linear-gradient(90deg, #000 0 calc(10% - 2px), transparent 0 10%);
+    }
+    .steps .o-bar__fill {
+      border-radius: 0;
+      transition: width var(--o-slow) steps(5, end);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .steps .o-bar__fill {
+        transition: none;
+      }
     }
     .head {
       display: flex;

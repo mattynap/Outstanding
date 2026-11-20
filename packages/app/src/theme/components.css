@@ -376,6 +376,48 @@ button.o-chip {
   padding: 10px 6px;
 }
 
+/* Tabellino sulla carta: numeri del giornale in fila, separati da filetti. */
+.o-sheet {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  padding: 10px 0 8px;
+  border-top: 3px double var(--o-ink);
+  border-bottom: 1px solid var(--o-ink);
+}
+.o-sheet__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin: 0;
+  text-align: center;
+}
+.o-sheet__cell + .o-sheet__cell {
+  border-left: 1px solid var(--o-paper-rule);
+}
+.o-sheet__value {
+  margin: 0;
+  font-size: 34px;
+  line-height: 0.9;
+  color: var(--o-ink);
+}
+.o-sheet__label {
+  font-size: var(--o-text-xs);
+  letter-spacing: 0.4px;
+  color: var(--o-ink-muted);
+}
+/* Sottotitolo di sezione dentro la carta: maiuscoletto rosso. */
+.o-paper-head {
+  margin: 0;
+  font-family: var(--o-font-display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--o-headline-red);
+}
+
 /* Liste a righe (tabellini, classifiche, storico) */
 .o-lines {
   display: flex;

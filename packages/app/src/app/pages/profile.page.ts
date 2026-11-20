@@ -13,6 +13,17 @@ import { AvatarComponent } from '../ui/avatar.component';
 import { StatBarComponent } from '../ui/stat-bar.component';
 import { TabBarComponent } from '../ui/tab-bar.component';
 
+/** Linea a scalini fra i punti: il cambio di quota sta a metà strada, come in un grafico pixel. */
+function stepLine(points: { x: number; y: number }[]): string {
+  return points
+    .map((p, i) => {
+      if (i === 0) return `M ${p.x} ${p.y}`;
+      const mid = (points[i - 1]!.x + p.x) / 2;
+      return `H ${mid} V ${p.y} H ${p.x}`;
+    })
+    .join(' ');
+}
+
 /** Profilo: avatar, abilità, tratti, personalità, immagine, contratto e crescita negli anni. */
 @Component({
   selector: 'app-profile',
@@ -30,7 +41,7 @@ import { TabBarComponent } from '../ui/tab-bar.component';
     <ion-content class="o-page">
       @if (view(); as v) {
         <section class="hero">
-          <span class="ghost-number" aria-hidden="true">{{ v.ovr }}</span>
+          <span class="ghost-number o-num" aria-hidden="true">{{ v.ovr }}</span>
           <a class="look-link" routerLink="/aspetto" [attr.aria-label]="'ui.look.open' | t">
             <app-avatar
               [appearance]="v.appearance"
@@ -53,7 +64,7 @@ import { TabBarComponent } from '../ui/tab-bar.component';
             >
           </div>
           <div class="ovr">
-            <span class="o-number">{{ v.ovr }}</span>
+            <span class="o-num">{{ v.ovr }}</span>
             <span class="ovr-label">OVR</span>
           </div>
         </section>
@@ -125,16 +136,26 @@ import { TabBarComponent } from '../ui/tab-bar.component';
                 role="img"
                 [attr.aria-label]="'ui.profile.growth' | t"
               >
-                <polyline
-                  [attr.points]="v.growth.line"
+                <path
+                  [attr.d]="v.growth.line"
                   fill="none"
                   stroke="var(--o-accent)"
                   stroke-width="3"
-                  stroke-linejoin="round"
-                  stroke-linecap="round"
+                  stroke-linejoin="miter"
+                  stroke-linecap="square"
+                  shape-rendering="crispEdges"
                 />
                 @for (p of v.growth.points; track $index) {
-                  <circle [attr.cx]="p.x" [attr.cy]="p.y" r="3.5" fill="var(--o-accent)" />
+                  <rect
+                    [attr.x]="p.x - 4"
+                    [attr.y]="p.y - 4"
+                    width="8"
+                    height="8"
+                    fill="var(--o-accent)"
+                    stroke="var(--o-px-shadow)"
+                    stroke-width="2"
+                    shape-rendering="crispEdges"
+                  />
                   <text [attr.x]="p.x" [attr.y]="p.y - 8" text-anchor="middle" class="chart-label">
                     {{ p.ovr }}
                   </text>
@@ -169,7 +190,7 @@ import { TabBarComponent } from '../ui/tab-bar.component';
               <app-stat-bar [label]="'ui.stats.reputation' | t" [value]="v.image.reputation" />
               <a class="followers" routerLink="/social">
                 <span class="o-muted small">{{ 'ui.stats.followers' | t }}</span>
-                <span class="o-number">{{ v.followers }}</span>
+                <span class="o-num">{{ v.followers }}</span>
               </a>
             </div>
           </section>
@@ -238,9 +259,9 @@ import { TabBarComponent } from '../ui/tab-bar.component';
       bottom: -8px;
       transform: translateX(-50%);
       padding: 3px 9px;
-      border-radius: 999px;
       background: var(--o-accent);
       color: var(--o-accent-ink);
+      box-shadow: var(--o-px) var(--o-px) 0 0 var(--o-px-shadow);
       font-family: var(--o-font-display);
       font-weight: 700;
       font-size: 11px;
@@ -252,9 +273,7 @@ import { TabBarComponent } from '../ui/tab-bar.component';
       position: absolute;
       right: -6px;
       top: -22px;
-      font-family: var(--o-font-display);
-      font-weight: 800;
-      font-size: 180px;
+      font-size: 200px;
       line-height: 1;
       color: var(--o-text);
       opacity: 0.06;
@@ -281,18 +300,25 @@ import { TabBarComponent } from '../ui/tab-bar.component';
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 8px 10px;
-      border-radius: var(--o-radius-md);
-      background: var(--o-accent);
-      color: var(--o-accent-ink);
+      min-width: 64px;
+      padding: 8px 10px 6px;
+      background: var(--o-surface-raised);
+      color: var(--o-text);
+      /* Come il voto in pagella: bordo oro pieno e ombra a gradino. */
+      box-shadow:
+        inset 0 0 0 var(--o-px-drop) var(--o-accent),
+        var(--o-px-drop) var(--o-px-drop) 0 0 var(--o-px-shadow);
     }
-    .ovr .o-number {
-      font-size: 36px;
+    .ovr .o-num {
+      font-size: 44px;
+      line-height: 0.9;
     }
     .ovr-label {
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 1.2px;
+      font-family: var(--o-font-display);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.6px;
+      color: var(--o-accent-fg);
     }
     .discipline {
       display: flex;
@@ -331,8 +357,9 @@ import { TabBarComponent } from '../ui/tab-bar.component';
       text-decoration: none;
       color: inherit;
     }
-    .followers .o-number {
-      font-size: 22px;
+    .followers .o-num {
+      font-size: 26px;
+      line-height: 1;
     }
     .chart {
       width: 100%;
@@ -412,7 +439,7 @@ export class ProfilePage {
       discipline: disciplineView(p.persona),
       image: p.image,
       followers: formatInt(p.image.followers),
-      growth: { points, line: points.map((pt) => `${pt.x},${pt.y}`).join(' ') },
+      growth: { points, line: stepLine(points) },
       contract: p.contract
         ? {
             club: clubName(p.contract.clubId),

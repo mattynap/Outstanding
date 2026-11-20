@@ -133,6 +133,24 @@ Interfaccia ibrida (ondata 2):
   scelta come titolo e gli effetti uno per riga, valore firmato in `.o-num` 24 px
   (`--o-ink-pos`/`--o-ink-neg`).
 
+Interfaccia ibrida (ondata 3, schede del giocatore):
+
+- **Barre a 10 tacche**: `<app-stat-bar>` è alta 8 px, angoli vivi, con una maschera che apre nove
+  fessure trasparenti; il riempimento resta continuo (valore esatto) e cresce in 5 scatti.
+- **Profilo**: OVR in un riquadro quadrato `.o-num` 44 px con cornice interna oro di 4 px e ombra a
+  gradino; numero di maglia fantasma in `.o-num`. La crescita è una linea a gradini (`crispEdges`,
+  estremi quadrati) con punti quadrati 8×8 bordati di `--o-px-shadow`.
+- **Foglio statistico** `.o-sheet` sulla carta: quattro celle con filetto doppio sopra e semplice
+  sotto, valore `.o-sheet__value.o-num` 34 px, etichetta `.o-sheet__label`. `.o-paper-head` è il
+  titoletto rosso maiuscolo di una sezione dentro la carta (trofei di stagione e di carriera, in
+  chip `.o-px--paper` con la coppa pixel rossa).
+- **Bacheca**: coppa pixel 32 px accanto al punteggio, livello in chip sotto il numero; esiti
+  "Promosso/Retrocesso" con cornice pixel nel colore dell'esito; verdetti degli obiettivi come
+  timbri ruotati di -3° (raggiunto bordo pieno 3 px, mancato tratteggiato).
+- **Fine carriera**: il punteggio scomposto è uno scontrino (`<dl>`, righe tratteggiate, valori
+  `.o-num` 22 px). **Classifica**: punti e risultati in `.o-num` 22 px, riga propria con filetti oro
+  di un pixel, zone con barra di 4 px e legenda a quadratini.
+
 Correzioni dell'editor ("Redazione"): il nome originale resta sopra quello nuovo, piccolo e barrato
 con una riga rossa (`--o-headline-red`), più il segno ✎ a destra della riga; i colori si scelgono
 da cerchi della tavolozza (44 px di area tattile), il motivo da miniature della maglia.

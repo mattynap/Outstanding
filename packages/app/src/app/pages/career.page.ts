@@ -6,12 +6,13 @@ import { careerSummary, trophyKey } from '../core/career-view';
 import { goalHistory, goalView } from '../core/chapter-view';
 import { formatAverage, formatInt, ordinal } from '../core/text';
 import { CrestComponent } from '../ui/crest.component';
+import { PxIconComponent } from '../ui/px-icon.component';
 import { TabBarComponent } from '../ui/tab-bar.component';
 
 /** Bacheca: punteggio, obiettivi di capitolo (in corso e chiusi), trofei e stagioni giocate. */
 @Component({
   selector: 'app-career',
-  imports: [IonContent, TranslatePipe, CrestComponent, TabBarComponent],
+  imports: [IonContent, TranslatePipe, CrestComponent, PxIconComponent, TabBarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ion-content class="o-page">
@@ -20,11 +21,12 @@ import { TabBarComponent } from '../ui/tab-bar.component';
           <h1 class="o-display title">{{ 'ui.career.title' | t }}</h1>
 
           <section class="o-card o-card--hero score">
-            <div>
+            <app-px-icon class="cup" name="career" [size]="32" />
+            <div class="grow">
               <span class="o-label soft">{{ 'ui.career.score' | t }}</span>
               <span class="o-number big">{{ v.score }}</span>
+              <span class="o-chip o-chip--accent tier">{{ v.tierKey | t }}</span>
             </div>
-            <span class="o-chip o-chip--accent">{{ v.tierKey | t }}</span>
           </section>
 
           <section class="o-stats">
@@ -99,7 +101,7 @@ import { TabBarComponent } from '../ui/tab-bar.component';
               <div class="cabinet">
                 @for (tr of v.cabinet; track tr.id) {
                   <span class="o-chip o-chip--accent"
-                    >{{ trophyKey(tr.id) | t }}{{ tr.count > 1 ? ' ×' + tr.count : '' }}</span
+                    ><app-px-icon class="cup" name="career" />{{ trophyKey(tr.id) | t }}{{ tr.count > 1 ? ' ×' + tr.count : '' }}</span
                   >
                 }
               </div>
@@ -163,13 +165,15 @@ import { TabBarComponent } from '../ui/tab-bar.component';
     }
     .score {
       flex-direction: row;
-      align-items: flex-end;
-      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
     }
-    .score div {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
+    .cup {
+      color: var(--o-accent-fg);
+    }
+    .tier {
+      align-self: flex-start;
+      margin-top: 6px;
     }
     .soft {
       color: var(--o-text-soft);
@@ -226,15 +230,18 @@ import { TabBarComponent } from '../ui/tab-bar.component';
       letter-spacing: 1px;
       text-transform: uppercase;
       padding: 3px 8px;
-      border-radius: 4px;
+      /* Cornice pixel a gradini nel colore dell'esito. */
+      box-shadow:
+        0 calc(-1 * var(--o-px)) 0 0 currentColor,
+        0 var(--o-px) 0 0 currentColor,
+        calc(-1 * var(--o-px)) 0 0 0 currentColor,
+        var(--o-px) 0 0 0 currentColor;
     }
     .tag.up {
       color: var(--o-positive);
-      border: 1px solid var(--o-positive);
     }
     .tag.down {
       color: var(--o-negative);
-      border: 1px solid var(--o-negative);
     }
     .goals {
       gap: 0;
@@ -265,9 +272,12 @@ import { TabBarComponent } from '../ui/tab-bar.component';
       text-transform: uppercase;
       color: var(--o-text-soft);
       border: 2px solid currentColor;
+      /* Timbro: leggermente storto, come apposto a mano. */
+      transform: rotate(-3deg);
     }
     .verdict.ok {
       color: var(--o-positive);
+      border-width: 3px;
     }
     .verdict.ko {
       color: var(--o-text-muted);

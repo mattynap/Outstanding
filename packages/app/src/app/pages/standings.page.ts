@@ -84,7 +84,7 @@ interface TableRow {
                   @for (m of c.round; track m.id) {
                     <div class="o-line fixture" [class.mine]="m.mine">
                       <span class="grow right">{{ m.home }}</span>
-                      <span class="o-number res">{{ m.score }}</span>
+                      <span class="o-num res">{{ m.score }}</span>
                       <span class="grow">{{ m.away }}</span>
                     </div>
                   }
@@ -120,7 +120,7 @@ interface TableRow {
                   </td>
                   <td class="num">{{ r.played }}</td>
                   <td class="num">{{ r.diff > 0 ? '+' + r.diff : r.diff }}</td>
-                  <td class="num pts">{{ r.points }}</td>
+                  <td class="num pts o-num">{{ r.points }}</td>
                 </tr>
               }
             </tbody>
@@ -169,7 +169,7 @@ interface TableRow {
     }
     .pos {
       text-align: center;
-      border-left: 3px solid transparent;
+      border-left: var(--o-px-drop) solid transparent;
     }
     tr.up .pos {
       border-left-color: var(--o-positive);
@@ -180,9 +180,14 @@ interface TableRow {
     tr.mine td {
       background: var(--o-accent-soft);
       font-weight: 700;
+      /* La propria riga ha il filetto oro sopra e sotto, a pixel pieni. */
+      border-top: var(--o-px) solid var(--o-accent);
+      border-bottom: var(--o-px) solid var(--o-accent);
     }
     .pts {
-      font-weight: 700;
+      width: 40px;
+      font-size: 22px;
+      line-height: 1;
     }
     .club {
       display: inline-flex;
@@ -199,7 +204,6 @@ interface TableRow {
     .dot {
       width: 10px;
       height: 10px;
-      border-radius: 2px;
       display: inline-block;
     }
     .dot.up {
@@ -229,7 +233,8 @@ interface TableRow {
       text-align: right;
     }
     .res {
-      font-size: 17px;
+      font-size: 22px;
+      line-height: 1;
       min-width: 64px;
       text-align: center;
     }

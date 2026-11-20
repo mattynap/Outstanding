@@ -6,11 +6,12 @@ import { TranslatePipe } from '../core/i18n.service';
 import { careerSummary, trophyKey } from '../core/career-view';
 import { formatAverage, formatInt } from '../core/text';
 import { AvatarComponent } from '../ui/avatar.component';
+import { PxIconComponent } from '../ui/px-icon.component';
 
 /** Fine carriera: il verdetto del giornale, il punteggio e i numeri di una vita. */
 @Component({
   selector: 'app-end',
-  imports: [IonContent, TranslatePipe, AvatarComponent],
+  imports: [IonContent, TranslatePipe, AvatarComponent, PxIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ion-content class="o-page">
@@ -37,57 +38,51 @@ import { AvatarComponent } from '../ui/avatar.component';
                 }}
               </p>
             </div>
+
+            <div class="o-sheet">
+              <div class="o-sheet__cell">
+                <span class="o-sheet__value o-num">{{ v.apps }}</span>
+                <span class="o-sheet__label">{{ 'ui.stats.appearances' | t }}</span>
+              </div>
+              <div class="o-sheet__cell">
+                <span class="o-sheet__value o-num">{{ v.goals }}</span>
+                <span class="o-sheet__label">{{ 'ui.stats.goals' | t }}</span>
+              </div>
+              <div class="o-sheet__cell">
+                <span class="o-sheet__value o-num">{{ v.topSeasons }}</span>
+                <span class="o-sheet__label">{{ 'ui.stats.topSeasons' | t }}</span>
+              </div>
+              <div class="o-sheet__cell">
+                <span class="o-sheet__value o-num">{{ v.average }}</span>
+                <span class="o-sheet__label">{{ 'ui.stats.average' | t }}</span>
+              </div>
+            </div>
+
+            @if (v.cabinet.length > 0) {
+              <h2 class="o-paper-head">{{ 'ui.career.cabinet' | t }}</h2>
+              <div class="cabinet">
+                @for (tr of v.cabinet; track tr.id) {
+                  <span class="o-chip o-px--paper trophy"
+                    ><app-px-icon name="career" />{{ trophyKey(tr.id) | t
+                    }}{{ tr.count > 1 ? ' ×' + tr.count : '' }}</span
+                  >
+                }
+              </div>
+            }
           </article>
 
           <section class="o-card o-card--hero total">
             <span class="o-label soft">{{ 'ui.career.score' | t }}</span>
-            <span class="o-number big">{{ v.score }}</span>
-            <div class="parts">
+            <span class="o-number big o-enter-steps">{{ v.score }}</span>
+            <dl class="parts">
               @for (p of v.parts; track p.key) {
                 <div class="part">
-                  <span class="o-muted">{{ p.key | t }}</span><span class="o-number">{{
-                    p.value
-                  }}</span>
+                  <dt>{{ p.key | t }}</dt>
+                  <dd class="o-num">{{ p.value }}</dd>
                 </div>
               }
-            </div>
+            </dl>
           </section>
-
-          <section class="o-stats">
-            <div class="o-stat o-stat--boxed">
-              <span class="o-stat__value">{{ v.apps }}</span><span class="o-stat__label">{{
-                'ui.stats.appearances' | t
-              }}</span>
-            </div>
-            <div class="o-stat o-stat--boxed">
-              <span class="o-stat__value">{{ v.goals }}</span><span class="o-stat__label">{{
-                'ui.stats.goals' | t
-              }}</span>
-            </div>
-            <div class="o-stat o-stat--boxed">
-              <span class="o-stat__value">{{ v.topSeasons }}</span><span class="o-stat__label">{{
-                'ui.stats.topSeasons' | t
-              }}</span>
-            </div>
-            <div class="o-stat o-stat--boxed">
-              <span class="o-stat__value">{{ v.average }}</span><span class="o-stat__label">{{
-                'ui.stats.average' | t
-              }}</span>
-            </div>
-          </section>
-
-          @if (v.cabinet.length > 0) {
-            <section class="o-card">
-              <h2 class="o-section-title">{{ 'ui.career.cabinet' | t }}</h2>
-              <div class="cabinet">
-                @for (tr of v.cabinet; track tr.id) {
-                  <span class="o-chip o-chip--accent"
-                    >{{ trophyKey(tr.id) | t }}{{ tr.count > 1 ? ' ×' + tr.count : '' }}</span
-                  >
-                }
-              </div>
-            </section>
-          }
 
           <button class="o-btn" type="button" (click)="newCareer()">
             {{ 'ui.end.newCareer' | t }}
@@ -120,26 +115,40 @@ import { AvatarComponent } from '../ui/avatar.component';
       font-size: 64px;
       color: var(--o-accent-fg);
     }
+    /* Scontrino del punteggio, come la pagella: una riga per voce. */
     .parts {
       width: 100%;
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-      margin-top: 8px;
+      margin: 8px 0 0;
+      padding-top: 6px;
+      border-top: 2px solid var(--o-border-strong);
     }
     .part {
       display: flex;
-      flex-direction: column;
-      font-size: var(--o-text-xs);
-      gap: 2px;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 4px 0;
+      border-bottom: 1px dashed var(--o-border);
+      font-size: var(--o-text-sm);
+      text-align: left;
     }
-    .part .o-number {
-      font-size: 20px;
+    .part:last-child {
+      border-bottom: none;
+    }
+    .part dt {
+      color: var(--o-text-muted);
+    }
+    .part dd {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1;
     }
     .cabinet {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
+    }
+    .trophy app-px-icon {
+      color: var(--o-headline-red);
     }
   `,
 })

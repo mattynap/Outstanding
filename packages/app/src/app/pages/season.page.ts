@@ -6,11 +6,12 @@ import { GameService } from '../core/game.service';
 import { I18nService, TranslatePipe } from '../core/i18n.service';
 import { formatAverage, ordinal } from '../core/text';
 import { CrestComponent } from '../ui/crest.component';
+import { PxIconComponent } from '../ui/px-icon.component';
 
 /** Fine stagione: prima pagina con il verdetto, statistiche e trofei. */
 @Component({
   selector: 'app-season',
-  imports: [IonContent, RouterLink, TranslatePipe, CrestComponent],
+  imports: [IonContent, RouterLink, TranslatePipe, CrestComponent, PxIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ion-content class="o-page">
@@ -28,42 +29,37 @@ import { CrestComponent } from '../ui/crest.component';
             <div class="o-standfirst">
               <p>{{ v.standfirst }}</p>
             </div>
-          </article>
 
-          @if (v.trophies.length > 0) {
-            <section class="o-card trophies">
-              <h2 class="o-section-title">{{ 'ui.season.trophies' | t }}</h2>
+            <div class="o-sheet">
+              <div class="o-sheet__cell">
+                <span class="o-sheet__value o-num">{{ v.stats.appearances }}</span>
+                <span class="o-sheet__label">{{ 'ui.stats.appearances' | t }}</span>
+              </div>
+              <div class="o-sheet__cell">
+                <span class="o-sheet__value o-num">{{ v.stats.goals }}</span>
+                <span class="o-sheet__label">{{ 'ui.stats.goals' | t }}</span>
+              </div>
+              <div class="o-sheet__cell">
+                <span class="o-sheet__value o-num">{{ v.stats.assists }}</span>
+                <span class="o-sheet__label">{{ 'ui.stats.assists' | t }}</span>
+              </div>
+              <div class="o-sheet__cell">
+                <span class="o-sheet__value o-num">{{ v.average }}</span>
+                <span class="o-sheet__label">{{ 'ui.stats.average' | t }}</span>
+              </div>
+            </div>
+
+            @if (v.trophies.length > 0) {
+              <h2 class="o-paper-head">{{ 'ui.season.trophies' | t }}</h2>
               <div class="chips">
                 @for (t of v.trophies; track t) {
-                  <span class="o-chip o-chip--accent">{{ t }}</span>
+                  <span class="o-chip o-px--paper trophy"
+                    ><app-px-icon name="career" />{{ t }}</span
+                  >
                 }
               </div>
-            </section>
-          }
-
-          <section class="o-stats">
-            <div class="o-stat o-stat--boxed">
-              <span class="o-stat__value">{{ v.stats.appearances }}</span><span
-                class="o-stat__label"
-                >{{ 'ui.stats.appearances' | t }}</span
-              >
-            </div>
-            <div class="o-stat o-stat--boxed">
-              <span class="o-stat__value">{{ v.stats.goals }}</span><span class="o-stat__label">{{
-                'ui.stats.goals' | t
-              }}</span>
-            </div>
-            <div class="o-stat o-stat--boxed">
-              <span class="o-stat__value">{{ v.stats.assists }}</span><span class="o-stat__label">{{
-                'ui.stats.assists' | t
-              }}</span>
-            </div>
-            <div class="o-stat o-stat--boxed">
-              <span class="o-stat__value">{{ v.average }}</span><span class="o-stat__label">{{
-                'ui.stats.average' | t
-              }}</span>
-            </div>
-          </section>
+            }
+          </article>
 
           @if (v.winners.length > 0) {
             <section class="o-card">
@@ -92,6 +88,9 @@ import { CrestComponent } from '../ui/crest.component';
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
+    }
+    .trophy app-px-icon {
+      color: var(--o-headline-red);
     }
     .grow {
       flex: 1 1 auto;

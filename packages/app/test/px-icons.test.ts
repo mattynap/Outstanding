@@ -9,8 +9,8 @@ describe('icone pixel', () => {
     }
   });
 
-  it('ci sono tutte e 13 le icone e nessuna è vuota', () => {
-    expect(Object.keys(PX_ICONS)).toHaveLength(13);
+  it('ci sono tutte e 14 le icone e nessuna è vuota', () => {
+    expect(Object.keys(PX_ICONS)).toHaveLength(14);
     for (const rows of Object.values(PX_ICONS)) expect(rows.join('')).toMatch(/#/);
   });
 

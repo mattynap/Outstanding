@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { add, remove, star, starOutline } from 'ionicons/icons';
+import { add, remove } from 'ionicons/icons';
 import {
   getAgentCandidates,
   getOffers,
@@ -15,12 +15,13 @@ import { formatMoney } from '../core/text';
 import { ToastService } from '../core/toast.service';
 import { seasonWeekNumber } from '../core/views';
 import { CrestComponent } from '../ui/crest.component';
+import { PxIconComponent } from '../ui/px-icon.component';
 import { TabBarComponent } from '../ui/tab-bar.component';
 
 /** Mercato e contratti: offerte dei club con trattativa, procuratore e sponsor. */
 @Component({
   selector: 'app-market',
-  imports: [IonContent, IonIcon, TranslatePipe, CrestComponent, TabBarComponent],
+  imports: [IonContent, IonIcon, TranslatePipe, CrestComponent, PxIconComponent, TabBarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ion-content class="o-page">
@@ -36,59 +37,52 @@ import { TabBarComponent } from '../ui/tab-bar.component';
           <section class="block">
             <h2 class="o-section-title">{{ 'ui.market.offers' | t }}</h2>
             @for (o of v.offers; track o.id) {
-              <article class="o-card offer">
-                <div class="offer-head">
+              <!-- Offerta come lettera su carta intestata del club. -->
+              <article class="o-paper letter">
+                <header class="letterhead">
                   <app-crest [crest]="crestOf(o.clubId)" [size]="40" />
                   <div class="offer-club">
-                    <span class="club">{{ o.clubName }}</span>
-                    <span class="o-muted small">{{ 'leagues.' + o.level + '.name' | t }}</span>
+                    <span class="lh-club">{{ o.clubName }}</span>
+                    <span class="lh-sub">{{ 'leagues.' + o.level + '.name' | t }}</span>
                   </div>
-                  <span class="o-chip kind">{{ 'offers.kind.' + o.kind | t }}</span>
-                </div>
-                <div class="terms">
-                  <div>
-                    <span class="o-label">{{ 'ui.market.salary' | t }}</span><span
-                      class="o-number val"
-                      >{{ money(o.salaryWeekly) }}</span
-                    >
+                  <span class="o-kicker">{{ 'offers.kind.' + o.kind | t }}</span>
+                </header>
+                <div class="o-sheet terms">
+                  <div class="o-sheet__cell">
+                    <span class="o-sheet__value o-num val">{{ money(o.salaryWeekly) }}</span>
+                    <span class="o-sheet__label">{{ 'ui.market.salary' | t }}</span>
                   </div>
                   @if (o.kind !== 'loan') {
-                    <div>
-                      <span class="o-label">{{ 'ui.market.seasons' | t }}</span><span
-                        class="o-number val"
-                        >{{ o.seasons }}</span
-                      >
+                    <div class="o-sheet__cell">
+                      <span class="o-sheet__value o-num val">{{ o.seasons }}</span>
+                      <span class="o-sheet__label">{{ 'ui.market.seasons' | t }}</span>
                     </div>
                   }
                   @if (o.signingBonus > 0) {
-                    <div>
-                      <span class="o-label">{{ 'ui.market.bonus' | t }}</span><span
-                        class="o-number val"
-                        >{{ money(o.signingBonus) }}</span
-                      >
+                    <div class="o-sheet__cell">
+                      <span class="o-sheet__value o-num val">{{ money(o.signingBonus) }}</span>
+                      <span class="o-sheet__label">{{ 'ui.market.bonus' | t }}</span>
                     </div>
                   }
                 </div>
-                <span class="o-muted small">{{
-                  'ui.market.expires' | t: { week: expiresIn(o) }
-                }}</span>
+                <span class="ps">{{ 'ui.market.expires' | t: { week: expiresIn(o) } }}</span>
 
                 @if (negotiating() === o.id) {
                   <div class="negotiate">
                     <div class="stepper">
-                      <span class="o-label">{{ 'ui.market.ask' | t }}</span>
+                      <span class="lh-label">{{ 'ui.market.ask' | t }}</span>
                       <div class="step-row">
                         <button
-                          class="o-icon-btn"
+                          class="o-icon-btn o-px--paper"
                           type="button"
                           (click)="bumpSalary(-1)"
                           [attr.aria-label]="'ui.market.less' | t"
                         >
                           <ion-icon name="remove" aria-hidden="true"></ion-icon>
                         </button>
-                        <span class="o-number val">{{ money(askSalary()) }}</span>
+                        <span class="o-num ask">{{ money(askSalary()) }}</span>
                         <button
-                          class="o-icon-btn"
+                          class="o-icon-btn o-px--paper"
                           type="button"
                           (click)="bumpSalary(1)"
                           [attr.aria-label]="'ui.market.more' | t"
@@ -98,19 +92,19 @@ import { TabBarComponent } from '../ui/tab-bar.component';
                       </div>
                     </div>
                     <div class="stepper">
-                      <span class="o-label">{{ 'ui.market.seasons' | t }}</span>
+                      <span class="lh-label">{{ 'ui.market.seasons' | t }}</span>
                       <div class="step-row">
                         <button
-                          class="o-icon-btn"
+                          class="o-icon-btn o-px--paper"
                           type="button"
                           (click)="bumpSeasons(-1)"
                           [attr.aria-label]="'ui.market.less' | t"
                         >
                           <ion-icon name="remove" aria-hidden="true"></ion-icon>
                         </button>
-                        <span class="o-number val">{{ askSeasons() }}</span>
+                        <span class="o-num ask">{{ askSeasons() }}</span>
                         <button
-                          class="o-icon-btn"
+                          class="o-icon-btn o-px--paper"
                           type="button"
                           (click)="bumpSeasons(1)"
                           [attr.aria-label]="'ui.market.more' | t"
@@ -121,7 +115,7 @@ import { TabBarComponent } from '../ui/tab-bar.component';
                     </div>
                     <div class="o-row">
                       <button
-                        class="o-btn o-btn--ghost o-btn--small"
+                        class="o-btn o-btn--small o-px--paper"
                         type="button"
                         (click)="negotiating.set(null)"
                       >
@@ -140,7 +134,7 @@ import { TabBarComponent } from '../ui/tab-bar.component';
                 } @else {
                   <div class="o-row">
                     <button
-                      class="o-btn o-btn--ghost o-btn--small"
+                      class="o-btn o-btn--small o-px--paper"
                       type="button"
                       [disabled]="busy()"
                       (click)="reject(o)"
@@ -149,7 +143,7 @@ import { TabBarComponent } from '../ui/tab-bar.component';
                     </button>
                     @if (o.kind !== 'loan') {
                       <button
-                        class="o-btn o-btn--ghost o-btn--small"
+                        class="o-btn o-btn--small o-px--paper"
                         type="button"
                         [disabled]="busy()"
                         (click)="openNegotiation(o)"
@@ -186,12 +180,9 @@ import { TabBarComponent } from '../ui/tab-bar.component';
                       'ui.market.commission' | t: { pct: a.commission }
                     }}</span>
                   </div>
-                  <span class="stars" [attr.aria-label]="'ui.market.stars' | t: { n: a.quality }">
+                  <span class="stars" role="img" [attr.aria-label]="'ui.market.stars' | t: { n: a.quality }">
                     @for (i of [1, 2, 3, 4, 5]; track i) {
-                      <ion-icon
-                        [name]="i <= a.quality ? 'star' : 'star-outline'"
-                        aria-hidden="true"
-                      ></ion-icon>
+                      <app-px-icon name="new" [class.off]="i > a.quality" />
                     }
                   </span>
                 </div>
@@ -216,12 +207,9 @@ import { TabBarComponent } from '../ui/tab-bar.component';
                       'ui.market.commission' | t: { pct: c.commission }
                     }}</span>
                   </div>
-                  <span class="stars" [attr.aria-label]="'ui.market.stars' | t: { n: c.quality }">
+                  <span class="stars" role="img" [attr.aria-label]="'ui.market.stars' | t: { n: c.quality }">
                     @for (i of [1, 2, 3, 4, 5]; track i) {
-                      <ion-icon
-                        [name]="i <= c.quality ? 'star' : 'star-outline'"
-                        aria-hidden="true"
-                      ></ion-icon>
+                      <app-px-icon name="new" [class.off]="i > c.quality" />
                     }
                   </span>
                 </div>
@@ -249,7 +237,7 @@ import { TabBarComponent } from '../ui/tab-bar.component';
                       {{ 'ui.market.untilSeason' | t: { season: sp.untilSeason } }}</span
                     >
                   </div>
-                  <span class="o-number val">{{ money(sp.weeklyIncome) }}</span>
+                  <span class="income"><app-px-icon name="cash" /><span class="o-num">{{ money(sp.weeklyIncome) }}</span></span>
                 </div>
                 <div class="o-row">
                   <button
@@ -279,7 +267,7 @@ import { TabBarComponent } from '../ui/tab-bar.component';
                     'ui.market.activeUntil' | t: { season: d.untilSeason }
                   }}</span>
                 </div>
-                <span class="o-number val">{{ money(d.weeklyIncome) }}</span>
+                <span class="income"><app-px-icon name="cash" /><span class="o-num">{{ money(d.weeklyIncome) }}</span></span>
               </div>
             }
             @if (v.sponsorOffers.length === 0 && v.sponsors.length === 0) {
@@ -306,7 +294,7 @@ import { TabBarComponent } from '../ui/tab-bar.component';
       flex-direction: column;
       gap: 10px;
     }
-    .offer-head,
+    .letterhead,
     .agent-row {
       display: flex;
       align-items: center;
@@ -327,30 +315,48 @@ import { TabBarComponent } from '../ui/tab-bar.component';
       text-transform: uppercase;
       line-height: 1.05;
     }
-    .kind {
-      padding: 4px 10px;
-      font-size: 12px;
+    .letterhead {
+      padding-bottom: 10px;
+      border-bottom: 3px double var(--o-ink);
+    }
+    .lh-club {
+      font-family: var(--o-font-display);
+      font-weight: 800;
+      font-size: 21px;
+      text-transform: uppercase;
+      line-height: 1.05;
+    }
+    .lh-sub,
+    .lh-label {
+      font-size: var(--o-text-sm);
+      color: var(--o-ink-muted);
+    }
+    .terms {
+      grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+      border-top: none;
+    }
+    .ps {
+      font-size: var(--o-text-sm);
+      font-style: italic;
+      color: var(--o-ink-soft);
+    }
+    .ask {
+      min-width: 96px;
+      text-align: center;
+      font-size: 24px;
     }
     .small {
       font-size: var(--o-text-sm);
     }
-    .terms {
-      display: flex;
-      gap: 18px;
-    }
-    .terms div {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
+    /* Le cifre in euro sono lunghe: in tre colonne da 360 px stanno a 24 px. */
     .val {
-      font-size: 22px;
+      font-size: 24px;
     }
     .negotiate {
       display: flex;
       flex-direction: column;
       gap: 10px;
-      border-top: 1px solid var(--o-border);
+      border-top: 1px solid var(--o-paper-rule);
       padding-top: 10px;
     }
     .stepper {
@@ -367,7 +373,19 @@ import { TabBarComponent } from '../ui/tab-bar.component';
       display: inline-flex;
       gap: 2px;
       color: var(--o-accent-fg);
-      font-size: 16px;
+    }
+    .stars .off {
+      color: var(--o-border-strong);
+    }
+    .income {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 22px;
+      color: var(--o-accent-fg);
+    }
+    .income .o-num {
+      color: var(--o-text);
     }
   `,
 })
@@ -413,7 +431,7 @@ export class MarketPage {
   });
 
   constructor() {
-    addIcons({ add, remove, star, starOutline });
+    addIcons({ add, remove });
   }
 
   protected money(n: number): string {

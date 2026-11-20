@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { Location } from '@angular/common';
 import { AlertController, IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { chevronBack, heart, heartDislikeOutline, eyeOffOutline } from 'ionicons/icons';
+import { chevronBack, heartDislikeOutline, eyeOffOutline } from 'ionicons/icons';
 import {
   financeOf,
   getPrivateActions,
@@ -15,6 +15,7 @@ import { I18nService, TranslatePipe } from '../core/i18n.service';
 import { formatMoney } from '../core/text';
 import { ToastService } from '../core/toast.service';
 import { PortraitComponent } from '../ui/portrait.component';
+import { PxIconComponent } from '../ui/px-icon.component';
 import { VignetteComponent } from '../ui/vignette.component';
 
 /** Motivi per cui un'azione non c'entra con la situazione attuale: l'azione non si mostra. */
@@ -35,7 +36,7 @@ const HIDDEN_REASONS = new Set([
  */
 @Component({
   selector: 'app-private',
-  imports: [IonContent, IonIcon, TranslatePipe, PortraitComponent, VignetteComponent],
+  imports: [IonContent, IonIcon, TranslatePipe, PortraitComponent, PxIconComponent, VignetteComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ion-content class="o-page">
@@ -68,7 +69,7 @@ const HIDDEN_REASONS = new Set([
                 <div class="aff-head">
                   <span class="o-label ink">{{ 'ui.private.affinity' | t }}</span>
                   <span class="mood" [class.cold]="p.mood === 'crisis'">
-                    <ion-icon name="heart" aria-hidden="true"></ion-icon>
+                    <app-px-icon name="heart" />
                     {{ 'ui.private.mood.' + p.mood | t }}
                   </span>
                 </div>
@@ -293,18 +294,24 @@ const HIDDEN_REASONS = new Set([
     .mood.cold {
       color: var(--o-ink-muted);
     }
+    /* Dieci tacche come le barre del profilo; il gradiente dell'intesa resta. */
     .hearts {
       position: relative;
-      height: 12px;
-      border-radius: 999px;
+      height: 10px;
       background: rgba(0, 0, 0, 0.08);
       overflow: hidden;
+      -webkit-mask: repeating-linear-gradient(90deg, #000 0 calc(10% - 2px), transparent 0 10%);
+      mask: repeating-linear-gradient(90deg, #000 0 calc(10% - 2px), transparent 0 10%);
     }
     .hearts-fill {
       height: 100%;
-      border-radius: inherit;
       background: linear-gradient(90deg, #d9775f, #c2304a);
-      transition: width 250ms ease-out;
+      transition: width var(--o-slow) steps(5, end);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .hearts-fill {
+        transition: none;
+      }
     }
     .crisis-mark {
       position: absolute;
@@ -323,10 +330,17 @@ const HIDDEN_REASONS = new Set([
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      min-height: 40px;
+      min-height: var(--o-touch);
       padding: 8px 16px;
-      border-radius: 999px;
-      border: 1px solid var(--o-paper-rule);
+      border: none;
+      border-radius: 0;
+      /* Cornice pixel d'inchiostro, ombra corta: come i pulsanti sulla carta. */
+      box-shadow:
+        0 calc(-1 * var(--o-px)) 0 0 var(--o-px-paper-edge),
+        0 var(--o-px) 0 0 var(--o-px-paper-edge),
+        calc(-1 * var(--o-px)) 0 0 0 var(--o-px-paper-edge),
+        var(--o-px) 0 0 0 var(--o-px-paper-edge),
+        calc(2 * var(--o-px)) calc(2 * var(--o-px)) 0 0 var(--o-px-shadow);
       background: transparent;
       color: var(--o-ink);
       font: inherit;
@@ -507,7 +521,7 @@ export class PrivatePage {
   });
 
   constructor() {
-    addIcons({ chevronBack, heart, heartDislikeOutline, eyeOffOutline });
+    addIcons({ chevronBack, heartDislikeOutline, eyeOffOutline });
   }
 
   protected back(): void {

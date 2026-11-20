@@ -150,6 +150,17 @@ Interfaccia ibrida (ondata 3, schede del giocatore):
 - **Fine carriera**: il punteggio scomposto è uno scontrino (`<dl>`, righe tratteggiate, valori
   `.o-num` 22 px). **Classifica**: punti e risultati in `.o-num` 22 px, riga propria con filetti oro
   di un pixel, zone con barra di 4 px e legenda a quadratini.
+- **Mercato**: ogni offerta è una lettera su carta (`.o-paper`): carta intestata con stemma 40 px,
+  nome del club in `--o-font-display` e campionato sotto, tipo di offerta in `o-kicker`; condizioni
+  in `.o-sheet` (valori `.o-num` 24 px), scadenza in corsivo come un post scriptum. Sulla carta i
+  pulsanti secondari sono `.o-btn.o-px--paper` (fondo carta, cornice d'inchiostro
+  `--o-px-paper-edge`). Stelle del procuratore in pixel (`new`), spente in `--o-border-strong`.
+- **Finanze e vita**: saldo in `.o-num` 52 px con la moneta pixel 32 px; il riepilogo settimanale è
+  uno scontrino su carta (righe tratteggiate `--o-paper-rule`, entrate `--o-ink-pos`, uscite
+  `--o-ink-neg`, saldo sotto un filetto doppio in `.o-num` 26 px). Cuore pixel (`heart`) in
+  `#C2304A` per la vita privata. Le cifre di prezzo non vanno mai a capo.
+- **Patrimonio**: netto in `.o-num` 44 px con la moneta pixel; prezzi dei beni in `.o-num`.
+- **Vignette**: niente angoli tondi, cornice pixel `--o-border-strong` con ombra a gradino di 4 px.
 
 Correzioni dell'editor ("Redazione"): il nome originale resta sopra quello nuovo, piccolo e barrato
 con una riga rossa (`--o-headline-red`), più il segno ✎ a destra della riga; i colori si scelgono
@@ -170,8 +181,9 @@ Vita privata (M16): la scheda di chi c'è nel cuore è un foglio di giornale (`.
 rosa: occhiello rosso con la fase ("Insieme", "Fidanzati", "Sposati"), ritratto tondo con doppio
 bordo carta, nome in `o-headline`, mestiere in corsivo. L'intesa è una barra con gradiente da
 corallo a rosso (`#D9775F` → `#C2304A`) e una tacca bianca alla soglia di crisi; accanto, il
-giudizio a parole con un cuore. I pulsanti sopra la carta sono a pillola con bordo
-`--o-paper-rule`, mai i pulsanti scuri dell'app. Azioni della settimana: vignetta a sinistra
+giudizio a parole con un cuore pixel; dall'ondata 3 la barra ha dieci tacche e angoli vivi. I
+pulsanti sopra la carta hanno la cornice pixel d'inchiostro (`--o-px-paper-edge`), mai i pulsanti
+scuri dell'app. Azioni della settimana: vignetta a sinistra
 (104 px), nome, descrizione, prezzo e pulsante stretto a destra; le azioni bloccate restano visibili
 in grigio con il motivo in corsivo, quelle fuori luogo per la situazione non si mostrano. Vignette
 nuove: notte di città (incontri, proposta), stanza calda (appuntamento, cena, regalo, figlio),

@@ -350,10 +350,16 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     </svg>
   `,
   styles: `
+    /* Cornice pixel a gradini con ombra corta, come i riquadri piccoli dello strato pixel. */
     :host {
       display: block;
-      border-radius: var(--o-radius-md);
       overflow: hidden;
+      box-shadow:
+        0 calc(-1 * var(--o-px)) 0 0 var(--o-border-strong),
+        0 var(--o-px) 0 0 var(--o-border-strong),
+        calc(-1 * var(--o-px)) 0 0 0 var(--o-border-strong),
+        var(--o-px) 0 0 0 var(--o-border-strong),
+        calc(2 * var(--o-px)) calc(2 * var(--o-px)) 0 0 var(--o-px-shadow);
     }
     svg {
       display: block;

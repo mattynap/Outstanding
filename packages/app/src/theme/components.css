@@ -567,6 +567,10 @@ button.o-chip:focus-visible {
 .o-btn--danger {
   --px-b: var(--o-negative);
 }
+/* Pulsante secondario sulla carta: fondo carta, cornice d'inchiostro. */
+.o-btn.o-px--paper {
+  --px-b: var(--o-px-paper-edge);
+}
 .o-chip--accent,
 .o-choice[aria-pressed='true'],
 .o-choice--selected {

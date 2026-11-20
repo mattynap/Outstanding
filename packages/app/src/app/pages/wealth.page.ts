@@ -16,6 +16,7 @@ import { I18nService, TranslatePipe } from '../core/i18n.service';
 import { formatMoney } from '../core/text';
 import { ToastService } from '../core/toast.service';
 import { PriceChartComponent } from '../ui/price-chart.component';
+import { PxIconComponent } from '../ui/px-icon.component';
 import { VignetteComponent } from '../ui/vignette.component';
 
 type Tab = 'summary' | 'markets' | 'assets' | 'business' | 'bank';
@@ -27,7 +28,14 @@ const TABS: Tab[] = ['summary', 'markets', 'assets', 'business', 'bank'];
  */
 @Component({
   selector: 'app-wealth',
-  imports: [IonContent, IonIcon, TranslatePipe, PriceChartComponent, VignetteComponent],
+  imports: [
+    IonContent,
+    IonIcon,
+    TranslatePipe,
+    PriceChartComponent,
+    PxIconComponent,
+    VignetteComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ion-content class="o-page">
@@ -47,9 +55,12 @@ const TABS: Tab[] = ['summary', 'markets', 'assets', 'business', 'bank'];
 
           <section class="o-card o-card--hero worth">
             <span class="o-label soft">{{ 'ui.wealth.netWorth' | t }}</span>
-            <span class="o-number big" [class.o-neg]="worth().total < 0">{{
-              money(worth().total)
-            }}</span>
+            <span class="worth-row">
+              <app-px-icon class="coin" name="cash" [size]="32" />
+              <span class="o-num big" [class.o-neg]="worth().total < 0">{{
+                money(worth().total)
+              }}</span>
+            </span>
             <span class="soft small">{{
               'ui.wealth.cashLine' | t: { cash: money(s.player.money.cash) }
             }}</span>
@@ -145,7 +156,7 @@ const TABS: Tab[] = ['summary', 'markets', 'assets', 'business', 'bank'];
                       }}</span>
                     </div>
                     <div class="col right">
-                      <span class="o-number price">{{ priceFormat(m.price) }}</span>
+                      <span class="o-num price">{{ priceFormat(m.price) }}</span>
                       <span
                         class="small"
                         [class.o-pos]="m.change >= 0"
@@ -278,7 +289,7 @@ const TABS: Tab[] = ['summary', 'markets', 'assets', 'business', 'bank'];
                   <app-vignette [id]="c.id" [label]="'finance.properties.' + c.id | t" />
                   <div class="item-body">
                     <span class="item-name">{{ 'finance.properties.' + c.id | t }}</span>
-                    <span class="o-number item-price">{{ money(c.price) }}</span>
+                    <span class="o-num item-price">{{ money(c.price) }}</span>
                     <span class="small o-muted">{{
                       'ui.wealth.upkeep' | t: { upkeep: money(c.upkeepWeekly) }
                     }}</span>
@@ -354,7 +365,7 @@ const TABS: Tab[] = ['summary', 'markets', 'assets', 'business', 'bank'];
                   <app-vignette [id]="c.id" [label]="'finance.businesses.' + c.id + '.name' | t" />
                   <div class="item-body">
                     <span class="item-name">{{ 'finance.businesses.' + c.id + '.name' | t }}</span>
-                    <span class="o-number item-price">{{ money(c.cost) }}</span>
+                    <span class="o-num item-price">{{ money(c.cost) }}</span>
                     <span class="small o-muted">{{
                       'finance.businesses.' + c.id + '.desc' | t
                     }}</span>
@@ -500,6 +511,14 @@ const TABS: Tab[] = ['summary', 'markets', 'assets', 'business', 'bank'];
       font-size: 44px;
       line-height: 1;
     }
+    .worth-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .coin {
+      color: var(--o-accent-fg);
+    }
     .soft {
       color: var(--o-text-soft);
     }
@@ -512,6 +531,10 @@ const TABS: Tab[] = ['summary', 'markets', 'assets', 'business', 'bank'];
     }
     .num {
       font-variant-numeric: tabular-nums;
+    }
+    .grow {
+      flex: 1 1 auto;
+      min-width: 0;
     }
     .tabs {
       display: flex;

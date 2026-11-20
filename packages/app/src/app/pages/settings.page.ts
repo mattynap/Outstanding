@@ -59,6 +59,27 @@ import { TutorialService } from '../core/tutorial.service';
         </section>
 
         <section class="o-card">
+          <h2 class="o-section-title">{{ 'ui.settings.sound' | t }}</h2>
+          <p class="small o-muted none">{{ 'ui.settings.soundText' | t }}</p>
+          <div class="o-row" role="radiogroup" [attr.aria-label]="'ui.settings.sound' | t">
+            @for (on of [true, false]; track on) {
+              <button
+                class="o-choice"
+                type="button"
+                role="radio"
+                [attr.aria-checked]="settings.sound() === on"
+                [attr.aria-pressed]="settings.sound() === on"
+                (click)="settings.setSound(on)"
+              >
+                <span class="o-choice__body">{{
+                  (on ? 'ui.settings.soundOn' : 'ui.settings.soundOff') | t
+                }}</span>
+              </button>
+            }
+          </div>
+        </section>
+
+        <section class="o-card">
           <h2 class="o-section-title">{{ 'ui.settings.mode' | t }}</h2>
           <div class="modes" role="radiogroup" [attr.aria-label]="'ui.settings.mode' | t">
             @for (m of modes; track m) {

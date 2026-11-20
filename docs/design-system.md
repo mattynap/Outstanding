@@ -189,6 +189,9 @@ sotto i voti: titolo in maiuscoletto rosso, righe in `--o-font-display` 18 px, a
 soglia `match.selection.freshnessFrom`). Unico juice: il distintivo `+1` (pixel, fondo oro) accanto
 all'abilità salita fa un pop di 300 ms con rimbalzo e la riga si accende d'oro, una volta per stop
 e solo nel primo posto in cui il blocco si vede; fermo con "riduci movimento".
+Insieme al lampo suona un "ding" ZzFX di circa 0,2 s (`core/sound.ts`), una volta per stop. Il
+suono ha il suo interruttore, "Suoni" in Impostazioni (acceso di serie), e non segue "riduci
+movimento". L'audio nasce solo alla prima riproduzione, dopo un tocco.
 
 Simboli degli stemmi: `packages/app/src/app/ui/symbols.ts`, uno per ogni id di
 `content/data/clubs.json`. Avatar "figurina" (stile scelto dall'utente in M14): mezzo busto vettoriale su fondo `--o-surface`,

@@ -4,6 +4,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   effect,
   inject,
   Injector,
@@ -43,6 +44,7 @@ import { GameService } from '../core/game.service';
 import { I18nService, TranslatePipe } from '../core/i18n.service';
 import { kickoffHintKey } from '../core/match-mode';
 import { formatMoney, formatRating, levelTone, ordinal } from '../core/text';
+import { SoundService } from '../core/sound.service';
 import { ToastService } from '../core/toast.service';
 import { clubInfo, playerAge, seasonWeekNumber } from '../core/views';
 import { CrestComponent } from '../ui/crest.component';
@@ -51,15 +53,15 @@ import { StatBarComponent } from '../ui/stat-bar.component';
 import { TabBarComponent } from '../ui/tab-bar.component';
 import { TipComponent } from '../ui/tip.component';
 
+/** Durata del lampo del +1: dentro la finestra di 150–300 ms del design system, più un margine. */
+const FLASH_MS = 400;
+
 /**
  * Home del capitolo, in tre strati: stato e avvisi in alto, la prossima partita da vivere, il
  * capitolo (obiettivo con premio, partite scelte, piano). Un solo pulsante in basso. La prima
  * pagina dello stop è un foglio che si apre sopra e si chiude; il piano, quando va scelto, prende
  * il posto di partita e capitolo.
  */
-/** Durata del lampo del +1: dentro la finestra di 150–300 ms del design system, più un margine. */
-const FLASH_MS = 400;
-
 @Component({
   selector: 'app-week',
   imports: [
@@ -1634,8 +1636,11 @@ export class WeekPage {
 
   private readonly frontClose = viewChild<ElementRef<HTMLButtonElement>>('frontClose');
   private readonly injector = inject(Injector);
+  private readonly sound = inject(SoundService);
+  private flashTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
+    inject(DestroyRef).onDestroy(() => clearTimeout(this.flashTimer));
     // Foglio aperto: lo sfondo è inerte e il focus va su Continua, così non si avanza senza leggerlo.
     effect(() => {
       if (!this.frontOpen()) return;
@@ -1651,7 +1656,10 @@ export class WeekPage {
       if (!onFront && !onHome) return;
       this.flashedFor = r;
       this.flashing.set(true);
-      setTimeout(() => this.flashing.set(false), FLASH_MS);
+      // Il suono va col lampo ma non dipende dal movimento ridotto: ha il suo interruttore.
+      this.sound.playOnce('point', r);
+      clearTimeout(this.flashTimer);
+      this.flashTimer = setTimeout(() => this.flashing.set(false), FLASH_MS);
     });
     // Il piano proposto è quello del capitolo (o l'ultimo ricordato), una volta per apertura.
     effect(() => {

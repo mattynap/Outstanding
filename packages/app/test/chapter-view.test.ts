@@ -210,6 +210,16 @@ describe('Dal piano', () => {
     expect(chapterHint(stretch({}), ctx)).toBeNull();
   });
 
+  it('suggerimento fresco: il plurale annidato regge una e più partite', () => {
+    const from = ctx.config.match.selection.freshnessFrom;
+    const one = chapterHint(stretch({ freshnessAtMatches: [from] }), ctx)!;
+    expect(translate(table, one.key, one.values)).toBe('Sei arrivato fresco alla partita.');
+    const many = chapterHint(stretch({ freshnessAtMatches: [from, from + 1, from + 9] }), ctx)!;
+    expect(translate(table, many.key, many.values)).toBe(
+      'Sei arrivato fresco a tutte le 3 partite.',
+    );
+  });
+
   it('planIssues con sponsor scaduto: la prima pagina ha la riga di avviso (planIssuesView)', () => {
     // Gli avvisi non stanno nel registro del tratto ma nel report dello stop: li legge planIssuesView.
     const rows = planIssuesView([

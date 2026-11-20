@@ -6,19 +6,27 @@ import { StorageService } from './storage.service';
 export type Theme = 'dark' | 'light';
 const THEME_KEY = 'outstanding.theme';
 const MATCH_MODE_KEY = 'outstanding.matchMode';
+const SOUND_KEY = 'outstanding.sound';
 
-/** Preferenze dell'interfaccia: tema, modalità di gioco e modalità partita predefinita. */
+/** Preferenze dell'interfaccia: tema, modalità di gioco, modalità partita predefinita e suoni. */
 @Injectable({ providedIn: 'root' })
 export class SettingsService {
   private readonly storage = inject(StorageService);
   readonly theme = signal<Theme>('dark');
   readonly playMode = signal<PlayMode>('animated');
   readonly matchMode = signal<MatchMode>('full');
+  readonly sound = signal(true);
 
   async load(): Promise<void> {
     const saved = await this.storage.get(THEME_KEY);
     this.apply(saved === 'light' ? 'light' : 'dark');
     this.matchMode.set(parseMatchMode(await this.storage.get(MATCH_MODE_KEY)));
+    this.sound.set((await this.storage.get(SOUND_KEY)) !== 'off');
+  }
+
+  async setSound(on: boolean): Promise<void> {
+    this.sound.set(on);
+    await this.storage.set(SOUND_KEY, on ? 'on' : 'off');
   }
 
   async setMatchMode(mode: MatchMode): Promise<void> {

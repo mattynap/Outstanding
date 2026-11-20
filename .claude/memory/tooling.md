@@ -21,5 +21,11 @@ metadata:
   coerente con "niente asset esterni" nelle scene, pesa pochi KB. **How to apply:** il pacchetto non ha
   tipi TypeScript: al primo uso serve una dichiarazione `.d.ts` locale; l'audio di Phaser resta spento
   (`noAudio`), ZzFX usa un suo AudioContext. Su iOS l'audio parte solo dopo un tocco dell'utente.
+- Skill di sviluppo giochi in `.claude/skills/` (2026-11-20): `phaser-2d-game`, `game-ui-frontend`,
+  `game-playtest` (OpenAI Game Studio, MIT) e `phaser-core`, `game-feel`, `game-ui-ux`, `audio-design`,
+  `rpg`, `roguelike`, `game-docs` (awesome-gamedev-agent-skills, Apache-2.0), ognuna con una sezione "Nel progetto Outstanding". **Why:** `phaser.io/llms.txt` non si
+  usa: è un indice commerciale di Phaser AE; per le API fanno fede i tipi in
+  `packages/app/node_modules/phaser/types/phaser.d.ts`. `game-docs/scripts/check_docs.py` usa solo la
+  libreria standard e non scrive file; si lancia con `python3 -I`.
 
 Collegato: [[repo-setup]]

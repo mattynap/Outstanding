@@ -93,6 +93,16 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
   `advanceToStop`; con piano del capitolo vuoto si ripete il piano ricordato prima di `skipWeekPlan`.
 - Tolto `match.moments.countByRole`, non più letto dal motore.
 
+### Interfaccia ibrida giornale e pixel (ondata 3)
+
+- Schede del giocatore: barre a 10 tacche, OVR in riquadro pixel, crescita a gradini, foglio
+  statistico su carta, Bacheca con coppa pixel e timbri, classifica e fine carriera in cifre pixel.
+- Mercato come lettere su carta intestata, condizioni in cifre pixel, stelle del procuratore pixel.
+- Finanze come scontrino settimanale, patrimonio e prezzi in cifre pixel, cuore pixel della vita
+  privata, intesa a tacche, vignette in cornice pixel.
+- Avvio con stemma del gioco e titolo in pixel; avatar sempre in cornice pixel; social, conferenza,
+  creazione, editor e barbiere senza angoli tondi (post, microfoni, interruttori, tavolozza).
+
 ### Interfaccia ibrida giornale e pixel (ondata 2)
 
 - Momenti chiave: ogni opzione dice cosa succede se va e se non va, con percentuale in pixel e

@@ -21,7 +21,7 @@ Indice delle note di progetto. Questa cartella è versionata in git.
 - [Sempre in italiano](feedback-lingua-italiano.md) — ogni risposta all utente va in italiano
 - [Cultura pop italiana](pop-culture-italiana.md) — obbligatoria: interviste storiche e tormentoni del calcio in pixel art, nomi storpiati, PEGI 12
 - [Scene pixel art](pixel-art-scene.md) — campo e sala stampa disegnati dal codice, approvati il 2026-11-17
-- [UI ibrida](ui-ibrido.md) — giornale + pixel: regole, modalità partita, guida corta; ondata 3 dopo prova iPhone
+- [UI ibrida](ui-ibrido.md) — giornale + pixel: regole, modalità partita, guida corta; ondate 1-3 fatte, dove stanno le cornici
 - [Lingua delle risposte](lingua-risposte.md) — rispondere sempre in italiano, anche nei report
 - [Regista della partita](regista-partita.md) — Parte A: decisioni stabili, taratura A10, numeri e tempo stimato
 - [Regista della stagione](regista-stagione.md) — Parte B: simulatore a capitoli, tempo misurato, guardrail fuori tolleranza

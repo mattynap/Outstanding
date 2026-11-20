@@ -2,14 +2,13 @@
 
 ## In corso
 <!-- max 3 -->
-- [ ] Push di ciro-dev: via dato, da lanciare a mano con ! (hook) (2026-11-20)
+- [ ] Brainstorming allenamenti, riposo e crescita del giocatore (attesa risposta utente) (2026-11-20)
 
 ## Prossimi
 <!-- l'ordine è la priorità -->
-- [ ] App su advanceToStop e obiettivo di capitolo visibile (annuncio ed esito) (2026-11-19)
-- [ ] Prova su iPhone del nuovo ritmo di partita e stagione (2026-11-19)
+- [ ] Prova su iPhone del nuovo ritmo e della home (rimandata dall'utente) (2026-11-19)
+- [ ] Home: timbro Raggiunto a capitolo aperto, bilancio del foglio, Simula, Partita predefinita, serate (2026-11-20)
 - [ ] Regista: parcheggiati — tablePosition dopo trasferimento a metà capitolo, test collisione offerta+notizia, obiettivi di classifica al 27% (2026-11-19)
-- [ ] Brainstorming settimana e allenamento leggibili (nucleo, approccio B punto 3) (2026-11-18)
 - [ ] Brainstorming collegamenti fra sistemi: vita, soldi, media e prestazioni (approccio B punto 4) (2026-11-18)
 - [ ] Decisioni sull'offerta: codice sfida, esportazione salvataggio gratis, nome "Contratto a vita" (founder/offer.md) (2026-11-18)
 - [ ] Prova 1 con 10–15 tester veri sulla parte gratuita (founder/launch.md) (2026-11-18)
@@ -31,6 +30,8 @@
 
 ## Fatti
 <!-- ultimi 10; i più vecchi restano in git -->
+- [x] Push di ciro-dev fino a eccba0f (2026-11-20)
+- [x] Home in tre strati, prima pagina a foglio, Bacheca degli obiettivi (2026-11-20)
 - [x] Skill di sviluppo giochi (10) e zzfx installati e committati; report unico su skill e tecnologie (2026-11-20)
 - [x] Regista partita e stagione: piano A0–B4 eseguito, B3b rapida, revisione finale (2026-11-19)
 - [x] Piano regista partita e stagione: builder check, ricerca meccaniche, review, approvazione (2026-11-18)
@@ -39,5 +40,3 @@
 - [x] Interfaccia ibrida ondata 2: plancia, pagella a voci, momenti con conseguenze, guida corta, notizie prima pagina (2026-11-17)
 - [x] Interfaccia ibrida ondata 1: strato pixel, icone, stemmi, barra a gradini (2026-11-17)
 - [x] Prima integrazione motore animato, Campo prova e installazione su iPhone 15 (2026-11-17)
-- [x] Dividere i 47 momenti per posizione nel gioco, gruppi P1–P8 (2026-11-17)
-- [x] Ricerca cultura pop del calcio italiano: interviste, conferenze, tormentoni (2026-11-17)

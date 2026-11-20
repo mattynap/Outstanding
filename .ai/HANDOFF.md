@@ -1,36 +1,37 @@
 # Handoff
 
 ## Stato
-Sessione su strumenti e skill per lo sviluppo del gioco (dalla ricerca "Skill e risorse per creare giochi").
-- Installate 10 skill in `.claude/skills/` (Game Studio MIT; awesome-gamedev Apache-2.0), ognuna con la
-  sezione "Nel progetto Outstanding". Commit `e122874`. Elenco ed esclusioni in `.claude/memory/tooling.md`.
-- `zzfx@1.4.0` nell'app, registrato in `ASSETS.md`, non ancora usato. Commit `6058a5a`, separato dagli hunk iOS.
-- Report unico (non versionato): `reports/Skill e tecnologie per Outstanding.md`; il doppione è stato rimosso.
-- Prima di questi, due commit di un'altra sessione sulla home (`d236087`, `5793c2d`) senza handoff proprio.
-- Verifica: typecheck ok, 558 test passati, 1 saltato. `pnpm lint` fallisce per Prettier su 127 file
-  preesistenti (`.superpowers/`, `docs/superpowers/`, `research_notes/`, `reports/`, `.ai/`).
+Due sessioni in parallelo oggi, tutto pubblicato su `origin/ciro-dev` (push fino a `eccba0f`).
+- Home a capitoli (`d236087`) e poi riordinata in tre strati, con la Bacheca (`5793c2d`): stato e avvisi compatti,
+  prossima partita, scheda capitolo con premio e striscia partite, una CTA fissa; prima pagina come foglio
+  chiudibile; piano a tutta scheda solo quando va scelto; Carriera → Bacheca (obiettivi, trofei, stagioni).
+  Motore: `GameState.goalRecords` facoltativo, scritto da `settleChapter`. Dettagli: `.claude/memory/app-design.md`, CHANGELOG.
+- Altra sessione: 10 skill di sviluppo giochi (`e122874`) e `zzfx` (`6058a5a`), vedi `.claude/memory/tooling.md`.
+- Verifica home: 70 test app, 419 motore, tsc, eslint, ng build ok; prova nel browser a 390 px; review Codex (P2 focus del foglio, corretto).
 
 ## Prossimo passo
-1. Push di `ciro-dev`: l'utente l'ha chiesto, ma il hook lo blocca; va lanciato a mano con `!`.
-2. Riprendere da `.ai/TASKS.md` (Prossimi). Le nuove voci dal report sono in coda.
+1. Brainstorming su allenamenti, riposo e crescita del giocatore (richiesta dell'utente: "modo nuovo e geniale").
+   Stato attuale già letto: 2 azioni per capitolo, crescita invisibile per seduta (`config/progression.json`).
+   Domanda aperta all'utente: cosa vuol dire per lui "sentire" la crescita (momento, gioco di riferimento, mancanza).
+2. Installazione su iPhone: rimandata dall'utente ("non installare al momento").
 
 ## Blocchi e domande aperte
-- Push in attesa del lancio manuale dell'utente.
-- Skill `founder-*` non versionate (il `.gitignore` in sospeso tiene `founder/` solo locale): confermare.
-- `pnpm lint` rosso su file non di questa sessione: decidere se formattarli o escluderli da Prettier.
-- Ancora da confermare (regista): scarti su 5000 carriere dopo B3b (assist −10,1%, trofei −11,1% vs A0), tempo al bordo basso (20,1 min).
-- `docs/design/README.md` è indietro su CLAUDE.md (carriera 2–4 ore e partita a blocchi).
-- Non committare: modifiche iOS (package.json, pnpm-lock, .gitignore, .prettierignore, README, eslint,
-  make-art.mjs, CHANGELOG), `packages/app/ios/`, report e research_notes, .DS_Store.
+- Risposta dell'utente sulla domanda del punto 1.
+- Home: timbro "Raggiunto" prima della fine del capitolo; bilancio del foglio conta solo le settimane dello stop
+  (dopo una vittoria mostra 0 V 0 N 0 P).
+- Restano: "Simula" nella pagina partita, opzione "Partita predefinita" obsoleta, serate non raggiungibili dal piano.
+- `pnpm lint` rosso per Prettier su 127 file preesistenti; versionamento delle `founder-*` da confermare.
+- Regista da confermare: scarti su 5000 carriere dopo B3b, tempo al bordo basso (20,1 min).
+- Non committare: modifiche iOS (.gitignore, .prettierignore, README, eslint, make-art.mjs, hunk iOS del CHANGELOG),
+  `packages/app/ios/`, report e research_notes, `docs/superpowers/*ios*`, .DS_Store.
 
 ## File toccati
-- `.claude/skills/{phaser-2d-game,game-ui-frontend,game-playtest,phaser-core,game-feel,rpg,roguelike,game-ui-ux,audio-design,game-docs}/`
-- `.claude/memory/tooling.md`, `ASSETS.md`, `packages/app/package.json`, `pnpm-lock.yaml`
-- `reports/Skill e tecnologie per Outstanding.md` (non versionato)
+- `packages/app/src/app/pages/{week,career}.page.ts`, `packages/app/src/app/core/{chapter-view,game.service,unlocks}.ts`, `packages/app/test/`
+- `packages/engine/src/{types.ts,season/goals.ts}`, `packages/engine/test/chapterGoals.test.ts`, `packages/content/data/i18n/it.ui.json`
+- `.claude/skills/`, `.claude/memory/{app-design,tooling}.md`, `ASSETS.md`, `CHANGELOG.md`
 
 ## Skill consigliate
-- Scene: `phaser-2d-game`, `phaser-core`, `game-feel`; UI: `game-ui-frontend`, `game-ui-ux`, `frontend-design`.
-- Bilanciamento: `rpg`; QA: `game-playtest`; suoni: `audio-design`; sintesi di design: `game-docs`.
+- `brainstorming` (allenamenti), poi `rpg` per i numeri di crescita; `frontend-design` per la UI.
 
 ## Firma
-Claude Code, Opus 5.5, 2026-11-20. Deleghe Codex oggi: 15 (7 giorni: standard 59, leggero 19, forte 7).
+Claude Code, Opus 5.5, 2026-11-20 03:05. Deleghe Codex oggi: 15 (7 giorni: standard 59, leggero 19, forte 7).

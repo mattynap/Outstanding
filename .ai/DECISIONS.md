@@ -41,3 +41,8 @@ Decisioni con il cliente o commerciali: proporle per il registro di base-azienda
 - Decisione: 10 skill esterne in `.claude/skills/` (Game Studio: phaser-2d-game, game-ui-frontend, game-playtest; awesome-gamedev: phaser-core, game-feel, rpg, roguelike, game-ui-ux, audio-design, game-docs), testo originale invariato più una sezione di progetto che prevale; versionate con LICENSE e NOTICE. Suoni con `zzfx` generati dal codice; audio di Phaser spento.
 - Perché: coprono scene, UI, QA e bilanciamento senza cambiare stack; zzfx mantiene "nessun asset esterno". Screening e review con Codex.
 - Alternative scartate: `phaser.io/llms.txt` (indice commerciale di Phaser AE; fanno fede i tipi locali), `web-game-foundations`, save-systems, dialogue-systems, visual-novel (esempi Godot/Unity su sistemi già presenti), file audio esterni.
+
+## 2026-11-20 — Home in tre strati e Bacheca
+- Decisione: home con stato e avvisi compatti, prossima partita, scheda capitolo e una sola CTA fissa; prima pagina come foglio chiuso con `frontSeen` (solo in memoria); premi degli obiettivi automatici e visibili prima; storico in `GameState.goalRecords` facoltativo, senza cambiare `saveVersion`; Carriera rinominata Bacheca.
+- Perché: l'utente trovava la home confusionaria e voleva una sezione premi; opzione A scelta dall'utente. Campo facoltativo come i precedenti `finance?` ed `edits?`.
+- Alternative scartate: pulsante "ritira" per i premi; schermata premi separata; prima pagina sempre in cima alla home.

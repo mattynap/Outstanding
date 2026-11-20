@@ -8,9 +8,11 @@ Numeri finali (ciclo a capitoli, prudente, 1000 carriere): gol 54,2, assist 57,8
 leggende 2,5%; 20,1 min a stagione, 7,0 h a carriera. Criterio fra strategie (ciclo settimane) rispettato.
 
 ## Prossimo passo
-1. L'utente decide sul push dei commit locali di `ciro-dev` (non pushati).
-2. Portare l'app su `advanceToStop` (oggi usa `fastForward`) e mostrare annuncio ed esito dell'obiettivo di capitolo.
-3. Prova su iPhone del nuovo ritmo (partite scelte per capitolo, rapida con 1–2 passi visibili).
+Il regista è chiuso; la prossima sessione riparte dagli altri lavori in `.ai/TASKS.md` (Prossimi, in ordine).
+1. Chiedere all'utente il push di `ciro-dev` (82 commit locali).
+2. App su `advanceToStop` con annuncio ed esito dell'obiettivo di capitolo, poi prova su iPhone.
+3. Brainstorming settimana e allenamento leggibili (approccio B punto 3), poi collegamenti fra sistemi (punto 4).
+4. Decisioni sull'offerta in `founder/offer.md` e prova con 10–15 tester (`founder/launch.md`).
 
 ## Blocchi e domande aperte
 - Push non fatto: serve il via dell'utente.
@@ -28,4 +30,4 @@ leggende 2,5%; 20,1 min a stagione, 7,0 h a carriera. Criterio fra strategie (ci
 - frontend-design (app), verification-before-completion.
 
 ## Firma
-Claude Code, Opus 5.5, 2026-11-19 sera. Deleghe Codex oggi: 34 (7 giorni: standard 51, leggero 12, forte 7).
+Claude Code, Opus 5.5, 2026-11-20. Deleghe Codex oggi: 0 (sessione solo di chiusura; 7 giorni: standard 51, leggero 12, forte 7).

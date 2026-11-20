@@ -14,6 +14,7 @@ import {
   newCareer,
   playerFixture,
   playMatch,
+  planWeek,
   resolveEvent,
   serialize,
   type GameContext,
@@ -256,5 +257,37 @@ describe('eventi del gioco', () => {
       }
     }
     expect(seen.size).toBeGreaterThan(10);
+  });
+});
+
+describe('freschezza degli eventi nella somma di fine settimana', () => {
+  it('freschezza 5, evento −8, Equilibrio +22: un solo clamp, 19', () => {
+    const c = testContext([
+      ev({
+        id: 'stanchezza',
+        choices: [
+          {
+            textKey: 'x.c1',
+            effects: [{ type: 'stat', path: 'condition.energy', delta: -8 }],
+          },
+        ],
+      }),
+    ]);
+    let s = start();
+    while (playerFixture(s)) s = advanceWeek(s).state;
+    s = { ...s, player: { ...s.player, condition: { ...s.player.condition, energy: 5 } } };
+    s = planWeek(s, { load: 'balanced' }, c).state;
+    s = drawWeekEvents(s, c).state;
+    const resolved = resolveEvent(s, 'stanchezza', 0, c);
+    // A metà settimana la freschezza non si tocca: il delta va nella somma.
+    expect(resolved.state.player.condition.energy).toBe(5);
+    expect(resolved.report.changes).toContainEqual({
+      kind: 'stat',
+      path: 'condition.energy',
+      before: 5,
+      after: -3,
+    });
+    expect(ctx.config.progression.loads.balanced.freshness).toBe(22);
+    expect(advanceWeek(resolved.state, c).state.player.condition.energy).toBe(19);
   });
 });

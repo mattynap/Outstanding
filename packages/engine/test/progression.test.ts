@@ -25,7 +25,7 @@ import { baseOptions } from './fixtures';
 
 const ctx = defaultContext;
 const start = () => newCareer(baseOptions, 77);
-const noLoad = { rest: 0, balanced: 0, push: 0 };
+const noLoad = { rest: 0, balanced: 0, push: 0, recovery: 0 };
 const ovr = (p: Player) => computeOvr(p.skills, p.role, ctx.config.ratings);
 
 describe('testi e riferimenti', () => {
@@ -265,6 +265,17 @@ describe('crescita continua, focus e declino pesato', () => {
       9,
     );
     expect(d({})).toBeCloseTo(d({ balanced: 5 }), 9);
+  });
+
+  it('le settimane di recupero pesano nel declino col loro fattore', () => {
+    const p: Player = { ...att(), persona: { ...att().persona, discipline: 50 } };
+    const d = (w: Partial<typeof noLoad>) =>
+      p.skills.pace - applyDecline(p, 33, { ...noLoad, ...w }, ctx).skills.pace;
+    const L = ctx.config.progression.loads;
+    // 10 settimane di spinta e 30 da infortunato: ≈0,93 del declino pieno, non 0,7.
+    const factor = (10 * L.push.decline + 30 * L.recovery.decline) / 40;
+    expect(factor).toBeCloseTo(0.925, 9);
+    expect(d({ push: 10, recovery: 30 })).toBeCloseTo(factor * d({ balanced: 1 }), 9);
   });
 
   it('OVR mostrato = floor', () => {

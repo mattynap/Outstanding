@@ -2,7 +2,7 @@ import type { ProgressionConfig } from '@outstanding/config';
 import type { GameContext } from '../context';
 import type { Rng } from '../rng';
 import { ageAt } from '../time';
-import type { Load, Player, Skill, Skills } from '../types';
+import type { EffectiveLoad, Load, Player, Skill, Skills } from '../types';
 import { clamp } from '../util';
 import { growthFreshnessFactor, injuryFreshnessFactor } from './freshness';
 import { computeOvr, SKILLS } from './ratings';
@@ -114,20 +114,16 @@ export function applyLoadGrowth(
 export function applyDecline(
   player: Player,
   age: number,
-  loadWeeks: Record<Load, number>,
+  loadWeeks: Record<EffectiveLoad, number>,
   ctx: GameContext,
 ): Player {
   const d = ctx.config.progression.decline;
   if (age < d.startAge) return player;
   const loads = ctx.config.progression.loads;
-  const weeks = loadWeeks.rest + loadWeeks.balanced + loadWeeks.push;
+  const entries = Object.entries(loadWeeks) as [EffectiveLoad, number][];
+  const weeks = entries.reduce((sum, [, n]) => sum + n, 0);
   const loadFactor =
-    weeks > 0
-      ? (loadWeeks.rest * loads.rest.decline +
-          loadWeeks.balanced * loads.balanced.decline +
-          loadWeeks.push * loads.push.decline) /
-        weeks
-      : 1;
+    weeks > 0 ? entries.reduce((sum, [l, n]) => sum + n * loads[l].decline, 0) / weeks : 1;
   const base = (d.basePerSeason + d.extraPerYear * (age - d.startAge)) * loadFactor;
   const mitigation = 1 - (d.disciplineMitigation * player.persona.discipline) / 100;
   const skills = { ...player.skills };

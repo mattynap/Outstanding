@@ -271,7 +271,7 @@ export function endSeason(
     },
     rngState: rng.getState(),
     nextId: ids.next,
-    seasonLoadWeeks: { rest: 0, balanced: 0, push: 0 },
+    seasonLoadWeeks: { rest: 0, balanced: 0, push: 0, recovery: 0 },
   };
 
   // Contratti scaduti, prestiti finiti, ritiro e mercato della nuova stagione.

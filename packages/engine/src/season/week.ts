@@ -135,10 +135,10 @@ export function advanceWeek(
   );
   const { player, finance } = applyWeeklyFinances(closed, state.world.npcs, ctx);
   const { weekInProgress: _closed, ...settled } = state;
-  const seasonLoadWeeks =
-    plan.load === 'recovery'
-      ? state.seasonLoadWeeks
-      : { ...state.seasonLoadWeeks, [plan.load]: state.seasonLoadWeeks[plan.load] + 1 };
+  const seasonLoadWeeks = {
+    ...state.seasonLoadWeeks,
+    [plan.load]: state.seasonLoadWeeks[plan.load] + 1,
+  };
   const wealthStep = applyWeeklyWealth({ ...settled, player, seasonLoadWeeks }, rng, ctx);
   const privateStep = applyWeeklyPrivate(wealthStep.state, rng, ctx, lifeMods);
   const mediaStep = applyWeeklyMedia({ ...privateStep.state, calendar }, privateStep.week, ctx);

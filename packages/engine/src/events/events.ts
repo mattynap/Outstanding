@@ -19,6 +19,7 @@ import {
 import { defaultContext, type GameContext } from '../context';
 import { computeOvr } from '../player/ratings';
 import { Rng } from '../rng';
+import { addWeekFreshness } from '../season/load';
 import { getTransferWindow } from '../season/week';
 import { ageAt, weekOfSeason } from '../time';
 import type { GameState, PendingEvent, TransferRequest } from '../types';
@@ -252,6 +253,12 @@ function applyEffects(
   const limits = ctx.config.events.statLimits;
   const stat = (path: StatPath, delta: number) => {
     const before = getStat(s.player, path);
+    if (path === 'condition.energy') {
+      // La freschezza si limita una volta sola a fine settimana (spec §5.4b): l'evento si somma al carico.
+      s = addWeekFreshness(s, delta);
+      changes.push({ kind: 'stat', path, before, after: before + delta });
+      return;
+    }
     let value = before + delta;
     // Anche le abilità guadagnate con gli eventi rispettano il potenziale nascosto.
     if (path.startsWith('skills.') && delta > 0) {

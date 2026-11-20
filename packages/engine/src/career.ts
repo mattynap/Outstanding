@@ -126,7 +126,7 @@ export function newCareer(
     media: createMedia(),
     chapter: blankChapter('preseason'),
     chapterPlan: null,
-    seasonLoadWeeks: { rest: 0, balanced: 0, push: 0 },
+    seasonLoadWeeks: { rest: 0, balanced: 0, push: 0, recovery: 0 },
   };
   return { ...base, chapter: createChapter(base, ctx) };
 }

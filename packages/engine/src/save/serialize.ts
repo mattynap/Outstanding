@@ -121,12 +121,13 @@ export function migratePlanV3(plan: unknown): WeekPlan | null {
   const items = plan as { actionId: string; focus?: Skill }[];
   if (items.length === 0) return null;
   const ids = items.map((c) => c.actionId);
-  const training = items.find((c) => c.actionId.startsWith('train_'));
+  const training = ids.some((id) => id.startsWith('train_'));
   const onlyRest = ids.some((id) => id === 'rest' || id === 'physio') && !training;
   const out: WeekPlan = {
-    load: training?.actionId === 'train_intense' ? 'push' : onlyRest ? 'rest' : 'balanced',
+    load: ids.includes('train_intense') ? 'push' : onlyRest ? 'rest' : 'balanced',
   };
-  if (training?.focus) out.focus = training.focus;
+  const focus = items.find((c) => c.actionId === 'train_focus' && c.focus)?.focus;
+  if (focus) out.focus = focus;
   const life = ids.map((id) => V3_LIFE[id]).find((l) => l !== undefined);
   if (life) out.life = life;
   return out;
@@ -182,7 +183,7 @@ export const migrations: Record<number, Migration> = {
       saveVersion: 4,
       player: { ...player, condition, persona: { ...persona, disciplineBase: base } },
       chapterPlan,
-      seasonLoadWeeks: { rest: 0, balanced: 0, push: 0 },
+      seasonLoadWeeks: { rest: 0, balanced: 0, push: 0, recovery: 0 },
     };
     if (lastPlan) next['lastPlan'] = lastPlan;
     if (r['plannedWeek'] === r['week']) {

@@ -222,4 +222,13 @@ describe('weeks and season end', () => {
     expect(a.seasonLoadWeeks.rest + a.seasonLoadWeeks.balanced).toBe(0);
     expect(a.lastPlan).toEqual(plan);
   });
+
+  it('da infortunato la settimana conta come recupero nelle settimane di carico', () => {
+    let s = start;
+    while (playerFixture(s)) s = advanceWeek(s).state;
+    s = { ...s, player: { ...s.player, injury: { type: 'stiramento', weeksLeft: 3 } } };
+    const next = advanceWeek(planWeek(s, { load: 'push' }).state).state;
+    expect(next.seasonLoadWeeks.recovery).toBe(s.seasonLoadWeeks.recovery + 1);
+    expect(next.seasonLoadWeeks.push).toBe(s.seasonLoadWeeks.push);
+  });
 });

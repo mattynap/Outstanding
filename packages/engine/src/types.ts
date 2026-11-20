@@ -598,8 +598,8 @@ export interface GameState {
   chapter: ChapterState;
   /** Piano valido per tutto il capitolo (v4); `null` finché non è scelto. */
   chapterPlan: WeekPlan | null;
-  /** Settimane della stagione passate a ogni carico (pesano il declino di fine stagione). */
-  seasonLoadWeeks: Record<Load, number>;
+  /** Settimane della stagione passate a ogni carico, recupero compreso (pesano il declino). */
+  seasonLoadWeeks: Record<EffectiveLoad, number>;
   /**
    * Settimana in corso: carico e vita applicati e freschezza ancora da sommare (carico, vita,
    * partite). La chiude `advanceWeek` con un solo clamp al tetto del carico; assente fra una

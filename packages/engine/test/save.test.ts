@@ -314,7 +314,7 @@ describe('migrazione dei salvataggi v3 -> v4', () => {
     expect(out.player.condition).not.toHaveProperty('injuryRisk');
     expect(out.player.persona.disciplineBase).toBe(discMean());
     expect(out.player.persona.discipline).toBe(30);
-    expect(out.seasonLoadWeeks).toEqual({ rest: 0, balanced: 0, push: 0 });
+    expect(out.seasonLoadWeeks).toEqual({ rest: 0, balanced: 0, push: 0, recovery: 0 });
     // Sopra la media la base resta il valore attuale.
     const high = asV3(s);
     high['player']['persona']['discipline'] = 80;

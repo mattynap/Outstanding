@@ -2,6 +2,7 @@ import type { Interest, PrivateActionConfig, PrivateConfig } from '@outstanding/
 import type { EventTrigger } from '@outstanding/content';
 import { defaultContext, type GameContext } from '../context';
 import { Rng } from '../rng';
+import { addWeekFreshness } from '../season/load';
 import { playerFixtures, playerFixture } from '../season/week';
 import { ageAt } from '../time';
 import type {
@@ -464,8 +465,11 @@ export function doPrivateAction(
   }
 
   if (a.affinity) life = shiftAffinity(life, a.affinity);
-  player = adjust(player, { ...a.effects, cash: -cost });
+  const { energy, ...effects } = a.effects ?? {};
+  player = adjust(player, { ...effects, cash: -cost });
   s = { ...withLife(s, life, player), rngState: rng.getState() };
+  // La freschezza si limita una volta sola a fine settimana (spec §5.4b).
+  if (energy) s = addWeekFreshness(s, energy);
   return { state: s, report: { actionId, outcome, cost, ...(name ? { name } : {}) } };
 }
 

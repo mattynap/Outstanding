@@ -29,6 +29,14 @@
       "expected": { "load": "balanced", "life": "sponsor" }
     },
     {
+      "plan": [{ "actionId": "train_normal" }, { "actionId": "train_intense" }],
+      "expected": { "load": "push" }
+    },
+    {
+      "plan": [{ "actionId": "train_normal" }, { "actionId": "train_focus", "focus": "passing" }],
+      "expected": { "load": "balanced", "focus": "passing" }
+    },
+    {
       "plan": [],
       "expected": null
     }

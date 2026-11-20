@@ -155,6 +155,15 @@ describe('freschezza, carico e vita', () => {
     expect(JSON.stringify(defaultContent.events)).not.toContain('injuryRisk');
   });
 
+  it('la scheda della Serata e della Spinta scrive tutti i costi', () => {
+    const t = defaultContent.i18n.it;
+    const party = t['week.life.party.desc']!;
+    for (const cost of ['−1', '−2', '5%', '−3', '+2', '−6', '10%', 'multa', 'partita']) {
+      expect(party, cost).toContain(cost);
+    }
+    expect(t['week.load.push.desc']).toContain('0,8%');
+  });
+
   it('esistono i testi di carico e vita con nome e descrizione', () => {
     const t = defaultContent.i18n.it;
     const keys = [

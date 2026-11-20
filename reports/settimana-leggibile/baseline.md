@@ -16,6 +16,7 @@ JSON grezzi (riepilogo, senza `--details`): `sim-cautious-normal-42-5000.json`, 
 | Metrica | cautious | contextual |
 |---|---|---|
 | Arrivano in massima serie | 57,2% | 57,1% |
+| Età d'esordio in massima serie | 25,9 | 25,8 |
 | OVR massimo medio | 67,8 | 67,8 |
 | Presenze medie | 637,4 | 638,9 |
 | Gol medi | 49,4 | 52,1 |
@@ -31,7 +32,7 @@ Altri riferimenti utili: età di ritiro 36,8 (entrambe); media voto 6,27 / 6,32;
 - % massima serie, OVR massimo medio, presenze: entro ±10% del valore di riferimento di questa tabella, per ciascuna strategia.
 - Leggende: tra 1% e 5%.
 
-Intervalli derivati: % massima serie 51,5–62,9 (cautious 57,2) ; OVR massimo 61,0–74,6; presenze cautious 573,7–701,1, contextual 575,0–702,8.
+Intervalli derivati: % massima serie cautious 51,5–62,9 (57,2), contextual 51,4–62,8 (57,1); OVR massimo 61,0–74,6; presenze cautious 573,7–701,1, contextual 575,0–702,8.
 
 Entrambe le strategie sono oggi nell'intervallo leggende 1–5%.
 

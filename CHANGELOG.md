@@ -5,6 +5,18 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
 
 ## [Non rilasciato]
 
+### App – Home a capitoli
+
+- La home segue il ciclo a capitoli: "Vai al prossimo stop" fa scorrere le settimane e si ferma per
+  le partite da vivere, le notizie, le offerte e il capitolo nuovo.
+- Prima pagina dopo ogni stop: fino a 3 titoli, bilancio delle settimane trascorse e voti delle
+  partite simulate.
+- Scheda dell'obiettivo del capitolo con tacche o progresso e timbro "Raggiunto".
+- Partite scelte dal regista in elenco, con modalità completa o rapida; la partita parte nella
+  modalità scelta.
+- Piano del capitolo al posto del piano settimanale: obbligatorio a inizio stagione e a ogni
+  capitolo nuovo (anche dopo un riavvio), modificabile agli stop.
+
 ### Regista della partita (Parte A)
 
 - Regista (`match/director.ts`): decide quando fermare la partita e quale momento proporre in base a

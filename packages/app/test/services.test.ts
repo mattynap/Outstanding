@@ -97,7 +97,6 @@ describe('partita simulata dalla plancia', () => {
   });
 
   it('la scheda partita indica il passo che manca prima di giocare', () => {
-    expect(kickoffHintKey('plan')).toBe('ui.week.matchAfterPlan');
     expect(kickoffHintKey('events')).toBe('ui.week.matchAfterNews');
     expect(kickoffHintKey('match')).toBeNull();
   });

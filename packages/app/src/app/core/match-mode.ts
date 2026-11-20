@@ -19,7 +19,6 @@ export function autoSimulate(modeParam: string | null, step: NextStep | null): b
 
 /** Riga della scheda partita quando non si può ancora giocare: cosa manca prima del fischio. */
 export function kickoffHintKey(step: NextStep | null): string | null {
-  if (step === 'plan') return 'ui.week.matchAfterPlan';
   if (step === 'events') return 'ui.week.matchAfterNews';
   return null;
 }

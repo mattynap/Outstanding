@@ -20,4 +20,18 @@ metadata:
   fallisce se una chiave usata nel codice non esiste.
 - Prova nel browser: script Playwright in Python (installato sulla macchina) contro `ng serve`.
 
-Collegato: [[design-preview]], [[progress]]
+## Home a capitoli (2026-11-20)
+
+- La home resta sulla rotta `/settimana` ma segue il ciclo a capitoli: `advanceToStop`,
+  `setChapterPlan`, partite scelte in `chapter.picks`. Logica pura in `core/chapter-view.ts`
+  (`nextStep`, `needsPlan`, `goalView`, `chapterPicks`), testata in `test/chapter-view.test.ts`.
+- Il piano si sceglie agli stop; è obbligatorio a inizio stagione e a ogni capitolo nuovo.
+  L'ultimo stop (`GameService.lastStop`) vive solo in memoria: dopo un riavvio l'apertura del
+  capitolo si riconosce dallo stato (prima settimana del capitolo non pianificata).
+- Le serate (`kind: party`) restano fuori dal piano: `repeatPlan` del motore le scarta.
+- Si gioca una partita scelta solo a settimana preparata (`plannedWeek` ed `eventsWeek` uguali a
+  `week`): allo stop `chapterEnd` la settimana è intatta e si va prima "avanti" con il piano nuovo.
+- La partita parte nella modalità del regista (`pick.mode`). Restano aperti: l'opzione
+  "Partita predefinita" nelle impostazioni e il pulsante "Simula" della pagina partita.
+
+Collegato: [[design-preview]], [[progress]], [[regista-stagione]]

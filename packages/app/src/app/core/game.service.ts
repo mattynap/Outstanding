@@ -2,7 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import {
   acceptOffer,
   acceptSponsor,
-  advanceWeek,
+  advanceToStop,
   beginMatch,
   buyInstrument,
   buyProperty,
@@ -16,7 +16,6 @@ import {
   takePersonalLoan,
   withdrawCash,
   breakUp,
-  fastForward,
   answerInterview,
   answerPress,
   publishPost,
@@ -28,7 +27,6 @@ import {
   computeOvr,
   decideMoment,
   defaultContext,
-  drawWeekEvents,
   editClub,
   editPerson,
   endSeason,
@@ -36,11 +34,9 @@ import {
   getPendingEvents,
   getPendingMoment,
   hireAgent,
-  isSeasonOver,
   negotiateOffer,
   newCareer,
-  planWeek,
-  playerFixture,
+  setChapterPlan,
   pruneEdits,
   rejectOffer,
   rejectSponsor,
@@ -52,16 +48,13 @@ import {
   setCompetitionName,
   setLifestyle,
   simulateMatch,
-  skipToNextMatch,
   type Appearance,
   type ClubLook,
   type EventReport,
   type BreakupReport,
   type FastForwardReport,
-  type FastForwardTarget,
   type GameState,
   type Interest,
-  type PartyReport,
   type PostReport,
   type PressReport,
   type Tone,
@@ -74,7 +67,6 @@ import {
   type PersonName,
   type SeasonReport,
   type WeekChoice,
-  type WeekReport,
 } from '@outstanding/engine';
 import { trophyKey } from './career-view';
 import { exportEdits, importEdits, type EditsFile, type ImportResult } from './editor/edits-file';
@@ -84,11 +76,10 @@ import { SlotStore, type SlotView } from './saves/slots';
 import { UnlocksService } from './unlocks.service';
 import { PlatformService } from './services/platform.service';
 import { TutorialService } from './tutorial.service';
+import { currentPick, nextStep, type NextStep } from './chapter-view';
 import { clubInfo } from './views';
 
-/** Cosa deve fare il giocatore adesso: guida il pulsante principale della settimana. */
-export type NextStep =
-  'retired' | 'seasonOver' | 'plan' | 'events' | 'matchInProgress' | 'match' | 'advance';
+export type { NextStep } from './chapter-view';
 
 /**
  * Stato della partita in corso e unico punto di contatto tra le schermate e il motore.
@@ -118,7 +109,8 @@ export class GameService {
   readonly hasGame = computed(() => this._state() !== null);
 
   /** Ultimi resoconti, per le schermate di riepilogo. */
-  readonly lastWeek = signal<WeekReport | null>(null);
+  /** Resoconto dell'ultimo "vai avanti": stop, partite simulate e titoli di prima pagina. */
+  readonly lastStop = signal<FastForwardReport | null>(null);
   readonly lastSeason = signal<SeasonReport | null>(null);
   readonly lastMatch = signal<MatchReport | null>(null);
   readonly lastEvent = signal<EventReport | null>(null);
@@ -130,14 +122,7 @@ export class GameService {
 
   readonly nextStep = computed<NextStep | null>(() => {
     const s = this._state();
-    if (!s) return null;
-    if (s.retired) return 'retired';
-    if (s.currentMatch) return 'matchInProgress';
-    if (isSeasonOver(s, this.ctx)) return 'seasonOver';
-    if (s.plannedWeek !== s.week) return 'plan';
-    if (s.pendingEvents.length > 0) return 'events';
-    if (playerFixture(s)) return 'match';
-    return 'advance';
+    return s ? nextStep(s, this.ctx) : null;
   });
 
   /** All'avvio: sposta il vecchio salvataggio unico negli slot e riapre l'ultima carriera. */
@@ -211,35 +196,15 @@ export class GameService {
 
   // --- Settimana ---------------------------------------------------------------------------
 
-  /** Conferma il piano e pesca le notizie della settimana: quante notizie ci sono e com'è andata la serata. */
-  async plan(choices: WeekChoice[]): Promise<{ news: number; party?: PartyReport }> {
-    const planned = planWeek(this.require(), choices, this.ctx);
-    const drawn = drawWeekEvents(planned.state, this.ctx);
-    await this.commit(drawn.state);
-    return {
-      news: drawn.events.length,
-      ...(planned.report.party ? { party: planned.report.party } : {}),
-    };
+  /** Imposta il piano del capitolo: le settimane simulate lo ripetono. */
+  async setPlan(choices: WeekChoice[]): Promise<void> {
+    await this.commit(setChapterPlan(this.require(), choices, this.ctx));
   }
 
-  /** Salta le settimane senza partite con il piano automatico. */
-  async skipToMatch(): Promise<number> {
-    const { state, weeksSkipped } = skipToNextMatch(this.require(), this.ctx);
-    await this.commit(state);
-    return weeksSkipped;
-  }
-
-  /** Avanti veloce: settimane automatiche fino alla prossima partita importante o a fine stagione. */
-  async fastForward(target: FastForwardTarget): Promise<FastForwardReport> {
-    const { state, report } = fastForward(this.require(), target, this.ctx);
-    await this.commit(state);
-    this.trackRetirement(state);
-    return report;
-  }
-
-  async advance(): Promise<WeekReport> {
-    const { state, report } = advanceWeek(this.require(), this.ctx);
-    this.lastWeek.set(report);
+  /** Vai avanti fino al prossimo stop: partita scelta, notizia, offerta, fine capitolo o stagione. */
+  async advanceToStop(): Promise<FastForwardReport> {
+    const { state, report } = advanceToStop(this.require(), this.ctx);
+    this.lastStop.set(report);
     await this.commit(state);
     this.trackRetirement(state);
     return report;
@@ -248,6 +213,7 @@ export class GameService {
   async closeSeason(): Promise<SeasonReport> {
     const { state, seasonReport } = endSeason(this.require(), this.ctx);
     this.lastSeason.set(seasonReport);
+    this.lastStop.set(null);
     // Le modifiche di calciatori ritirati non servono più.
     await this.commit(pruneEdits(state));
     const r = seasonReport.record;
@@ -284,7 +250,8 @@ export class GameService {
       const moment = getPendingMoment(s, this.ctx);
       if (moment) return { kind: 'moment', moment };
     }
-    const { state, step } = beginMatch(s, this.ctx);
+    // La modalità la decide il regista del capitolo (completa o rapida).
+    const { state, step } = beginMatch(s, this.ctx, { mode: currentPick(s)?.mode ?? 'full' });
     return this.afterStep(state, step);
   }
 
@@ -541,7 +508,7 @@ export class GameService {
   }
 
   private resetReports(): void {
-    this.lastWeek.set(null);
+    this.lastStop.set(null);
     this.lastSeason.set(null);
     this.lastMatch.set(null);
     this.lastEvent.set(null);

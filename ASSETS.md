@@ -20,3 +20,9 @@ Campo, folla, personaggi, palla e oggetti di scena sono disegnati proceduralment
 `packages/app/src/app/scenes/create-stage.ts`. Nessun filmato, sprite, volto o suono esterno.
 Il renderer usa `phaser@4.2.1` (MIT, licenza inclusa nel pacchetto npm;
 fonte: https://github.com/phaserjs/phaser). Il codice di libreria è separato dagli asset originali.
+
+## Suoni
+
+Libreria `zzfx@1.4.0` (Frank Force, MIT, licenza inclusa nel pacchetto npm;
+fonte: https://github.com/KilledByAPixel/ZzFX). Genera gli effetti sonori da parametri numerici
+nel codice: nessun file audio esterno. Installata il 2026-11-20, non ancora usata nelle scene.

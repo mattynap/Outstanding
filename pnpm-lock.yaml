@@ -116,6 +116,9 @@ importers:
       zone.js:
         specifier: ^0.16.3
         version: 0.16.3
+      zzfx:
+        specifier: 1.4.0
+        version: 1.4.0
     devDependencies:
       '@angular/build':
         specifier: ^22.2.7
@@ -3467,6 +3470,9 @@ packages:
   zone.js@0.16.3:
     resolution: {integrity: sha512-ihXL9+vhYyEhXz4TDNpHeAOZN9FVrbog0Il64OIEI28UP/n5AaI6gsccRuOHBfx+206agzyoK527bYIO0Foy6A==}
 
+  zzfx@1.4.0:
+    resolution: {integrity: sha512-yV/7JnIBPThWh/ZLVZLlmadms5bHQQeoWKKA+DafX4554FHypsop1BQrDHhsf2xxXweUmwjWrnpiB42uBGyGlQ==}
+
 snapshots:
 
   '@ampproject/remapping@2.3.0':
@@ -6476,3 +6482,5 @@ snapshots:
   zod@4.6.7: {}
 
   zone.js@0.16.3: {}
+
+  zzfx@1.4.0: {}

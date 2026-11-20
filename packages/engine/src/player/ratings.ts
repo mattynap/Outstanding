@@ -23,5 +23,6 @@ export function computeOvr(skills: Skills, role: Role, ratings: RatingsConfig): 
     total += skills[s] * weights[s];
     weightSum += weights[s];
   }
-  return Math.floor(total / weightSum);
+  // epsilon: tutte le abilità a 3 danno 2,9999999999999996
+  return Math.floor(total / weightSum + 1e-9);
 }

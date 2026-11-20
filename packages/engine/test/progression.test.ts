@@ -6,6 +6,7 @@ import {
   applyGrowth,
   applyLoadGrowth,
   computeOvr,
+  SKILLS,
   defaultContext,
   deserialize,
   endSeason,
@@ -239,14 +240,16 @@ describe('crescita continua, focus e declino pesato', () => {
     expect(total).toBeGreaterThan(0);
   });
 
-  it('dieci settimane una alla volta = sommate', () => {
-    const one = applyLoadGrowth(att(), week, 'balanced', undefined, ctx);
-    let p = att();
+  it('dieci settimane una alla volta = dieci volte una (stato che evolve)', () => {
+    // potenziale lontano: il moltiplicatore resta fisso al tetto del divario
+    const far = (): Player => ({ ...att(), potential: 95 });
+    const one = applyLoadGrowth(far(), week, 'balanced', undefined, ctx);
+    let p = far();
     let total = 0;
     for (let i = 0; i < 10; i++) {
       const r = applyLoadGrowth(p, week, 'balanced', undefined, ctx);
+      p = r.player;
       total += sum(r.gains);
-      p = { ...r.player, skills: att().skills };
     }
     expect(Math.abs(total - 10 * sum(one.gains))).toBeLessThan(1e-9);
   });
@@ -280,5 +283,13 @@ describe('crescita continua, focus e declino pesato', () => {
     const skills = { ...p.skills };
     for (const k of Object.keys(skills) as (keyof typeof skills)[]) skills[k] = 61.999;
     expect(computeOvr(skills, 'ATT', ctx.config.ratings)).toBe(61);
+  });
+
+  it('OVR: abilità tutte uguali a un intero v danno esattamente v, per ogni ruolo', () => {
+    for (const role of ['GK', 'DEF', 'MID', 'ATT'] as const)
+      for (let v = 0; v <= 100; v++) {
+        const skills = Object.fromEntries(SKILLS.map((k) => [k, v])) as Player['skills'];
+        expect(computeOvr(skills, role, ctx.config.ratings)).toBe(v);
+      }
   });
 });

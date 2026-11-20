@@ -2,12 +2,12 @@
 
 ## In corso
 <!-- max 3 -->
-- [ ] Brainstorming allenamenti, riposo e crescita del giocatore (attesa risposta utente) (2026-11-20)
+- [ ] Eseguire il piano settimana leggibile con subagenti, dal Task 0 (2026-11-20)
 
 ## Prossimi
 <!-- l'ordine è la priorità -->
 - [ ] Prova su iPhone del nuovo ritmo e della home (rimandata dall'utente) (2026-11-19)
-- [ ] Home: timbro Raggiunto a capitolo aperto, bilancio del foglio, Simula, Partita predefinita, serate (2026-11-20)
+- [ ] Home: timbro Raggiunto a capitolo aperto, bilancio del foglio, Simula, Partita predefinita (serate coperte dal piano settimana) (2026-11-20)
 - [ ] Regista: parcheggiati — tablePosition dopo trasferimento a metà capitolo, test collisione offerta+notizia, obiettivi di classifica al 27% (2026-11-19)
 - [ ] Brainstorming collegamenti fra sistemi: vita, soldi, media e prestazioni (approccio B punto 4) (2026-11-18)
 - [ ] Decisioni sull'offerta: codice sfida, esportazione salvataggio gratis, nome "Contratto a vita" (founder/offer.md) (2026-11-18)
@@ -30,6 +30,7 @@
 
 ## Fatti
 <!-- ultimi 10; i più vecchi restano in git -->
+- [x] Settimana leggibile: sonda delle falle, spec approvata, pareri, piano (2026-11-20)
 - [x] Push di ciro-dev fino a eccba0f (2026-11-20)
 - [x] Home in tre strati, prima pagina a foglio, Bacheca degli obiettivi (2026-11-20)
 - [x] Skill di sviluppo giochi (10) e zzfx installati e committati; report unico su skill e tecnologie (2026-11-20)
@@ -39,4 +40,3 @@
 - [x] Validazione commerciale con il founder pack, offerta e business plan in founder/ (2026-11-18)
 - [x] Interfaccia ibrida ondata 2: plancia, pagella a voci, momenti con conseguenze, guida corta, notizie prima pagina (2026-11-17)
 - [x] Interfaccia ibrida ondata 1: strato pixel, icone, stemmi, barra a gradini (2026-11-17)
-- [x] Prima integrazione motore animato, Campo prova e installazione su iPhone 15 (2026-11-17)

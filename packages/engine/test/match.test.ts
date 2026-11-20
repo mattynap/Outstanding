@@ -836,3 +836,71 @@ describe('modalità della partita e passo decisivo', () => {
     expect(nulls).toBeGreaterThan(0);
   });
 });
+
+describe('freschezza in partita e convocazione', () => {
+  const player = newCareer(baseOptions, 7).player;
+  const option = ctx.config.match.moments.types.find((t) => t.id === 'att_box_chance')!.options[0]!;
+  const withFreshness = (energy: number) => ({
+    ...player,
+    condition: { ...player.condition, energy },
+  });
+
+  it('sposta la probabilità del momento di freschezzaWeight*2 fra 0 e 100', () => {
+    const wide = {
+      ...ctx,
+      config: {
+        ...ctx.config,
+        match: {
+          ...ctx.config.match,
+          moments: { ...ctx.config.match.moments, minChance: 0, maxChance: 1 },
+        },
+      },
+    };
+    const rating = withFreshness(50).skills.shooting;
+    const hard = { ...option, skills: { shooting: 1 }, difficulty: 0 };
+    const fresh = optionChance(withFreshness(100), hard, rating - 5, wide);
+    const tired = optionChance(withFreshness(0), hard, rating - 5, wide);
+    expect(fresh - tired).toBeCloseTo(0.12);
+  });
+
+  it('la convocazione perde 3 punti a freschezza 30 rispetto a 70', async () => {
+    const { selectPlayer } = await import('../src/match/selection');
+    const { computeOvr } = await import('../src/player/ratings');
+    const { Rng } = await import('../src/rng');
+    const quiet = {
+      ...ctx,
+      config: {
+        ...ctx.config,
+        match: { ...ctx.config.match, selection: { ...ctx.config.match.selection, noise: 0 } },
+      },
+    };
+    const base = {
+      ...player,
+      relationships: {},
+      condition: { ...player.condition, form: 50, morale: 50 },
+    };
+    const ovr = computeOvr(base.skills, base.role, quiet.config.ratings);
+    const rival = (o: number) => ({ role: base.role, ovr: o });
+    // Il rivale è 2 punti sopra: con freschezza 70 il giocatore è davanti solo se non perde nulla;
+    // con 30 la penalità (3) lo fa scivolare dietro
+    const club = (o: number) =>
+      ({
+        coachId: 'c',
+        roster: Array.from({ length: 40 }, () => rival(o)),
+      }) as never;
+    const starters = quiet.config.world.formation[base.role];
+    expect(starters).toBeGreaterThan(0);
+    const pick = (energy: number, rivalOvr: number) =>
+      selectPlayer(
+        { ...base, condition: { ...base.condition, energy } },
+        club(rivalOvr),
+        Rng.fromSeed(1),
+        quiet,
+      );
+    // 40 rivali a ovr+1 (sopra a 70, sotto a 30 non cambia: tutti sopra): usiamo rivali a ovr-1
+    expect(pick(70, ovr - 1)).toBe('starter');
+    expect(pick(70, ovr - 1)).not.toBe('out');
+    // 40 rivali a ovr-1: a 70 il giocatore li batte tutti, a 30 (-3) li perde tutti
+    expect(pick(30, ovr - 1)).toBe('out');
+  });
+});

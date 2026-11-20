@@ -245,7 +245,7 @@ describe('rischio contestuale', () => {
               maxChance: 1,
               formWeight: 0,
               moraleWeight: 0,
-              energyWeight: 0,
+              freshnessWeight: 0,
               qualityMaxBonus: 0,
             },
           },
@@ -282,5 +282,26 @@ describe('rischio contestuale', () => {
       const used = plain.config.match.legends.perMatch;
       expect(goValue(withEffects, used)).toBeGreaterThan(goValue(plain, used) + 0.05);
     });
+  });
+});
+
+describe('injuryChance e freschezza', () => {
+  const player = newCareer(baseOptions, 7).player;
+  const at = (energy: number, injuryRisk = 50) => ({
+    ...player,
+    condition: { ...player.condition, energy, injuryRisk },
+  });
+
+  it('segue la curva: 0.6x a freschezza 100, 2x a 0', async () => {
+    const { injuryChance } = await import('../src/player/progression');
+    expect(injuryChance(0.025, at(100), defaultContext)).toBeCloseTo(0.015);
+    expect(injuryChance(0.025, at(0), defaultContext)).toBeCloseTo(0.05);
+  });
+
+  it('ignora injuryRisk', async () => {
+    const { injuryChance } = await import('../src/player/progression');
+    expect(injuryChance(0.025, at(60, 0), defaultContext)).toBe(
+      injuryChance(0.025, at(60, 100), defaultContext),
+    );
   });
 });

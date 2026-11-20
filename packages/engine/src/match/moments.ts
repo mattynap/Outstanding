@@ -4,6 +4,7 @@ import type {
   MomentOutcomeConfig,
   MomentTypeConfig,
 } from '@outstanding/config';
+import { momentFreshnessModifier } from '../player/freshness';
 import type { GameContext } from '../context';
 import type { Rng } from '../rng';
 import type { MatchDyn, MatchState, Player, Role } from '../types';
@@ -312,7 +313,7 @@ export function optionChance(
   const mods =
     (cfg.formWeight * (form - 50)) / 50 +
     (cfg.moraleWeight * (morale - 50)) / 50 +
-    (cfg.energyWeight * (energy - 50)) / 50 +
+    momentFreshnessModifier(energy, ctx) +
     traitBonus(player, option.tag, ctx) +
     difficultyBonus +
     dynBonus(dyn, matchCfg.dyn.chanceWeight) +

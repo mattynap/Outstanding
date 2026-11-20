@@ -1,4 +1,5 @@
 import type { GameContext } from '../context';
+import { selectionFreshnessPenalty } from '../player/freshness';
 import { computeOvr } from '../player/ratings';
 import type { Rng } from '../rng';
 import type { Club, Player, Selection } from '../types';
@@ -17,7 +18,8 @@ export function selectPlayer(player: Player, club: Club, rng: Rng, ctx: GameCont
     computeOvr(player.skills, player.role, ctx.config.ratings) +
     (form - 50) * cfg.formWeight +
     (morale - 50) * cfg.moraleWeight +
-    trust * cfg.relationshipWeight +
+    trust * cfg.relationshipWeight -
+    selectionFreshnessPenalty(player.condition.energy, ctx) +
     rng.normal(0, cfg.noise);
 
   const rivals = club.roster

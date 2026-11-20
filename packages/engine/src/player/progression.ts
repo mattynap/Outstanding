@@ -4,7 +4,7 @@ import type { Rng } from '../rng';
 import { ageAt } from '../time';
 import type { Load, Player, Skill, Skills } from '../types';
 import { clamp } from '../util';
-import { growthFreshnessFactor } from './freshness';
+import { growthFreshnessFactor, injuryFreshnessFactor } from './freshness';
 import { computeOvr, SKILLS } from './ratings';
 
 function band(bands: ProgressionConfig['growth']['ageMultipliers'], age: number): number {
@@ -145,16 +145,9 @@ export function rollInjury(rng: Rng, ctx: GameContext): { type: string; weeksLef
   return { type: type.id, weeksLeft: rng.int(type.weeks[0], type.weeks[1]) };
 }
 
-/** Probabilità di infortunio corretta per il rischio accumulato e l'energia. */
+/** Probabilità di infortunio: la base scalata dalla freschezza (condition.energy). */
 export function injuryChance(base: number, player: Player, ctx: GameContext): number {
-  const inj = ctx.config.progression.injuries;
-  const c = ctx.config.progression.condition;
-  const risk = 1 + inj.riskPerPoint * (player.condition.injuryRisk - c.injuryRiskTarget);
-  const tired =
-    player.condition.energy < ctx.config.progression.growth.lowEnergyThreshold
-      ? inj.lowEnergyMultiplier
-      : 1;
-  return clamp(base * Math.max(0, risk) * tired, 0, 1);
+  return clamp(base * injuryFreshnessFactor(player.condition.energy, ctx), 0, 1);
 }
 
 /** Applica un nuovo infortunio (se più lungo di quello in corso) con i suoi effetti su forma e morale. */

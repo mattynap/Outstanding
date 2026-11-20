@@ -172,6 +172,7 @@ const fctx: GameContext = (() => {
           formWeight: 0,
           moraleWeight: 0,
           energyWeight: 0,
+          freshnessWeight: 0,
           qualityMaxBonus: 0,
         },
       },

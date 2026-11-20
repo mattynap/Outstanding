@@ -437,31 +437,31 @@ describe('chapter loop', () => {
     'weeks loop is unchanged from Part A',
     () => {
       // Valori misurati prima del ciclo a capitoli (HEAD 46b48e6), ri-misurati con crescita continua e
-      // freschezza nella crescita (settimana leggibile, task 3).
+      // freschezza nella crescita (task 3) e in partita/convocazione/infortuni (task 6).
       const weeks = { loop: 'weeks' } as const;
       const run = (seed: number, id: 'cautious' | 'contextual' | 'random') =>
         runCareer(seed, id, defaultContext, undefined, weeks);
       const a = run(11, 'cautious');
       expect(a.decisions).toEqual({
-        weeks: 996,
-        events: 276,
-        moments: 1996,
-        chainSteps: 80,
+        weeks: 1100,
+        events: 269,
+        moments: 2401,
+        chainSteps: 73,
         autoSteps: 0,
-        matches: 507,
+        matches: 628,
         quickMatches: 0,
-        simulatedMatches: 227,
+        simulatedMatches: 194,
         offers: 20,
       });
       expect([a.playMinutes, a.totals.appearances, a.score.total, a.retirement.age]).toEqual([
-        1690, 695, 2604, 35,
+        2050, 771, 2403, 37,
       ]);
       const b = run(11, 'contextual');
-      expect(b.decisions.moments).toBe(2150);
-      expect([b.playMinutes, b.score.total]).toEqual([1967, 3423]);
+      expect(b.decisions.moments).toBe(2050);
+      expect([b.playMinutes, b.score.total]).toEqual([1886, 3252]);
       const c = run(7, 'random');
-      expect(c.decisions.offers).toBe(53);
-      expect([c.playMinutes, c.score.total]).toEqual([1136, 207]);
+      expect(c.decisions.offers).toBe(59);
+      expect([c.playMinutes, c.score.total]).toEqual([1147, 451]);
       expect(a).not.toHaveProperty('seasonSeconds');
     },
     CAREER_TIMEOUT,

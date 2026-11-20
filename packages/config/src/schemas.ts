@@ -824,7 +824,10 @@ export const progressionSchema = z
     skipWeekPlan: z.object({ load: z.enum(['rest', 'balanced', 'push']) }),
     discipline: z.object({ driftPerWeek: z.number().min(0) }),
     events: z.object({ riskToFreshness: z.number().min(0) }),
-    preview: z.object({ riskBands: z.object({ medium: prob, high: prob }) }),
+    preview: z.object({
+      riskBands: z.object({ medium: prob, high: prob }),
+      pace: z.object({ fast: z.number().positive(), slow: z.number().positive() }),
+    }),
     growth: z.object({
       /** Punti abilità per sessione di allenamento normale, prima dei moltiplicatori. */
       basePerSession: z.number().positive(),

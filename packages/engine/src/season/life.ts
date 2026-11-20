@@ -33,6 +33,19 @@ export function lifeModifiers(life: LifeAction | undefined, ctx: GameContext): L
   return mods;
 }
 
+/** Ingaggio sponsor della settimana: lo stesso per la settimana vera e per l'anteprima. */
+export function sponsorWeekIncome(player: Player, ctx: GameContext): number {
+  return Math.round(
+    player.sponsors.reduce((sum, d) => sum + d.weeklyIncome, 0) *
+      ctx.config.progression.life.sponsor.sponsorWeeksPerWeek,
+  );
+}
+
+/** Variazione di freschezza dell'azione (solo lo sponsor costa). */
+export function lifeFreshness(life: LifeAction | undefined, ctx: GameContext): number {
+  return life === 'sponsor' ? ctx.config.progression.life.sponsor.freshness : 0;
+}
+
 export interface LifeWeekResult {
   state: GameState;
   rng: Rng;
@@ -55,10 +68,7 @@ export function applyLifeWeek(
 ): LifeWeekResult {
   const cfg = ctx.config.progression.life;
   if (life === 'sponsor') {
-    const income = Math.round(
-      state.player.sponsors.reduce((sum, d) => sum + d.weeklyIncome, 0) *
-        cfg.sponsor.sponsorWeeksPerWeek,
-    );
+    const income = sponsorWeekIncome(state.player, ctx);
     const player =
       income > 0
         ? {
@@ -69,7 +79,7 @@ export function applyLifeWeek(
     return {
       state: player === state.player ? state : { ...state, player },
       rng,
-      freshnessDelta: cfg.sponsor.freshness,
+      freshnessDelta: lifeFreshness(life, ctx),
       sponsorIncome: income,
     };
   }

@@ -193,6 +193,10 @@
     "riskBands": {
       "medium": 0.15,
       "high": 0.3
+    },
+    "pace": {
+      "fast": 1.5,
+      "slow": 0.6
     }
   }
 }

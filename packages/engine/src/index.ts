@@ -195,6 +195,7 @@ export {
   type WeekPlanReport,
 } from './season/plan';
 export { LIFE_ACTIONS, lifeModifiers, type LifeModifiers } from './season/life';
+export { previewPlan, chapterWeeksLeft, type PlanPreview } from './season/preview';
 export { applyGrowth, applyLoadGrowth, applyDecline, growthMultiplier } from './player/progression';
 export {
   acceptOffer,

@@ -16,14 +16,26 @@ function band(bands: ProgressionConfig['growth']['ageMultipliers'], age: number)
  * fretta, fino a `maxGapFactor`; vicino al tetto poco), disciplina ed energia.
  */
 export function growthMultiplier(player: Player, week: number, ctx: GameContext): number {
+  const f = growthFactors(player, week, ctx);
+  return f.age * f.gap * f.discipline * f.freshness;
+}
+
+/** I fattori del moltiplicatore di crescita, separati: l'anteprima ne ricava il motivo del ritmo. */
+export function growthFactors(
+  player: Player,
+  week: number,
+  ctx: GameContext,
+): { age: number; gap: number; discipline: number; freshness: number } {
   const g = ctx.config.progression.growth;
   const age = ageAt(player.birthWeek, week, ctx.config.calendar);
   const ovr = computeOvr(player.skills, player.role, ctx.config.ratings);
-  const gap = clamp((player.potential - ovr) / g.potentialGapScale, 0, g.maxGapFactor);
   const d = g.disciplineFactor;
-  const discipline = d.min + ((d.max - d.min) * player.persona.discipline) / 100;
-  const energy = growthFreshnessFactor(player.condition.energy, ctx);
-  return band(g.ageMultipliers, age) * gap * discipline * energy;
+  return {
+    age: band(g.ageMultipliers, age),
+    gap: clamp((player.potential - ovr) / g.potentialGapScale, 0, g.maxGapFactor),
+    discipline: d.min + ((d.max - d.min) * player.persona.discipline) / 100,
+    freshness: growthFreshnessFactor(player.condition.energy, ctx),
+  };
 }
 
 /**

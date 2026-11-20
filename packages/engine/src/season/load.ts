@@ -18,6 +18,33 @@ export interface LoadWeekResult {
   freshnessDelta: number;
 }
 
+/** Probabilità d'infortunio in seduta: la stessa per la settimana vera e per l'anteprima. */
+export function sessionInjuryChance(
+  player: Player,
+  eff: EffectiveLoad,
+  injuryMod: number,
+  ctx: GameContext,
+): number {
+  const p =
+    ctx.config.progression.loads[eff].sessionInjury *
+    injuryMod *
+    injuryFreshnessFactor(player.condition.energy, ctx);
+  return Math.min(1, Math.max(0, p));
+}
+
+/** Crescita deterministica delle sedute: la stessa per la settimana vera e per l'anteprima. */
+export function loadWeekGrowth(
+  player: Player,
+  week: number,
+  eff: EffectiveLoad,
+  focus: Skill | undefined,
+  growthMod: number,
+  ctx: GameContext,
+): { player: Player; gains: Partial<Skills> } {
+  if (eff === 'recovery') return { player, gains: {} };
+  return applyLoadGrowth(player, week, eff, focus, ctx, growthMod);
+}
+
 /**
  * Parte del carico nella settimana: crescita, tiro d'infortunio in seduta, guarigione in recupero.
  * La freschezza non si tocca qui (F0 resta quella di inizio settimana per tutti i calcoli): si
@@ -56,11 +83,11 @@ export function applyLoadWeek(
     return { player: next, rng, gains: {}, healed, freshnessDelta };
   }
 
-  const grown = applyLoadGrowth(player, week, eff, focus, ctx, mods.growth);
+  const grown = loadWeekGrowth(player, week, eff, focus, mods.growth, ctx);
   let next = grown.player;
   let injury: { type: string; weeksLeft: number } | undefined;
-  const p = cfg.sessionInjury * mods.injury * injuryFreshnessFactor(player.condition.energy, ctx);
-  if (p > 0 && rng.chance(Math.min(1, p))) {
+  const p = sessionInjuryChance(player, eff, mods.injury, ctx);
+  if (p > 0 && rng.chance(p)) {
     injury = rollInjury(rng, ctx);
     next = injure(next, injury, ctx, moraleLossFactor);
   }

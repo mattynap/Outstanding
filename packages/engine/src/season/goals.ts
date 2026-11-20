@@ -85,7 +85,8 @@ export function startChapterGoal(state: GameState, ctx: GameContext = defaultCon
 
 /**
  * Liquida l'obiettivo del capitolo, una sola volta (`settled`): se raggiunto, fiducia del mister e
- * morale; se mancato, solo un piccolo calo di morale. L'esito è un titolo di tipo `event`.
+ * morale; se mancato, solo un piccolo calo di morale. L'esito va in `goalRecords` e in un titolo
+ * di tipo `event`.
  */
 export function settleChapter(
   state: GameState,
@@ -123,8 +124,20 @@ export function settleChapter(
         def.metric === 'avgRating' ? goal.target.toFixed(1).replace('.', ',') : String(goal.target),
     },
   };
+  const record = {
+    season: state.season,
+    chapter: state.chapter.id,
+    goalId: goal.id,
+    target: goal.target,
+    met,
+  };
   return {
-    state: { ...state, player, chapter: { ...state.chapter, goal: { ...goal, settled: true } } },
+    state: {
+      ...state,
+      player,
+      chapter: { ...state.chapter, goal: { ...goal, settled: true } },
+      goalRecords: [...(state.goalRecords ?? []), record],
+    },
     headline,
   };
 }

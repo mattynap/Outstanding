@@ -34,4 +34,19 @@ metadata:
 - La partita parte nella modalità del regista (`pick.mode`). Restano aperti: l'opzione
   "Partita predefinita" nelle impostazioni e il pulsante "Simula" della pagina partita.
 
+## Home in tre strati e Bacheca (2026-11-20)
+
+- Richiesta dell'utente: home "troppo confusionaria" e una sezione premi. Scelta l'opzione A.
+- Ordine: stato compatto e avvisi (solo se presenti) → prossima partita (senza pulsante) →
+  scheda capitolo (obiettivo, premio, striscia partite, riga piano). Una sola CTA `sticky` in fondo.
+- Prima pagina dello stop: foglio fisso sopra la home; chiuso quando `GameService.frontSeen` è lo
+  stesso oggetto di `lastStop`. Sfondo `inert` e focus su "Continua" (review Codex). Il foglio
+  lascia 64 px in basso per la barra delle schede, che resta sopra.
+- Il piano a tutta scheda solo quando va scelto o lo si cambia ("Cambia").
+- Premi automatici (niente "ritira"): valori in `calendar.chapterGoals`, mostrati sull'obiettivo.
+- Bacheca = ex pagina Carriera (rotta invariata): obiettivi da `goalHistory` (motore:
+  `GameState.goalRecords`, facoltativo), trofei, stagioni. Si sblocca al primo obiettivo chiuso.
+- Aperto: il timbro "Raggiunto" compare prima della fine del capitolo; il bilancio del foglio conta
+  solo le settimane scorse nello stop, non la partita appena giocata.
+
 Collegato: [[design-preview]], [[progress]], [[regista-stagione]]

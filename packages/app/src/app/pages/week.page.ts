@@ -1,10 +1,14 @@
+import type { ElementRef } from '@angular/core';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
   effect,
   inject,
+  Injector,
   signal,
+  viewChild,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular';
@@ -37,8 +41,10 @@ import { TabBarComponent } from '../ui/tab-bar.component';
 import { TipComponent } from '../ui/tip.component';
 
 /**
- * Home del capitolo: prima pagina dell'ultimo stop, obiettivo, partite scelte dal regista, piano
- * del capitolo e il pulsante che porta al prossimo stop.
+ * Home del capitolo, in tre strati: stato e avvisi in alto, la prossima partita da vivere, il
+ * capitolo (obiettivo con premio, partite scelte, piano). Un solo pulsante in basso. La prima
+ * pagina dello stop è un foglio che si apre sopra e si chiude; il piano, quando va scelto, prende
+ * il posto di partita e capitolo.
  */
 @Component({
   selector: 'app-week',
@@ -57,13 +63,13 @@ import { TipComponent } from '../ui/tip.component';
   template: `
     <ion-content class="o-page">
       @if (view(); as v) {
-        <header class="club">
+        <header class="club" [attr.inert]="frontOpen() ? '' : null">
           @if (v.club) {
-            <app-crest [crest]="v.club.club.crest" [size]="44" [label]="v.club.club.name" />
+            <app-crest [crest]="v.club.club.crest" [size]="40" [label]="v.club.club.name" />
             <div class="club-text">
               <span class="club-name">{{ v.club.club.name }}</span>
               <span class="o-muted small">
-                {{ v.club.leagueKey | t }} · {{ v.club.groupKey | t }}
+                {{ v.club.leagueKey | t }}
                 @if (v.played) {
                   · {{ ordinal(v.club.position) }} {{ 'ui.week.place' | t }}
                 }
@@ -87,219 +93,102 @@ import { TipComponent } from '../ui/tip.component';
           </a>
         </header>
 
-        <main class="o-wrap o-enter">
-          <section class="headline">
-            <div class="when">
-              <span class="o-label">{{ 'ui.week.seasonWeek' | t: { season: v.season } }}</span>
-              <span class="o-num big">{{ v.week }}</span>
+        <main class="o-wrap o-enter" [attr.inert]="frontOpen() ? '' : null">
+          <!-- Una riga di stato: quando, chi, quanto vale, come sta. -->
+          <section class="status" [attr.aria-label]="'ui.week.condition' | t">
+            <div class="status-top">
+              <span class="o-label">{{
+                'ui.week.status' | t: { season: v.season, week: v.week }
+              }}</span>
+              <span class="status-chips">
+                <span class="o-chip ovr"
+                  >OVR <strong class="o-num">{{ v.ovr }}</strong></span
+                >
+                <a class="o-chip cash" routerLink="/vita">
+                  <app-px-icon name="cash" aria-hidden="true" />{{ v.cash }}
+                </a>
+              </span>
             </div>
-            <div class="who">
-              <span class="name">{{ v.name }}</span>
-              <span class="o-muted small"
-                >{{ 'roles.' + v.role | t }} · {{ 'ui.common.years' | t: { n: v.age } }} · OVR
-                {{ v.ovr }}</span
-              >
-              <a class="o-chip cash" routerLink="/vita">
-                <app-px-icon name="cash" aria-hidden="true" />{{ v.cash }}
-              </a>
+            <div class="meters">
+              @for (c of conditionRows; track c.key) {
+                <div class="meter">
+                  <app-px-icon [name]="c.icon" [size]="16" aria-hidden="true" />
+                  <app-stat-bar [label]="c.label | t" [value]="v.condition[c.key]" tone="auto" />
+                </div>
+              }
             </div>
           </section>
 
           <app-tip tip="week.welcome" />
 
-          @if (frontPage(); as fp) {
-            <section class="front" [attr.aria-label]="'ui.stop.title' | t">
-              <div class="front-mast">
-                <span class="o-kicker">{{ 'ui.stop.' + fp.stop | t }}</span>
-                <span class="news-paper">{{ 'ui.paper.name' | t }}</span>
-              </div>
-              @for (h of fp.headlines; track $index; let first = $first) {
-                <p class="front-title" [class.lead]="first">{{ h.textKey | t: h.params }}</p>
-              } @empty {
-                <p class="front-title quiet">{{ 'ui.stop.quiet' | t }}</p>
-              }
-              @if (fp.weeks > 0) {
-                <div class="front-foot">
-                  <span>{{
-                    'ui.stop.record'
-                      | t
-                        : {
-                            n: fp.weeks,
-                            win: fp.record.win,
-                            draw: fp.record.draw,
-                            loss: fp.record.loss,
-                          }
+          <!-- Avvisi: compaiono solo quando servono, una riga ciascuno. -->
+          @if (
+            v.injury || saveFailed() || v.pendingNews > 0 || v.window || v.offers > 0 || press()
+          ) {
+            <ul class="alerts o-lines">
+              @if (v.injury; as inj) {
+                <li class="o-line alert bad" role="status">
+                  <ion-icon name="medkit-outline" aria-hidden="true"></ion-icon>
+                  <span class="grow">{{
+                    'ui.week.injuredShort'
+                      | t: { injury: ('injuries.' + inj.type | t), weeks: inj.weeksLeft }
                   }}</span>
-                  @if (fp.ratings.length) {
-                    <span class="front-ratings" [attr.aria-label]="'ui.stop.ratings' | t">
-                      @for (r of fp.ratings; track $index) {
-                        <span class="o-num rating" [attr.data-tone]="r.tone">{{ r.text }}</span>
-                      }
-                    </span>
-                  }
-                </div>
+                </li>
               }
-            </section>
-          }
-
-          <section
-            class="o-card goal"
-            [class.met]="goal()?.met"
-            [attr.aria-label]="'ui.chapter.goal' | t"
-          >
-            <div class="goal-top">
-              <span class="o-label">{{
-                'ui.chapter.kicker' | t: { name: ('ui.chapter.name.' + chapterId() | t) }
-              }}</span>
-              @if (goal()?.met) {
-                <span class="stamp">{{ 'ui.chapter.met' | t }}</span>
+              @if (saveFailed()) {
+                <li class="o-line alert bad" role="alert">
+                  <span class="grow">{{ 'ui.week.saveFailed' | t }}</span>
+                </li>
               }
-            </div>
-            @if (goal(); as g) {
-              <p class="goal-text">{{ g.textKey | t: g.params }}</p>
-              @if (g.ticks; as tk) {
-                <div class="ticks" aria-hidden="true">
-                  @for (i of range(tk.total); track i) {
-                    <span class="tick" [class.on]="i < tk.done"></span>
-                  }
-                </div>
-              }
-              <span class="o-muted small">{{ g.progressKey | t: g.progressParams }}</span>
-            } @else {
-              <p class="goal-text">{{ 'ui.chapter.noGoal' | t }}</p>
-            }
-          </section>
-
-          @if (nextPick(); as np) {
-            @let f = np.view;
-            <section class="o-card o-card--hero match" [attr.aria-label]="'ui.week.nextMatch' | t">
-              <div class="match-top o-label">
-                <span>{{ whenKey(f.inWeeks) | t: { n: f.inWeeks } }}</span>
-                <span class="mode-tag" [class.quick]="np.mode === 'quick'">{{
-                  'ui.chapter.mode.' + np.mode | t
-                }}</span>
-              </div>
-              <div class="match-comp">
-                {{ f.competitionKey | t }} ·
-                @if (f.stageKey) {
-                  {{ f.stageKey | t }}
-                } @else {
-                  {{ ordinal(f.fixture.matchday) }} {{ 'ui.week.matchday' | t }}
-                }
-                · {{ (f.side === 'home' ? 'ui.match.home' : 'ui.match.away') | t }}
-              </div>
-              <div class="teams">
-                <div class="team">
-                  <app-crest [crest]="f.home.crest" [size]="48" />
-                  <span>{{ f.home.shortName }}</span>
-                </div>
-                <span class="vs o-num">VS</span>
-                <div class="team">
-                  <app-crest [crest]="f.away.crest" [size]="48" />
-                  <span>{{ f.away.shortName }}</span>
-                </div>
-              </div>
-              <div class="match-foot">
-                <span>
-                  @if (f.opponentPosition) {
-                    {{ 'ui.week.opponentPos' | t: { pos: ordinal(f.opponentPosition) } }} ·
-                  }
-                  {{ 'ui.week.opponentRating' | t: { rating: f.opponent.rating } }}
-                </span>
-              </div>
-              @if (step() === 'matchInProgress' || step() === 'match') {
-                <div class="kickoff">
-                  <button class="o-btn" type="button" [disabled]="busy()" (click)="playMatch()">
-                    {{ (step() === 'match' ? 'ui.week.play' : 'ui.week.cta.resume') | t }}
+              @if (v.pendingNews > 0) {
+                <li>
+                  <a class="o-line alert hot" routerLink="/evento">
+                    <app-px-icon name="news" [size]="16" aria-hidden="true" />
+                    <span class="grow">{{ 'ui.week.newsWaiting' | t: { n: v.pendingNews } }}</span>
                     <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
-                  </button>
-                </div>
-              } @else if (f.inWeeks === 0 && kickoffHint(); as hint) {
-                <div class="kickoff">
-                  <p class="o-muted small after-plan">{{ hint | t }}</p>
-                </div>
+                  </a>
+                </li>
               }
-            </section>
-          } @else if (view()?.club && step() !== 'seasonOver') {
-            <p class="o-muted small none">{{ 'ui.chapter.picksNone' | t }}</p>
+              @if (v.window || v.offers > 0) {
+                <li>
+                  <a class="o-line alert" routerLink="/mercato">
+                    <app-px-icon name="market" [size]="16" aria-hidden="true" />
+                    <span class="grow"
+                      >{{ (v.window ? 'ui.market.window.' + v.window : 'ui.market.title') | t }} ·
+                      {{ 'ui.week.offers' | t: { n: v.offers } }}</span
+                    >
+                    <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+                  </a>
+                </li>
+              }
+              @if (press(); as pr) {
+                <li>
+                  <a class="o-line alert" routerLink="/conferenza">
+                    <ion-icon name="mic-outline" aria-hidden="true"></ion-icon>
+                    <span class="grow">{{ 'ui.press.kind.' + pr.kind | t: pr.params }}</span>
+                    <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+                  </a>
+                </li>
+              }
+            </ul>
           }
-
-          @if (picks().length > 1) {
-            <section class="picks" [attr.aria-label]="'ui.chapter.picks' | t">
-              <h2 class="o-section-title">{{ 'ui.chapter.picks' | t }}</h2>
-              <ol class="o-lines">
-                @for (pk of picks(); track pk.view.fixture.id) {
-                  <li class="o-line pick" [class.next]="pk.next" [class.done]="pk.outcome">
-                    <app-crest [crest]="pk.view.opponent.crest" [size]="24" />
-                    <span class="grow">{{ pk.view.opponent.shortName }}</span>
-                    @if (pk.outcome; as o) {
-                      <span class="o-num result" [attr.data-outcome]="o">{{
-                        'ui.chapter.outcome.' + o | t
-                      }}</span>
-                    } @else {
-                      <span class="o-muted small">{{
-                        whenKey(pk.view.inWeeks) | t: { n: pk.view.inWeeks }
-                      }}</span>
-                      <span class="mode-tag" [class.quick]="pk.mode === 'quick'">{{
-                        'ui.chapter.mode.' + pk.mode | t
-                      }}</span>
-                    }
-                  </li>
-                }
-              </ol>
-            </section>
-          }
-
-          @if (press(); as pr) {
-            <a class="o-card press-call" routerLink="/conferenza">
-              <ion-icon name="mic-outline" aria-hidden="true"></ion-icon>
-              <span class="grow">
-                <span class="o-section-title">{{ 'ui.press.title' | t }}</span>
-                <span class="o-muted small">{{ 'ui.press.kind.' + pr.kind | t: pr.params }}</span>
-              </span>
-              <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
-            </a>
-          }
-
-          @if (v.injury; as inj) {
-            <div class="o-card injury" role="status">
-              <ion-icon name="medkit-outline" aria-hidden="true"></ion-icon>
-              <span>{{
-                'ui.week.injured'
-                  | t: { injury: ('injuries.' + inj.type | t), weeks: inj.weeksLeft }
-              }}</span>
-            </div>
-          }
-
-          @if (saveFailed()) {
-            <div class="o-card injury" role="alert">{{ 'ui.week.saveFailed' | t }}</div>
-          }
-
-          <section class="o-card condition" [attr.aria-label]="'ui.week.condition' | t">
-            @for (c of conditionRows; track c.key) {
-              <div class="cond">
-                <app-px-icon [name]="c.icon" [size]="24" aria-hidden="true" />
-                <app-stat-bar [label]="c.label | t" [value]="v.condition[c.key]" tone="auto" />
-              </div>
-            }
-          </section>
-          <app-tip tip="week.condition" />
 
           @if (planOpen()) {
-            <section class="plan" [attr.aria-label]="'ui.chapter.plan' | t">
+            <!-- Agli stop di capitolo il piano prende tutta la scena: una cosa alla volta. -->
+            <section class="o-card plan" [attr.aria-label]="'ui.chapter.plan' | t">
               <div class="o-section-head">
                 <h2 class="o-section-title">{{ 'ui.chapter.plan' | t }}</h2>
                 <span class="o-muted small">{{
                   'ui.week.actionsCount' | t: { n: choices().length, max: maxActions }
                 }}</span>
               </div>
-              <app-tip tip="week.plan" />
               <p class="o-muted small last-plan">
                 {{
                   (lastStopKind() === 'chapterEnd' ? 'ui.chapter.planNew' : 'ui.chapter.planHint')
                     | t
                 }}
               </p>
+              <app-tip tip="week.plan" />
               <div class="actions">
                 @for (o of options(); track o.id) {
                   <button
@@ -341,98 +230,214 @@ import { TipComponent } from '../ui/tip.component';
                 </button>
               }
             </section>
-          } @else if (planSummary().length) {
-            <section class="o-card plan-sum">
-              <span class="grow">
-                <span class="o-label">{{ 'ui.chapter.plan' | t }}</span>
-                <span class="small">
-                  @for (p of planSummary(); track p.id; let last = $last) {
-                    {{ p.nameKey | t }}
-                    @if (p.focus) {
-                      ({{ 'skills.' + p.focus | t }})
-                    }
-                    @if (!last) {
-                      ·
-                    }
-                  }
-                </span>
-              </span>
-              <button
-                class="o-btn o-btn--ghost o-btn--small"
-                type="button"
-                [disabled]="busy() || !canEditPlan()"
-                (click)="editing.set(true)"
+          } @else {
+            @if (nextPick(); as np) {
+              @let f = np.view;
+              <section
+                class="o-card o-card--hero match"
+                [attr.aria-label]="'ui.week.nextMatch' | t"
               >
-                {{ 'ui.chapter.planChange' | t }}
-              </button>
+                <div class="match-top o-label">
+                  <span>{{ whenKey(f.inWeeks) | t: { n: f.inWeeks } }}</span>
+                  <span class="mode-tag" [class.quick]="np.mode === 'quick'">{{
+                    'ui.chapter.mode.' + np.mode | t
+                  }}</span>
+                </div>
+                <div class="teams">
+                  <div class="team">
+                    <app-crest [crest]="f.home.crest" [size]="48" />
+                    <span>{{ f.home.shortName }}</span>
+                  </div>
+                  <span class="vs o-num">VS</span>
+                  <div class="team">
+                    <app-crest [crest]="f.away.crest" [size]="48" />
+                    <span>{{ f.away.shortName }}</span>
+                  </div>
+                </div>
+                <div class="match-foot">
+                  {{ f.competitionKey | t }} ·
+                  @if (f.stageKey) {
+                    {{ f.stageKey | t }}
+                  } @else {
+                    {{ ordinal(f.fixture.matchday) }} {{ 'ui.week.matchday' | t }}
+                  }
+                  @if (f.opponentPosition) {
+                    · {{ 'ui.week.opponentPos' | t: { pos: ordinal(f.opponentPosition) } }}
+                  }
+                  · {{ 'ui.week.opponentRating' | t: { rating: f.opponent.rating } }}
+                </div>
+                @if (step() === 'advance' && f.inWeeks === 0 && kickoffHint(); as hint) {
+                  <p class="o-muted small after-plan">{{ hint | t }}</p>
+                }
+              </section>
+            } @else if (v.club && step() !== 'seasonOver') {
+              <p class="o-muted small none">{{ 'ui.chapter.picksNone' | t }}</p>
+            }
+
+            <!-- Il capitolo in una scheda: obiettivo con premio, partite da vivere, piano. -->
+            <section
+              class="o-card chapter"
+              [class.met]="goal()?.met"
+              [attr.aria-label]="'ui.chapter.goal' | t"
+            >
+              <div class="goal-top">
+                <span class="o-label">{{
+                  'ui.chapter.kicker' | t: { name: ('ui.chapter.name.' + chapterId() | t) }
+                }}</span>
+                @if (goal()?.met) {
+                  <span class="stamp">{{ 'ui.chapter.met' | t }}</span>
+                }
+              </div>
+              @if (goal(); as g) {
+                <p class="goal-text">{{ g.textKey | t: g.params }}</p>
+                @if (g.ticks; as tk) {
+                  <div class="ticks" aria-hidden="true">
+                    @for (i of range(tk.total); track i) {
+                      <span class="tick" [class.on]="i < tk.done"></span>
+                    }
+                  </div>
+                }
+                <span class="o-muted small">{{ g.progressKey | t: g.progressParams }}</span>
+                <span class="reward small">
+                  <app-px-icon name="new" [size]="16" aria-hidden="true" />
+                  {{ 'ui.chapter.reward' | t: g.reward }}
+                </span>
+              } @else {
+                <p class="goal-text quiet">{{ 'ui.chapter.noGoal' | t }}</p>
+              }
+
+              @if (picks().length > 0) {
+                <div class="rows">
+                  <span class="o-label">{{ 'ui.chapter.picks' | t }}</span>
+                  <ol class="dots">
+                    @for (pk of picks(); track pk.view.fixture.id) {
+                      <li
+                        class="dot"
+                        [class.next]="pk.next"
+                        [class.quick]="pk.mode === 'quick'"
+                        [attr.data-outcome]="pk.outcome"
+                        [attr.aria-label]="
+                          pk.view.opponent.shortName +
+                          (pk.outcome ? ' · ' + ('ui.chapter.outcome.' + pk.outcome | t) : '')
+                        "
+                      >
+                        @if (pk.outcome; as o) {
+                          {{ 'ui.chapter.outcome.' + o | t }}
+                        } @else {
+                          <app-crest [crest]="pk.view.opponent.crest" [size]="20" />
+                        }
+                      </li>
+                    }
+                  </ol>
+                </div>
+              }
+
+              <div class="rows plan-line">
+                <span class="grow">
+                  <span class="o-label">{{ 'ui.chapter.planLine' | t }}</span>
+                  <span class="small">
+                    @for (p of planSummary(); track p.id; let last = $last) {
+                      {{ p.nameKey | t }}
+                      @if (p.focus) {
+                        ({{ 'skills.' + p.focus | t }})
+                      }
+                      @if (!last) {
+                        ·
+                      }
+                    } @empty {
+                      {{ 'ui.chapter.planNoneYet' | t }}
+                    }
+                  </span>
+                </span>
+                <button
+                  class="o-btn o-btn--ghost o-btn--small"
+                  type="button"
+                  [disabled]="busy() || !canEditPlan()"
+                  (click)="editing.set(true)"
+                >
+                  {{ 'ui.chapter.planChange' | t }}
+                </button>
+              </div>
             </section>
           }
 
-          @if (v.pendingNews > 0) {
-            <a class="news" routerLink="/evento">
-              <span class="news-mast">
-                <span class="o-kicker">{{ 'ui.week.breaking' | t }}</span>
-                <span class="news-paper">{{ 'ui.paper.name' | t }}</span>
-              </span>
-              <span class="news-title">{{ 'ui.week.newsWaiting' | t: { n: v.pendingNews } }}</span>
-            </a>
-          }
-
-          @if (v.window || v.offers > 0) {
-            <a class="o-card window" routerLink="/mercato">
-              <span class="o-label">{{
-                (v.window ? 'ui.market.window.' + v.window : 'ui.market.title') | t
-              }}</span>
-              <span>{{ 'ui.week.offers' | t: { n: v.offers } }}</span>
-            </a>
-          }
-
-          @if (!planOpen() && !matchFirst()) {
+          @if (!planOpen()) {
             <app-tip tip="week.cta" />
           }
+          <app-tip tip="week.condition" />
           <app-tip tip="week.tabs" />
           <app-tip tip="week.done" />
 
           <div class="cta">
-            @if (!matchFirst()) {
-              <button class="o-btn" type="button" [disabled]="busy() || !canAct()" (click)="act()">
-                {{ ctaKey() | t }}
-                <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
-              </button>
-            }
+            <button class="o-btn" type="button" [disabled]="busy() || !canAct()" (click)="act()">
+              {{ ctaKey() | t }}
+              <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+            </button>
           </div>
         </main>
+
+        @if (frontOpen() && frontPage(); as fp) {
+          <!-- Prima pagina dello stop: si legge una volta, poi si chiude. -->
+          <div
+            class="sheet"
+            role="dialog"
+            aria-modal="true"
+            [attr.aria-label]="'ui.stop.title' | t"
+          >
+            <section class="front">
+              <div class="front-mast">
+                <span class="o-kicker">{{ 'ui.stop.' + fp.stop | t }}</span>
+                <span class="news-paper">{{ 'ui.paper.name' | t }}</span>
+              </div>
+              @for (h of fp.headlines; track $index; let first = $first) {
+                <p class="front-title" [class.lead]="first">{{ h.textKey | t: h.params }}</p>
+              } @empty {
+                <p class="front-title quiet">{{ 'ui.stop.quiet' | t }}</p>
+              }
+              @if (fp.weeks > 0) {
+                <div class="front-foot">
+                  <span>{{
+                    'ui.stop.record'
+                      | t
+                        : {
+                            n: fp.weeks,
+                            win: fp.record.win,
+                            draw: fp.record.draw,
+                            loss: fp.record.loss,
+                          }
+                  }}</span>
+                  @if (fp.ratings.length) {
+                    <span class="front-ratings" [attr.aria-label]="'ui.stop.ratings' | t">
+                      @for (r of fp.ratings; track $index) {
+                        <span class="o-num rating" [attr.data-tone]="r.tone">{{ r.text }}</span>
+                      }
+                    </span>
+                  }
+                </div>
+              }
+              <button #frontClose class="o-btn front-close" type="button" (click)="closeFront()">
+                {{ 'ui.stop.continue' | t }}
+              </button>
+            </section>
+          </div>
+        }
       }
     </ion-content>
     <app-tab-bar active="week" />
   `,
   styles: `
-    .last-plan {
-      margin: 0;
+    .small {
+      font-size: var(--o-text-sm);
     }
-    .press-call {
-      flex-direction: row;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-      color: var(--o-text);
-      --px-b: var(--o-accent);
-    }
-    .press-call > ion-icon:first-child {
-      font-size: 26px;
-      color: var(--o-accent-fg);
-    }
-    .press-call .grow {
+    .grow {
       flex: 1 1 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
+      min-width: 0;
     }
     .club {
       display: flex;
       align-items: center;
       gap: var(--o-space-3);
-      padding: 18px var(--o-space-4) 14px;
+      padding: 14px var(--o-space-4) 12px;
       border-bottom: 1px solid var(--o-border);
       max-width: 480px;
       margin: 0 auto;
@@ -447,79 +452,96 @@ import { TipComponent } from '../ui/tip.component';
     .club-name {
       font-family: var(--o-font-display);
       font-weight: 700;
-      font-size: 22px;
+      font-size: 20px;
       letter-spacing: 0.5px;
       text-transform: uppercase;
       line-height: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
-    .small {
-      font-size: var(--o-text-sm);
-    }
-    .headline {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: var(--o-space-3);
-    }
-    .when,
-    .who {
+    /* Stato: una riga di testo e tre barre sottili, niente scheda. */
+    .status {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 8px;
     }
-    .who {
-      align-items: flex-end;
-      text-align: right;
+    .status-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
     }
-    .big {
-      font-size: 64px;
-      line-height: 0.85;
-    }
-    .name {
-      font-family: var(--o-font-display);
-      font-weight: 700;
-      font-size: 20px;
-    }
-    .cash {
-      margin-top: 6px;
-      text-decoration: none;
-      padding: 4px 10px;
-      font-size: 12px;
+    .status-chips {
+      display: flex;
       gap: 6px;
+    }
+    .ovr,
+    .cash {
+      padding: 3px 8px;
+      font-size: 12px;
+      gap: 5px;
       color: var(--o-text);
+      text-decoration: none;
+    }
+    .ovr strong {
+      font-size: 15px;
+      color: var(--o-accent-fg);
     }
     .cash app-px-icon {
-      color: #f2b830;
+      color: var(--o-accent);
     }
-    .injury {
-      flex-direction: row;
-      align-items: center;
-      --px-b: var(--o-negative);
-      font-size: 13px;
-    }
-    .injury ion-icon {
-      font-size: 20px;
-      color: var(--o-negative);
-      flex: 0 0 auto;
-    }
-    .condition {
+    .meters {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
+      gap: 10px;
     }
-    .cond {
+    .meter {
       display: flex;
       align-items: flex-end;
-      gap: 6px;
+      gap: 5px;
       min-width: 0;
     }
-    .cond app-px-icon {
+    .meter app-px-icon {
       flex: 0 0 auto;
       color: var(--o-accent-fg);
       margin-bottom: 2px;
     }
-    .cond app-stat-bar {
+    .meter app-stat-bar {
       flex: 1 1 auto;
+    }
+    /* Avvisi: righe sottili, il colore dice l'urgenza. */
+    .alerts {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .alerts li {
+      list-style: none;
+    }
+    .alert {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: var(--o-touch);
+      font-size: 13px;
+      color: var(--o-text);
+      text-decoration: none;
+    }
+    .alert > ion-icon:first-child,
+    .alert > app-px-icon {
+      flex: 0 0 auto;
+      font-size: 18px;
+      color: var(--o-accent-fg);
+    }
+    .alert > ion-icon:last-child {
+      color: var(--o-text-muted);
+    }
+    .alert.hot {
+      font-weight: 600;
+    }
+    .alert.bad > ion-icon {
+      color: var(--o-negative);
     }
     .match {
       padding: 0;
@@ -532,14 +554,6 @@ import { TipComponent } from '../ui/tip.component';
       gap: 8px;
       padding: 12px 16px 0;
       color: var(--o-text-soft);
-    }
-    .match-comp {
-      padding: 2px 16px 0;
-      font-family: var(--o-font-display);
-      font-weight: 600;
-      font-size: 15px;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
     }
     .teams {
       display: flex;
@@ -563,27 +577,158 @@ import { TipComponent } from '../ui/tip.component';
       font-size: 32px;
       color: var(--o-accent-fg);
     }
-    .kickoff {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      padding: 14px 16px 16px;
-      border-top: 1px solid var(--o-border);
-    }
-    .after-plan {
-      margin: 0;
-      text-align: center;
-    }
     .match-foot {
       padding: 10px 16px;
       font-size: var(--o-text-sm);
       color: var(--o-text-soft);
       background: var(--o-hero-foot);
     }
+    .after-plan {
+      margin: 0;
+      padding: 10px 16px 12px;
+      text-align: center;
+    }
+    .mode-tag {
+      padding: 1px 6px;
+      font-size: 11px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--o-accent-fg);
+      border: 1px solid currentColor;
+    }
+    .mode-tag.quick {
+      color: var(--o-text-soft);
+    }
+    .none {
+      margin: 0;
+      text-align: center;
+    }
+    /* Capitolo: obiettivo in alto, poi le righe separate da un filetto. */
+    .chapter {
+      gap: 8px;
+      --px-b: var(--o-accent);
+    }
+    .chapter.met {
+      --px-b: var(--o-positive);
+    }
+    .goal-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .goal-text {
+      margin: 0;
+      font-family: var(--o-font-display);
+      font-weight: 600;
+      font-size: 19px;
+      line-height: 1.15;
+    }
+    .goal-text.quiet {
+      font-size: 16px;
+      color: var(--o-text-soft);
+    }
+    .ticks {
+      display: flex;
+      gap: 4px;
+    }
+    .tick {
+      flex: 1 1 0;
+      max-width: 36px;
+      height: 10px;
+      background: var(--o-border-strong);
+    }
+    .tick.on {
+      background: var(--o-accent);
+    }
+    .chapter.met .tick.on {
+      background: var(--o-positive);
+    }
+    .stamp {
+      padding: 2px 8px;
+      font-family: var(--o-font-display);
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--o-positive);
+      border: 2px solid var(--o-positive);
+      transform: rotate(-3deg);
+    }
+    .reward {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--o-accent-text);
+    }
+    .reward app-px-icon {
+      color: var(--o-accent);
+    }
+    .rows {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-top: 10px;
+      margin-top: 2px;
+      border-top: 1px solid var(--o-border);
+    }
+    /* Partite da vivere: una tacca per partita, giocata = esito, prossima evidenziata. */
+    .dots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .dot {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      font-family: var(--o-font-display);
+      font-weight: 800;
+      font-size: 17px;
+      border: 2px solid var(--o-border-strong);
+      color: var(--o-text-soft);
+    }
+    .dot.quick {
+      border-style: dashed;
+    }
+    .dot.next {
+      border-color: var(--o-accent);
+      border-style: solid;
+      background: var(--o-accent-soft);
+    }
+    .dot[data-outcome='win'] {
+      color: var(--o-positive);
+      border-color: var(--o-positive);
+    }
+    .dot[data-outcome='loss'] {
+      color: var(--o-negative);
+      border-color: var(--o-negative);
+    }
+    .plan-line {
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+    }
+    .plan-line .grow {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .plan-line > .o-btn {
+      flex: 0 0 auto;
+      width: auto;
+    }
     .plan {
       display: flex;
       flex-direction: column;
       gap: 10px;
+    }
+    .last-plan {
+      margin: 0;
     }
     .actions {
       display: grid;
@@ -610,16 +755,41 @@ import { TipComponent } from '../ui/tip.component';
       flex-wrap: wrap;
       gap: 6px;
     }
-    /* Prima pagina dello stop: testata, filetto doppio, titolo d'apertura e due di spalla. */
+    /* Un solo pulsante, sempre sotto il pollice. */
+    .cta {
+      position: sticky;
+      bottom: 0;
+      z-index: 2;
+      margin-top: auto;
+      padding: var(--o-space-3) 0 var(--o-space-2);
+      background: linear-gradient(to bottom, transparent, var(--o-bg) 35%);
+    }
+    /* Prima pagina dello stop: un foglio di giornale sopra la home, si chiude con Continua. */
+    .sheet {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      /* La barra delle schede (64 px) resta sopra: il foglio si ferma prima. */
+      padding: var(--o-space-4) var(--o-space-4)
+        calc(64px + var(--o-space-4) + env(safe-area-inset-bottom));
+      overflow-y: auto;
+      background: rgba(4, 16, 10, 0.72);
+      animation: o-fade var(--o-normal) ease-out both;
+    }
     .front {
+      width: 100%;
+      max-width: 448px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      padding: 12px 16px 12px;
+      gap: 8px;
+      padding: 14px 16px 16px;
       background: var(--o-paper);
       color: var(--o-ink);
       box-shadow: 4px 4px 0 0 var(--o-ink);
-      animation: o-front-in 240ms ease-out both;
+      animation: o-front-in var(--o-slow) ease-out both;
     }
     .front-mast {
       display: flex;
@@ -630,11 +800,19 @@ import { TipComponent } from '../ui/tip.component';
       margin-bottom: 2px;
       border-bottom: 3px double var(--o-ink);
     }
+    .news-paper {
+      font-family: var(--o-font-display);
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--o-ink-muted);
+    }
     .front-title {
       margin: 0;
       font-family: var(--o-font-display);
       font-weight: 700;
-      font-size: 17px;
+      font-size: 18px;
       line-height: 1.1;
       text-transform: uppercase;
     }
@@ -644,11 +822,11 @@ import { TipComponent } from '../ui/tip.component';
     }
     .front-title.lead {
       font-weight: 800;
-      font-size: 26px;
-      line-height: 1.02;
+      font-size: 30px;
+      line-height: 1;
     }
     .front-title.quiet {
-      font-size: 18px;
+      font-size: 20px;
       color: var(--o-ink-muted);
     }
     .front-foot {
@@ -684,185 +862,25 @@ import { TipComponent } from '../ui/tip.component';
       color: var(--o-ink-neg);
       border-color: var(--o-ink-neg);
     }
+    .front-close {
+      margin-top: 6px;
+    }
     @keyframes o-front-in {
       from {
         opacity: 0;
-        transform: translateY(-6px) rotate(-0.6deg);
+        transform: translateY(24px) rotate(-0.8deg);
+      }
+    }
+    @keyframes o-fade {
+      from {
+        opacity: 0;
       }
     }
     @media (prefers-reduced-motion: reduce) {
+      .sheet,
       .front {
         animation: none;
       }
-    }
-    /* Obiettivo del capitolo: tacche come le giornate segnate a matita sul calendario. */
-    .goal {
-      gap: 8px;
-      --px-b: var(--o-accent);
-    }
-    .goal-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
-    .goal-text {
-      margin: 0;
-      font-family: var(--o-font-display);
-      font-weight: 600;
-      font-size: 18px;
-      line-height: 1.2;
-    }
-    .ticks {
-      display: flex;
-      gap: 4px;
-    }
-    .tick {
-      flex: 1 1 0;
-      max-width: 36px;
-      height: 10px;
-      background: var(--o-border-strong);
-    }
-    .tick.on {
-      background: var(--o-accent);
-    }
-    .stamp {
-      padding: 2px 8px;
-      font-family: var(--o-font-display);
-      font-weight: 800;
-      font-size: 13px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--o-positive);
-      border: 2px solid var(--o-positive);
-      transform: rotate(-3deg);
-    }
-    .goal.met {
-      --px-b: var(--o-positive);
-    }
-    .mode-tag {
-      padding: 1px 6px;
-      font-size: 11px;
-      letter-spacing: 0.6px;
-      text-transform: uppercase;
-      color: var(--o-accent-fg);
-      border: 1px solid currentColor;
-    }
-    .mode-tag.quick {
-      color: var(--o-text-soft);
-    }
-    .none {
-      margin: 0;
-      text-align: center;
-    }
-    .picks {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .picks ol {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-    .pick {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-height: 44px;
-    }
-    .pick .grow {
-      flex: 1 1 auto;
-      font-family: var(--o-font-display);
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-    .pick.next .grow {
-      color: var(--o-accent-fg);
-    }
-    .pick.done {
-      opacity: 0.7;
-    }
-    .result {
-      min-width: 20px;
-      text-align: right;
-      font-size: 18px;
-    }
-    .result[data-outcome='win'] {
-      color: var(--o-positive);
-    }
-    .result[data-outcome='loss'] {
-      color: var(--o-negative);
-    }
-    .plan-sum {
-      flex-direction: row;
-      align-items: center;
-      gap: 12px;
-    }
-    .plan-sum > .o-btn {
-      flex: 0 0 auto;
-      width: auto;
-    }
-    .plan-sum .grow {
-      flex: 1 1 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      min-width: 0;
-    }
-    /* Striscia di prima pagina: testata sottile, filetto doppio, titolo grande. */
-    .news {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding: 12px 16px 14px;
-      background: var(--o-paper);
-      color: var(--o-ink);
-      text-decoration: none;
-      box-shadow: 4px 4px 0 0 var(--o-ink);
-    }
-    .news-mast {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      padding-bottom: 6px;
-      border-bottom: 3px double var(--o-ink);
-    }
-    .news-paper {
-      font-family: var(--o-font-display);
-      font-weight: 800;
-      font-size: 13px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--o-ink-muted);
-    }
-    .news-title {
-      font-family: var(--o-font-display);
-      font-weight: 800;
-      font-size: 24px;
-      line-height: 1.05;
-      text-transform: uppercase;
-    }
-    .window {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      text-decoration: none;
-      color: var(--o-text);
-      font-size: 13px;
-      --px-b: var(--o-accent);
-    }
-    .last {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .cta {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: var(--o-space-2);
     }
   `,
 })
@@ -994,7 +1012,6 @@ export class WeekPage {
         return 'ui.week.cta.season';
       case 'retired':
         return 'ui.week.cta.retired';
-      // Partita aperta senza pick (salvataggio del ciclo settimanale): si riprende da qui.
       case 'matchInProgress':
         return 'ui.week.cta.resume';
       case 'match':
@@ -1004,10 +1021,11 @@ export class WeekPage {
     }
   });
 
-  /** Partita da giocare o da riprendere: il pulsante sta nella scheda partita, non in fondo. */
-  protected readonly matchFirst = computed(
-    () => (this.step() === 'match' || this.step() === 'matchInProgress') && !!this.nextPick(),
-  );
+  /** La prima pagina resta aperta finché il giocatore non la chiude; uno stop nuovo la riapre. */
+  protected readonly frontOpen = computed(() => {
+    const r = this.game.lastStop();
+    return !!r && this.game.frontSeen() !== r;
+  });
 
   protected readonly canAct = computed(
     () =>
@@ -1015,7 +1033,15 @@ export class WeekPage {
       (this.choices().length > 0 && (!this.needsFocus() || this.focus() !== null)),
   );
 
+  private readonly frontClose = viewChild<ElementRef<HTMLButtonElement>>('frontClose');
+  private readonly injector = inject(Injector);
+
   constructor() {
+    // Foglio aperto: lo sfondo è inerte e il focus va su Continua, così non si avanza senza leggerlo.
+    effect(() => {
+      if (!this.frontOpen()) return;
+      afterNextRender(() => this.frontClose()?.nativeElement.focus(), { injector: this.injector });
+    });
     // Il piano proposto è quello del capitolo (o l'ultimo ricordato), una volta per apertura.
     effect(() => {
       const s = this.game.state();
@@ -1101,8 +1127,8 @@ export class WeekPage {
     });
   }
 
-  protected async playMatch(): Promise<void> {
-    await this.router.navigateByUrl('/partita');
+  protected closeFront(): void {
+    this.game.frontSeen.set(this.game.lastStop());
   }
 
   private async run(fn: () => Promise<void>): Promise<void> {

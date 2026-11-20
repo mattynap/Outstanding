@@ -3,11 +3,12 @@ import { IonContent } from '@ionic/angular';
 import { GameService } from '../core/game.service';
 import { TranslatePipe } from '../core/i18n.service';
 import { careerSummary, trophyKey } from '../core/career-view';
+import { goalHistory, goalView } from '../core/chapter-view';
 import { formatAverage, formatInt, ordinal } from '../core/text';
 import { CrestComponent } from '../ui/crest.component';
 import { TabBarComponent } from '../ui/tab-bar.component';
 
-/** Storico della carriera: punteggio attuale, bacheca e stagioni giocate. */
+/** Bacheca: punteggio, obiettivi di capitolo (in corso e chiusi), trofei e stagioni giocate. */
 @Component({
   selector: 'app-career',
   imports: [IonContent, TranslatePipe, CrestComponent, TabBarComponent],
@@ -48,6 +49,48 @@ import { TabBarComponent } from '../ui/tab-bar.component';
                 'ui.stats.average' | t
               }}</span>
             </div>
+          </section>
+
+          <section class="o-card goals" [attr.aria-label]="'ui.career.goals' | t">
+            <div class="o-section-head">
+              <h2 class="o-section-title">{{ 'ui.career.goals' | t }}</h2>
+              @if (goals().total > 0) {
+                <span class="o-muted small">{{
+                  'ui.career.goalsCount' | t: { met: goals().met, n: goals().total }
+                }}</span>
+              }
+            </div>
+            @if (current(); as g) {
+              <div class="goal-row now">
+                <span class="grow">
+                  <span>{{ g.text.textKey | t: g.text.params }}</span>
+                  <span class="o-muted small">{{
+                    g.text.progressKey | t: g.text.progressParams
+                  }}</span>
+                  <span class="small reward">{{ 'ui.chapter.reward' | t: g.text.reward }}</span>
+                </span>
+                <span class="verdict" [class.ok]="g.text.met">{{
+                  (g.text.met ? 'ui.career.goalMet' : 'ui.career.goalNow') | t
+                }}</span>
+              </div>
+            }
+            @for (r of goals().rows; track $index) {
+              <div class="goal-row">
+                <span class="grow">
+                  <span>{{ r.textKey | t: r.params }}</span>
+                  <span class="o-muted small">{{
+                    'ui.career.goalLine' | t: { season: r.season, chapter: (r.chapterKey | t) }
+                  }}</span>
+                </span>
+                <span class="verdict" [class.ok]="r.met" [class.ko]="!r.met">{{
+                  (r.met ? 'ui.career.goalMet' : 'ui.career.goalMissed') | t
+                }}</span>
+              </div>
+            } @empty {
+              @if (!current()) {
+                <p class="o-muted small none">{{ 'ui.career.goalsNone' | t }}</p>
+              }
+            }
           </section>
 
           <section class="o-card">
@@ -193,6 +236,43 @@ import { TabBarComponent } from '../ui/tab-bar.component';
       color: var(--o-negative);
       border: 1px solid var(--o-negative);
     }
+    .goals {
+      gap: 0;
+    }
+    .goal-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-top: 1px solid var(--o-border);
+    }
+    .goal-row .grow > span:first-child {
+      font-family: var(--o-font-display);
+      font-weight: 600;
+      font-size: 16px;
+      line-height: 1.15;
+    }
+    .reward {
+      color: var(--o-accent-text);
+    }
+    .verdict {
+      flex: 0 0 auto;
+      padding: 2px 8px;
+      font-family: var(--o-font-display);
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--o-text-soft);
+      border: 2px solid currentColor;
+    }
+    .verdict.ok {
+      color: var(--o-positive);
+    }
+    .verdict.ko {
+      color: var(--o-text-muted);
+      border-style: dashed;
+    }
     .numbers {
       display: flex;
       justify-content: space-between;
@@ -205,6 +285,18 @@ export class CareerPage {
   private readonly game = inject(GameService);
   protected readonly trophyKey = trophyKey;
   protected readonly ordinal = ordinal;
+
+  protected readonly goals = computed(() => {
+    const s = this.game.state();
+    return s ? goalHistory(s, this.game.ctx) : { met: 0, total: 0, rows: [] };
+  });
+
+  /** L'obiettivo del capitolo in corso, se non è già stato liquidato. */
+  protected readonly current = computed(() => {
+    const s = this.game.state();
+    const text = s && !s.chapter.goal?.settled ? goalView(s, this.game.ctx) : null;
+    return text ? { text } : null;
+  });
 
   protected readonly view = computed(() => {
     const s = this.game.state();

@@ -26,7 +26,8 @@ export function visibleTabs(s: GameState, offers: number, seen: readonly TabId[]
       offers > 0 ||
       played ||
       seen.includes('market'),
-    career: played || seen.includes('career'),
+    // La bacheca si apre col primo obiettivo di capitolo chiuso.
+    career: played || (s.goalRecords?.length ?? 0) > 0 || seen.includes('career'),
   };
   return ORDER.filter((t) => show[t]);
 }

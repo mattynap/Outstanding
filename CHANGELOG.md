@@ -16,6 +16,17 @@ Tutte le modifiche rilevanti del progetto. Formato ispirato a
   modalità scelta.
 - Piano del capitolo al posto del piano settimanale: obbligatorio a inizio stagione e a ogni
   capitolo nuovo (anche dopo un riavvio), modificabile agli stop.
+- Home riordinata in tre strati: stato compatto in alto (stagione, OVR, soldi, forma, energia,
+  morale) con avvisi di una riga solo quando servono; prossima partita; scheda del capitolo con
+  obiettivo, premio, striscia delle partite da vivere e riga del piano. Un solo pulsante fisso in
+  basso.
+- La prima pagina dello stop è un foglio sovrapposto che si legge una volta e si chiude con
+  "Continua"; il piano si apre a tutta scheda solo quando va scelto.
+- Premi degli obiettivi visibili prima (fiducia del mister e morale), assegnati in automatico a
+  capitolo chiuso.
+- La scheda Carriera diventa la Bacheca: obiettivi di capitolo (in corso e chiusi, con il conto dei
+  raggiunti), trofei e stagioni. Si apre al primo obiettivo chiuso. Il motore registra gli
+  obiettivi liquidati in `goalRecords` (campo facoltativo, salvataggi precedenti compatibili).
 
 ### Regista della partita (Parte A)
 

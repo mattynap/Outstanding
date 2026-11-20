@@ -15,6 +15,7 @@ import {
 import {
   chapterPicks,
   currentPick,
+  goalHistory,
   goalView,
   needsPlan,
   nextStep,
@@ -72,6 +73,12 @@ describe('home del capitolo', () => {
     expect(stops.at(-1)).toBe('seasonEnd');
     expect(modes.length).toBeGreaterThan(0);
     expect(modes).toContain('full');
+    // Gli obiettivi chiusi finiscono in bacheca, dal più recente.
+    const h = goalHistory(s, ctx);
+    expect(h.total).toBeGreaterThan(0);
+    expect(h.rows).toHaveLength(h.total);
+    expect(h.met).toBe(h.rows.filter((r) => r.met).length);
+    expect(h.rows[0]!.chapterKey).toMatch(/^ui\.chapter\.name\./);
   });
 
   it('allo stop di fine capitolo non si gioca prima di aver pianificato la settimana', () => {
@@ -108,6 +115,7 @@ describe('home del capitolo', () => {
     expect(g.progressKey).toMatch(/^ui\.chapter\.progress\./);
     expect(g.params.target).not.toBe('');
     if (g.ticks) expect(g.ticks.done).toBeLessThanOrEqual(g.ticks.total);
+    expect(g.reward.trust).toBe(ctx.config.calendar.chapterGoals.rewardTrust);
 
     const picks = chapterPicks(s, ctx);
     const weeks = picks.map((p) => p.view.fixture.week);

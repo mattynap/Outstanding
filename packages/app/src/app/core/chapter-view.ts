@@ -65,6 +65,8 @@ export interface GoalView {
   /** Tacche per i bersagli a conteggio (presenze, gol...); nulle per media voto e classifica. */
   ticks: { done: number; total: number } | null;
   met: boolean;
+  /** Cosa dà l'obiettivo: si vede prima, non solo a capitolo chiuso. */
+  reward: { trust: number; morale: number; miss: number };
 }
 
 /** L'obiettivo del capitolo con il progresso letto dal registro; nullo in preparazione o senza club. */
@@ -77,6 +79,7 @@ export function goalView(s: GameState, ctx: GameContext): GoalView | null {
   const target = rating ? formatAverage(goal.target) : String(goal.target);
   const counted = !rating && def.metric !== 'tablePosition';
   const log = s.chapter.log;
+  const cfg = ctx.config.calendar.chapterGoals;
   return {
     textKey: def.textKey,
     params: { target },
@@ -93,6 +96,7 @@ export function goalView(s: GameState, ctx: GameContext): GoalView | null {
     },
     ticks: counted ? { done: Math.min(progress, goal.target), total: goal.target } : null,
     met,
+    reward: { trust: cfg.rewardTrust, morale: cfg.rewardMorale, miss: cfg.missMorale },
   };
 }
 
@@ -119,4 +123,38 @@ export function chapterPicks(s: GameState, ctx: GameContext): PickView[] {
     outcome: own ? outcomeFor(f, own) : null,
     next: f.id === nextId,
   }));
+}
+
+export interface GoalRecordView {
+  season: number;
+  chapterKey: string;
+  textKey: string;
+  params: { target: string };
+  met: boolean;
+}
+
+/** Obiettivi di capitolo già chiusi, dal più recente: la parte "premi" della bacheca. */
+export function goalHistory(
+  s: GameState,
+  ctx: GameContext,
+): { met: number; total: number; rows: GoalRecordView[] } {
+  const records = s.goalRecords ?? [];
+  const rows = records
+    .flatMap((r) => {
+      // Un obiettivo tolto dai contenuti non rompe la bacheca: si salta.
+      const def = ctx.content.chapterGoals.find((g) => g.id === r.goalId);
+      if (!def) return [];
+      const target = def.metric === 'avgRating' ? formatAverage(r.target) : String(r.target);
+      return [
+        {
+          season: r.season,
+          chapterKey: `ui.chapter.name.${r.chapter}`,
+          textKey: def.textKey,
+          params: { target },
+          met: r.met,
+        },
+      ];
+    })
+    .reverse();
+  return { met: records.filter((r) => r.met).length, total: records.length, rows };
 }

@@ -111,6 +111,8 @@ export class GameService {
   /** Ultimi resoconti, per le schermate di riepilogo. */
   /** Resoconto dell'ultimo "vai avanti": stop, partite simulate e titoli di prima pagina. */
   readonly lastStop = signal<FastForwardReport | null>(null);
+  /** Prima pagina già chiusa dal giocatore: coincide con `lastStop` finché non arriva uno stop nuovo. */
+  readonly frontSeen = signal<FastForwardReport | null>(null);
   readonly lastSeason = signal<SeasonReport | null>(null);
   readonly lastMatch = signal<MatchReport | null>(null);
   readonly lastEvent = signal<EventReport | null>(null);

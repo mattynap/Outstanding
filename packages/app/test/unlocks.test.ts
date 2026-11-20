@@ -40,6 +40,13 @@ describe('barra a gradini', () => {
     expect(parseSeen('{rotto')).toBeNull();
     expect(parseSeen('["market","zzz"]')).toEqual(['market']);
   });
+  it('la Bacheca arriva col primo obiettivo di capitolo chiuso', () => {
+    const closed: GameState = {
+      ...midSeasonRookie,
+      goalRecords: [{ season: 1, chapter: 'autumn', goalId: 'x', target: 1, met: true }],
+    };
+    expect(visibleTabs(closed, 0)).toContain('career');
+  });
   it('Carriera dopo la prima stagione', () =>
     expect(visibleTabs(afterOneSeason, 0)).toEqual([
       'week',

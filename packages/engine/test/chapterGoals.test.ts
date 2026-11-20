@@ -137,6 +137,16 @@ describe('obiettivo del capitolo', () => {
     expect(state.player.condition.morale).toBe(50 + cfg.rewardMorale);
     expect(headline?.kind).toBe('event');
     expect(headline?.textKey).toBe('chapterGoals.presenza_costante.met');
+    expect(state.goalRecords).toEqual([
+      ...(s.goalRecords ?? []),
+      {
+        season: s.season,
+        chapter: s.chapter.id,
+        goalId: 'presenza_costante',
+        target: s.chapter.goal!.target,
+        met: true,
+      },
+    ]);
   });
 
   it('missed goal applies only missMorale', () => {
@@ -145,6 +155,7 @@ describe('obiettivo del capitolo', () => {
     expect(coachRel(state)).toBe(coachRel(s));
     expect(state.player.condition.morale).toBe(50 + cfg.missMorale);
     expect(headline?.textKey).toBe('chapterGoals.presenza_costante.missed');
+    expect(state.goalRecords?.at(-1)?.met).toBe(false);
   });
 
   it('settling twice changes nothing', () => {

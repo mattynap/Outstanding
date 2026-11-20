@@ -467,6 +467,15 @@ export interface ChapterGoalState {
   settled: boolean;
 }
 
+/** Obiettivo di capitolo già liquidato, per la bacheca. */
+export interface ChapterGoalRecord {
+  season: number;
+  chapter: ChapterId;
+  goalId: string;
+  target: number;
+  met: boolean;
+}
+
 /** Il capitolo corrente della stagione e le partite che il giocatore vivrà in prima persona. */
 export interface ChapterState {
   id: ChapterId;
@@ -562,6 +571,8 @@ export interface GameState {
   chapter: ChapterState;
   /** Piano di allenamento valido per tutto il capitolo (v3); vuoto finché non è scelto. */
   chapterPlan: WeekChoice[];
+  /** Obiettivi di capitolo liquidati, in ordine (assente nei salvataggi precedenti). */
+  goalRecords?: ChapterGoalRecord[];
   offers: ContractOffer[];
   sponsorOffers: SponsorOffer[];
   /** Settimana in cui il mercato è già stato aggiornato (-1 = mai). */

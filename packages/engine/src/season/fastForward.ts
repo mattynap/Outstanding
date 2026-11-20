@@ -4,12 +4,23 @@ import { drawWeekEvents, getEvent, resolveEvent } from '../events/events';
 import { simulateMatch, type MatchReport } from '../match/match';
 import { clubLevel } from '../market/offers';
 import { bigMatchKind } from '../media/media';
-import type { ContractOffer, GameState, Score } from '../types';
+import type { ContractOffer, GameState, LifeAction, Score, WeekPlan } from '../types';
 import { weekOfSeason } from '../time';
 import { chapterOf, createChapter, emptyChapterLog, refreshChapterPicks } from './director';
 import { buildHeadlines, tableZone, type Headline } from './headlines';
 import { settleChapter, startChapterGoal } from './goals';
-import { getWeekOptions, planWeek, type WeekChoice } from './plan';
+import {
+  assertWeekPlan,
+  chapterMoraleLossFactor,
+  getPlanOptions,
+  keepLastPlan,
+  lifeAvailable,
+  planWeek,
+  repeatPlan,
+  type WeekPlanReport,
+} from './plan';
+
+export { repeatPlan } from './plan';
 import { advanceWeek, isSeasonOver, playerFixture } from './week';
 
 export type { Headline, HeadlineKind } from './headlines';
@@ -39,25 +50,15 @@ export interface FastForwardReport {
   summary: MatchSummary[];
   /** Titoli di prima pagina del tratto (solo `advanceToStop`; vuoti in `fastForward`). */
   headlines: Headline[];
+  /** Settimane in cui l'azione fuori dal campo del piano non era disponibile ed è saltata. */
+  planIssues: PlanIssue[];
 }
 
-/**
- * Il piano da ripetere: quello della settimana scorsa, senza le azioni non disponibili e senza
- * serate (i rischi si scelgono di persona); se non resta nulla, il piano delle settimane saltate.
- */
-export function repeatPlan(
-  state: GameState,
-  ctx: GameContext = defaultContext,
-  remembered: readonly WeekChoice[] | undefined = state.lastPlan,
-): WeekChoice[] {
-  const options = getWeekOptions(state, ctx);
-  const ok = (id: string) => {
-    const o = options.find((x) => x.id === id);
-    return Boolean(o?.available) && o?.kind !== 'party';
-  };
-  const last = (remembered ?? []).filter((c) => ok(c.actionId));
-  if (last.length > 0) return last;
-  return ctx.config.progression.skipWeekPlan.filter(ok).map((actionId) => ({ actionId }));
+export interface PlanIssue {
+  week: number;
+  life: LifeAction;
+  /** Perché non era disponibile (chiave di testo). */
+  reasonKey: string;
 }
 
 /** Valore "prudente" di un effetto: guadagni moderati, nessun salto nel buio. */
@@ -65,7 +66,6 @@ function effectScore(e: EventEffect, state: GameState): number {
   const salary = Math.max(100, state.player.contract?.salaryWeekly ?? 0);
   switch (e.type) {
     case 'stat':
-      if (e.path === 'condition.injuryRisk') return -e.delta;
       if (e.path === 'image.followers') return e.delta / 500;
       if (e.path.startsWith('money.')) return (e.delta / salary) * 2;
       return e.delta;
@@ -146,7 +146,7 @@ function openNextChapter(
   state: GameState,
   ctx: GameContext,
 ): { state: GameState; headline: Headline | null } {
-  const out = settleChapter(state, ctx);
+  const out = settleChapter(state, ctx, chapterMoraleLossFactor(state, ctx));
   const closed = out.state;
   const next = {
     ...createChapter(closed, ctx),
@@ -156,9 +156,25 @@ function openNextChapter(
   return { state: startChapterGoal({ ...closed, chapter: next }, ctx), headline: out.headline };
 }
 
-/** Il piano del capitolo; se è vuoto, quello ricordato dall'ultima scelta (spec §8.2). */
-const chapterPlanOf = (s: GameState): readonly WeekChoice[] | undefined =>
-  s.chapterPlan.length > 0 ? s.chapterPlan : s.lastPlan;
+/** Pianifica la settimana col piano ripetuto, senza toccare il piano ricordato. */
+function planRepeated(s: GameState, ctx: GameContext, report: FastForwardReport): GameState {
+  const planned = planWeek(s, repeatPlan(s, ctx), ctx);
+  noteIssue(report, s, planned.report, ctx);
+  return keepLastPlan(planned.state, s);
+}
+
+function noteIssue(
+  report: FastForwardReport,
+  s: GameState,
+  r: WeekPlanReport,
+  ctx: GameContext,
+): void {
+  const life = r.lifeSkipped;
+  if (!life) return;
+  // Un'azione saltata è non disponibile, quindi ha sempre il suo motivo.
+  const reasonKey = getPlanOptions(s, ctx).life.find((l) => l.id === life)!.reasonKey!;
+  report.planIssues.push({ week: s.week, life, reasonKey });
+}
 
 /**
  * Avanti veloce: gioca le settimane da solo (piano ripetuto, notizie con la scelta più prudente,
@@ -181,6 +197,7 @@ export function fastForward(
     events: 0,
     summary: [],
     headlines: [],
+    planIssues: [],
   };
   const offersAtStart = new Set(state.offers.map((o) => o.id));
 
@@ -209,10 +226,8 @@ export function fastForward(
       }
     }
 
-    if (s.plannedWeek !== s.week) {
-      // Il piano automatico non sostituisce quello scelto dal giocatore.
-      s = { ...planWeek(s, repeatPlan(s, ctx, chapterPlanOf(s)), ctx).state, lastPlan: s.lastPlan };
-    }
+    // Il piano automatico non sostituisce quello scelto dal giocatore.
+    if (s.plannedWeek !== s.week) s = planRepeated(s, ctx, report);
     s = drawWeekEvents(s, ctx).state;
     if (report.weeks > 0 && hasPersonalNews(s, ctx)) {
       report.stop = 'news';
@@ -236,16 +251,20 @@ export function fastForward(
   return { state: s, report };
 }
 
-/** Imposta il piano del capitolo: le settimane simulate lo ripetono (con le regole di `repeatPlan`). */
+/**
+ * Imposta il piano del capitolo: le settimane simulate lo ripetono. Rifiuta un'azione fuori dal
+ * campo non disponibile adesso: la UI non lo conferma.
+ */
 export function setChapterPlan(
   state: GameState,
-  choices: WeekChoice[],
+  plan: WeekPlan,
   ctx: GameContext = defaultContext,
 ): GameState {
-  const known = new Set(getWeekOptions(state, ctx).map((o) => o.id));
-  for (const c of choices)
-    if (!known.has(c.actionId)) throw new Error(`Unknown action "${c.actionId}"`);
-  return { ...state, chapterPlan: choices.map((c) => ({ ...c })) };
+  assertWeekPlan(plan);
+  if (plan.life !== undefined && !lifeAvailable(state, plan.life, ctx)) {
+    throw new Error(`Life action "${plan.life}" is not available`);
+  }
+  return { ...state, chapterPlan: { ...plan } };
 }
 
 /**
@@ -273,6 +292,7 @@ export function advanceToStop(
     events: 0,
     summary: [],
     headlines: [],
+    planIssues: [],
   };
   const offersAtStart = new Set(state.offers.map((o) => o.id));
   const zoneFrom = tableZone(state, ctx);
@@ -284,7 +304,7 @@ export function advanceToStop(
   // Esito dell'obiettivo liquidato in questo tratto: titolo in testa, nel limite dei titoli.
   let goalHeadline: Headline | null = null;
   const settle = () => {
-    const out = settleChapter(s, ctx);
+    const out = settleChapter(s, ctx, chapterMoraleLossFactor(s, ctx));
     s = out.state;
     goalHeadline = out.headline ?? goalHeadline;
   };
@@ -318,11 +338,8 @@ export function advanceToStop(
     }
     s = { ...s, chapter: { ...s.chapter, picks: refreshChapterPicks(s, ctx) } };
 
-    if (s.plannedWeek !== s.week) {
-      // Il piano del capitolo non sostituisce quello scelto a mano dal giocatore.
-      const plan = repeatPlan(s, ctx, chapterPlanOf(s));
-      s = { ...planWeek(s, plan, ctx).state, lastPlan: s.lastPlan };
-    }
+    // Il piano del capitolo non sostituisce quello scelto a mano dal giocatore.
+    if (s.plannedWeek !== s.week) s = planRepeated(s, ctx, report);
     s = drawWeekEvents(s, ctx).state;
     // Con una notizia personale da leggere una partita non scelta può essere ancora dovuta, ma
     // beginMatch rifiuta finché le notizie sono in sospeso: la si simula al giro dopo. Un'offerta

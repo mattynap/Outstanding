@@ -1,0 +1,36 @@
+{
+  "cases": [
+    {
+      "plan": [{ "actionId": "train_intense" }, { "actionId": "rest" }],
+      "expected": { "load": "push" }
+    },
+    {
+      "plan": [{ "actionId": "train_normal" }, { "actionId": "party" }],
+      "expected": { "load": "balanced", "life": "party" }
+    },
+    {
+      "plan": [{ "actionId": "leisure" }, { "actionId": "party" }],
+      "expected": { "load": "balanced", "life": "leisure" }
+    },
+    {
+      "plan": [{ "actionId": "train_focus", "focus": "passing" }, { "actionId": "family" }],
+      "expected": { "load": "balanced", "focus": "passing", "life": "family" }
+    },
+    {
+      "plan": [{ "actionId": "rest" }, { "actionId": "physio" }],
+      "expected": { "load": "rest" }
+    },
+    {
+      "plan": [{ "actionId": "physio" }, { "actionId": "sponsor_shoot" }],
+      "expected": { "load": "rest", "life": "sponsor" }
+    },
+    {
+      "plan": [{ "actionId": "sponsor_shoot" }],
+      "expected": { "load": "balanced", "life": "sponsor" }
+    },
+    {
+      "plan": [],
+      "expected": null
+    }
+  ]
+}

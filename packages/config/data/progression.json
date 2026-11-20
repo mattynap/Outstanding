@@ -1,96 +1,9 @@
 {
-  "actionsPerWeek": 2,
-  "actions": [
-    {
-      "id": "train_normal",
-      "kind": "training",
-      "intensity": 1,
-      "effects": {
-        "energy": -8,
-        "injuryRisk": 1
-      }
-    },
-    {
-      "id": "train_intense",
-      "kind": "training",
-      "intensity": 1.6,
-      "injuryChance": 0.008,
-      "effects": {
-        "energy": -12,
-        "injuryRisk": 3
-      }
-    },
-    {
-      "id": "train_focus",
-      "kind": "training",
-      "intensity": 1,
-      "focus": true,
-      "effects": {
-        "energy": -10,
-        "injuryRisk": 2
-      }
-    },
-    {
-      "id": "rest",
-      "kind": "rest",
-      "effects": {
-        "energy": 18,
-        "injuryRisk": -4
-      }
-    },
-    {
-      "id": "physio",
-      "kind": "recovery",
-      "healChance": 0.5,
-      "effects": {
-        "energy": 8,
-        "injuryRisk": -8
-      }
-    },
-    {
-      "id": "leisure",
-      "kind": "leisure",
-      "effects": {
-        "energy": -4,
-        "morale": 4,
-        "happiness": 5,
-        "discipline": -1
-      }
-    },
-    {
-      "id": "family",
-      "kind": "leisure",
-      "effects": {
-        "morale": 2,
-        "happiness": 4
-      }
-    },
-    {
-      "id": "party",
-      "kind": "party",
-      "effects": {
-        "energy": -12,
-        "form": -3,
-        "morale": 3,
-        "happiness": 6,
-        "popularity": 1,
-        "discipline": -2
-      }
-    },
-    {
-      "id": "sponsor_shoot",
-      "kind": "sponsor",
-      "effects": {
-        "energy": -5,
-        "popularity": 1,
-        "discipline": -1
-      }
-    }
-  ],
-  "skipWeekPlan": ["train_normal", "rest"],
+  "skipWeekPlan": {
+    "load": "balanced"
+  },
   "growth": {
     "basePerSession": 0.035,
-    "focusMultiplier": 3,
     "minWeightShare": 0.5,
     "matchPer90": 0.6,
     "ageMultipliers": [
@@ -131,8 +44,6 @@
       "min": 0.75,
       "max": 1.25
     },
-    "lowEnergyThreshold": 30,
-    "lowEnergyFactor": 0.6,
     "focusShare": 0.6,
     "focusLoss": 0.1,
     "freshnessFactor": {
@@ -156,12 +67,9 @@
     "disciplineMitigation": 0.4
   },
   "condition": {
-    "energyRecoveryPerWeek": 10,
-    "energyPer90": 22,
     "formTarget": 50,
     "formDriftPerWeek": 0.15,
     "formPerRatingPoint": 6,
-    "formNotPlaying": -2,
     "moraleTarget": 60,
     "moraleDriftPerWeek": 0.1,
     "moraleBySelection": {
@@ -177,15 +85,10 @@
     "moralePerRatingPoint": 2,
     "trustPerRatingPoint": 2,
     "trustNotSelected": -1,
-    "injuryRiskTarget": 10,
-    "injuryRiskDriftPerWeek": 0.2,
-    "lowEnergyInjuryRisk": 3,
     "freshnessPer90": 22
   },
   "injuries": {
     "matchChancePer90": 0.025,
-    "riskPerPoint": 0.03,
-    "lowEnergyMultiplier": 1.8,
     "formOnInjury": -8,
     "moraleOnInjury": -6,
     "types": [
@@ -279,9 +182,6 @@
       "gossipChance": 0.05,
       "fineChance": 0.1
     }
-  },
-  "skipWeekPlanV4": {
-    "load": "balanced"
   },
   "discipline": {
     "driftPerWeek": 0.05

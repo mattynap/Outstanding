@@ -13,6 +13,7 @@ import { clubRatingFromRoster } from '../world/club';
 import { IdGen } from '../world/generate';
 import { createChapter } from './director';
 import { settleChapter } from './goals';
+import { chapterMoraleLossFactor } from './plan';
 import type { Headline } from './headlines';
 import { buildSeasonCalendar } from './schedule';
 import { computeStandings, type StandingRow } from './standings';
@@ -119,7 +120,11 @@ export function endSeason(
   if (input.retired) throw new Error('The career is over');
   if (!isSeasonOver(input, ctx)) throw new Error('The season is not over yet');
   // L'obiettivo dell'ultimo capitolo si liquida qui se non l'ha già fatto lo stop di fine stagione.
-  const { state, headline: goalHeadline } = settleChapter(input, ctx);
+  const { state, headline: goalHeadline } = settleChapter(
+    input,
+    ctx,
+    chapterMoraleLossFactor(input, ctx),
+  );
   const cfg = ctx.config;
   const rng = Rng.fromState(state.rngState);
   const ids = new IdGen(state.nextId);
@@ -259,13 +264,14 @@ export function endSeason(
     calendar,
     cups: nextCups.cups,
     player: {
-      ...applyDecline(p, record.age, { rest: 0, balanced: 0, push: 0 }, ctx),
+      ...applyDecline(p, record.age, state.seasonLoadWeeks, ctx),
       seasonStats: emptySeasonStats(),
       seasonLevelApps: undefined,
       history: [...p.history, record],
     },
     rngState: rng.getState(),
     nextId: ids.next,
+    seasonLoadWeeks: { rest: 0, balanced: 0, push: 0 },
   };
 
   // Contratti scaduti, prestiti finiti, ritiro e mercato della nuova stagione.
@@ -278,7 +284,7 @@ export function endSeason(
         ...createChapter(transitioned, ctx),
         lastGoalId: state.chapter.goal?.id ?? state.chapter.lastGoalId,
       },
-      chapterPlan: [],
+      chapterPlan: null,
     },
     seasonReport: {
       season: state.season,

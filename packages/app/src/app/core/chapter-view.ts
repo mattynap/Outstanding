@@ -48,7 +48,7 @@ export function needsPlan(
   ctx: GameContext,
   lastStop: FastForwardStop | null,
 ): boolean {
-  if (s.chapterPlan.length === 0) return true;
+  if (s.chapterPlan === null) return true;
   if (lastStop) return lastStop === 'chapterEnd';
   const cal = ctx.config.calendar;
   const sw = weekOfSeason(s.week, cal);

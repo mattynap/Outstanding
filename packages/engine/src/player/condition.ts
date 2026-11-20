@@ -1,9 +1,10 @@
 import type { DifficultyLevel } from '@outstanding/config';
 import type { GameContext } from '../context';
 import type { Rng } from '../rng';
-import type { Player, Selection } from '../types';
+import type { EffectiveLoad, Player, Selection } from '../types';
 import { clamp } from '../util';
 import type { LifeModifiers } from '../season/life';
+import { formWhenNotPlaying } from '../season/load';
 import { applyGrowth, injure, injuryChance, rollInjury } from './progression';
 
 const pct = (v: number) => clamp(v, 0, 100);
@@ -20,8 +21,9 @@ export interface MatchOutcome {
 }
 
 /**
- * Effetti di una partita sul giocatore: energia spesa, forma e morale dal voto e dal risultato,
- * fiducia dell'allenatore, esperienza (crescita) e possibile infortunio.
+ * Effetti di una partita sul giocatore: forma e morale dal voto e dal risultato, fiducia
+ * dell'allenatore, esperienza (crescita) e possibile infortunio. La freschezza spesa non si scrive
+ * qui: torna come `freshnessDelta` e la somma `advanceWeek` a fine settimana.
  */
 export function applyMatchAftermath(
   player: Player,
@@ -33,8 +35,10 @@ export function applyMatchAftermath(
   /** Modificatori della difficoltà: solo crescita e infortuni. */
   mods: Pick<DifficultyLevel, 'growth' | 'injury'> = { growth: 1, injury: 1 },
   /** Azione fuori dal campo del capitolo: scala solo i cali di morale. */
-  lifeMods?: Pick<LifeModifiers, 'moraleLossFactor'>,
-): { player: Player; injured: boolean } {
+  lifeMods: Pick<LifeModifiers, 'moraleLossFactor'> = { moraleLossFactor: 1 },
+  /** Carico della settimana: decide la forma quando non si gioca. */
+  load: EffectiveLoad = 'balanced',
+): { player: Player; injured: boolean; freshnessDelta: number } {
   const c = ctx.config.progression.condition;
   const played = outcome.minutesPlayed > 0;
   const share =
@@ -45,16 +49,16 @@ export function applyMatchAftermath(
     ...player,
     condition: {
       ...player.condition,
-      energy: pct(player.condition.energy - c.energyPer90 * share),
       form: pct(
-        player.condition.form + (played ? ratingDiff * c.formPerRatingPoint : c.formNotPlaying),
+        player.condition.form +
+          (played ? ratingDiff * c.formPerRatingPoint : formWhenNotPlaying(load, ctx)),
       ),
       morale: pct(
         player.condition.morale +
           scaleLoss(
             c.moraleBySelection[outcome.selection] +
               (played ? c.moraleByResult[outcome.result] + ratingDiff * c.moralePerRatingPoint : 0),
-            lifeMods?.moraleLossFactor ?? 1,
+            lifeMods.moraleLossFactor,
           ),
       ),
     },
@@ -80,41 +84,35 @@ export function applyMatchAftermath(
     ctx,
   );
   if (played && rng.chance(chance)) {
-    p = injure(p, rollInjury(rng, ctx), ctx, lifeMods?.moraleLossFactor);
+    p = injure(p, rollInjury(rng, ctx), ctx, lifeMods.moraleLossFactor);
     injured = true;
   }
-  return { player: p, injured };
+  return { player: p, injured, freshnessDelta: -c.freshnessPer90 * share };
 }
 
 /**
- * Fine settimana: l'energia si recupera, forma, morale e rischio infortuni tornano piano verso i
- * valori di riferimento, l'infortunio in corso cala di una settimana.
+ * Fine settimana: forma e morale tornano piano verso i valori di riferimento, l'infortunio in
+ * corso cala di una settimana. La freschezza la chiude `closeWeekFreshness`.
  */
-export function weeklyRecovery(
+export function weeklyDrift(
   player: Player,
   ctx: GameContext,
-  lifeMods?: Pick<LifeModifiers, 'moraleRecoveryFactor'>,
+  lifeMods: Pick<LifeModifiers, 'moraleRecoveryFactor'>,
 ): Player {
   const c = ctx.config.progression.condition;
   const cond = player.condition;
-  const lowEnergy = cond.energy < ctx.config.progression.growth.lowEnergyThreshold;
   const next: Player = {
     ...player,
     condition: {
-      energy: pct(cond.energy + c.energyRecoveryPerWeek),
+      ...cond,
       form: pct(toward(cond.form, c.formTarget, c.formDriftPerWeek)),
       morale: pct(
         toward(
           cond.morale,
           c.moraleTarget,
           // Il fattore di recupero vale solo sotto il riferimento.
-          c.moraleDriftPerWeek *
-            (cond.morale < c.moraleTarget ? (lifeMods?.moraleRecoveryFactor ?? 1) : 1),
+          c.moraleDriftPerWeek * (cond.morale < c.moraleTarget ? lifeMods.moraleRecoveryFactor : 1),
         ),
-      ),
-      injuryRisk: pct(
-        toward(cond.injuryRisk, c.injuryRiskTarget, c.injuryRiskDriftPerWeek) +
-          (lowEnergy ? c.lowEnergyInjuryRisk : 0),
       ),
     },
   };

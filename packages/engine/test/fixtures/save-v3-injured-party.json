@@ -1,0 +1,10 @@
+{
+  "saveVersion": 3,
+  "chapterPlan": [{ "actionId": "train_normal" }, { "actionId": "party" }],
+  "lastPlan": [{ "actionId": "train_normal" }, { "actionId": "party" }],
+  "player": {
+    "condition": { "form": 44, "energy": 63, "morale": 51, "injuryRisk": 27 },
+    "persona": { "discipline": 30, "temperament": 55, "happiness": 62 },
+    "injury": { "type": "stiramento", "weeksLeft": 3 }
+  }
+}

@@ -234,9 +234,10 @@ describe('vita privata: serate ed eventi', () => {
     const matchWeek = s.calendar.find((f) => f.homeId === club || f.awayId === club)!.week;
     let fined = false;
     for (let seed = 0; seed < 60 && !fined; seed++) {
-      const out = planWeek({ ...s, week: matchWeek, rngState: Rng.fromSeed(seed).getState() }, [
-        { actionId: 'party' },
-      ]);
+      const out = planWeek(
+        { ...s, week: matchWeek, rngState: Rng.fromSeed(seed).getState() },
+        { load: 'balanced', life: 'party' },
+      );
       expect(out.report.party).toBeDefined();
       if (out.report.party!.fine > 0) {
         fined = true;

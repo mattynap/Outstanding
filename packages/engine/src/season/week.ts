@@ -7,7 +7,9 @@ import { applyWeeklyPrivate, type PrivateWeek } from '../private/private';
 import { applyWeeklyMedia, type MediaWeek } from '../media/media';
 import { applyWeeklyFinances, type WeekFinance } from '../market/life';
 import { refreshMarket } from '../market/offers';
-import { weeklyRecovery } from '../player/condition';
+import { weeklyDrift } from '../player/condition';
+import { driftDiscipline, lifeModifiers } from './life';
+import { closeWeekFreshness, currentWeekLoad } from './load';
 import { progressCups, settleKnockout } from '../cups/cups';
 import { clubRatings } from '../world/queries';
 import { quickResult } from './quickSim';
@@ -118,13 +120,27 @@ export function advanceWeek(
   const cupResults = calendar.filter(
     (f) => f.week === state.week && f.cup && playerCups.has(f.cup.competitionId),
   );
-  const { player, finance } = applyWeeklyFinances(
-    weeklyRecovery(state.player, ctx),
-    state.world.npcs,
+  // Ordine di fine settimana (spec §5.4b): deriva di forma e morale, freschezza chiusa con un solo
+  // clamp al tetto del carico, ritorno della disciplina, poi soldi, patrimonio, vita privata, media.
+  const plan = currentWeekLoad(state, ctx);
+  const lifeMods = lifeModifiers(plan.life, ctx);
+  const inProgress = state.weekInProgress;
+  // Settimana non pianificata: vale il carico delle settimane saltate, senza sedute.
+  const freshnessDelta =
+    (inProgress?.freshnessDelta ?? 0) +
+    (inProgress?.load ? 0 : ctx.config.progression.loads[plan.load].freshness);
+  const closed = driftDiscipline(
+    closeWeekFreshness(weeklyDrift(state.player, ctx, lifeMods), freshnessDelta, plan.load, ctx),
     ctx,
   );
-  const wealthStep = applyWeeklyWealth({ ...state, player }, rng, ctx);
-  const privateStep = applyWeeklyPrivate(wealthStep.state, rng, ctx);
+  const { player, finance } = applyWeeklyFinances(closed, state.world.npcs, ctx);
+  const { weekInProgress: _closed, ...settled } = state;
+  const seasonLoadWeeks =
+    plan.load === 'recovery'
+      ? state.seasonLoadWeeks
+      : { ...state.seasonLoadWeeks, [plan.load]: state.seasonLoadWeeks[plan.load] + 1 };
+  const wealthStep = applyWeeklyWealth({ ...settled, player, seasonLoadWeeks }, rng, ctx);
+  const privateStep = applyWeeklyPrivate(wealthStep.state, rng, ctx, lifeMods);
   const mediaStep = applyWeeklyMedia({ ...privateStep.state, calendar }, privateStep.week, ctx);
   let next: GameState = {
     ...mediaStep.state,

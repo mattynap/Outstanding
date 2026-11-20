@@ -27,16 +27,14 @@ export function growthMultiplier(player: Player, week: number, ctx: GameContext)
 }
 
 /**
- * Applica una crescita pari a `sessions` sessioni di allenamento. Senza `focus` crescono le abilità
- * del ruolo (di più quelle che pesano di più); con `focus` solo quella scelta, più in fretta.
- * Restituisce il giocatore aggiornato e gli incrementi per abilità.
+ * Applica una crescita pari a `sessions` sessioni di allenamento sulle abilità del ruolo (di più
+ * quelle che pesano di più). Restituisce il giocatore aggiornato e gli incrementi per abilità.
  */
 export function applyGrowth(
   player: Player,
   sessions: number,
   week: number,
   ctx: GameContext,
-  focus?: Skill,
 ): { player: Player; gains: Partial<Skills> } {
   const g = ctx.config.progression.growth;
   const amount = g.basePerSession * sessions * growthMultiplier(player, week, ctx);
@@ -48,11 +46,8 @@ export function applyGrowth(
   const skills = { ...player.skills };
   const gains: Partial<Skills> = {};
   for (const s of SKILLS) {
-    let delta = 0;
-    if (focus) delta = s === focus ? amount * g.focusMultiplier : 0;
-    else if (weights[s] > 0)
-      delta = amount * (g.minWeightShare + (1 - g.minWeightShare) * (weights[s] / maxW));
-    if (delta <= 0) continue;
+    if (weights[s] <= 0) continue;
+    const delta = amount * (g.minWeightShare + (1 - g.minWeightShare) * (weights[s] / maxW));
     const next = Math.min(cap, skills[s] + delta);
     if (next > skills[s]) {
       gains[s] = next - skills[s];
@@ -73,12 +68,15 @@ export function applyLoadGrowth(
   load: Load,
   focus: Skill | undefined,
   ctx: GameContext,
+  /** Moltiplicatore della difficoltà sulla crescita. */
+  growthFactor = 1,
 ): { player: Player; gains: Partial<Skills> } {
   const g = ctx.config.progression.growth;
   const amount =
     g.basePerSession *
     ctx.config.progression.loads[load].sessions *
-    growthMultiplier(player, week, ctx);
+    growthMultiplier(player, week, ctx) *
+    growthFactor;
   if (amount <= 0) return { player, gains: {} };
   const cap = Math.min(g.skillMax, player.potential + g.skillCapOverPotential);
   const weights = ctx.config.ratings.roleWeights[player.role];

@@ -2,7 +2,7 @@ import type { GameContext } from '../context';
 import { endOfWeekFreshness, injuryFreshnessFactor } from '../player/freshness';
 import { applyLoadGrowth, injure, rollInjury } from '../player/progression';
 import type { Rng } from '../rng';
-import type { EffectiveLoad, Load, Player, Skill, Skills } from '../types';
+import type { EffectiveLoad, GameState, LifeAction, Load, Player, Skill, Skills } from '../types';
 
 /** Da infortunato il carico scelto non conta: la settimana è di recupero. */
 export function effectiveLoad(player: Player, load: Load): EffectiveLoad {
@@ -31,6 +31,10 @@ export function applyLoadWeek(
   focus: Skill | undefined,
   rng: Rng,
   ctx: GameContext,
+  /** Modificatori della difficoltà: crescita e infortuni. */
+  mods: { growth: number; injury: number } = { growth: 1, injury: 1 },
+  /** La famiglia attutisce il calo di morale di un infortunio in seduta. */
+  moraleLossFactor = 1,
 ): LoadWeekResult {
   const eff = effectiveLoad(player, load);
   const cfg = ctx.config.progression.loads[eff];
@@ -52,13 +56,13 @@ export function applyLoadWeek(
     return { player: next, rng, gains: {}, healed, freshnessDelta };
   }
 
-  const grown = applyLoadGrowth(player, week, eff, focus, ctx);
+  const grown = applyLoadGrowth(player, week, eff, focus, ctx, mods.growth);
   let next = grown.player;
   let injury: { type: string; weeksLeft: number } | undefined;
-  const p = cfg.sessionInjury * injuryFreshnessFactor(player.condition.energy, ctx);
+  const p = cfg.sessionInjury * mods.injury * injuryFreshnessFactor(player.condition.energy, ctx);
   if (p > 0 && rng.chance(Math.min(1, p))) {
     injury = rollInjury(rng, ctx);
-    next = injure(next, injury, ctx);
+    next = injure(next, injury, ctx, moraleLossFactor);
   }
   return { player: next, rng, gains: grown.gains, injury, healed: false, freshnessDelta };
 }
@@ -83,4 +87,20 @@ export function closeWeekFreshness(
 /** Variazione di forma nelle settimane in cui non si gioca. */
 export function formWhenNotPlaying(load: EffectiveLoad, ctx: GameContext): number {
   return ctx.config.progression.loads[load].formNotPlaying;
+}
+
+/** Carico e vita della settimana in corso; senza piano vale il carico delle settimane saltate. */
+export function currentWeekLoad(
+  state: GameState,
+  ctx: GameContext,
+): { load: EffectiveLoad; life?: LifeAction } {
+  const w = state.weekInProgress;
+  const load = w?.load ?? effectiveLoad(state.player, ctx.config.progression.skipWeekPlan.load);
+  return w?.life ? { load, life: w.life } : { load };
+}
+
+/** Accumula un delta di freschezza da chiudere a fine settimana. */
+export function addWeekFreshness(state: GameState, delta: number): GameState {
+  const w = state.weekInProgress ?? { freshnessDelta: 0 };
+  return { ...state, weekInProgress: { ...w, freshnessDelta: w.freshnessDelta + delta } };
 }

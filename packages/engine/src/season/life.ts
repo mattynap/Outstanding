@@ -2,11 +2,13 @@ import type { GameContext } from '../context';
 import { toward } from '../player/condition';
 import { applyParty, type PartyReport } from '../private/private';
 import type { Rng } from '../rng';
-import type { GameState, Player } from '../types';
+import type { GameState, LifeAction, Player } from '../types';
 import { clamp } from '../util';
 
-/** Azione facoltativa fuori dal campo del piano settimanale. */
-export type LifeAction = 'family' | 'leisure' | 'sponsor' | 'party';
+export type { LifeAction };
+
+/** Tutte le azioni fuori dal campo, nell'ordine in cui le mostra l'interfaccia. */
+export const LIFE_ACTIONS: readonly LifeAction[] = ['family', 'leisure', 'sponsor', 'party'];
 
 /** Fattori attivi finché l'azione è nel piano; 1 = nessun effetto. */
 export interface LifeModifiers {
@@ -92,7 +94,6 @@ export function applyLifeWeek(
           persona: {
             ...player.persona,
             // La base resta ferma: la serata abbassa solo il valore corrente.
-            disciplineBase: player.persona.disciplineBase ?? player.persona.discipline,
             discipline: clamp(player.persona.discipline + p.discipline, 0, 100),
           },
         },
@@ -105,10 +106,10 @@ export function applyLifeWeek(
   return { state, rng, freshnessDelta: 0 };
 }
 
-/** La disciplina torna verso la sua base; senza base esplicita resta dov'è. */
+/** La disciplina torna verso la sua base. */
 export function driftDiscipline(player: Player, ctx: GameContext): Player {
   const d = player.persona.discipline;
-  const base = player.persona.disciplineBase ?? d;
+  const base = player.persona.disciplineBase;
   return {
     ...player,
     persona: {

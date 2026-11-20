@@ -214,7 +214,10 @@ export function checkContent(content: GameContent): string[] {
   return errors;
 }
 
-/** Il rischio infortuni non esiste più: la freschezza (`condition.energy`) lo ha assorbito. */
+/**
+ * Il rischio infortuni non esiste più: la freschezza (`condition.energy`) lo ha assorbito. Il
+ * percorso non è più nello schema, ma un file scritto a mano può ancora contenerlo.
+ */
 const REMOVED_STAT_PATH = 'condition.injuryRisk';
 const REMOVED_STAT_MESSAGE = `"${REMOVED_STAT_PATH}" is removed, use "condition.energy" (freshness, opposite sign)`;
 
@@ -254,7 +257,8 @@ function checkEvents(content: GameContent, errors: string[]): void {
       }
     }
     for (const c of e.conditions?.stats ?? []) {
-      if (c.path === REMOVED_STAT_PATH) errors.push(`${where}: ${REMOVED_STAT_MESSAGE}`);
+      if ((c.path as string) === REMOVED_STAT_PATH)
+        errors.push(`${where}: ${REMOVED_STAT_MESSAGE}`);
     }
     const traitRefs = [...(e.conditions?.traits ?? []), ...(e.conditions?.traitsNot ?? [])];
     for (const choice of e.choices) {
@@ -265,7 +269,7 @@ function checkEvents(content: GameContent, errors: string[]): void {
             errors.push(`${where}: schedules unknown event "${effect.eventId}"`);
           }
         }
-        if (effect.type === 'stat' && effect.path === REMOVED_STAT_PATH) {
+        if (effect.type === 'stat' && (effect.path as string) === REMOVED_STAT_PATH) {
           errors.push(`${where}: ${REMOVED_STAT_MESSAGE}`);
         }
         if (effect.type === 'trait') traitRefs.push(effect.traitId);

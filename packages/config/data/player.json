@@ -44,7 +44,7 @@
   },
   "potential": { "min": 60, "max": 95, "mean": 73, "sd": 8 },
   "initial": {
-    "condition": { "form": 50, "energy": 85, "morale": 60, "injuryRisk": 10 },
+    "condition": { "form": 50, "energy": 85, "morale": 60 },
     "persona": {
       "discipline": [35, 70],
       "temperament": [30, 70],

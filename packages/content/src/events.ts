@@ -9,7 +9,6 @@ export const PCT_STAT_PATHS = [
   'condition.form',
   'condition.energy',
   'condition.morale',
-  'condition.injuryRisk',
   'persona.discipline',
   'persona.temperament',
   'persona.happiness',

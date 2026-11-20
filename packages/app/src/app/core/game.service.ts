@@ -66,7 +66,7 @@ import {
   type NewCareerOptions,
   type PersonName,
   type SeasonReport,
-  type WeekChoice,
+  type WeekPlan,
 } from '@outstanding/engine';
 import { trophyKey } from './career-view';
 import { exportEdits, importEdits, type EditsFile, type ImportResult } from './editor/edits-file';
@@ -199,8 +199,8 @@ export class GameService {
   // --- Settimana ---------------------------------------------------------------------------
 
   /** Imposta il piano del capitolo: le settimane simulate lo ripetono. */
-  async setPlan(choices: WeekChoice[]): Promise<void> {
-    await this.commit(setChapterPlan(this.require(), choices, this.ctx));
+  async setPlan(plan: WeekPlan): Promise<void> {
+    await this.commit(setChapterPlan(this.require(), plan, this.ctx));
   }
 
   /** Vai avanti fino al prossimo stop: partita scelta, notizia, offerta, fine capitolo o stagione. */

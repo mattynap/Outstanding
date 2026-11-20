@@ -10,7 +10,7 @@ import {
   defaultContext,
   deserialize,
   endSeason,
-  getWeekOptions,
+  getPlanOptions,
   isSeasonOver,
   newCareer,
   planWeek,
@@ -29,12 +29,8 @@ const noLoad = { rest: 0, balanced: 0, push: 0 };
 const ovr = (p: Player) => computeOvr(p.skills, p.role, ctx.config.ratings);
 
 describe('testi e riferimenti', () => {
-  it('ogni azione e ogni infortunio hanno un testo', () => {
+  it('ogni infortunio ha un testo', () => {
     const t = ctx.content.i18n.it;
-    for (const a of ctx.config.progression.actions) {
-      expect(t[`week.actions.${a.id}.name`]).toBeDefined();
-      expect(t[`week.actions.${a.id}.desc`]).toBeDefined();
-    }
     for (const i of ctx.config.progression.injuries.types)
       expect(t[`injuries.${i.id}`]).toBeDefined();
   });
@@ -54,57 +50,52 @@ describe('testi e riferimenti', () => {
 describe('piano della settimana', () => {
   it("fa crescere le abilità del ruolo con l'allenamento", () => {
     const s = start();
-    const { state, report } = planWeek(s, [{ actionId: 'train_normal' }, { actionId: 'rest' }]);
+    const { state, report } = planWeek(s, { load: 'balanced' });
     expect(report.gains.shooting).toBeGreaterThan(0);
     expect(report.gains.goalkeeping).toBeUndefined();
     expect(state.player.skills.shooting).toBeGreaterThan(s.player.skills.shooting);
     expect(state.plannedWeek).toBe(s.week);
   });
 
-  it("con l'allenamento mirato cresce solo l'abilità scelta, più in fretta", () => {
+  it("con il focus l'abilità scelta cresce più in fretta", () => {
     const s = start();
-    const normal = planWeek(s, [{ actionId: 'train_normal' }]).report.gains;
-    const focus = planWeek(s, [{ actionId: 'train_focus', focus: 'pace' }]).report.gains;
-    expect(Object.keys(focus)).toEqual(['pace']);
+    const normal = planWeek(s, { load: 'balanced' }).report.gains;
+    const focus = planWeek(s, { load: 'balanced', focus: 'pace' }).report.gains;
     expect(focus.pace!).toBeGreaterThan(normal.pace!);
   });
 
-  it('applica gli effetti su energia e umore', () => {
+  it('la freschezza non si scrive nel piano: la chiude la fine della settimana', () => {
     const s = start();
-    const rest = planWeek(s, [{ actionId: 'rest' }]).state;
-    expect(rest.player.condition.energy).toBeGreaterThanOrEqual(s.player.condition.energy);
-    const fun = planWeek(s, [{ actionId: 'leisure' }]).state;
-    expect(fun.player.persona.happiness).toBeGreaterThan(s.player.persona.happiness);
+    const rest = planWeek(s, { load: 'rest' }).state;
+    expect(rest.player.condition.energy).toBe(s.player.condition.energy);
+    expect(rest.weekInProgress?.load).toBe('rest');
+    const fun = planWeek(s, { load: 'balanced', life: 'leisure' }).state;
+    expect(fun.weekInProgress?.life).toBe('leisure');
   });
 
   it('rifiuta piani non validi', () => {
     const s = start();
-    expect(() => planWeek(s, [{ actionId: 'rest' }, { actionId: 'rest' }])).toThrow();
-    expect(() =>
-      planWeek(s, [{ actionId: 'rest' }, { actionId: 'family' }, { actionId: 'leisure' }]),
-    ).toThrow();
-    expect(() => planWeek(s, [{ actionId: 'train_focus' }])).toThrow(/focus/);
-    expect(() => planWeek(s, [{ actionId: 'rest', focus: 'pace' }])).toThrow(/focus/);
-    expect(() => planWeek(s, [{ actionId: 'inventata' }])).toThrow();
-    const done = planWeek(s, []).state;
-    expect(() => planWeek(done, [])).toThrow(/already/);
+    expect(() => planWeek(s, { load: 'inventato' as never })).toThrow(/load/);
+    expect(() => planWeek(s, { load: 'rest', focus: 'inventata' as never })).toThrow(/skill/);
+    expect(() => planWeek(s, { load: 'rest', life: 'inventata' as never })).toThrow(/life/);
+    const done = planWeek(s, { load: 'rest' }).state;
+    expect(() => planWeek(done, { load: 'rest' })).toThrow(/already/);
   });
 
-  it('da infortunati niente allenamento, ma le cure possono accorciare lo stop', () => {
+  it('da infortunati la settimana è di recupero, e le cure possono accorciare lo stop', () => {
     const s = start();
     const hurt: GameState = {
       ...s,
       player: { ...s.player, injury: { type: 'stiramento', weeksLeft: 4 } },
     };
-    const training = getWeekOptions(hurt).filter((o) => o.kind === 'training');
-    expect(training.every((o) => !o.available && o.reasonKey === 'week.blocked.injured')).toBe(
-      true,
-    );
-    expect(() => planWeek(hurt, [{ actionId: 'train_normal' }])).toThrow();
+    const opts = getPlanOptions(hurt);
+    expect(opts.forcedLoad).toBe('recovery');
+    expect(opts.loads.every((o) => !o.available)).toBe(true);
+    expect(planWeek(hurt, { load: 'push' }).report.effectiveLoad).toBe('recovery');
     let healed = 0;
     for (let seed = 1; seed <= 20; seed++) {
       const h = { ...hurt, rngState: newCareer(baseOptions, seed).rngState };
-      if (planWeek(h, [{ actionId: 'physio' }]).report.healed) healed++;
+      if (planWeek(h, { load: 'rest' }).report.healed) healed++;
     }
     expect(healed).toBeGreaterThan(0);
     expect(healed).toBeLessThan(20);
@@ -112,19 +103,21 @@ describe('piano della settimana', () => {
 
   it('è deterministico e sopravvive al salvataggio', () => {
     const s = deserialize(serialize(start()));
-    const plan = [{ actionId: 'train_intense' }, { actionId: 'train_normal' }];
+    const plan = { load: 'push' as const, focus: 'shooting' as const };
     expect(planWeek(s, plan)).toEqual(planWeek(start(), plan));
   });
 });
 
 describe('condizione e partite', () => {
-  it('la partita consuma energia e muove forma e fiducia', () => {
+  it('la partita consuma freschezza (a fine settimana) e muove forma e fiducia', () => {
     let s = start();
     while (!playerFixture(s)) s = advanceWeek(s).state;
     const before = s.player;
     const { state, matchReport } = playMatch(s, () => 0);
+    // La freschezza della settimana resta F0 fino alla chiusura: il costo va nel delta.
+    expect(state.player.condition.energy).toBe(before.condition.energy);
     if (matchReport.minutesPlayed > 0) {
-      expect(state.player.condition.energy).toBeLessThan(before.condition.energy);
+      expect(state.weekInProgress!.freshnessDelta).toBeLessThan(0);
     }
     if (matchReport.rating !== null && matchReport.rating !== ctx.config.match.rating.base) {
       expect(state.player.condition.form).not.toBe(before.condition.form);
@@ -184,11 +177,7 @@ describe('crescita e declino', () => {
     const before = ovr(s.player);
     while (!isSeasonOver(s)) {
       if (s.plannedWeek !== s.week) {
-        const ok = getWeekOptions(s).find((o) => o.id === 'train_normal')!.available;
-        s = planWeek(
-          s,
-          ok ? [{ actionId: 'train_normal' }, { actionId: 'rest' }] : [{ actionId: 'rest' }],
-        ).state;
+        s = planWeek(s, { load: 'balanced' }).state;
       }
       while (playerFixture(s)) s = playMatch(s, () => 0).state;
       s = advanceWeek(s).state;

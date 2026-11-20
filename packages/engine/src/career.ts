@@ -125,7 +125,8 @@ export function newCareer(
     privateLife: createPrivateLife(options.interest, ctx),
     media: createMedia(),
     chapter: blankChapter('preseason'),
-    chapterPlan: [],
+    chapterPlan: null,
+    seasonLoadWeeks: { rest: 0, balanced: 0, push: 0 },
   };
   return { ...base, chapter: createChapter(base, ctx) };
 }

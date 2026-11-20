@@ -2,10 +2,10 @@ import { defaultContext, type GameContext } from '../context';
 import { completeAppearance } from '../player/look';
 import { chainDepth } from '../match/moments';
 import { createChapter } from '../season/director';
-import type { GameState } from '../types';
+import type { GameState, LifeAction, Skill, WeekPlan } from '../types';
 
 /** Versione corrente del formato di salvataggio. Va incrementata, con una migrazione, a ogni cambio di forma di GameState. */
-export const CURRENT_SAVE_VERSION = 3;
+export const CURRENT_SAVE_VERSION = 4;
 
 /** Una migrazione aggiorna un salvataggio grezzo dalla versione N alla versione N + 1. */
 export type Migration = (raw: Record<string, unknown>, ctx: GameContext) => Record<string, unknown>;
@@ -101,6 +101,37 @@ function migrateMatchV1(m: Json, ctx: GameContext): Json {
   };
 }
 
+const V3_LIFE: Record<string, LifeAction> = {
+  family: 'family',
+  leisure: 'leisure',
+  sponsor_shoot: 'sponsor',
+  party: 'party',
+};
+
+/**
+ * Piano v3 (lista di azioni) → `WeekPlan`. Un allenamento decide il carico (intenso → Spinta,
+ * gli altri → Equilibrio con il loro focus); senza allenamento solo riposo o cure → Scarico,
+ * altrimenti Equilibrio. La prima azione di vita diventa `life`. Lista vuota → `null`.
+ */
+export function migratePlanV3(plan: unknown): WeekPlan | null {
+  if (!Array.isArray(plan)) {
+    // Già nella forma nuova (o assente).
+    return plan && typeof plan === 'object' ? ({ ...plan } as WeekPlan) : null;
+  }
+  const items = plan as { actionId: string; focus?: Skill }[];
+  if (items.length === 0) return null;
+  const ids = items.map((c) => c.actionId);
+  const training = items.find((c) => c.actionId.startsWith('train_'));
+  const onlyRest = ids.some((id) => id === 'rest' || id === 'physio') && !training;
+  const out: WeekPlan = {
+    load: training?.actionId === 'train_intense' ? 'push' : onlyRest ? 'rest' : 'balanced',
+  };
+  if (training?.focus) out.focus = training.focus;
+  const life = ids.map((id) => V3_LIFE[id]).find((l) => l !== undefined);
+  if (life) out.life = life;
+  return out;
+}
+
 /**
  * migrations[n] aggiorna un salvataggio dalla versione n alla n + 1.
  * Dentro una parte del piano non si incrementa la versione: si estende la migrazione della parte.
@@ -124,8 +155,45 @@ export const migrations: Record<number, Migration> = {
       ...raw,
       saveVersion: 3,
       chapter: createChapter(state, ctx),
-      chapterPlan: state.lastPlan ? state.lastPlan.map((c) => ({ ...c })) : [],
+      chapterPlan: Array.isArray(state.lastPlan) ? state.lastPlan.map((c: Json) => ({ ...c })) : [],
     };
+  },
+  /**
+   * Settimana leggibile: piano a due binari (carico + vita), freschezza unica al posto di energia e
+   * rischio infortuni. Nessun effetto si riapplica: si cambia solo la forma. La base della
+   * disciplina non scende sotto la media di creazione, per non congelare il calo delle vecchie
+   * serate. Una settimana già pianificata resta tale, col carico del piano migrato.
+   */
+  3: (raw, ctx) => {
+    const r = raw as Json;
+    const player = r['player'] as Json;
+    const { injuryRisk: _risk, ...condition } = player['condition'] as Json;
+    const persona = player['persona'] as Json;
+    const [lo, hi] = ctx.config.player.initial.persona.discipline;
+    const base = Math.max(
+      (persona['disciplineBase'] as number | undefined) ?? (persona['discipline'] as number),
+      (lo + hi) / 2,
+    );
+    const chapterPlan = migratePlanV3(r['chapterPlan']);
+    const lastPlan = migratePlanV3(r['lastPlan']);
+    const { lastPlan: _old, weekInProgress: _w, ...rest } = r;
+    const next: Json = {
+      ...rest,
+      saveVersion: 4,
+      player: { ...player, condition, persona: { ...persona, disciplineBase: base } },
+      chapterPlan,
+      seasonLoadWeeks: { rest: 0, balanced: 0, push: 0 },
+    };
+    if (lastPlan) next['lastPlan'] = lastPlan;
+    if (r['plannedWeek'] === r['week']) {
+      const plan = chapterPlan ?? lastPlan ?? { load: ctx.config.progression.skipWeekPlan.load };
+      next['weekInProgress'] = {
+        load: player['injury'] ? 'recovery' : plan.load,
+        ...(plan.life ? { life: plan.life } : {}),
+        freshnessDelta: 0,
+      };
+    }
+    return next;
   },
 };
 

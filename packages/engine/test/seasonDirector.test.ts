@@ -104,7 +104,7 @@ describe('capitoli della stagione', () => {
 
   it('newCareer parte da preseason senza partite, con registri a zero', () => {
     const s = newCareer(baseOptions, 3);
-    expect(s.saveVersion).toBe(3);
+    expect(s.saveVersion).toBe(4);
     expect(s.chapter).toEqual({
       id: 'preseason',
       picks: [],
@@ -113,7 +113,7 @@ describe('capitoli della stagione', () => {
       log: emptyChapterLog(),
       stretch: emptyChapterLog(),
     });
-    expect(s.chapterPlan).toEqual([]);
+    expect(s.chapterPlan).toBeNull();
   });
 });
 
@@ -447,31 +447,33 @@ describe('rivalutazione: sostituzione uno a uno', () => {
 });
 
 describe('salvataggio v3', () => {
-  const asV2 = (s: GameState): Record<string, unknown> => {
-    const { chapter: _c, chapterPlan: _p, ...rest } = s;
+  const asV2 = (s: GameState | Record<string, unknown>): Record<string, unknown> => {
+    const { chapter: _c, chapterPlan: _p, ...rest } = s as GameState;
     return JSON.parse(JSON.stringify({ ...rest, saveVersion: 2 })) as Record<string, unknown>;
   };
 
-  it('la versione corrente è 3', () => {
-    expect(CURRENT_SAVE_VERSION).toBe(3);
+  it('la versione corrente è 4', () => {
+    expect(CURRENT_SAVE_VERSION).toBe(4);
   });
 
-  it('migrates v2 save to v3 with chapter and chapterPlan', () => {
+  it('migrates v2 save to v4 with chapter and chapterPlan', () => {
     const s = {
       ...at(41, 10),
-      lastPlan: [{ actionId: 'train_technical', focus: 'passing' as const }],
+      // Piano nella forma a lista dei salvataggi fino al v3.
+      lastPlan: [{ actionId: 'train_focus', focus: 'passing' as const }],
     };
     const out = migrate(asV2(s)) as unknown as GameState;
-    expect(out.saveVersion).toBe(3);
+    expect(out.saveVersion).toBe(4);
     expect(out.chapter.id).toBe('autumn');
-    expect(out.chapter.picks).toEqual(pickChapterMatches(s, 'autumn', ctx));
+    expect(out.chapter.picks).toEqual(pickChapterMatches(at(41, 10), 'autumn', ctx));
     expect(out.chapter.goal).toBeNull();
     expect(out.chapter.log).toEqual(emptyChapterLog());
     expect(out.chapter.stretch).toEqual(emptyChapterLog());
-    expect(out.chapterPlan).toEqual(s.lastPlan);
-    // Senza lastPlan il piano è vuoto; migrare due volte dà lo stesso risultato.
-    const bare = at(41, 10);
-    expect((migrate(asV2(bare)) as unknown as GameState).chapterPlan).toEqual([]);
+    expect(out.chapterPlan).toEqual({ load: 'balanced', focus: 'passing' });
+    expect(out.lastPlan).toEqual({ load: 'balanced', focus: 'passing' });
+    // Senza lastPlan non c'è piano; migrare due volte dà lo stesso risultato.
+    const { lastPlan: _lp, ...bare } = at(41, 10);
+    expect((migrate(asV2(bare)) as unknown as GameState).chapterPlan).toBeNull();
     expect(migrate(asV2(s))).toEqual(migrate(asV2(s)));
   });
 
@@ -496,7 +498,7 @@ describe('salvataggio v3', () => {
     expect(m.chapter.picks.length).toBeLessThanOrEqual(cal.chapterMatches.max);
   });
 
-  it('caricare un v3 non riestrae le scelte', () => {
+  it('caricare un salvataggio corrente non riestrae le scelte', () => {
     const s = at(44, 10);
     const custom: GameState = { ...s, chapter: { ...createChapter(s, ctx), picks: [] } };
     const back = deserialize(serialize(custom));
@@ -522,7 +524,7 @@ describe('salvataggio v3', () => {
     const next = endSeason(s, ctx).state;
     expect(next.chapter.id).toBe('preseason');
     expect(next.chapter.picks).toEqual([]);
-    expect(next.chapterPlan).toEqual([]);
+    expect(next.chapterPlan).toBeNull();
     expect(createChapter(next, ctx).id).toBe('preseason');
   });
 });

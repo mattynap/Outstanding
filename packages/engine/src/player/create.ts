@@ -94,11 +94,14 @@ export function createPlayer(
   const appearance = completeAppearance({ ...opts.appearance, ...drawn });
 
   const init = cfg.initial;
+  // Stesso ordine di estrazione di prima: età, poi disciplina, temperamento, follower.
+  const birthWeek = -(cfg.startAge * weeksPerYear) - rng.int(0, weeksPerYear - 1);
+  const discipline = rng.int(...init.persona.discipline);
   return {
     id,
     firstName: opts.firstName.trim(),
     lastName: opts.lastName.trim(),
-    birthWeek: -(cfg.startAge * weeksPerYear) - rng.int(0, weeksPerYear - 1),
+    birthWeek,
     hometown: opts.hometown.trim(),
     role: opts.role,
     appearance,
@@ -106,7 +109,8 @@ export function createPlayer(
     potential,
     condition: { ...init.condition },
     persona: {
-      discipline: rng.int(...init.persona.discipline),
+      discipline,
+      disciplineBase: discipline,
       temperament: rng.int(...init.persona.temperament),
       happiness: init.persona.happiness,
     },

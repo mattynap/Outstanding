@@ -38,7 +38,7 @@ interface Stop {
 function driveSeason(seed: number, role: 'ATT' | 'GK' | 'DEF' | 'MID' = 'ATT'): Stop[] {
   let s = setChapterPlan(
     newCareer({ ...baseOptions, role, traits: [] }, seed),
-    [{ actionId: 'train_normal' }],
+    { load: 'balanced' },
     ctx,
   );
   const out: Stop[] = [];

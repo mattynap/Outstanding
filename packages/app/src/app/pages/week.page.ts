@@ -23,9 +23,12 @@ import {
 import {
   getTransferWindow,
   getPressConference,
-  getWeekOptions,
+  getPlanOptions,
   SKILLS,
+  type LifeAction,
+  type Load,
   type Skill,
+  type WeekPlan,
 } from '@outstanding/engine';
 import { chapterPicks, goalView, needsPlan } from '../core/chapter-view';
 import { GameService } from '../core/game.service';
@@ -178,9 +181,6 @@ import { TipComponent } from '../ui/tip.component';
             <section class="o-card plan" [attr.aria-label]="'ui.chapter.plan' | t">
               <div class="o-section-head">
                 <h2 class="o-section-title">{{ 'ui.chapter.plan' | t }}</h2>
-                <span class="o-muted small">{{
-                  'ui.week.actionsCount' | t: { n: choices().length, max: maxActions }
-                }}</span>
               </div>
               <p class="o-muted small last-plan">
                 {{
@@ -189,26 +189,46 @@ import { TipComponent } from '../ui/tip.component';
                 }}
               </p>
               <app-tip tip="week.plan" />
-              <div class="actions">
-                @for (o of options(); track o.id) {
-                  <button
-                    class="o-choice action"
-                    type="button"
-                    [attr.aria-pressed]="isChosen(o.id)"
-                    [disabled]="!isChosen(o.id) && (!o.available || choices().length >= maxActions)"
-                    (click)="toggle(o.id, o.needsFocus)"
-                  >
-                    <span class="o-choice__body">
-                      <span>{{ o.nameKey | t }}</span>
-                      <span class="o-choice__hint clamp">{{ o.reasonKey ?? o.descKey | t }}</span>
-                    </span>
-                  </button>
+              @if (planOptions(); as po) {
+                <span class="o-label">{{ 'ui.week.loadTitle' | t }}</span>
+                @if (po.forcedLoad) {
+                  <p class="o-muted small last-plan">
+                    {{ 'week.load.recovery.name' | t }} · {{ 'week.load.recovery.desc' | t }}
+                  </p>
                 }
-              </div>
-              @if (needsFocus()) {
+                <div class="actions" role="radiogroup" [attr.aria-label]="'ui.week.loadTitle' | t">
+                  @for (o of po.loads; track o.id) {
+                    <button
+                      class="o-choice action"
+                      type="button"
+                      role="radio"
+                      [attr.aria-checked]="load() === o.id"
+                      [attr.aria-pressed]="load() === o.id"
+                      [disabled]="!o.available"
+                      (click)="load.set(o.id)"
+                    >
+                      <span class="o-choice__body">
+                        <span>{{ 'week.load.' + o.id + '.name' | t }}</span>
+                        <span class="o-choice__hint clamp">{{
+                          'week.load.' + o.id + '.desc' | t
+                        }}</span>
+                      </span>
+                    </button>
+                  }
+                </div>
                 <div class="focus" role="radiogroup" [attr.aria-label]="'ui.week.focus' | t">
                   <span class="o-label">{{ 'ui.week.focus' | t }}</span>
                   <div class="chips">
+                    <button
+                      class="o-chip"
+                      type="button"
+                      role="radio"
+                      [class.o-chip--accent]="focus() === null"
+                      [attr.aria-checked]="focus() === null"
+                      (click)="focus.set(null)"
+                    >
+                      {{ 'ui.week.focusNone' | t }}
+                    </button>
                     @for (s of skills; track s) {
                       <button
                         class="o-chip"
@@ -222,6 +242,40 @@ import { TipComponent } from '../ui/tip.component';
                       </button>
                     }
                   </div>
+                </div>
+                <span class="o-label">{{ 'ui.week.lifeTitle' | t }}</span>
+                <div class="actions" role="radiogroup" [attr.aria-label]="'ui.week.lifeTitle' | t">
+                  <button
+                    class="o-choice action"
+                    type="button"
+                    role="radio"
+                    [attr.aria-checked]="life() === null"
+                    [attr.aria-pressed]="life() === null"
+                    (click)="life.set(null)"
+                  >
+                    <span class="o-choice__body">
+                      <span>{{ 'week.life.none.name' | t }}</span>
+                      <span class="o-choice__hint clamp">{{ 'week.life.none.desc' | t }}</span>
+                    </span>
+                  </button>
+                  @for (o of po.life; track o.id) {
+                    <button
+                      class="o-choice action"
+                      type="button"
+                      role="radio"
+                      [attr.aria-checked]="life() === o.id"
+                      [attr.aria-pressed]="life() === o.id"
+                      [disabled]="!o.available"
+                      (click)="life.set(o.id)"
+                    >
+                      <span class="o-choice__body">
+                        <span>{{ 'week.life.' + o.id + '.name' | t }}</span>
+                        <span class="o-choice__hint clamp">{{
+                          o.reasonKey ?? 'week.life.' + o.id + '.desc' | t
+                        }}</span>
+                      </span>
+                    </button>
+                  }
                 </div>
               }
               @if (editing() && !mustPlan()) {
@@ -336,8 +390,8 @@ import { TipComponent } from '../ui/tip.component';
                 <span class="grow">
                   <span class="o-label">{{ 'ui.chapter.planLine' | t }}</span>
                   <span class="small">
-                    @for (p of planSummary(); track p.id; let last = $last) {
-                      {{ p.nameKey | t }}
+                    @for (p of planSummary(); track p.key; let last = $last) {
+                      {{ p.key | t }}
                       @if (p.focus) {
                         ({{ 'skills.' + p.focus | t }})
                       }
@@ -369,7 +423,7 @@ import { TipComponent } from '../ui/tip.component';
           <app-tip tip="week.done" />
 
           <div class="cta">
-            <button class="o-btn" type="button" [disabled]="busy() || !canAct()" (click)="act()">
+            <button class="o-btn" type="button" [disabled]="busy()" (click)="act()">
               {{ ctaKey() | t }}
               <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
             </button>
@@ -895,13 +949,13 @@ export class WeekPage {
 
   protected readonly ordinal = ordinal;
   protected readonly skills = SKILLS;
-  protected readonly maxActions = this.ctx.config.progression.actionsPerWeek;
   protected readonly step = this.game.nextStep;
   protected readonly kickoffHint = computed(() => kickoffHintKey(this.step()));
   protected readonly saveFailed = this.game.saveFailed;
   protected readonly busy = signal(false);
-  protected readonly choices = signal<string[]>([]);
+  protected readonly load = signal<Load>('balanced');
   protected readonly focus = signal<Skill | null>(null);
+  protected readonly life = signal<LifeAction | null>(null);
   /** Il giocatore ha aperto il piano per cambiarlo a uno stop qualsiasi. */
   protected readonly editing = signal(false);
   protected readonly conditionRows = [
@@ -967,10 +1021,10 @@ export class WeekPage {
     };
   });
 
-  /** Opzioni del piano: le serate si scelgono di persona, il piano del capitolo non le ripete. */
-  protected readonly options = computed(() => {
+  /** Carichi e azioni fuori dal campo di questa settimana. */
+  protected readonly planOptions = computed(() => {
     const s = this.game.state();
-    return s ? getWeekOptions(s, this.ctx).filter((o) => o.kind !== 'party') : [];
+    return s ? getPlanOptions(s, this.ctx) : null;
   });
 
   /** Piano obbligatorio: inizio stagione o nuovo capitolo. */
@@ -987,11 +1041,12 @@ export class WeekPage {
   protected readonly planSummary = computed(() => {
     const s = this.game.state();
     if (!s) return [];
-    const byId = new Map(getWeekOptions(s, this.ctx).map((o) => [o.id, o]));
-    return s.chapterPlan.flatMap((c) => {
-      const o = byId.get(c.actionId);
-      return o ? [{ id: c.actionId, nameKey: o.nameKey, focus: c.focus ?? null }] : [];
-    });
+    const plan = s.chapterPlan;
+    if (!plan) return [];
+    return [
+      { key: `week.load.${plan.load}.name`, focus: plan.focus ?? null },
+      ...(plan.life ? [{ key: `week.life.${plan.life}.name`, focus: null }] : []),
+    ];
   });
 
   /** Conferenza stampa disponibile (presentazione o vigilia di una grande partita). */
@@ -999,10 +1054,6 @@ export class WeekPage {
     const s = this.game.state();
     return s && !s.retired ? getPressConference(s, this.ctx) : null;
   });
-
-  protected readonly needsFocus = computed(() =>
-    this.options().some((o) => o.needsFocus && this.choices().includes(o.id)),
-  );
 
   protected readonly ctaKey = computed(() => {
     switch (this.step()) {
@@ -1027,12 +1078,6 @@ export class WeekPage {
     return !!r && this.game.frontSeen() !== r;
   });
 
-  protected readonly canAct = computed(
-    () =>
-      !this.planOpen() ||
-      (this.choices().length > 0 && (!this.needsFocus() || this.focus() !== null)),
-  );
-
   private readonly frontClose = viewChild<ElementRef<HTMLButtonElement>>('frontClose');
   private readonly injector = inject(Injector);
 
@@ -1049,15 +1094,13 @@ export class WeekPage {
       const key = `${s.season}:${s.chapter.id}:${this.editing()}`;
       if (this.prefilledKey === key) return;
       this.prefilledKey = key;
-      const available = new Set(
-        this.options()
-          .filter((o) => o.available)
-          .map((o) => o.id),
-      );
-      const remembered = s.chapterPlan.length > 0 ? s.chapterPlan : (s.lastPlan ?? []);
-      const last = remembered.filter((c) => available.has(c.actionId));
-      this.choices.set(last.map((c) => c.actionId).slice(0, this.maxActions));
-      this.focus.set(last.find((c) => c.focus)?.focus ?? null);
+      const remembered = s.chapterPlan ??
+        s.lastPlan ?? { load: this.ctx.config.progression.skipWeekPlan.load };
+      const life = remembered.life;
+      const lifeOk = life && this.planOptions()?.life.find((l) => l.id === life)?.available;
+      this.load.set(remembered.load);
+      this.focus.set(remembered.focus ?? null);
+      this.life.set(lifeOk ? life : null);
     });
     addIcons({ arrowForward, chatbubblesOutline, micOutline, settingsOutline, medkitOutline });
   }
@@ -1075,17 +1118,6 @@ export class WeekPage {
   protected whenKey(weeks: number): string {
     if (weeks === 0) return 'ui.week.thisWeek';
     return weeks === 1 ? 'ui.week.nextWeek' : 'ui.week.inWeeks';
-  }
-
-  protected isChosen(id: string): boolean {
-    return this.choices().includes(id);
-  }
-
-  protected toggle(id: string, needsFocus: boolean): void {
-    this.choices.update((list) =>
-      list.includes(id) ? list.filter((x) => x !== id) : [...list, id],
-    );
-    if (needsFocus && !this.choices().includes(id)) this.focus.set(null);
   }
 
   protected async act(): Promise<void> {
@@ -1107,16 +1139,14 @@ export class WeekPage {
           break;
         default: {
           if (this.planOpen()) {
-            const focusIds = new Set(
-              this.options()
-                .filter((o) => o.needsFocus)
-                .map((o) => o.id),
-            );
-            await this.game.setPlan(
-              this.choices().map((actionId) =>
-                focusIds.has(actionId) ? { actionId, focus: this.focus()! } : { actionId },
-              ),
-            );
+            const focus = this.focus();
+            const life = this.life();
+            const plan: WeekPlan = {
+              load: this.load(),
+              ...(focus ? { focus } : {}),
+              ...(life ? { life } : {}),
+            };
+            await this.game.setPlan(plan);
             this.editing.set(false);
           }
           const report = await this.game.advanceToStop();

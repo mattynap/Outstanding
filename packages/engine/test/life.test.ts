@@ -11,7 +11,7 @@ import {
   type Partner,
   type Player,
 } from '../src/index';
-import { applyMatchAftermath, weeklyRecovery } from '../src/player/condition';
+import { applyMatchAftermath, weeklyDrift } from '../src/player/condition';
 import { applyWeeklyPrivate } from '../src/private/private';
 import { applyLifeWeek, driftDiscipline, lifeModifiers } from '../src/season/life';
 import { baseOptions } from './fixtures';
@@ -119,15 +119,12 @@ describe('modificatori della vita', () => {
 
   it('Svago: morale 40, riferimento 60, dopo una settimana 44 contro 42', () => {
     const p = withMorale(start().player, 40);
-    expect(weeklyRecovery(p, ctx).condition.morale).toBeCloseTo(42, 9);
-    expect(weeklyRecovery(p, ctx, lifeModifiers('leisure', ctx)).condition.morale).toBeCloseTo(
-      44,
-      9,
-    );
+    expect(weeklyDrift(p, ctx, lifeModifiers(undefined, ctx)).condition.morale).toBeCloseTo(42, 9);
+    expect(weeklyDrift(p, ctx, lifeModifiers('leisure', ctx)).condition.morale).toBeCloseTo(44, 9);
     // Sopra il riferimento lo svago non fa scendere più in fretta.
     const high = withMorale(start().player, 80);
-    expect(weeklyRecovery(high, ctx, lifeModifiers('leisure', ctx)).condition.morale).toBeCloseTo(
-      weeklyRecovery(high, ctx).condition.morale,
+    expect(weeklyDrift(high, ctx, lifeModifiers('leisure', ctx)).condition.morale).toBeCloseTo(
+      weeklyDrift(high, ctx, lifeModifiers(undefined, ctx)).condition.morale,
       9,
     );
   });
@@ -185,9 +182,12 @@ describe('azioni della settimana', () => {
 
   it('Serata: giornali con frequenza ~0,05 e disciplina a base - 20', () => {
     let s = start();
-    s = { ...s, player: { ...s.player, persona: { ...s.player.persona, discipline: 60 } } };
+    s = {
+      ...s,
+      player: { ...s.player, persona: { ...s.player.persona, discipline: 60, disciplineBase: 60 } },
+    };
     const base = 60;
-    expect(s.player.persona.disciplineBase ?? s.player.persona.discipline).toBe(base);
+    expect(s.player.persona.disciplineBase).toBe(base);
     const rng = Rng.fromSeed(2024);
     let gossip = 0;
     let p = s.player;
@@ -236,8 +236,8 @@ describe('disciplina', () => {
     expect(driftDiscipline(p, ctx).persona.discipline).toBeCloseTo(41, 9);
   });
 
-  it('senza base ferma al valore corrente', () => {
-    const p = withDiscipline(start().player, 40);
+  it('alla base resta ferma', () => {
+    const p = withDiscipline(start().player, 40, 40);
     expect(driftDiscipline(p, ctx).persona.discipline).toBe(40);
   });
 
@@ -263,11 +263,5 @@ describe('disciplina', () => {
     const after = resolveEvent(drawn, 'ammonizione', 0, c).state.player.persona;
     expect(after.discipline).toBe(45);
     expect(after.disciplineBase).toBe(55);
-    // Senza base esplicita, la base parte dal valore corrente.
-    const s2 = { ...s0, player: withDiscipline(s0.player, 50) };
-    const after2 = resolveEvent(drawWeekEvents(s2, c).state, 'ammonizione', 0, c).state.player
-      .persona;
-    expect(after2.discipline).toBe(45);
-    expect(after2.disciplineBase).toBe(45);
   });
 });

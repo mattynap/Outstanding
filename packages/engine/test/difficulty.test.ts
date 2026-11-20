@@ -46,7 +46,7 @@ describe('difficoltà', () => {
     const gain = (d: Difficulty) => {
       const s = career(d);
       const before = s.player.skills.shooting;
-      const after = planWeek(s, [{ actionId: 'train_normal' }], ctx).state.player.skills.shooting;
+      const after = planWeek(s, { load: 'balanced' }, ctx).state.player.skills.shooting;
       return after - before;
     };
     expect(gain('easy')).toBeGreaterThan(gain('normal'));

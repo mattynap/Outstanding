@@ -287,21 +287,11 @@ describe('rischio contestuale', () => {
 
 describe('injuryChance e freschezza', () => {
   const player = newCareer(baseOptions, 7).player;
-  const at = (energy: number, injuryRisk = 50) => ({
-    ...player,
-    condition: { ...player.condition, energy, injuryRisk },
-  });
+  const at = (energy: number) => ({ ...player, condition: { ...player.condition, energy } });
 
   it('segue la curva: 0.6x a freschezza 100, 2x a 0', async () => {
     const { injuryChance } = await import('../src/player/progression');
     expect(injuryChance(0.025, at(100), defaultContext)).toBeCloseTo(0.015);
     expect(injuryChance(0.025, at(0), defaultContext)).toBeCloseTo(0.05);
-  });
-
-  it('ignora injuryRisk', async () => {
-    const { injuryChance } = await import('../src/player/progression');
-    expect(injuryChance(0.025, at(60, 0), defaultContext)).toBe(
-      injuryChance(0.025, at(60, 100), defaultContext),
-    );
   });
 });

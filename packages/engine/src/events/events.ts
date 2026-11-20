@@ -266,7 +266,7 @@ function applyEffects(
     const after = getStat(player, path);
     if (path === 'persona.discipline') {
       // Gli eventi cambiano il carattere in modo permanente: si sposta anche la base di ritorno.
-      const base = player.persona.disciplineBase ?? before;
+      const base = player.persona.disciplineBase;
       player = {
         ...player,
         persona: { ...player.persona, disciplineBase: clamp(base + (after - before), 0, 100) },

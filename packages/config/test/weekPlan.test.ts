@@ -14,7 +14,7 @@ describe('config: settimana a due binari', () => {
     expect(p.loads.rest.healChance).toBeUndefined();
     expect(p.life.leisure.moraleRecoveryFactor).toBe(2);
     expect(p.life.party.discipline).toBe(-1);
-    expect(p.skipWeekPlanV4.load).toBe('balanced');
+    expect(p.skipWeekPlan.load).toBe('balanced');
     expect(p.injuries.freshnessCurve).toEqual({ at100: 0.6, at0: 2 });
     expect(p.preview.riskBands).toEqual({ medium: 0.15, high: 0.3 });
   });

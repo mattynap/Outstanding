@@ -179,6 +179,7 @@ export {
   repeatPlan,
   setChapterPlan,
   type FastForwardReport,
+  type PlanIssue,
   type Headline,
   type HeadlineKind,
   type MatchSummary,
@@ -186,13 +187,14 @@ export {
   type FastForwardTarget,
 } from './season/fastForward';
 export {
-  getWeekOptions,
+  getPlanOptions,
+  LOADS,
   planWeek,
   skipToNextMatch,
-  type WeekChoice,
-  type WeekOption,
+  type PlanOptions,
   type WeekPlanReport,
 } from './season/plan';
+export { LIFE_ACTIONS, lifeModifiers, type LifeModifiers } from './season/life';
 export { applyGrowth, applyLoadGrowth, applyDecline, growthMultiplier } from './player/progression';
 export {
   acceptOffer,

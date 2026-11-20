@@ -12,7 +12,7 @@ import {
   getOffers,
   getPendingEvents,
   getTransferWindow,
-  getWeekOptions,
+  getPlanOptions,
   hireAgent,
   isSeasonOver,
   negotiateOffer,
@@ -252,14 +252,15 @@ describe('sponsor', () => {
     const week = advanceWeek(playerFixture(s) ? playMatch(s, () => 0).state : s).report.finance;
     expect(week.sponsors).toBe(offer.weeklyIncome);
 
-    const shoot = getWeekOptions(s).find((o) => o.kind === 'sponsor')!;
+    const shoot = getPlanOptions(s).life.find((o) => o.id === 'sponsor')!;
     expect(shoot.available).toBe(true);
-    const shot = planWeek(s, [{ actionId: shoot.id }]).state;
-    expect(shot.player.money.cash).toBeGreaterThan(s.player.money.cash);
+    const shot = planWeek(s, { load: 'balanced', life: 'sponsor' });
+    expect(shot.state.player.money.cash).toBeGreaterThan(s.player.money.cash);
+    expect(shot.report.sponsorIncome).toBe(shot.state.player.money.cash - s.player.money.cash);
   });
 
   it('senza sponsor niente servizio fotografico', () => {
-    const shoot = getWeekOptions(start()).find((o) => o.kind === 'sponsor')!;
+    const shoot = getPlanOptions(start()).life.find((o) => o.id === 'sponsor')!;
     expect(shoot.available).toBe(false);
     expect(shoot.reasonKey).toBe('week.blocked.no_sponsor');
   });
@@ -274,7 +275,7 @@ describe('ritiro', () => {
     const r = retire(aged(start(), 34));
     expect(r.retired).toMatchObject({ reason: 'choice', age: 34 });
     expect(() => advanceWeek(r)).toThrow(/over/);
-    expect(() => planWeek(r, [])).toThrow(/over/);
+    expect(() => planWeek(r, { load: 'balanced' })).toThrow(/over/);
   });
 
   it('a 40 anni il ritiro è automatico', () => {

@@ -5,6 +5,8 @@ import { applyMatchAftermath } from '../player/condition';
 import { computeOvr } from '../player/ratings';
 import { Rng } from '../rng';
 import { expectedGoals } from '../season/quickSim';
+import { lifeModifiers } from '../season/life';
+import { addWeekFreshness, currentWeekLoad } from '../season/load';
 import { recordChapterMatch } from '../season/director';
 import { playerFixture } from '../season/week';
 import type {
@@ -462,6 +464,7 @@ function finishMatch(
   const coachId = state.player.clubId
     ? getClub(state.world, state.player.clubId).coachId
     : undefined;
+  const plan = currentWeekLoad(state, ctx);
   const after = applyMatchAftermath(
     player,
     coachId,
@@ -470,8 +473,10 @@ function finishMatch(
     rng,
     ctx,
     difficultyMods(state, ctx),
+    lifeModifiers(plan.life, ctx),
+    plan.load,
   );
-  const { currentMatch: _done, ...rest } = state;
+  const { currentMatch: _done, ...rest } = addWeekFreshness(state, after.freshnessDelta);
   // In coppa una gara decisiva in parità prosegue con supplementari e rigori.
   const settled = settleKnockout(
     { ...fixture, result: { ...m.score } },

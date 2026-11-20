@@ -1,206 +1,174 @@
-import type { WeekActionConfig } from '@outstanding/config';
-import { difficultyMods } from '../difficulty';
 import { defaultContext, type GameContext } from '../context';
-import { applyGrowth, injure, injuryChance, rollInjury } from '../player/progression';
-import { applyParty, type PartyReport } from '../private/private';
+import { difficultyMods } from '../difficulty';
+import type { PartyReport } from '../private/private';
 import { SKILLS } from '../player/ratings';
 import { Rng } from '../rng';
-import type { GameState, Player, Skill, Skills } from '../types';
+import type { EffectiveLoad, GameState, LifeAction, Load, Skills, WeekPlan } from '../types';
 import { clamp } from '../util';
-import { advanceWeek, isSeasonOver, playerFixture } from './week';
+import { applyLifeWeek, LIFE_ACTIONS, lifeModifiers } from './life';
+import { applyLoadWeek, effectiveLoad } from './load';
+import { advanceWeek, isSeasonOver, playerFixture, playerFixtures } from './week';
 
-/** Azione della settimana come la vede l'interfaccia. */
-export interface WeekOption {
-  id: string;
-  kind: WeekActionConfig['kind'];
-  nameKey: string;
-  descKey: string;
-  /** Vero se l'azione richiede di scegliere un'abilità su cui concentrarsi. */
-  needsFocus: boolean;
-  available: boolean;
-  /** Motivo per cui l'azione non è disponibile (chiave di testo). */
-  reasonKey?: string;
-}
+export const LOADS: readonly Load[] = ['rest', 'balanced', 'push'];
 
-export interface WeekChoice {
-  actionId: string;
-  focus?: Skill;
+/** Le scelte possibili questa settimana, come le vede l'interfaccia. */
+export interface PlanOptions {
+  loads: { id: Load; available: boolean }[];
+  life: { id: LifeAction; available: boolean; reasonKey?: string }[];
+  /** Da infortunato il carico scelto non conta: la settimana è di recupero. */
+  forcedLoad?: 'recovery';
 }
 
 export interface WeekPlanReport {
-  choices: WeekChoice[];
-  /** Incrementi delle abilità dovuti agli allenamenti. */
+  plan: WeekPlan;
+  effectiveLoad: EffectiveLoad;
+  /** Incrementi delle abilità dovuti alle sedute. */
   gains: Partial<Skills>;
   injury?: { type: string; weeksLeft: number };
-  /** Vero se le cure hanno accorciato l'infortunio. */
+  /** Vero se il recupero ha accorciato l'infortunio. */
   healed: boolean;
-  /** Com'è andata la serata, se il giocatore è uscito. */
+  /** Com'è andata la serata, se c'era nel piano. */
   party?: PartyReport;
+  /** Soldi incassati dagli sponsor (già accreditati: solo da mostrare). */
+  sponsorIncome?: number;
+  /** Morale non perso grazie alla famiglia in questa fase della settimana. */
+  moraleProtected: number;
+  /** Azione fuori dal campo del piano non disponibile questa settimana, quindi saltata. */
+  lifeSkipped?: LifeAction;
 }
 
-const isInjured = (p: Player) => Boolean(p.injury && p.injury.weeksLeft > 0);
-
-function getAction(id: string, ctx: GameContext): WeekActionConfig {
-  const action = ctx.config.progression.actions.find((a) => a.id === id);
-  if (!action) throw new Error(`Unknown week action "${id}"`);
-  return action;
-}
-
-/** Le azioni possibili questa settimana (gli allenamenti non sono disponibili da infortunati). */
-export function getWeekOptions(state: GameState, ctx: GameContext = defaultContext): WeekOption[] {
-  const injured = isInjured(state.player);
+/** Carichi, azioni fuori dal campo e carico forzato di questa settimana. */
+export function getPlanOptions(state: GameState, ctx: GameContext = defaultContext): PlanOptions {
+  void ctx;
+  const injured = Boolean(state.player.injury && state.player.injury.weeksLeft > 0);
   const noSponsor = state.player.sponsors.length === 0;
-  return ctx.config.progression.actions.map((a) => {
-    const reasonKey =
-      injured && a.kind === 'training'
-        ? 'week.blocked.injured'
-        : noSponsor && a.kind === 'sponsor'
-          ? 'week.blocked.no_sponsor'
-          : undefined;
-    const blocked = reasonKey !== undefined;
-    return {
-      id: a.id,
-      kind: a.kind,
-      nameKey: `week.actions.${a.id}.name`,
-      descKey: `week.actions.${a.id}.desc`,
-      needsFocus: Boolean(a.focus),
-      available: !blocked,
-      ...(reasonKey ? { reasonKey } : {}),
-    };
-  });
-}
-
-function applyDeltas(player: Player, a: WeekActionConfig, ctx: GameContext): Player {
-  const e = a.effects;
-  // Il servizio fotografico paga qualche settimana extra di ogni sponsor.
-  const bonus =
-    a.kind === 'sponsor'
-      ? player.sponsors.reduce((sum, d) => sum + d.weeklyIncome, 0) *
-        ctx.config.economy.sponsors.shootBonusWeeks
-      : 0;
   return {
-    ...player,
-    money: { ...player.money, cash: player.money.cash + bonus },
-    image: {
-      ...player.image,
-      popularity: clamp(player.image.popularity + (e.popularity ?? 0), 0, 100),
-    },
-    condition: {
-      ...player.condition,
-      form: clamp(player.condition.form + (e.form ?? 0), 0, 100),
-      energy: clamp(player.condition.energy + (e.energy ?? 0), 0, 100),
-      morale: clamp(player.condition.morale + (e.morale ?? 0), 0, 100),
-      injuryRisk: clamp(player.condition.injuryRisk + (e.injuryRisk ?? 0), 0, 100),
-    },
-    persona: {
-      ...player.persona,
-      happiness: clamp(player.persona.happiness + (e.happiness ?? 0), 0, 100),
-      discipline: clamp(player.persona.discipline + (e.discipline ?? 0), 0, 100),
-    },
+    loads: LOADS.map((id) => ({ id, available: !injured })),
+    life: LIFE_ACTIONS.map((id) =>
+      id === 'sponsor' && noSponsor
+        ? { id, available: false, reasonKey: 'week.blocked.no_sponsor' }
+        : { id, available: true },
+    ),
+    ...(injured ? { forcedLoad: 'recovery' as const } : {}),
   };
 }
 
+/** Controlla la forma del piano (id validi); la disponibilità della vita la decide il chiamante. */
+export function assertWeekPlan(plan: WeekPlan): void {
+  if (!LOADS.includes(plan.load)) throw new Error(`Unknown load "${String(plan.load)}"`);
+  if (plan.focus !== undefined && !SKILLS.includes(plan.focus)) {
+    throw new Error(`Unknown skill "${String(plan.focus)}"`);
+  }
+  if (plan.life !== undefined && !LIFE_ACTIONS.includes(plan.life)) {
+    throw new Error(`Unknown life action "${String(plan.life)}"`);
+  }
+}
+
+/** Vero se l'azione fuori dal campo si può fare adesso. */
+export function lifeAvailable(state: GameState, life: LifeAction, ctx: GameContext): boolean {
+  return getPlanOptions(state, ctx).life.find((l) => l.id === life)?.available ?? false;
+}
+
 /**
- * Applica le azioni scelte per la settimana (al massimo `actionsPerWeek`, senza ripetizioni):
- * allenamenti (crescita e rischio infortuni), riposo, cure, svago. Una sola volta per settimana.
+ * Applica il piano della settimana: sedute del carico (crescita e infortunio con la freschezza di
+ * inizio settimana), poi l'azione fuori dal campo. La freschezza non si scrive: i delta vanno in
+ * `weekInProgress` e li chiude `advanceWeek`. Un'azione non disponibile si salta e si segnala
+ * (`lifeSkipped`), senza eccezione. Una sola volta per settimana.
  */
 export function planWeek(
   state: GameState,
-  choices: readonly WeekChoice[],
+  plan: WeekPlan,
   ctx: GameContext = defaultContext,
 ): { state: GameState; report: WeekPlanReport } {
-  const cfg = ctx.config.progression;
   if (state.retired) throw new Error('The career is over');
   if (state.plannedWeek === state.week) throw new Error('This week is already planned');
-  if (choices.length > cfg.actionsPerWeek) throw new Error(`At most ${cfg.actionsPerWeek} actions`);
-  if (new Set(choices.map((c) => c.actionId)).size !== choices.length) {
-    throw new Error('The same action cannot be chosen twice');
-  }
-  const options = getWeekOptions(state, ctx);
-  for (const c of choices) {
-    const action = getAction(c.actionId, ctx);
-    if (!options.find((o) => o.id === c.actionId)?.available) {
-      throw new Error(`Action "${c.actionId}" is not available`);
-    }
-    if (Boolean(action.focus) !== (c.focus !== undefined)) {
-      throw new Error(`Action "${c.actionId}" ${action.focus ? 'needs' : 'does not take'} a focus`);
-    }
-    if (c.focus !== undefined && !SKILLS.includes(c.focus)) {
-      throw new Error(`Unknown skill "${c.focus}"`);
-    }
-  }
+  assertWeekPlan(plan);
 
+  const skipped = plan.life !== undefined && !lifeAvailable(state, plan.life, ctx);
+  const life = skipped ? undefined : plan.life;
+  const lifeMods = lifeModifiers(life, ctx);
   const rng = Rng.fromState(state.rngState);
-  const mods = difficultyMods(state, ctx);
-  let player = state.player;
-  const gains: Partial<Skills> = {};
-  let injury: WeekPlanReport['injury'];
-  let healed = false;
+  const eff = effectiveLoad(state.player, plan.load);
 
-  for (const c of choices) {
-    const action = getAction(c.actionId, ctx);
-    if (action.kind === 'training') {
-      const grown = applyGrowth(
-        player,
-        (action.intensity ?? 1) * mods.growth,
-        state.week,
-        ctx,
-        c.focus,
-      );
-      player = grown.player;
-      for (const [s, g] of Object.entries(grown.gains) as [Skill, number][]) {
-        gains[s] = (gains[s] ?? 0) + g;
-      }
-      if (
-        action.injuryChance &&
-        rng.chance(injuryChance(action.injuryChance * mods.injury, player, ctx))
-      ) {
-        injury = rollInjury(rng, ctx);
-        player = injure(player, injury, ctx);
-      }
-    }
-    if (action.healChance && player.injury && rng.chance(action.healChance)) {
-      const weeksLeft = player.injury.weeksLeft - 1;
-      if (weeksLeft > 0) player = { ...player, injury: { ...player.injury, weeksLeft } };
-      else {
-        const { injury: _healed, ...rest } = player;
-        player = rest;
-      }
-      healed = true;
-    }
-    player = applyDeltas(player, action, ctx);
-  }
+  const loadOut = applyLoadWeek(
+    state.player,
+    state.week,
+    plan.load,
+    plan.focus,
+    rng,
+    ctx,
+    difficultyMods(state, ctx),
+    lifeMods.moraleLossFactor,
+  );
+  // Quanto morale la famiglia ha salvato dal calo dell'infortunio in seduta.
+  const moraleProtected = loadOut.injury
+    ? Math.max(
+        0,
+        loadOut.player.condition.morale -
+          clamp(
+            state.player.condition.morale + ctx.config.progression.injuries.moraleOnInjury,
+            0,
+            100,
+          ),
+      )
+    : 0;
 
-  let next: GameState = { ...state, player };
-  let party: PartyReport | undefined;
-  if (choices.some((c) => getAction(c.actionId, ctx).kind === 'party')) {
-    const out = applyParty(next, rng, ctx);
-    next = out.state;
-    party = out.report;
-  }
+  const hasMatch = playerFixtures(state).length > 0;
+  const lifeOut = applyLifeWeek({ ...state, player: loadOut.player }, life, hasMatch, rng, ctx);
+  const prev = state.weekInProgress;
 
-  return {
-    state: {
-      ...next,
-      plannedWeek: state.week,
-      rngState: rng.getState(),
-      // Le settimane senza azioni (saltate) non cancellano il piano da ricordare.
-      ...(choices.length > 0 ? { lastPlan: choices.map((c) => ({ ...c })) } : {}),
+  const next: GameState = {
+    ...lifeOut.state,
+    plannedWeek: state.week,
+    rngState: rng.getState(),
+    lastPlan: { ...plan },
+    weekInProgress: {
+      load: eff,
+      ...(life ? { life } : {}),
+      freshnessDelta: (prev?.freshnessDelta ?? 0) + loadOut.freshnessDelta + lifeOut.freshnessDelta,
     },
+  };
+  return {
+    state: next,
     report: {
-      choices: [...choices],
-      gains,
-      ...(injury ? { injury } : {}),
-      healed,
-      ...(party ? { party } : {}),
+      plan: { ...plan },
+      effectiveLoad: eff,
+      gains: loadOut.gains,
+      ...(loadOut.injury ? { injury: loadOut.injury } : {}),
+      healed: loadOut.healed,
+      ...(lifeOut.party ? { party: lifeOut.party } : {}),
+      ...(lifeOut.sponsorIncome !== undefined ? { sponsorIncome: lifeOut.sponsorIncome } : {}),
+      moraleProtected,
+      ...(skipped ? { lifeSkipped: plan.life } : {}),
     },
   };
 }
 
 /**
- * Salta le settimane senza partite (pausa estiva o invernale) applicando il piano automatico
- * `skipWeekPlan`; nelle settimane saltate non si estraggono eventi. Si ferma alla prima settimana
- * con una partita del giocatore o a fine stagione.
+ * Il piano da ripetere: quello del capitolo, altrimenti l'ultimo scelto, altrimenti il carico delle
+ * settimane saltate. Mai filtri silenziosi: un'azione non più disponibile la salta `planWeek` e la
+ * segnala nel report (`lifeSkipped`).
+ */
+export function repeatPlan(state: GameState, ctx: GameContext = defaultContext): WeekPlan {
+  const plan = state.chapterPlan ?? state.lastPlan;
+  return plan ? { ...plan } : { load: ctx.config.progression.skipWeekPlan.load };
+}
+
+/** La famiglia del piano attutisce anche il calo di morale dell'obiettivo mancato. */
+export function chapterMoraleLossFactor(state: GameState, ctx: GameContext): number {
+  return lifeModifiers(repeatPlan(state, ctx).life, ctx).moraleLossFactor;
+}
+
+/** Rimette il piano ricordato di prima: i piani automatici non lo sovrascrivono. */
+export function keepLastPlan(planned: GameState, before: GameState): GameState {
+  const { lastPlan: _auto, ...rest } = planned;
+  return before.lastPlan ? { ...rest, lastPlan: before.lastPlan } : rest;
+}
+
+/**
+ * Salta le settimane senza partite (pausa estiva o invernale) col carico `skipWeekPlan`; nelle
+ * settimane saltate non si estraggono eventi. Si ferma alla prima settimana con una partita del
+ * giocatore o a fine stagione.
  */
 export function skipToNextMatch(
   state: GameState,
@@ -212,16 +180,9 @@ export function skipToNextMatch(
   let weeks = 0;
   while (!isSeasonOver(s, ctx) && !playerFixture(s)) {
     if (s.plannedWeek !== s.week) {
-      const available = new Set(
-        getWeekOptions(s, ctx)
-          .filter((o) => o.available)
-          .map((o) => o.id),
-      );
-      const plan = ctx.config.progression.skipWeekPlan
-        .filter((id) => available.has(id))
-        .map((actionId) => ({ actionId }));
+      const plan: WeekPlan = { load: ctx.config.progression.skipWeekPlan.load };
       // Il piano automatico non sostituisce quello scelto dal giocatore.
-      s = { ...planWeek(s, plan, ctx).state, lastPlan: s.lastPlan };
+      s = keepLastPlan(planWeek(s, plan, ctx).state, s);
     }
     s = advanceWeek(s, ctx).state;
     weeks++;

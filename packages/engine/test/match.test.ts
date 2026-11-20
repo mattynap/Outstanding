@@ -473,7 +473,9 @@ describe('partita al minuto', () => {
     expect(checked).toBeGreaterThan(0);
   });
 
-  it('i gol medi per partita restano entro il 5% della baseline (2,807)', () => {
+  // Baseline rimisurata col piano a due binari (era 2,807): le settimane senza piano recuperano il
+  // carico Equilibrio, quindi si arriva in partita più freschi. La taratura è nel Task 12.
+  it('i gol medi per partita restano entro il 5% della baseline (3,015)', () => {
     let n = 0;
     let goals = 0;
     for (let seed = 42; n < 2000; seed++) {
@@ -489,8 +491,8 @@ describe('partita al minuto', () => {
         s = advanceWeek(s).state;
       }
     }
-    expect(goals / n).toBeGreaterThanOrEqual(2.667);
-    expect(goals / n).toBeLessThanOrEqual(2.947);
+    expect(goals / n).toBeGreaterThanOrEqual(2.864);
+    expect(goals / n).toBeLessThanOrEqual(3.166);
   }, 60000);
 });
 

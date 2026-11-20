@@ -7,6 +7,7 @@ import {
   parseContent,
   rawDefaultContent,
   type GameEvent,
+  type StatPath,
 } from '../src/index';
 
 describe('content', () => {
@@ -129,7 +130,7 @@ describe('freschezza, carico e vita', () => {
       choices: [
         {
           textKey: base.choices[0]!.textKey,
-          effects: [{ type: 'stat', path: 'condition.injuryRisk', delta: 3 }],
+          effects: [{ type: 'stat', path: 'condition.injuryRisk' as StatPath, delta: 3 }],
         },
       ],
     };
@@ -143,12 +144,17 @@ describe('freschezza, carico e vita', () => {
     const bad: GameEvent = {
       ...base,
       id: 'rischio_condizione',
-      conditions: { stats: [{ path: 'condition.injuryRisk', gte: 40 }] },
+      conditions: { stats: [{ path: 'condition.injuryRisk' as StatPath, gte: 40 }] },
     };
     const errors = checkContent(withEvent(bad));
     expect(errors.some((e) => e.includes('condition.injuryRisk') && e.includes('energy'))).toBe(
       true,
     );
+  });
+
+  it('nessuna chiave week.actions.* rimasta: il piano usa week.load.* e week.life.*', () => {
+    const left = Object.keys(defaultContent.i18n.it).filter((k) => k.startsWith('week.actions.'));
+    expect(left).toEqual([]);
   });
 
   it('nessun evento usa condition.injuryRisk', () => {

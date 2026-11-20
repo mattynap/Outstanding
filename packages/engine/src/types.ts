@@ -1,5 +1,4 @@
 import type { ChapterId, Difficulty, Interest, InterviewContext } from '@outstanding/config';
-import type { WeekChoice } from './season/plan';
 import type { PartnerHair, TattooZone } from '@outstanding/content';
 import type { RngState } from './rng';
 
@@ -23,6 +22,23 @@ export type Skills = Record<Skill, number>;
 /** Carico settimanale scelto dal giocatore; `recovery` vale solo per chi è infortunato. */
 export type Load = 'rest' | 'balanced' | 'push';
 export type EffectiveLoad = Load | 'recovery';
+
+export interface WeekInProgress {
+  /** Carico effettivo applicato da `planWeek`; assente se la settimana non è ancora pianificata. */
+  load?: EffectiveLoad;
+  life?: LifeAction;
+  freshnessDelta: number;
+}
+
+/** Azione facoltativa fuori dal campo del piano settimanale. */
+export type LifeAction = 'family' | 'leisure' | 'sponsor' | 'party';
+
+/** Piano di una settimana: carico obbligatorio, focus e azione fuori dal campo facoltativi. */
+export interface WeekPlan {
+  load: Load;
+  focus?: Skill;
+  life?: LifeAction;
+}
 
 export interface Contract {
   clubId: string;
@@ -98,11 +114,12 @@ export interface Player {
   skills: Skills;
   /** Tetto nascosto della crescita (60–95). Mai mostrato direttamente al giocatore. */
   potential: number;
-  condition: { form: number; energy: number; morale: number; injuryRisk: number };
+  /** `energy` è la freschezza (0–100). */
+  condition: { form: number; energy: number; morale: number };
   persona: {
     discipline: number;
-    /** Valore verso cui la disciplina torna; mancante = uguale al valore corrente (diventa obbligatorio con il salvataggio v4). */
-    disciplineBase?: number;
+    /** Valore verso cui la disciplina torna ogni settimana. */
+    disciplineBase: number;
     temperament: number;
     happiness: number;
   };
@@ -573,14 +590,22 @@ export interface GameState {
   /** Settimana per cui gli eventi sono già stati estratti (-1 = mai). */
   eventsWeek: number;
   transferRequests: TransferRequest[];
-  /** Settimana per cui le azioni sono già state scelte (-1 = mai). */
+  /** Settimana per cui il piano è già stato applicato (-1 = mai). */
   plannedWeek: number;
   /** Ultimo piano settimanale scelto: l'app lo ripropone, l'avanti veloce lo ripete. */
-  lastPlan?: { actionId: string; focus?: Skill }[];
+  lastPlan?: WeekPlan;
   /** Capitolo corrente della stagione (v3). */
   chapter: ChapterState;
-  /** Piano di allenamento valido per tutto il capitolo (v3); vuoto finché non è scelto. */
-  chapterPlan: WeekChoice[];
+  /** Piano valido per tutto il capitolo (v4); `null` finché non è scelto. */
+  chapterPlan: WeekPlan | null;
+  /** Settimane della stagione passate a ogni carico (pesano il declino di fine stagione). */
+  seasonLoadWeeks: Record<Load, number>;
+  /**
+   * Settimana in corso: carico e vita applicati e freschezza ancora da sommare (carico, vita,
+   * partite). La chiude `advanceWeek` con un solo clamp al tetto del carico; assente fra una
+   * settimana e l'altra.
+   */
+  weekInProgress?: WeekInProgress;
   /** Obiettivi di capitolo liquidati, in ordine (assente nei salvataggi precedenti). */
   goalRecords?: ChapterGoalRecord[];
   offers: ContractOffer[];

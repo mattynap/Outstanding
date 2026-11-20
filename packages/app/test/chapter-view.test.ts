@@ -49,7 +49,7 @@ function playSeason(s0: GameState) {
       continue;
     }
     expect(step).toBe('advance');
-    if (needsPlan(s, ctx, last)) s = setChapterPlan(s, [{ actionId: 'rest' }], ctx);
+    if (needsPlan(s, ctx, last)) s = setChapterPlan(s, { load: 'rest' }, ctx);
     const out = advanceToStop(s, ctx);
     s = out.state;
     last = out.report.stop;
@@ -61,7 +61,7 @@ function playSeason(s0: GameState) {
 describe('home del capitolo', () => {
   it('a inizio carriera serve il piano, poi no fino al capitolo nuovo', () => {
     expect(needsPlan(start, ctx, null)).toBe(true);
-    const planned = setChapterPlan(start, [{ actionId: 'rest' }], ctx);
+    const planned = setChapterPlan(start, { load: 'rest' }, ctx);
     expect(needsPlan(planned, ctx, 'pick')).toBe(false);
     expect(needsPlan(planned, ctx, 'chapterEnd')).toBe(true);
   });
@@ -82,7 +82,7 @@ describe('home del capitolo', () => {
   });
 
   it('allo stop di fine capitolo non si gioca prima di aver pianificato la settimana', () => {
-    let s = setChapterPlan(start, [{ actionId: 'rest' }], ctx);
+    let s = setChapterPlan(start, { load: 'rest' }, ctx);
     for (let i = 0; i < 50; i++) {
       const out = advanceToStop(s, ctx);
       s = out.state;
@@ -95,13 +95,13 @@ describe('home del capitolo', () => {
     expect(nextStep(s, ctx)).toBe('advance');
     // Dopo un riavvio l'ultimo stop non c'è più: il piano nuovo si chiede lo stesso.
     expect(needsPlan(s, ctx, null)).toBe(true);
-    const out = advanceToStop(setChapterPlan(s, [{ actionId: 'rest' }], ctx), ctx);
+    const out = advanceToStop(setChapterPlan(s, { load: 'rest' }, ctx), ctx);
     if (out.state.plannedWeek === out.state.week)
       expect(needsPlan(out.state, ctx, null)).toBe(false);
   });
 
   it("l'obiettivo mostra bersaglio e progresso; le partite scelte sono in ordine", () => {
-    let s = setChapterPlan(start, [{ actionId: 'rest' }], ctx);
+    let s = setChapterPlan(start, { load: 'rest' }, ctx);
     let out = advanceToStop(s, ctx);
     for (let i = 0; i < 20 && !s.chapter.goal; i++) {
       s = out.state;

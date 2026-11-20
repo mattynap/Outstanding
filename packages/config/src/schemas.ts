@@ -53,7 +53,7 @@ export const playerConfigSchema = z.object({
       message: 'potential mean must lie between min and max',
     }),
   initial: z.object({
-    condition: z.object({ form: pct, energy: pct, morale: pct, injuryRisk: pct }),
+    condition: z.object({ form: pct, energy: pct, morale: pct }),
     persona: z.object({ discipline: pctRange, temperament: pctRange, happiness: pct }),
     image: z.object({ popularity: pct, reputation: pct, followers: range }),
     money: z.object({
@@ -341,8 +341,6 @@ export const economySchema = z
       perPopularityPoint: z.number().min(0),
       seasons: intRange,
       lifetimeWeeks: z.number().int().min(1),
-      /** Settimane di compenso extra per un servizio fotografico. */
-      shootBonusWeeks: z.number().min(0),
     }),
     retirement: z.object({ minAge: z.number().int(), maxAge: z.number().int() }),
   })
@@ -537,8 +535,7 @@ export const matchSchema = z
       maxChance: prob,
       formWeight: z.number().min(0),
       moraleWeight: z.number().min(0),
-      energyWeight: z.number().min(0),
-      /** Peso lineare della freschezza sui momenti (sostituirà `energyWeight`). */
+      /** Peso lineare della freschezza sui momenti. */
       freshnessWeight: z.number().min(0),
       qualityMaxBonus: z.number().min(0).max(0.15),
       types: z.array(momentType).min(1),
@@ -781,32 +778,6 @@ export const eventsConfigSchema = z
 
 export type EventsConfig = z.infer<typeof eventsConfigSchema>;
 
-const conditionDelta = z
-  .object({
-    energy: z.number(),
-    morale: z.number(),
-    happiness: z.number(),
-    discipline: z.number(),
-    injuryRisk: z.number(),
-    popularity: z.number(),
-    form: z.number(),
-  })
-  .partial();
-
-const weekAction = z.object({
-  id: z.string().regex(/^[a-z0-9_]+$/),
-  kind: z.enum(['training', 'rest', 'recovery', 'leisure', 'sponsor', 'party']),
-  /** Moltiplicatore della crescita per gli allenamenti. */
-  intensity: z.number().positive().optional(),
-  /** L'allenamento si concentra su un'abilità scelta dal giocatore. */
-  focus: z.boolean().optional(),
-  /** Probabilità di infortunarsi durante la sessione (prima dei moltiplicatori di rischio). */
-  injuryChance: prob.optional(),
-  /** Probabilità di recuperare una settimana in più da un infortunio. */
-  healChance: prob.optional(),
-  effects: conditionDelta,
-});
-
 const ageBands = z
   .array(z.object({ maxAge: z.number().int(), value: z.number().min(0) }))
   .min(1)
@@ -849,19 +820,14 @@ export const progressionSchema = z
         fineChance: prob,
       }),
     }),
-    /** Piano delle settimane saltate (sostituirà `skipWeekPlan`, Task 7). */
-    skipWeekPlanV4: z.object({ load: z.enum(['rest', 'balanced', 'push', 'recovery']) }),
+    /** Piano delle settimane saltate senza un piano scelto. */
+    skipWeekPlan: z.object({ load: z.enum(['rest', 'balanced', 'push']) }),
     discipline: z.object({ driftPerWeek: z.number().min(0) }),
     events: z.object({ riskToFreshness: z.number().min(0) }),
     preview: z.object({ riskBands: z.object({ medium: prob, high: prob }) }),
-    actionsPerWeek: z.number().int().min(1),
-    actions: z.array(weekAction).min(1),
-    /** Azioni applicate in automatico alle settimane saltate. */
-    skipWeekPlan: z.array(z.string()),
     growth: z.object({
       /** Punti abilità per sessione di allenamento normale, prima dei moltiplicatori. */
       basePerSession: z.number().positive(),
-      focusMultiplier: z.number().positive(),
       /** Quota minima di crescita per le abilità poco pesate nel ruolo (0–1). */
       minWeightShare: prob,
       /** Crescita di una partita intera, in sessioni equivalenti. */
@@ -874,8 +840,6 @@ export const progressionSchema = z
       skillCapOverPotential: z.number().min(0),
       skillMax: z.number().max(100),
       disciplineFactor: z.object({ min: z.number().min(0), max: z.number().min(0) }),
-      lowEnergyThreshold: z.number().min(0).max(100),
-      lowEnergyFactor: prob,
       /** Quota della crescita che va all'abilità in focus. */
       focusShare: prob,
       /** Quota di crescita persa dalle altre abilità quando c'è un focus. */
@@ -891,12 +855,9 @@ export const progressionSchema = z
       disciplineMitigation: prob,
     }),
     condition: z.object({
-      energyRecoveryPerWeek: z.number().min(0),
-      energyPer90: z.number().min(0),
       formTarget: pct,
       formDriftPerWeek: prob,
       formPerRatingPoint: z.number().min(0),
-      formNotPlaying: z.number(),
       moraleTarget: pct,
       moraleDriftPerWeek: prob,
       moraleBySelection: z.object({ starter: z.number(), bench: z.number(), out: z.number() }),
@@ -904,17 +865,11 @@ export const progressionSchema = z
       moralePerRatingPoint: z.number().min(0),
       trustPerRatingPoint: z.number().min(0),
       trustNotSelected: z.number(),
-      injuryRiskTarget: pct,
-      injuryRiskDriftPerWeek: prob,
-      lowEnergyInjuryRisk: z.number().min(0),
       /** Freschezza persa per 90 minuti giocati. */
       freshnessPer90: z.number().min(0),
     }),
     injuries: z.object({
       matchChancePer90: prob,
-      /** Aumento relativo della probabilità per ogni punto di rischio sopra il valore di riferimento. */
-      riskPerPoint: z.number().min(0),
-      lowEnergyMultiplier: z.number().min(1),
       formOnInjury: z.number(),
       moraleOnInjury: z.number(),
       /** Moltiplicatore della probabilità di infortunio a freschezza 100 e a 0 (lineare). */
@@ -933,24 +888,8 @@ export const progressionSchema = z
     }),
   })
   .superRefine((p, ctx) => {
-    const ids = new Set(p.actions.map((a) => a.id));
-    if (ids.size !== p.actions.length)
-      ctx.addIssue({ code: 'custom', message: 'duplicate action id' });
-    for (const id of p.skipWeekPlan) {
-      if (!ids.has(id))
-        ctx.addIssue({ code: 'custom', message: `skipWeekPlan: unknown action "${id}"` });
-      if (p.actions.find((a) => a.id === id)?.focus) {
-        ctx.addIssue({ code: 'custom', message: `skipWeekPlan: "${id}" needs a focus` });
-      }
-    }
-    if (p.skipWeekPlan.length > p.actionsPerWeek) {
-      ctx.addIssue({ code: 'custom', message: 'skipWeekPlan has too many actions' });
-    }
     if (p.growth.disciplineFactor.min > p.growth.disciplineFactor.max) {
       ctx.addIssue({ code: 'custom', message: 'disciplineFactor min must be <= max' });
-    }
-    if (p.actions.some((a) => a.kind === 'training' && a.intensity === undefined)) {
-      ctx.addIssue({ code: 'custom', message: 'training actions need an intensity' });
     }
   });
 
@@ -1095,7 +1034,6 @@ export const careerSchema = z
 
 export type CareerConfig = z.infer<typeof careerSchema>;
 export type ProgressionConfig = z.infer<typeof progressionSchema>;
-export type WeekActionConfig = z.infer<typeof weekAction>;
 export type MatchConfig = z.infer<typeof matchSchema>;
 export type MomentTypeConfig = z.infer<typeof momentType>;
 export type MomentOptionConfig = z.infer<typeof momentOption>;

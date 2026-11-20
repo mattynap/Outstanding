@@ -16,6 +16,7 @@ import {
   type FastForwardStop,
   type FastForwardTarget,
   type GameState,
+  type WeekPlan,
 } from '../src/index';
 import { baseOptions } from './fixtures';
 import { chapterOf, emptyChapterLog } from '../src/season/director';
@@ -31,23 +32,21 @@ const start = (seed = 6): GameState => newCareer(baseOptions, seed);
 
 describe('piano ricordato', () => {
   it('planWeek ricorda il piano scelto e il piano automatico non lo sostituisce', () => {
-    const s = planWeek(start(), [{ actionId: 'train_intense' }, { actionId: 'leisure' }]).state;
-    expect(s.lastPlan).toEqual([{ actionId: 'train_intense' }, { actionId: 'leisure' }]);
+    const s = planWeek(start(), { load: 'push', life: 'leisure' }).state;
+    expect(s.lastPlan).toEqual({ load: 'push', life: 'leisure' });
     const skipped = skipToNextMatch({ ...s, week: s.week + 1 }).state;
     expect(skipped.lastPlan).toEqual(s.lastPlan);
   });
 
-  it('il piano da ripetere toglie serate e azioni non disponibili', () => {
-    const s = {
-      ...start(),
-      lastPlan: [{ actionId: 'party' }, { actionId: 'train_normal' }],
-    };
-    expect(repeatPlan(s)).toEqual([{ actionId: 'train_normal' }]);
-    const injured = {
+  it('il piano da ripetere non filtra nulla: la serata resta, il carico lo decide planWeek', () => {
+    const s: GameState = { ...start(), lastPlan: { load: 'push', life: 'party' } };
+    expect(repeatPlan(s)).toEqual({ load: 'push', life: 'party' });
+    const injured: GameState = {
       ...s,
       player: { ...s.player, injury: { type: 'contusione', weeksLeft: 2 } },
     };
-    expect(repeatPlan(injured).every((c) => c.actionId !== 'train_normal')).toBe(true);
+    expect(repeatPlan(injured)).toEqual({ load: 'push', life: 'party' });
+    expect(planWeek(injured, repeatPlan(injured)).report.effectiveLoad).toBe('recovery');
   });
 });
 
@@ -108,7 +107,7 @@ describe('avanti veloce', () => {
 
 /** Carriera guidata da advanceToStop: pick simulate, notizie prudenti, piano fisso. */
 function driveSeason(seed: number, ctx = defaultContext) {
-  let s = setChapterPlan(start(seed), [{ actionId: 'train_normal' }], ctx);
+  let s = setChapterPlan(start(seed), { load: 'balanced' }, ctx);
   const stops: { stop: string; weeks: number; pendingIsPick: boolean; untouched: boolean }[] = [];
   const reports: ReturnType<typeof advanceToStop>['report'][] = [];
   for (let i = 0; i < 300; i++) {
@@ -154,7 +153,7 @@ describe('avanti fino al prossimo stop', () => {
   });
 
   it('stops at chapter end and starts the next chapter', () => {
-    let s = setChapterPlan(start(6), [{ actionId: 'train_normal' }], ctx);
+    let s = setChapterPlan(start(6), { load: 'balanced' }, ctx);
     const first = s.chapter.id;
     let saw = false;
     for (let i = 0; i < 40 && !saw; i++) {
@@ -167,8 +166,8 @@ describe('avanti fino al prossimo stop', () => {
         expect(s.chapter.log).toEqual(emptyChapterLog());
         expect(s.chapter.stretch).toEqual(emptyChapterLog());
         // Subito dopo, il piano del capitolo nuovo si può impostare e si riparte.
-        s = setChapterPlan(s, [{ actionId: 'train_intense' }], ctx);
-        expect(s.chapterPlan).toEqual([{ actionId: 'train_intense' }]);
+        s = setChapterPlan(s, { load: 'push' }, ctx);
+        expect(s.chapterPlan).toEqual({ load: 'push' });
       } else if (out.report.stop === 'pick') s = simulateMatch(s, ctx).state;
       else if (out.report.stop === 'news') {
         for (const pe of [...s.pendingEvents]) {
@@ -189,7 +188,7 @@ describe('avanti fino al prossimo stop', () => {
   });
 
   it('stops at zero weeks when the current week already has a stop', () => {
-    let s = setChapterPlan(start(6), [{ actionId: 'train_normal' }], ctx);
+    let s = setChapterPlan(start(6), { load: 'balanced' }, ctx);
     for (let i = 0; i < 40; i++) {
       const out = advanceToStop(s, ctx);
       s = out.state;
@@ -228,7 +227,7 @@ describe('avanti fino al prossimo stop', () => {
     // Stesso seme e stesso piano: la stagione guidata da advanceToStop coincide con quella manuale.
     // Senza obiettivi: l'estrazione dell'obiettivo sposta l'`Rng` e le ricompense il morale.
     const noGoals = { ...ctx, content: { ...ctx.content, chapterGoals: [] } };
-    const plan = [{ actionId: 'train_normal' }];
+    const plan: WeekPlan = { load: 'balanced' };
     const driven = driveSeason(6, noGoals).state;
     let m = setChapterPlan(start(6), plan, ctx);
     while (!isSeasonOver(m, ctx)) {
@@ -321,8 +320,8 @@ describe('fine capitolo e stop mancanti', () => {
     return s;
   };
   /** Porta la carriera al primo chapterEnd, gestendo pick e notizie. */
-  function toChapterEnd(seed: number, planId = 'train_normal') {
-    let s = setChapterPlan(start(seed), [{ actionId: planId }], ctx);
+  function toChapterEnd(seed: number, plan: WeekPlan = { load: 'balanced' }) {
+    let s = setChapterPlan(start(seed), plan, ctx);
     for (let i = 0; i < 60; i++) {
       const out = advanceToStop(s, ctx);
       s = out.state;
@@ -345,10 +344,9 @@ describe('fine capitolo e stop mancanti', () => {
     expect(s.chapter.stretch).toEqual(emptyChapterLog());
     expect(playerFixture(s)?.result).toBeUndefined();
     // Stesso stato, due piani: la prima settimana del capitolo nuovo li segue.
-    const run = (id: string) =>
-      advanceToStop(setChapterPlan(s, [{ actionId: id }], ctx), ctx).state;
-    const a = run('train_intense');
-    const b = run('leisure');
+    const run = (plan: WeekPlan) => advanceToStop(setChapterPlan(s, plan, ctx), ctx).state;
+    const a = run({ load: 'push' });
+    const b = run({ load: 'rest', life: 'leisure' });
     expect(a.plannedWeek).toBeGreaterThanOrEqual(w);
     expect(a.player.skills).not.toEqual(b.player.skills);
   });
@@ -373,7 +371,7 @@ describe('fine capitolo e stop mancanti', () => {
     // con una partita non scelta.
     let hits = 0;
     for (let seed = 1; seed < 4; seed++) {
-      let s = setChapterPlan(start(seed), [{ actionId: 'train_normal' }], ctx);
+      let s = setChapterPlan(start(seed), { load: 'balanced' }, ctx);
       for (let i = 0; i < 40; i++) {
         let b = s;
         for (let k = 0; k < 6 && !isSeasonOver(b, ctx) && b.pendingEvents.length === 0; k++) {
@@ -417,7 +415,7 @@ describe('fine capitolo e stop mancanti', () => {
       clubLevel(s, o.clubId) < clubLevel(s, s.player.clubId);
     let hits = 0;
     for (let seed = 1; seed < 60; seed++) {
-      let s = setChapterPlan(start(seed), [{ actionId: 'train_normal' }], ctx);
+      let s = setChapterPlan(start(seed), { load: 'balanced' }, ctx);
       let seen = new Set(s.offers.map((o) => o.id));
       let weeksSinceSeen = 0;
       for (let i = 0; i < 80; i++) {
@@ -469,16 +467,114 @@ describe('avanti veloce e capitoli', () => {
     expect(s.chapter.lastGoalId).not.toBeNull();
   });
 
-  it('con chapterPlan vuoto ripete il piano ricordato prima del piano delle settimane saltate', () => {
-    const plan = [{ actionId: 'train_intense' }];
-    const remembered = { ...start(6), chapterPlan: [], lastPlan: plan };
+  it('senza chapterPlan ripete il piano ricordato prima del piano delle settimane saltate', () => {
+    const plan: WeekPlan = { load: 'push' };
+    const remembered = { ...start(6), chapterPlan: null, lastPlan: plan };
     const explicit = { ...start(6), chapterPlan: plan, lastPlan: plan };
     const a = advanceToStop(remembered, ctx);
     const b = advanceToStop(explicit, ctx);
     expect(a.state.player).toEqual(b.state.player);
     expect(a.state.rngState).toEqual(b.state.rngState);
     // Senza ricordo si ricade su skipWeekPlan: il giocatore cambia.
-    const none = advanceToStop({ ...start(6), chapterPlan: [], lastPlan: undefined }, ctx);
+    const { lastPlan: _none, ...noMemory } = start(6);
+    const none = advanceToStop({ ...noMemory, chapterPlan: null }, ctx);
     expect(none.state.player).not.toEqual(a.state.player);
+  });
+});
+
+describe('piano a due binari nel capitolo', () => {
+  /** Una settimana come la gioca il capitolo: piano ripetuto, notizie prudenti, partite simulate. */
+  function step(s: GameState) {
+    const planned = planWeek(s, repeatPlan(s, ctx), ctx);
+    let m: GameState = s.lastPlan ? { ...planned.state, lastPlan: s.lastPlan } : planned.state;
+    m = drawWeekEvents(m, ctx).state;
+    for (const pe of [...m.pendingEvents]) {
+      m = resolveEvent(m, pe.eventId, prudentChoice(getEvent(pe.eventId, ctx), m), ctx).state;
+    }
+    for (let f = playerFixture(m); f; f = playerFixture(m)) m = simulateMatch(m, ctx).state;
+    return { state: advanceWeek(m, ctx).state, report: planned.report };
+  }
+  const chapterWeeks = (s: GameState) => {
+    const cal = ctx.config.calendar;
+    const id = chapterOf(weekOfSeason(s.week, cal), cal);
+    let n = 0;
+    for (let w = s.week; chapterOf(weekOfSeason(w, cal), cal) === id; w++) n++;
+    return n;
+  };
+  const withSponsor = (s: GameState): GameState => ({
+    ...s,
+    player: {
+      ...s.player,
+      sponsors: [{ sponsorId: 'test_sponsor', weeklyIncome: 400, untilSeason: s.season + 1 }],
+    },
+  });
+
+  it('lo sponsor che scade a metà capitolo: settimane saltate, nessuna eccezione', () => {
+    let s = setChapterPlan(withSponsor(start(6)), { load: 'balanced', life: 'sponsor' }, ctx);
+    const reports = [];
+    for (let i = 0; i < 6; i++) {
+      // Il contratto finisce dopo la terza settimana.
+      if (i === 3) s = { ...s, player: { ...s.player, sponsors: [] } };
+      const out = step(s);
+      reports.push(out.report);
+      s = out.state;
+    }
+    for (const r of reports.slice(0, 3)) {
+      expect(r.lifeSkipped).toBeUndefined();
+      expect(r.sponsorIncome).toBe(200);
+    }
+    for (const r of reports.slice(3)) {
+      expect(r.lifeSkipped).toBe('sponsor');
+      expect(r.sponsorIncome).toBeUndefined();
+    }
+    // Il piano non cambia da solo: lo sponsor resta, la UI lo segnala.
+    expect(s.chapterPlan).toEqual({ load: 'balanced', life: 'sponsor' });
+  });
+
+  it('allo stop planIssues elenca le settimane in cui la vita è saltata', () => {
+    const planned = setChapterPlan(
+      withSponsor(start(6)),
+      { load: 'balanced', life: 'sponsor' },
+      ctx,
+    );
+    const s = { ...planned, player: { ...planned.player, sponsors: [] } };
+    const out = advanceToStop(s, ctx);
+    expect(out.report.planIssues.length).toBeGreaterThan(0);
+    for (const issue of out.report.planIssues) {
+      expect(issue.life).toBe('sponsor');
+      expect(issue.reasonKey).toBe('week.blocked.no_sponsor');
+    }
+    expect(new Set(out.report.planIssues.map((i) => i.week)).size).toBe(
+      out.report.planIssues.length,
+    );
+    // Con lo sponsor nessun problema.
+    expect(advanceToStop(planned, ctx).report.planIssues).toEqual([]);
+  });
+
+  it('setChapterPlan rifiuta una vita non disponibile ora', () => {
+    expect(() => setChapterPlan(start(6), { load: 'balanced', life: 'sponsor' }, ctx)).toThrow(
+      /not available/,
+    );
+  });
+
+  it('la serata si ripete davvero ogni settimana del capitolo', () => {
+    let s = setChapterPlan(start(6), { load: 'balanced', life: 'party' }, ctx);
+    const weeks = chapterWeeks(s);
+    let parties = 0;
+    for (let i = 0; i < weeks; i++) {
+      const out = step(s);
+      if (out.report.party) parties++;
+      s = out.state;
+    }
+    expect(parties).toBe(weeks);
+  });
+
+  it('stesso seme e stesso WeekPlan: stessa carriera', () => {
+    const run = () => {
+      let s = setChapterPlan(start(9), { load: 'push', focus: 'shooting', life: 'family' }, ctx);
+      for (let i = 0; i < 30; i++) s = step(s).state;
+      return s;
+    };
+    expect(run()).toEqual(run());
   });
 });

@@ -10,9 +10,11 @@ import {
   isSeasonOver,
   matchdayWeeks,
   newCareer,
+  planWeek,
   playerFixture,
   roundRobin,
   serialize,
+  simulateMatch,
   type Fixture,
   type GameState,
 } from '../src/index';
@@ -199,5 +201,25 @@ describe('weeks and season end', () => {
       b = advanceWeek(b).state;
     }
     expect(b).toEqual(a);
+  });
+
+  it('stesso seme e stesso WeekPlan: stessa stagione, anche dopo un salvataggio', () => {
+    const plan = { load: 'push', focus: 'pace', life: 'leisure' } as const;
+    const week = (s: GameState) => {
+      let m = planWeek(s, plan).state;
+      while (playerFixture(m)) m = simulateMatch(m).state;
+      return advanceWeek(m).state;
+    };
+    let a = start;
+    for (let i = 0; i < 15; i++) a = week(a);
+    let b = deserialize(serialize(a));
+    for (let i = 0; i < 15; i++) {
+      a = week(a);
+      b = week(b);
+    }
+    expect(b).toEqual(a);
+    expect(a.seasonLoadWeeks.push).toBeGreaterThan(0);
+    expect(a.seasonLoadWeeks.rest + a.seasonLoadWeeks.balanced).toBe(0);
+    expect(a.lastPlan).toEqual(plan);
   });
 });

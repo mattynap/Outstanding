@@ -134,8 +134,7 @@
     "baseWeekly": 50,
     "perPopularityPoint": 12,
     "seasons": [1, 2],
-    "lifetimeWeeks": 3,
-    "shootBonusWeeks": 1
+    "lifetimeWeeks": 3
   },
   "retirement": {
     "minAge": 33,

@@ -323,11 +323,7 @@
             "path": "persona.happiness",
             "delta": 3
           },
-          {
-            "type": "stat",
-            "path": "condition.injuryRisk",
-            "delta": -2
-          }
+          { "type": "stat", "path": "condition.energy", "delta": 3 }
         ]
       },
       {

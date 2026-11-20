@@ -115,6 +115,59 @@ describe('eventi', () => {
   });
 });
 
+describe('freschezza, carico e vita', () => {
+  const base = defaultContent.events[0]!;
+  const withEvent = (event: GameEvent) => ({
+    ...defaultContent,
+    events: [...defaultContent.events, event],
+  });
+
+  it('il validatore rifiuta condition.injuryRisk negli effetti', () => {
+    const bad: GameEvent = {
+      ...base,
+      id: 'rischio_effetto',
+      choices: [
+        {
+          textKey: base.choices[0]!.textKey,
+          effects: [{ type: 'stat', path: 'condition.injuryRisk', delta: 3 }],
+        },
+      ],
+    };
+    const errors = checkContent(withEvent(bad));
+    expect(errors.some((e) => e.includes('condition.injuryRisk') && e.includes('energy'))).toBe(
+      true,
+    );
+  });
+
+  it('il validatore rifiuta condition.injuryRisk nelle condizioni', () => {
+    const bad: GameEvent = {
+      ...base,
+      id: 'rischio_condizione',
+      conditions: { stats: [{ path: 'condition.injuryRisk', gte: 40 }] },
+    };
+    const errors = checkContent(withEvent(bad));
+    expect(errors.some((e) => e.includes('condition.injuryRisk') && e.includes('energy'))).toBe(
+      true,
+    );
+  });
+
+  it('nessun evento usa condition.injuryRisk', () => {
+    expect(JSON.stringify(defaultContent.events)).not.toContain('injuryRisk');
+  });
+
+  it('esistono i testi di carico e vita con nome e descrizione', () => {
+    const t = defaultContent.i18n.it;
+    const keys = [
+      ...['rest', 'balanced', 'push', 'recovery'].map((l) => `week.load.${l}`),
+      ...['family', 'leisure', 'sponsor', 'party', 'none'].map((l) => `week.life.${l}`),
+    ];
+    for (const key of keys) {
+      expect(t[`${key}.name`], `${key}.name`).toBeTruthy();
+      expect(t[`${key}.desc`], `${key}.desc`).toBeTruthy();
+    }
+  });
+});
+
 describe('prima pagina', () => {
   it('content:check finds headline keys', () => {
     const t = defaultContent.i18n.it;

@@ -19,7 +19,7 @@ interface ChangeLine {
 }
 
 /** Statistiche in cui un aumento è un male per il giocatore. */
-const BAD_WHEN_UP = new Set(['condition.injuryRisk']);
+const BAD_WHEN_UP = new Set<string>();
 
 /** Evento della settimana come notizia di giornale: testo, scelte, conseguenze. */
 @Component({

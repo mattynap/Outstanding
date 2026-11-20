@@ -214,6 +214,10 @@ export function checkContent(content: GameContent): string[] {
   return errors;
 }
 
+/** Il rischio infortuni non esiste più: la freschezza (`condition.energy`) lo ha assorbito. */
+const REMOVED_STAT_PATH = 'condition.injuryRisk';
+const REMOVED_STAT_MESSAGE = `"${REMOVED_STAT_PATH}" is removed, use "condition.energy" (freshness, opposite sign)`;
+
 /** Controlli sugli eventi: id, chiavi di testo, segnaposto, catene e riferimenti ai tratti. */
 function checkEvents(content: GameContent, errors: string[]): void {
   const t = content.i18n.it;
@@ -249,6 +253,9 @@ function checkEvents(content: GameContent, errors: string[]): void {
         }
       }
     }
+    for (const c of e.conditions?.stats ?? []) {
+      if (c.path === REMOVED_STAT_PATH) errors.push(`${where}: ${REMOVED_STAT_MESSAGE}`);
+    }
     const traitRefs = [...(e.conditions?.traits ?? []), ...(e.conditions?.traitsNot ?? [])];
     for (const choice of e.choices) {
       for (const effect of flattenEffects(choice.effects)) {
@@ -257,6 +264,9 @@ function checkEvents(content: GameContent, errors: string[]): void {
           if (!ids.has(effect.eventId)) {
             errors.push(`${where}: schedules unknown event "${effect.eventId}"`);
           }
+        }
+        if (effect.type === 'stat' && effect.path === REMOVED_STAT_PATH) {
+          errors.push(`${where}: ${REMOVED_STAT_MESSAGE}`);
         }
         if (effect.type === 'trait') traitRefs.push(effect.traitId);
       }

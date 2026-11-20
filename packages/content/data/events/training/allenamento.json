@@ -13,8 +13,7 @@
         "textKey": "events.allenamento_extra_tiro_01.c1",
         "effects": [
           { "type": "stat", "path": "skills.shooting", "delta": 1 },
-          { "type": "stat", "path": "condition.energy", "delta": -10 },
-          { "type": "stat", "path": "condition.injuryRisk", "delta": 3 }
+          { "type": "stat", "path": "condition.energy", "delta": -15 }
         ]
       },
       {
@@ -93,7 +92,7 @@
         "textKey": "events.allenamento_fastidio_01.c1",
         "effects": [
           { "type": "injury", "injuryType": "affaticamento", "weeks": [1, 1] },
-          { "type": "stat", "path": "condition.injuryRisk", "delta": -5 }
+          { "type": "stat", "path": "condition.energy", "delta": 9 }
         ]
       },
       {
@@ -123,17 +122,12 @@
           {
             "type": "stat",
             "path": "condition.energy",
-            "delta": -10
+            "delta": -15
           },
           {
             "type": "stat",
             "path": "skills.physical",
             "delta": 1
-          },
-          {
-            "type": "stat",
-            "path": "condition.injuryRisk",
-            "delta": 3
           }
         ]
       },
@@ -170,11 +164,7 @@
             "path": "persona.happiness",
             "delta": -3
           },
-          {
-            "type": "stat",
-            "path": "condition.injuryRisk",
-            "delta": -4
-          },
+          { "type": "stat", "path": "condition.energy", "delta": 7 },
           {
             "type": "stat",
             "path": "condition.form",
@@ -190,11 +180,7 @@
             "path": "persona.happiness",
             "delta": 3
           },
-          {
-            "type": "stat",
-            "path": "condition.injuryRisk",
-            "delta": 2
-          }
+          { "type": "stat", "path": "condition.energy", "delta": -3 }
         ]
       }
     ]
@@ -402,17 +388,12 @@
           {
             "type": "stat",
             "path": "condition.energy",
-            "delta": -10
+            "delta": -13
           },
           {
             "type": "stat",
             "path": "skills.physical",
             "delta": 1
-          },
-          {
-            "type": "stat",
-            "path": "condition.injuryRisk",
-            "delta": 2
           }
         ]
       },
@@ -444,11 +425,7 @@
       {
         "textKey": "events.allenamento_yoga_01.c1",
         "effects": [
-          {
-            "type": "stat",
-            "path": "condition.injuryRisk",
-            "delta": -5
-          },
+          { "type": "stat", "path": "condition.energy", "delta": 9 },
           {
             "type": "stat",
             "path": "persona.happiness",

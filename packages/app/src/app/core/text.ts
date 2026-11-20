@@ -1,4 +1,5 @@
 /** Funzioni pure per testi e numeri visibili al giocatore (testabili senza Angular). */
+import { PCT_STAT_PATHS } from '@outstanding/content';
 
 export type TextParams = Record<string, string | number>;
 
@@ -103,4 +104,16 @@ export function weekBalance(r: {
     (w ? w.businessIncome - w.upkeep - w.loanPayments : 0) -
     (p ? p.childCosts + p.alimony + p.settlement : 0)
   );
+}
+
+const PCT_PATHS: ReadonlySet<string> = new Set(PCT_STAT_PATHS);
+
+/**
+ * Variazione di una statistica da mostrare: i valori 0–100 si limitano prima della differenza,
+ * perché il motore può riportare un valore fuori scala (la freschezza si limita a fine settimana).
+ */
+export function shownStatDelta(path: string, before: number, after: number): number {
+  if (!PCT_PATHS.has(path)) return after - before;
+  const c = (n: number) => Math.max(0, Math.min(100, n));
+  return c(after) - c(before);
 }

@@ -168,6 +168,19 @@ descrizione. Intervista e conferenza stampa usano la carta: domanda tra virgolet
 un link sottolineato. La conferenza ha una fila di cinque microfoni (quello centrale in giallo) e
 una domanda alla volta.
 
+Scheda del piano (settimana leggibile): testata `PIANO · CAPITOLO` in `--o-font-display` con
+settimane e partite sotto, filetto doppio. Due binari con titolo a quadratino giallo e filetto:
+"In campo" (tre chip di carico `.o-choice` in griglia 3×1, alti 64 px, con "+N a sett. · tetto N"
+letti dalla configurazione) e "Fuori dal campo" (chip `.o-chip`, "Nessuna" in fondo; un'azione non
+disponibile resta visibile, spenta, con il motivo in corsivo sotto). Lettura a tabellone
+(`.readout`, fondo `--o-bg-deep`): freschezza attesa in numero pixel grande con barra a dieci
+tacche, zona oltre il tetto tratteggiata, tacca bianca al tetto e triangolino sul valore di
+adesso; rischio infortuni a parola colorata (basso verde, medio giallo, alto rosso) più la
+percentuale; abilità in focus con barra verso il prossimo +1. I numeri che cambiano si riaccendono
+in 200 ms (fermi con "riduci movimento"); una regione `aria-live` legge carico, freschezza e
+rischio a ogni scelta. Allo stop le settimane in cui l'azione è saltata compaiono in rosso
+inchiostro sopra il pulsante di chiusura della prima pagina.
+
 Simboli degli stemmi: `packages/app/src/app/ui/symbols.ts`, uno per ogni id di
 `content/data/clubs.json`. Avatar "figurina" (stile scelto dall'utente in M14): mezzo busto vettoriale su fondo `--o-surface`,
 ombre morbide (marrone al 16%) sul lato destro del viso, sul collo e sulle braccia, occhi con

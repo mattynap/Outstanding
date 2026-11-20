@@ -37,6 +37,7 @@ import {
   negotiateOffer,
   newCareer,
   setChapterPlan,
+  previewPlan,
   pruneEdits,
   rejectOffer,
   rejectSponsor,
@@ -65,6 +66,7 @@ import {
   type NegotiationResult,
   type NewCareerOptions,
   type PersonName,
+  type PlanPreview,
   type SeasonReport,
   type WeekPlan,
 } from '@outstanding/engine';
@@ -197,6 +199,12 @@ export class GameService {
   }
 
   // --- Settimana ---------------------------------------------------------------------------
+
+  /** Anteprima del piano sulla settimana corrente: nessun effetto sullo stato. */
+  previewPlan(plan: WeekPlan): PlanPreview | null {
+    const s = this.state();
+    return s ? previewPlan(s, plan, this.ctx) : null;
+  }
 
   /** Imposta il piano del capitolo: le settimane simulate lo ripetono. */
   async setPlan(plan: WeekPlan): Promise<void> {

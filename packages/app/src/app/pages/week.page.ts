@@ -31,10 +31,11 @@ import {
   type WeekPlan,
 } from '@outstanding/engine';
 import { chapterPicks, goalView, needsPlan } from '../core/chapter-view';
+import { planIssuesView, planSheetView, type TextLine } from '../core/plan-sheet-view';
 import { GameService } from '../core/game.service';
 import { I18nService, TranslatePipe } from '../core/i18n.service';
 import { kickoffHintKey } from '../core/match-mode';
-import { formatMoney, formatRating, ordinal } from '../core/text';
+import { formatMoney, formatRating, levelTone, ordinal } from '../core/text';
 import { ToastService } from '../core/toast.service';
 import { clubInfo, playerAge, seasonWeekNumber } from '../core/views';
 import { CrestComponent } from '../ui/crest.component';
@@ -179,40 +180,52 @@ import { TipComponent } from '../ui/tip.component';
           @if (planOpen()) {
             <!-- Agli stop di capitolo il piano prende tutta la scena: una cosa alla volta. -->
             <section class="o-card plan" [attr.aria-label]="'ui.chapter.plan' | t">
-              <div class="o-section-head">
-                <h2 class="o-section-title">{{ 'ui.chapter.plan' | t }}</h2>
-              </div>
-              <p class="o-muted small last-plan">
-                {{
-                  (lastStopKind() === 'chapterEnd' ? 'ui.chapter.planNew' : 'ui.chapter.planHint')
-                    | t
-                }}
-              </p>
-              <app-tip tip="week.plan" />
-              @if (planOptions(); as po) {
-                <span class="o-label">{{ 'ui.week.loadTitle' | t }}</span>
-                @if (po.forcedLoad) {
-                  <p class="o-muted small last-plan">
-                    {{ 'week.load.recovery.name' | t }} · {{ 'week.load.recovery.desc' | t }}
+              @if (sheet(); as ps) {
+                <div class="plan-mast">
+                  <h2 class="plan-title">
+                    {{ 'ui.plan.kicker' | t: { chapter: (ps.header.chapterKey | t) } }}
+                  </h2>
+                  <span class="plan-span">{{ 'ui.plan.span' | t: ps.header }}</span>
+                </div>
+                <p class="o-muted small last-plan">
+                  {{
+                    (lastStopKind() === 'chapterEnd' ? 'ui.chapter.planNew' : 'ui.chapter.planHint')
+                      | t
+                  }}
+                </p>
+                <app-tip tip="week.plan" />
+                @if (ps.dropped; as d) {
+                  <p class="notice" role="status">
+                    {{
+                      'ui.plan.dropped' | t: { life: (d.nameKey | t), reason: (d.reasonKey | t) }
+                    }}
                   </p>
                 }
-                <div class="actions" role="radiogroup" [attr.aria-label]="'ui.week.loadTitle' | t">
-                  @for (o of po.loads; track o.id) {
+
+                <!-- Binario 1: in campo. -->
+                <h3 class="track">{{ 'ui.plan.field' | t }}</h3>
+                @if (ps.forced) {
+                  <p class="notice bad" role="status">
+                    {{ 'ui.plan.forced' | t: { load: (ps.loadShownKey | t) } }}
+                  </p>
+                }
+                <div class="loads" role="radiogroup" [attr.aria-label]="'ui.week.loadTitle' | t">
+                  @for (l of ps.loads; track l.id) {
                     <button
-                      class="o-choice action"
+                      class="o-choice load"
                       type="button"
                       role="radio"
-                      [attr.aria-checked]="load() === o.id"
-                      [attr.aria-pressed]="load() === o.id"
-                      [disabled]="!o.available"
-                      (click)="load.set(o.id)"
+                      [attr.aria-checked]="l.selected"
+                      [attr.aria-pressed]="l.selected"
+                      [attr.aria-describedby]="'plan-load-' + l.id"
+                      [disabled]="l.disabled"
+                      (click)="load.set(l.id)"
                     >
-                      <span class="o-choice__body">
-                        <span>{{ 'week.load.' + o.id + '.name' | t }}</span>
-                        <span class="o-choice__hint clamp">{{
-                          'week.load.' + o.id + '.desc' | t
-                        }}</span>
-                      </span>
+                      <span class="load-name">{{ l.nameKey | t }}</span>
+                      <span class="load-hint">{{ 'ui.plan.loadHint' | t: l.hintParams }}</span>
+                      <span class="o-visually-hidden" [id]="'plan-load-' + l.id">{{
+                        l.descKey | t
+                      }}</span>
                     </button>
                   }
                 </div>
@@ -243,40 +256,129 @@ import { TipComponent } from '../ui/tip.component';
                     }
                   </div>
                 </div>
-                <span class="o-label">{{ 'ui.week.lifeTitle' | t }}</span>
-                <div class="actions" role="radiogroup" [attr.aria-label]="'ui.week.lifeTitle' | t">
-                  <button
-                    class="o-choice action"
-                    type="button"
-                    role="radio"
-                    [attr.aria-checked]="life() === null"
-                    [attr.aria-pressed]="life() === null"
-                    (click)="life.set(null)"
-                  >
-                    <span class="o-choice__body">
-                      <span>{{ 'week.life.none.name' | t }}</span>
-                      <span class="o-choice__hint clamp">{{ 'week.life.none.desc' | t }}</span>
+
+                <!-- Lettura del piano: i numeri vengono tutti dall'anteprima del motore. -->
+                <div class="readout">
+                  @let fr = ps.freshness;
+                  <div class="read-row">
+                    <span class="read-label">
+                      {{ fr.labelKey | t }}
+                      @if (fr.starter) {
+                        <em class="starter">({{ 'ui.plan.ifStarter' | t }})</em>
+                      }
                     </span>
-                  </button>
-                  @for (o of po.life; track o.id) {
+                    <span class="read-value">
+                      @for (n of [fr.value]; track n) {
+                        <span class="o-num big tick-in">~{{ n }}</span>
+                      }
+                      @if (fr.moments; as m) {
+                        <span class="moments">{{ 'ui.plan.moments' | t: { pct: m } }}</span>
+                      }
+                    </span>
+                  </div>
+                  <div class="fbar" aria-hidden="true">
+                    <div
+                      class="fbar-fill"
+                      [attr.data-tone]="tone(fr.value)"
+                      [style.width.%]="fr.value"
+                    ></div>
+                    <div class="fbar-locked" [style.left.%]="fr.cap"></div>
+                    <div class="fbar-now" [style.left.%]="fr.now"></div>
+                    <div class="fbar-cap" [style.left.%]="fr.cap"></div>
+                  </div>
+                  <div class="fbar-legend small">
+                    <span>{{ 'ui.plan.now' | t: { n: fr.now } }}</span>
+                    <span>{{ 'ui.plan.cap' | t: { cap: fr.cap } }}</span>
+                  </div>
+                  @if (fr.capFall > 0) {
+                    <p class="read-note">
+                      {{ 'ui.plan.capDrop' | t: { cap: fr.cap, n: fr.capFall } }}
+                    </p>
+                  } @else if (fr.capWaste > 0) {
+                    <p class="read-note">
+                      {{ 'ui.plan.capWaste' | t: { cap: fr.cap, n: fr.capWaste } }}
+                    </p>
+                  }
+                  @if (ps.bench; as b) {
+                    <p class="read-note warn">{{ 'ui.plan.bench' | t: { n: b } }}</p>
+                  }
+
+                  <div class="read-row line">
+                    <span class="read-label">{{ 'ui.plan.riskTitle' | t }}</span>
+                    <span class="read-value">
+                      @for (r of [ps.risk.key]; track r) {
+                        <strong class="risk tick-in" [attr.data-band]="ps.risk.band">{{
+                          r | t
+                        }}</strong>
+                      }
+                      <span class="o-muted small">{{
+                        'ui.plan.riskPct' | t: { pct: ps.risk.pct }
+                      }}</span>
+                    </span>
+                  </div>
+
+                  @if (ps.skill; as sk) {
+                    <div class="read-row line">
+                      <span class="read-label">{{ sk.nameKey | t }}</span>
+                      <span class="skill-track">
+                        <span class="o-num mid">{{ sk.value }}</span>
+                        <span class="sbar" aria-hidden="true">
+                          <span class="sbar-fill" [style.width.%]="sk.fraction * 100"></span>
+                        </span>
+                        <span class="o-num mid soft">{{ sk.next }}</span>
+                      </span>
+                    </div>
+                    <p class="read-note">
+                      @if (sk.weeks !== null) {
+                        {{ 'ui.plan.nextIn' | t: { n: sk.weeks } }}
+                      } @else {
+                        {{ 'ui.plan.nextBeyond' | t }}
+                      }
+                      · {{ 'ui.plan.paceTitle' | t }}: <strong>{{ ps.pace.key | t }}</strong> ({{
+                        ps.pace.reasonKey | t: ps.pace.reasonParams
+                      }})
+                    </p>
+                  }
+                  @if (ps.decline; as dc) {
+                    <p class="read-note">{{ 'ui.plan.decline' | t: { pct: dc } }}</p>
+                  }
+                </div>
+
+                <!-- Binario 2: fuori dal campo, al massimo un'azione. -->
+                <h3 class="track">{{ 'ui.plan.off' | t }}</h3>
+                <div class="lifes" role="radiogroup" [attr.aria-label]="'ui.week.lifeTitle' | t">
+                  @for (o of ps.life; track o.id) {
                     <button
-                      class="o-choice action"
+                      class="o-chip life"
                       type="button"
                       role="radio"
-                      [attr.aria-checked]="life() === o.id"
-                      [attr.aria-pressed]="life() === o.id"
-                      [disabled]="!o.available"
-                      (click)="life.set(o.id)"
+                      [class.o-chip--accent]="o.selected"
+                      [attr.aria-checked]="o.selected"
+                      [attr.aria-describedby]="'plan-life-' + o.id"
+                      [disabled]="o.disabled"
+                      (click)="life.set(o.id === 'none' ? null : o.id)"
                     >
-                      <span class="o-choice__body">
-                        <span>{{ 'week.life.' + o.id + '.name' | t }}</span>
-                        <span class="o-choice__hint clamp">{{
-                          o.reasonKey ?? 'week.life.' + o.id + '.desc' | t
-                        }}</span>
-                      </span>
+                      {{ o.nameKey | t }}
+                      <span class="o-visually-hidden" [id]="'plan-life-' + o.id">{{
+                        o.reasonKey ?? o.descKey | t
+                      }}</span>
                     </button>
                   }
                 </div>
+                @for (o of ps.life; track o.id) {
+                  @if (o.disabled && o.reasonKey) {
+                    <p class="blocked small">{{ o.nameKey | t }}: {{ o.reasonKey | t }}</p>
+                  }
+                }
+                <ul class="life-lines">
+                  @for (ln of ps.lifeLines; track ln.key) {
+                    <li class="tick-in">{{ ln.key | t: ln.params }}</li>
+                  }
+                </ul>
+                @if (!ps.canConfirm) {
+                  <p class="notice bad" role="alert">{{ 'ui.plan.blocked' | t }}</p>
+                }
+                <p class="o-visually-hidden" aria-live="polite">{{ announce() }}</p>
               }
               @if (editing() && !mustPlan()) {
                 <button class="o-btn o-btn--ghost o-btn--small" type="button" (click)="keepPlan()">
@@ -423,7 +525,12 @@ import { TipComponent } from '../ui/tip.component';
           <app-tip tip="week.done" />
 
           <div class="cta">
-            <button class="o-btn" type="button" [disabled]="busy()" (click)="act()">
+            <button
+              class="o-btn"
+              type="button"
+              [disabled]="busy() || (planOpen() && sheet()?.canConfirm === false)"
+              (click)="act()"
+            >
               {{ ctaKey() | t }}
               <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
             </button>
@@ -468,6 +575,14 @@ import { TipComponent } from '../ui/tip.component';
                     </span>
                   }
                 </div>
+              }
+              @for (pi of fp.issues; track pi.nameKey) {
+                <p class="front-issue" role="status">
+                  {{
+                    'ui.stop.planIssue'
+                      | t: { life: (pi.nameKey | t), n: pi.weeks, reason: (pi.reasonKey | t) }
+                  }}
+                </p>
               }
               <button #frontClose class="o-btn front-close" type="button" (click)="closeFront()">
                 {{ 'ui.stop.continue' | t }}
@@ -784,20 +899,278 @@ import { TipComponent } from '../ui/tip.component';
     .last-plan {
       margin: 0;
     }
-    .actions {
+    /* Scheda del piano: testata da giornale, due binari, una lettura a numeri come un tabellone. */
+    .plan-mast {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding-bottom: 8px;
+      border-bottom: 3px double var(--o-border-strong);
+    }
+    .plan-title {
+      margin: 0;
+      font-family: var(--o-font-display);
+      font-weight: 800;
+      font-size: 24px;
+      line-height: 1;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .plan-span {
+      font-size: var(--o-text-sm);
+      color: var(--o-accent-text);
+    }
+    .track {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 0 0;
+      font-family: var(--o-font-display);
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--o-accent-fg);
+    }
+    .track::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: var(--o-accent);
+    }
+    .track::after {
+      content: '';
+      flex: 1 1 auto;
+      height: 1px;
+      background: var(--o-border-strong);
+    }
+    .notice {
+      margin: 0;
+      padding: 8px 10px;
+      font-size: var(--o-text-sm);
+      border-left: 3px solid var(--o-accent);
+      background: var(--o-accent-soft);
+    }
+    .notice.bad {
+      border-left-color: var(--o-negative);
+      background: transparent;
+      color: var(--o-text);
+    }
+    .loads {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .load {
+      min-height: 64px;
+      padding: 8px 6px;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2px;
+      text-align: center;
+    }
+    .load-name {
+      font-family: var(--o-font-display);
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+    .load-hint {
+      font-size: var(--o-text-xs);
+      font-weight: 500;
+      color: var(--o-text-muted);
+    }
+    .readout {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 10px 12px 12px;
+      background: var(--o-bg-deep);
+      border: 1px solid var(--o-border);
+    }
+    .read-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
       gap: 10px;
     }
-    .action {
-      min-height: 72px;
-      align-items: flex-start;
+    .read-row.line {
+      padding-top: 8px;
+      margin-top: 2px;
+      border-top: 1px solid var(--o-border);
     }
-    .clamp {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+    .read-label {
+      font-size: var(--o-text-sm);
+      font-weight: 600;
+    }
+    .starter {
+      font-style: italic;
+      font-weight: 500;
+      color: var(--o-text-muted);
+    }
+    .read-value {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .big {
+      font-size: 28px;
+      line-height: 1;
+      color: var(--o-text);
+    }
+    .mid {
+      font-size: 22px;
+      line-height: 1;
+    }
+    .soft {
+      color: var(--o-text-muted);
+    }
+    .moments {
+      font-size: var(--o-text-sm);
+      color: var(--o-accent-text);
+    }
+    /* Barra a dieci tacche: oltre il tetto del carico la zona è tratteggiata, irraggiungibile. */
+    .fbar {
+      position: relative;
+      height: 14px;
+      background: var(--o-track);
+    }
+    .fbar::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        90deg,
+        transparent 0 calc(10% - 2px),
+        var(--o-bg-deep) calc(10% - 2px) 10%
+      );
+      pointer-events: none;
+    }
+    .fbar-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      background: var(--o-accent);
+      transition: width var(--o-normal) var(--o-ease);
+    }
+    .fbar-fill[data-tone='pos'] {
+      background: var(--o-positive);
+    }
+    .fbar-fill[data-tone='neg'] {
+      background: var(--o-negative);
+    }
+    .fbar-locked {
+      position: absolute;
+      inset: 0 0 0 auto;
+      right: 0;
+      background: repeating-linear-gradient(
+        135deg,
+        var(--o-border-strong) 0 3px,
+        transparent 3px 6px
+      );
+      transition: left var(--o-normal) var(--o-ease);
+    }
+    .fbar-cap {
+      position: absolute;
+      top: -4px;
+      bottom: -4px;
+      width: 3px;
+      margin-left: -1px;
+      background: var(--o-text);
+      z-index: 1;
+      transition: left var(--o-normal) var(--o-ease);
+    }
+    .fbar-now {
+      position: absolute;
+      top: -3px;
+      width: 0;
+      height: 0;
+      margin-left: -5px;
+      border: 5px solid transparent;
+      border-top-color: var(--o-text-muted);
+      z-index: 1;
+    }
+    .fbar-legend {
+      display: flex;
+      justify-content: space-between;
+      color: var(--o-text-muted);
+    }
+    .read-note {
+      margin: 0;
+      font-size: var(--o-text-sm);
+      color: var(--o-text-soft);
+    }
+    .read-note.warn {
+      color: var(--o-accent-text);
+    }
+    .risk {
+      font-family: var(--o-font-display);
+      font-size: 18px;
+      text-transform: uppercase;
+      color: var(--o-positive);
+    }
+    .risk[data-band='medium'] {
+      color: var(--o-accent-fg);
+    }
+    .risk[data-band='high'] {
+      color: var(--o-negative);
+    }
+    .skill-track {
+      flex: 0 1 60%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sbar {
+      flex: 1 1 auto;
+      height: 8px;
+      background: var(--o-track);
+    }
+    .sbar-fill {
+      display: block;
+      height: 100%;
+      background: var(--o-accent);
+      transition: width var(--o-normal) var(--o-ease);
+    }
+    .lifes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .life:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+    .blocked {
+      margin: 0;
+      font-style: italic;
+      color: var(--o-text-muted);
+    }
+    .life-lines {
+      margin: 0;
+      padding: 0 0 0 12px;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: var(--o-text-sm);
+      border-left: 2px solid var(--o-accent);
+    }
+    /* I numeri che cambiano si riaccendono in 200 ms; con "riduci movimento" restano fermi. */
+    .tick-in {
+      animation: o-tick 200ms var(--o-ease) both;
+    }
+    span.tick-in,
+    strong.tick-in {
+      display: inline-block;
+    }
+    @keyframes o-tick {
+      from {
+        opacity: 0.2;
+        transform: translateY(3px);
+      }
     }
     .focus {
       display: flex;
@@ -916,6 +1289,14 @@ import { TipComponent } from '../ui/tip.component';
       color: var(--o-ink-neg);
       border-color: var(--o-ink-neg);
     }
+    .front-issue {
+      margin: 0;
+      padding: 6px 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--o-ink-neg);
+      border-left: 3px solid var(--o-ink-neg);
+    }
     .front-close {
       margin-top: 6px;
     }
@@ -1010,6 +1391,7 @@ export class WeekPage {
     return {
       stop: r.stop,
       headlines: r.headlines,
+      issues: planIssuesView(r.planIssues),
       weeks: r.weeks,
       record: r.record,
       ratings: r.summary
@@ -1025,6 +1407,21 @@ export class WeekPage {
   protected readonly planOptions = computed(() => {
     const s = this.game.state();
     return s ? getPlanOptions(s, this.ctx) : null;
+  });
+
+  /** La scheda del piano scelto adesso, con l'anteprima esatta del motore. */
+  protected readonly sheet = computed(() => {
+    const s = this.game.state();
+    if (!s || !this.planOpen()) return null;
+    const plan = this.draftPlan();
+    const preview = this.game.previewPlan(plan);
+    return preview ? planSheetView(preview, plan, s, this.ctx) : null;
+  });
+
+  /** L'effetto principale della scelta, letto dal lettore di schermo a ogni cambio. */
+  protected readonly announce = computed(() => {
+    const v = this.sheet();
+    return v ? v.summary.map((l) => this.text(l)).join(' ') : '';
   });
 
   /** Piano obbligatorio: inizio stagione o nuovo capitolo. */
@@ -1105,6 +1502,27 @@ export class WeekPage {
     addIcons({ arrowForward, chatbubblesOutline, micOutline, settingsOutline, medkitOutline });
   }
 
+  /** Il piano come lo sta componendo il giocatore. */
+  private draftPlan(): WeekPlan {
+    const focus = this.focus();
+    const life = this.life();
+    return { load: this.load(), ...(focus ? { focus } : {}), ...(life ? { life } : {}) };
+  }
+
+  /** Traduce una riga: i parametri che finiscono in `Key` sono a loro volta chiavi. */
+  protected text(l: TextLine): string {
+    const params: Record<string, string | number> = {};
+    for (const [k, v] of Object.entries(l.params ?? {})) {
+      if (k.endsWith('Key')) params[k.slice(0, -3)] = this.i18n.t(String(v));
+      else params[k] = v;
+    }
+    return this.i18n.t(l.key, params);
+  }
+
+  protected tone(value: number): 'pos' | 'neg' | 'mid' {
+    return levelTone(value);
+  }
+
   /** Annulla le modifiche: alla prossima apertura il piano si ricarica da quello salvato. */
   protected keepPlan(): void {
     this.prefilledKey = '';
@@ -1139,14 +1557,9 @@ export class WeekPage {
           break;
         default: {
           if (this.planOpen()) {
-            const focus = this.focus();
-            const life = this.life();
-            const plan: WeekPlan = {
-              load: this.load(),
-              ...(focus ? { focus } : {}),
-              ...(life ? { life } : {}),
-            };
-            await this.game.setPlan(plan);
+            // Mai confermare un'azione non disponibile: il motore la rifiuterebbe.
+            if (this.sheet()?.canConfirm === false) return;
+            await this.game.setPlan(this.draftPlan());
             this.editing.set(false);
           }
           const report = await this.game.advanceToStop();

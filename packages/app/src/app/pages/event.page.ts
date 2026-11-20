@@ -6,7 +6,7 @@ import { chevronBack, timeOutline } from 'ionicons/icons';
 import type { EventChange, EventView } from '@outstanding/engine';
 import { GameService } from '../core/game.service';
 import { I18nService, TranslatePipe } from '../core/i18n.service';
-import { formatDelta, formatMoney } from '../core/text';
+import { formatDelta, formatMoney, shownStatDelta } from '../core/text';
 import { ToastService } from '../core/toast.service';
 import { seasonWeekNumber } from '../core/views';
 import { TipComponent } from '../ui/tip.component';
@@ -271,7 +271,7 @@ export class EventPage {
     for (const c of changes) {
       switch (c.kind) {
         case 'stat': {
-          const d = c.after - c.before;
+          const d = shownStatDelta(c.path, c.before, c.after);
           if (Math.abs(d) < 0.5) break;
           const money = c.path.startsWith('money.');
           const amount = money ? (d > 0 ? '+' : '') + formatMoney(d) : formatDelta(d);

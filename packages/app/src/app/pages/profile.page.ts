@@ -7,6 +7,7 @@ import { SKILLS } from '@outstanding/engine';
 import { GameService } from '../core/game.service';
 import { TranslatePipe } from '../core/i18n.service';
 import { formatAverage, formatInt, formatMoney } from '../core/text';
+import { disciplineView } from '../core/plan-sheet-view';
 import { clubInfo, playerAge } from '../core/views';
 import { AvatarComponent } from '../ui/avatar.component';
 import { StatBarComponent } from '../ui/stat-bar.component';
@@ -148,7 +149,16 @@ import { TabBarComponent } from '../ui/tab-bar.component';
           <section class="o-card">
             <h2 class="o-section-title">{{ 'ui.profile.person' | t }}</h2>
             <div class="grid2">
-              <app-stat-bar [label]="'ui.stats.discipline' | t" [value]="v.persona.discipline" />
+              <div class="discipline">
+                <app-stat-bar [label]="'ui.stats.discipline' | t" [value]="v.discipline.value" />
+                <span class="o-muted tiny">
+                  @if (v.discipline.drift) {
+                    {{ 'ui.profile.disciplineDrift' | t: { base: v.discipline.base } }}
+                  } @else {
+                    {{ 'ui.profile.disciplineBase' | t: { base: v.discipline.base } }}
+                  }
+                </span>
+              </div>
               <app-stat-bar [label]="'ui.stats.temperament' | t" [value]="v.persona.temperament" />
               <app-stat-bar
                 [label]="'ui.stats.happiness' | t"
@@ -284,6 +294,14 @@ import { TabBarComponent } from '../ui/tab-bar.component';
       font-weight: 600;
       letter-spacing: 1.2px;
     }
+    .discipline {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .tiny {
+      font-size: var(--o-text-xs);
+    }
     .grid2 {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -391,6 +409,7 @@ export class ProfilePage {
       minutes: formatInt(st.minutes),
       average: st.ratingCount > 0 ? formatAverage(st.ratingSum / st.ratingCount) : '–',
       persona: p.persona,
+      discipline: disciplineView(p.persona),
       image: p.image,
       followers: formatInt(p.image.followers),
       growth: { points, line: points.map((pt) => `${pt.x},${pt.y}`).join(' ') },

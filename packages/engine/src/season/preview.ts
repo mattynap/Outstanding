@@ -16,7 +16,10 @@ import { effectiveLoad, loadFreshness, loadWeekGrowth, sessionInjuryChance } fro
 import { assertWeekPlan, lifeAvailable } from './plan';
 
 export interface PlanPreview {
-  /** Esatto per la settimana (senza partita ed eventi): gli stessi numeri di `planWeek`. */
+  /**
+   * Esatto per la settimana corrente, senza eventi: gli stessi numeri di `planWeek`. Se c'è una
+   * partita, `freshnessEnd` la conta da titolare per 90 minuti; `freshnessDelta` no.
+   */
   weekly: {
     /** Delta grezzo del piano (carico + vita), prima di partita e tetto: lo stesso di `planWeek`. */
     freshnessDelta: number;

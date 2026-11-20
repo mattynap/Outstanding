@@ -91,6 +91,8 @@ export function startChapterGoal(state: GameState, ctx: GameContext = defaultCon
 export function settleChapter(
   state: GameState,
   ctx: GameContext = defaultContext,
+  /** Fattore dei cali di morale dell'azione fuori dal campo (default neutro). */
+  moraleLossFactor = 1,
 ): { state: GameState; headline: Headline | null } {
   const goal = state.chapter.goal;
   if (!goal || goal.settled) return { state, headline: null };
@@ -102,7 +104,7 @@ export function settleChapter(
   let player = setStat(
     p,
     'condition.morale',
-    p.condition.morale + (met ? cfg.rewardMorale : cfg.missMorale),
+    p.condition.morale + (met ? cfg.rewardMorale : cfg.missMorale * moraleLossFactor),
     limits,
   );
   if (met && p.clubId) {

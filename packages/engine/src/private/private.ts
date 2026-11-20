@@ -486,8 +486,20 @@ export function applyParty(
   state: GameState,
   rng: Rng,
   ctx: GameContext = defaultContext,
+  /** Probabilità e costi del piano settimanale (`progression.life.party`) al posto di quelli della serata singola. */
+  over: {
+    gossipChance?: number;
+    fineChance?: number;
+    partnerAffinity?: number;
+    hasMatch?: boolean;
+  } = {},
 ): { state: GameState; report: PartyReport } {
-  const cfg = ctx.config.private.party;
+  const cfg = {
+    ...ctx.config.private.party,
+    ...(over.gossipChance !== undefined ? { gossipChance: over.gossipChance } : {}),
+    ...(over.fineChance !== undefined ? { fineChance: over.fineChance } : {}),
+    ...(over.partnerAffinity !== undefined ? { partnerAffinity: over.partnerAffinity } : {}),
+  };
   let life = state.privateLife;
   let player = state.player;
   if (life?.partner) life = shiftAffinity(life, cfg.partnerAffinity);
@@ -500,7 +512,11 @@ export function applyParty(
     if (life?.partner) life = shiftAffinity(life, cfg.gossip.affinity);
   }
   let fine = 0;
-  if (playerFixture(state) && player.clubId && rng.chance(cfg.fineChance)) {
+  if (
+    (over.hasMatch ?? Boolean(playerFixture(state))) &&
+    player.clubId &&
+    rng.chance(cfg.fineChance)
+  ) {
     fine = scaledCost(cfg.fine, player);
     player = adjust(player, { cash: -fine });
     const club = state.world.clubs.find((c) => c.id === player.clubId);
@@ -553,6 +569,8 @@ export function applyWeeklyPrivate(
   state: GameState,
   rng: Rng,
   ctx: GameContext = defaultContext,
+  /** Famiglia: l'intesa col partner non cala (fattore 0). Default neutro. */
+  lifeMods?: { affinityDriftFactor: number },
 ): { state: GameState; week: PrivateWeek } {
   if (!state.privateLife) return { state, week: quietWeek() };
   const cfg = ctx.config.private;
@@ -571,7 +589,7 @@ export function applyWeeklyPrivate(
       life.partner.stage === 'married'
         ? cfg.affinity.marriedDriftPerWeek
         : cfg.affinity.driftPerWeek;
-    life = shiftAffinity(life, drift);
+    life = shiftAffinity(life, drift * (lifeMods?.affinityDriftFactor ?? 1));
     if (life.partner!.affinity < cfg.affinity.crisisBelow) {
       player = adjust(player, { happiness: cfg.affinity.crisisHappinessPerWeek });
     }

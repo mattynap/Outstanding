@@ -3,10 +3,13 @@ import type { GameContext } from '../context';
 import type { Rng } from '../rng';
 import type { Player, Selection } from '../types';
 import { clamp } from '../util';
+import type { LifeModifiers } from '../season/life';
 import { applyGrowth, injure, injuryChance, rollInjury } from './progression';
 
 const pct = (v: number) => clamp(v, 0, 100);
-const toward = (v: number, target: number, rate: number) => v + (target - v) * rate;
+/** Solo i delta negativi sono scalati: la famiglia attutisce i cali, non i rialzi. */
+const scaleLoss = (delta: number, factor: number) => (delta < 0 ? delta * factor : delta);
+export const toward = (v: number, target: number, rate: number) => v + (target - v) * rate;
 
 /** Quello che conta di una partita per la condizione del giocatore. */
 export interface MatchOutcome {
@@ -29,6 +32,8 @@ export function applyMatchAftermath(
   ctx: GameContext,
   /** Modificatori della difficoltà: solo crescita e infortuni. */
   mods: Pick<DifficultyLevel, 'growth' | 'injury'> = { growth: 1, injury: 1 },
+  /** Azione fuori dal campo del capitolo: scala solo i cali di morale. */
+  lifeMods?: Pick<LifeModifiers, 'moraleLossFactor'>,
 ): { player: Player; injured: boolean } {
   const c = ctx.config.progression.condition;
   const played = outcome.minutesPlayed > 0;
@@ -46,8 +51,11 @@ export function applyMatchAftermath(
       ),
       morale: pct(
         player.condition.morale +
-          c.moraleBySelection[outcome.selection] +
-          (played ? c.moraleByResult[outcome.result] + ratingDiff * c.moralePerRatingPoint : 0),
+          scaleLoss(
+            c.moraleBySelection[outcome.selection] +
+              (played ? c.moraleByResult[outcome.result] + ratingDiff * c.moralePerRatingPoint : 0),
+            lifeMods?.moraleLossFactor ?? 1,
+          ),
       ),
     },
   };
@@ -72,7 +80,7 @@ export function applyMatchAftermath(
     ctx,
   );
   if (played && rng.chance(chance)) {
-    p = injure(p, rollInjury(rng, ctx), ctx);
+    p = injure(p, rollInjury(rng, ctx), ctx, lifeMods?.moraleLossFactor);
     injured = true;
   }
   return { player: p, injured };
@@ -82,7 +90,11 @@ export function applyMatchAftermath(
  * Fine settimana: l'energia si recupera, forma, morale e rischio infortuni tornano piano verso i
  * valori di riferimento, l'infortunio in corso cala di una settimana.
  */
-export function weeklyRecovery(player: Player, ctx: GameContext): Player {
+export function weeklyRecovery(
+  player: Player,
+  ctx: GameContext,
+  lifeMods?: Pick<LifeModifiers, 'moraleRecoveryFactor'>,
+): Player {
   const c = ctx.config.progression.condition;
   const cond = player.condition;
   const lowEnergy = cond.energy < ctx.config.progression.growth.lowEnergyThreshold;
@@ -91,7 +103,15 @@ export function weeklyRecovery(player: Player, ctx: GameContext): Player {
     condition: {
       energy: pct(cond.energy + c.energyRecoveryPerWeek),
       form: pct(toward(cond.form, c.formTarget, c.formDriftPerWeek)),
-      morale: pct(toward(cond.morale, c.moraleTarget, c.moraleDriftPerWeek)),
+      morale: pct(
+        toward(
+          cond.morale,
+          c.moraleTarget,
+          // Il fattore di recupero vale solo sotto il riferimento.
+          c.moraleDriftPerWeek *
+            (cond.morale < c.moraleTarget ? (lifeMods?.moraleRecoveryFactor ?? 1) : 1),
+        ),
+      ),
       injuryRisk: pct(
         toward(cond.injuryRisk, c.injuryRiskTarget, c.injuryRiskDriftPerWeek) +
           (lowEnergy ? c.lowEnergyInjuryRisk : 0),

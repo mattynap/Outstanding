@@ -162,6 +162,7 @@ export function injure(
   player: Player,
   injury: { type: string; weeksLeft: number },
   ctx: GameContext,
+  moraleLossFactor = 1,
 ): Player {
   if (player.injury && player.injury.weeksLeft >= injury.weeksLeft) return player;
   const inj = ctx.config.progression.injuries;
@@ -171,7 +172,7 @@ export function injure(
     condition: {
       ...player.condition,
       form: clamp(player.condition.form + inj.formOnInjury, 0, 100),
-      morale: clamp(player.condition.morale + inj.moraleOnInjury, 0, 100),
+      morale: clamp(player.condition.morale + inj.moraleOnInjury * moraleLossFactor, 0, 100),
     },
   };
 }

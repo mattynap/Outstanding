@@ -22,6 +22,7 @@ import { Rng } from '../rng';
 import { getTransferWindow } from '../season/week';
 import { ageAt, weekOfSeason } from '../time';
 import type { GameState, PendingEvent, TransferRequest } from '../types';
+import { clamp } from '../util';
 import { getClub, getGroup } from '../world/queries';
 import { getStat, setStat } from './stats';
 
@@ -261,9 +262,18 @@ function applyEffects(
       const cap = Math.min(g.skillMax, p.potential + g.skillCapOverPotential);
       value = Math.max(before, Math.min(cap, before + delta * gap));
     }
-    const player = setStat(s.player, path, value, limits);
+    let player = setStat(s.player, path, value, limits);
+    const after = getStat(player, path);
+    if (path === 'persona.discipline') {
+      // Gli eventi cambiano il carattere in modo permanente: si sposta anche la base di ritorno.
+      const base = player.persona.disciplineBase ?? before;
+      player = {
+        ...player,
+        persona: { ...player.persona, disciplineBase: clamp(base + (after - before), 0, 100) },
+      };
+    }
     s = { ...s, player };
-    changes.push({ kind: 'stat', path, before, after: getStat(player, path) });
+    changes.push({ kind: 'stat', path, before, after });
   };
 
   for (const effect of effects) {

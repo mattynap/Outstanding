@@ -99,7 +99,13 @@ export interface Player {
   /** Tetto nascosto della crescita (60–95). Mai mostrato direttamente al giocatore. */
   potential: number;
   condition: { form: number; energy: number; morale: number; injuryRisk: number };
-  persona: { discipline: number; temperament: number; happiness: number };
+  persona: {
+    discipline: number;
+    /** Valore verso cui la disciplina torna; mancante = uguale al valore corrente (diventa obbligatorio con il salvataggio v4). */
+    disciplineBase?: number;
+    temperament: number;
+    happiness: number;
+  };
   image: { popularity: number; reputation: number; followers: number };
   money: { cash: number; salaryWeekly: number; assets: number };
   /** Id dei tratti da content/traits.json. */

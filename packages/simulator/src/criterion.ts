@@ -2,6 +2,8 @@
  * Criteri 1–3 e 5 della settimana leggibile (spec §5.10): gioca `contextual`, la prudente e i piani
  * fissi (ogni carico con nessuna vita e con ogni azione) con gli stessi semi e stampa le 5 righe.
  *   pnpm sim:criteria [--careers 200] [--seed 42] [--workers N] [--out sim-output]
+ * La baseline è a 5000 carriere: la corsa di verdetto del Task 12 usa `--careers 5000`. Sotto 1000 i
+ * criteri 1 e 5 (leggende 1-5%) sono troppo rumorosi e si stampa un avviso.
  * Il criterio 4 non gira qui: sono i test mirati ("criterio 4" in simulator.test.ts).
  * Costo: (2 + 15) corse da `--careers` carriere ciascuna.
  */
@@ -28,6 +30,12 @@ const workers = Math.max(1, Math.min(Number(values.workers), careers));
 if (!Number.isInteger(careers) || careers < 1 || !Number.isInteger(seed) || seed < 0) {
   console.error('--careers deve essere un intero >= 1 e --seed un intero >= 0');
   process.exit(1);
+}
+
+if (careers < 1000) {
+  console.error(
+    `Attenzione: ${careers} carriere sono poche per i criteri 1 e 5 (baseline a 5000): numeri solo indicativi.`,
+  );
 }
 
 const seeds = careerSeeds(seed, careers);

@@ -14,6 +14,7 @@ import {
   simulateMatch,
   Rng,
   advanceToStop,
+  skipToNextMatch,
   getPendingEvents,
   getPlanOptions,
   playMatch,
@@ -27,6 +28,8 @@ import {
   type MatchDecision,
   type WeekPlan,
 } from '@outstanding/engine';
+import { applyMatchAftermath } from '../../engine/src/player/condition';
+import { recordChapterMatch } from '../../engine/src/season/director';
 import {
   careerSeeds,
   contextualStrategy,
@@ -773,19 +776,37 @@ describe('criterio 4: ogni azione della vita è la migliore da qualche parte', (
 
   const THRESHOLD_TIMEOUT = 120_000;
 
-  // Misurato (200 semi, HEAD d5a1885): Famiglia 73,0 batte Svago 72,6 anche con morale 35, perché dimezza
-  // i cali. Non si ritocca la config per farlo passare: lo risolve la taratura (Task 12). Quando Svago
-  // diventa la migliore questo test smette di fallire e va riportato a `it`.
-  it.fails(
-    'Svago: morale 35 dopo tre sconfitte, vince il morale a fine capitolo',
-    () => {
-      const r = measure(
-        (s) => ({
-          ...s,
-          player: { ...s.player, condition: { ...s.player.condition, morale: 35 } },
-        }),
-        (s) => s.player.condition.morale,
+  /** Tre sconfitte registrate dal percorso vero (dopopartita e registro del capitolo), poi morale 35. */
+  function afterThreeLosses(s: GameState): GameState {
+    const probe = simulateMatch(skipToNextMatch(s, ctx).state, ctx).matchReport;
+    const forced = { ...probe, result: 'loss' as const, rating: 4 };
+    let state = s;
+    for (let i = 0; i < 3; i++) {
+      const after = applyMatchAftermath(
+        state.player,
+        undefined,
+        { selection: 'starter', minutesPlayed: 90, rating: 4, result: 'loss' },
+        state.week,
+        Rng.fromSeed(i + 1),
+        ctx,
       );
+      state = recordChapterMatch({ ...state, player: after.player }, forced, {
+        freshness: state.player.condition.energy,
+        moraleProtected: after.moraleProtected,
+        startSkills: state.player.skills,
+      });
+    }
+    // Il morale parte da un valore fisso, uguale per tutti i semi.
+    return {
+      ...state,
+      player: { ...state.player, condition: { ...state.player.condition, morale: 35 } },
+    };
+  }
+
+  it(
+    'Svago: morale 35 dopo tre sconfitte registrate, vince il morale a fine capitolo',
+    () => {
+      const r = measure(afterThreeLosses, (s) => s.player.condition.morale);
       console.log('svago', r.means);
       expect(r.best).toBe('leisure');
     },

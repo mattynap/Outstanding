@@ -216,6 +216,7 @@ import { TipComponent } from '../ui/tip.component';
                       type="button"
                       role="radio"
                       [attr.aria-checked]="l.selected"
+                      [class.o-choice--selected]="l.selected"
                       [attr.aria-describedby]="'plan-load-' + l.id"
                       [disabled]="l.disabled"
                       (click)="load.set(l.id)"

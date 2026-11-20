@@ -4,13 +4,17 @@ import {
   evaluateChapterGoal,
   isSeasonOver,
   playerFixture,
+  SKILLS,
   weekOfSeason,
+  type ChapterLog,
   type ChapterPick,
   type FastForwardStop,
   type GameContext,
   type GameState,
+  type Skill,
 } from '@outstanding/engine';
-import { formatAverage } from './text';
+import type { TextLine } from './plan-sheet-view';
+import { formatAverage, formatInt, formatMoney } from './text';
 import { fixtureView, outcomeFor, type FixtureView } from './views';
 
 /** Cosa deve fare il giocatore adesso: guida il pulsante principale della home del capitolo. */
@@ -157,4 +161,63 @@ export function goalHistory(
     })
     .reverse();
   return { met: records.filter((r) => r.met).length, total: records.length, rows };
+}
+
+/**
+ * "Dal piano": cosa ha fatto il piano nel tratto, una riga per voce, solo le voci mosse. Le abilità
+ * si leggono come a schermo (intere, per difetto). Senza registro (vecchi salvataggi) niente righe.
+ */
+export function planStretchLine(log: Pick<ChapterLog, 'plan'>): TextLine[] {
+  const p = log.plan;
+  if (!p) return [];
+  const lines: TextLine[] = [];
+  for (const k of SKILLS) {
+    const d = p.pointsGained[k];
+    if (!d) continue;
+    const from = Math.floor(p.skillsAtStart[k]);
+    lines.push({
+      key: 'ui.planLog.skill',
+      params: { skillKey: `skills.${k}`, from, to: from + d },
+    });
+  }
+  const f = p.freshnessAtMatches;
+  if (f.length === 1)
+    lines.push({ key: 'ui.planLog.freshnessOne', params: { value: Math.round(f[0]!) } });
+  else if (f.length > 1)
+    lines.push({
+      key: 'ui.planLog.freshness',
+      params: { from: Math.round(f[0]!), to: Math.round(f.at(-1)!) },
+    });
+  if (p.moraleProtected > 0)
+    lines.push({ key: 'ui.planLog.morale', params: { n: p.moraleProtected } });
+  if (p.sponsorIncome > 0)
+    lines.push({ key: 'ui.planLog.sponsor', params: { money: formatMoney(p.sponsorIncome) } });
+  if (p.popularity > 0)
+    lines.push({ key: 'ui.planLog.popularity', params: { n: formatInt(p.popularity) } });
+  if (p.gossip > 0) lines.push({ key: 'ui.planLog.gossip', params: { n: p.gossip } });
+  if (p.fines > 0) lines.push({ key: 'ui.planLog.fines', params: { n: p.fines } });
+  return lines;
+}
+
+/**
+ * Suggerimento neutro dai numeri del tratto, mai una scelta imposta: a quante partite si è arrivati
+ * sotto la freschezza da cui la convocazione comincia a calare (`match.selection.freshnessFrom`).
+ */
+export function chapterHint(
+  log: Pick<ChapterLog, 'plan'>,
+  ctx: GameContext,
+): { key: string; values: { n?: number; total: number } } | null {
+  const f = log.plan?.freshnessAtMatches ?? [];
+  if (f.length === 0) return null;
+  const from = ctx.config.match.selection.freshnessFrom;
+  const n = f.filter((x) => x < from).length;
+  return n > 0
+    ? { key: 'ui.planLog.hint.tired', values: { n, total: f.length } }
+    : { key: 'ui.planLog.hint.fresh', values: { total: f.length } };
+}
+
+/** Le abilità salite di almeno un punto nel tratto: un lampo ciascuna per stop, mai per un calo. */
+export function pointFlashes(log: Pick<ChapterLog, 'plan'>): Skill[] {
+  const g = log.plan?.pointsGained ?? {};
+  return SKILLS.filter((k) => (g[k] ?? 0) > 0);
 }

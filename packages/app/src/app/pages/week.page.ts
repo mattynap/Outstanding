@@ -30,7 +30,14 @@ import {
   type Skill,
   type WeekPlan,
 } from '@outstanding/engine';
-import { chapterPicks, goalView, needsPlan } from '../core/chapter-view';
+import {
+  chapterHint,
+  chapterPicks,
+  goalView,
+  needsPlan,
+  planStretchLine,
+  pointFlashes,
+} from '../core/chapter-view';
 import { lineText, planIssuesView, planSheetView, type TextLine } from '../core/plan-sheet-view';
 import { GameService } from '../core/game.service';
 import { I18nService, TranslatePipe } from '../core/i18n.service';
@@ -50,6 +57,9 @@ import { TipComponent } from '../ui/tip.component';
  * pagina dello stop è un foglio che si apre sopra e si chiude; il piano, quando va scelto, prende
  * il posto di partita e capitolo.
  */
+/** Durata del lampo del +1: dentro la finestra di 150–300 ms del design system, più un margine. */
+const FLASH_MS = 400;
+
 @Component({
   selector: 'app-week',
   imports: [
@@ -513,6 +523,25 @@ import { TipComponent } from '../ui/tip.component';
                   {{ 'ui.chapter.planChange' | t }}
                 </button>
               </div>
+
+              @if (planResult(); as pr) {
+                <!-- Dal piano: quello che il piano ha fatto dall'ultimo stop, solo le voci mosse. -->
+                <div class="rows from-plan" [class.flashing]="flashing()">
+                  <span class="o-label">{{ 'ui.planLog.title' | t }}</span>
+                  <ul class="from-lines small" [attr.aria-label]="'ui.planLog.since' | t">
+                    @for (l of pr.lines; track $index) {
+                      <li [class.up]="l.up > 0">
+                        {{ l.text }}
+                        @if (l.up > 0) {
+                          <span class="point" aria-hidden="true">{{
+                            'ui.planLog.point' | t: { n: l.up }
+                          }}</span>
+                        }
+                      </li>
+                    }
+                  </ul>
+                </div>
+              }
             </section>
           }
 
@@ -572,6 +601,26 @@ import { TipComponent } from '../ui/tip.component';
                         <span class="o-num rating" [attr.data-tone]="r.tone">{{ r.text }}</span>
                       }
                     </span>
+                  }
+                </div>
+              }
+              @if (fp.planBlock && planResult(); as pr) {
+                <div class="front-plan" [class.flashing]="flashing()">
+                  <span class="front-plan-title">{{ 'ui.planLog.title' | t }}</span>
+                  <ul class="front-plan-lines">
+                    @for (l of pr.lines; track $index) {
+                      <li [class.up]="l.up > 0">
+                        {{ l.text }}
+                        @if (l.up > 0) {
+                          <span class="point" aria-hidden="true">{{
+                            'ui.planLog.point' | t: { n: l.up }
+                          }}</span>
+                        }
+                      </li>
+                    }
+                  </ul>
+                  @if (pr.hint; as h) {
+                    <p class="front-plan-hint">{{ h.key | t: h.values }}</p>
                   }
                 </div>
               }
@@ -1298,6 +1347,93 @@ import { TipComponent } from '../ui/tip.component';
     .front-close {
       margin-top: 6px;
     }
+    .from-plan {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
+    .from-lines,
+    .front-plan-lines {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px 10px;
+    }
+    .from-lines li {
+      color: var(--o-text-soft);
+    }
+    .from-lines li + li::before {
+      content: '·';
+      margin-right: 10px;
+      color: var(--o-text-muted);
+    }
+    li.up {
+      font-weight: 700;
+      color: var(--o-text);
+    }
+    .point {
+      display: inline-block;
+      margin-left: 4px;
+      padding: 0 4px;
+      font-family: var(--o-font-pixel);
+      font-size: 15px;
+      line-height: 1.1;
+      color: var(--o-accent-ink);
+      background: var(--o-accent);
+      border-radius: 3px;
+    }
+    .flashing li.up .point {
+      animation: o-point-pop var(--o-slow) cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .flashing li.up {
+      animation: o-point-glow var(--o-slow) ease-out;
+    }
+    .front-plan {
+      padding: 8px 10px;
+      border-top: 2px solid var(--o-ink);
+      border-bottom: 1px solid var(--o-paper-rule);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .front-plan-title {
+      font-family: var(--o-font-display);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: var(--o-tracking-label);
+      text-transform: uppercase;
+      color: var(--o-headline-red);
+    }
+    .front-plan-lines {
+      flex-direction: column;
+    }
+    .front-plan-lines li {
+      font-family: var(--o-font-display);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--o-ink-soft);
+    }
+    .front-plan-lines li.up {
+      color: var(--o-ink-pos);
+    }
+    .front-plan-hint {
+      margin: 0;
+      font-size: 13px;
+      font-style: italic;
+      color: var(--o-ink-muted);
+    }
+    @keyframes o-point-pop {
+      from {
+        transform: scale(1.6);
+      }
+    }
+    @keyframes o-point-glow {
+      from {
+        background: var(--o-accent-soft);
+      }
+    }
     @keyframes o-front-in {
       from {
         opacity: 0;
@@ -1311,7 +1447,9 @@ import { TipComponent } from '../ui/tip.component';
     }
     @media (prefers-reduced-motion: reduce) {
       .sheet,
-      .front {
+      .front,
+      .flashing li.up,
+      .flashing li.up .point {
         animation: none;
       }
     }
@@ -1388,6 +1526,8 @@ export class WeekPage {
     const pass = this.ctx.config.calendar.headlines.ratingFrom;
     return {
       stop: r.stop,
+      // Il blocco prima/dopo chiude il capitolo (anche l'ultimo, che finisce con la stagione).
+      planBlock: r.stop === 'chapterEnd' || r.stop === 'seasonEnd',
       headlines: r.headlines,
       issues: planIssuesView(r.planIssues),
       weeks: r.weeks,
@@ -1400,6 +1540,25 @@ export class WeekPage {
         })),
     };
   });
+
+  /** "Dal piano" dall'ultimo stop: righe già tradotte; quelle con punti guadagnati ne portano il numero. */
+  protected readonly planResult = computed(() => {
+    const plan = this.game.lastStop()?.planLog;
+    if (!plan) return null;
+    const log = { plan };
+    const flashes = pointFlashes(log);
+    const up = new Map(flashes.map((k) => [`skills.${k}`, plan.pointsGained[k] ?? 0]));
+    const lines = planStretchLine(log).map((l) => ({
+      text: this.text(l),
+      up: l.key === 'ui.planLog.skill' ? (up.get(String(l.params?.['skillKey'])) ?? 0) : 0,
+    }));
+    if (lines.length === 0) return null;
+    return { lines, hint: chapterHint(log, this.ctx), flashes: flashes.length };
+  });
+
+  /** Il lampo del +1 è in corso (una volta per stop, dove il blocco si vede per primo). */
+  protected readonly flashing = signal(false);
+  private flashedFor: unknown = null;
 
   /** Carichi e azioni fuori dal campo di questa settimana. */
   protected readonly planOptions = computed(() => {
@@ -1481,6 +1640,18 @@ export class WeekPage {
     effect(() => {
       if (!this.frontOpen()) return;
       afterNextRender(() => this.frontClose()?.nativeElement.focus(), { injector: this.injector });
+    });
+    // +1 di un'abilità: un lampo solo, nel primo posto in cui il blocco "Dal piano" si vede.
+    effect(() => {
+      const r = this.game.lastStop();
+      const pr = this.planResult();
+      if (!r || !pr || pr.flashes === 0 || this.flashedFor === r) return;
+      const onFront = this.frontOpen() && !!this.frontPage()?.planBlock;
+      const onHome = !this.frontOpen() && !this.planOpen() && !!this.view();
+      if (!onFront && !onHome) return;
+      this.flashedFor = r;
+      this.flashing.set(true);
+      setTimeout(() => this.flashing.set(false), FLASH_MS);
     });
     // Il piano proposto è quello del capitolo (o l'ultimo ricordato), una volta per apertura.
     effect(() => {

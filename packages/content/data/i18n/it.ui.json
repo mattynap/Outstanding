@@ -790,5 +790,20 @@
   "ui.plan.say.risk": "Rischio infortuni {risk}.",
   "ui.stop.planIssue": "{life}: {n} {n|settimana saltata|settimane saltate}. {reason}",
   "ui.profile.disciplineDrift": "torna verso {base}",
-  "ui.profile.disciplineBase": "base {base}"
+  "ui.profile.disciplineBase": "base {base}",
+  "ui.planLog.title": "Dal piano",
+  "ui.planLog.since": "Dall'ultimo stop",
+  "ui.planLog.before": "Prima",
+  "ui.planLog.after": "Dopo",
+  "ui.planLog.skill": "{skill} {from} → {to}",
+  "ui.planLog.point": "+{n}",
+  "ui.planLog.freshness": "freschezza {from} → {to}",
+  "ui.planLog.freshnessOne": "freschezza {value} alla partita",
+  "ui.planLog.morale": "morale protetto {n} {n|volta|volte}",
+  "ui.planLog.sponsor": "sponsor {money}",
+  "ui.planLog.popularity": "popolarità +{n}",
+  "ui.planLog.gossip": "{n} {n|serata|serate} sui giornali",
+  "ui.planLog.fines": "{n} {n|multa|multe} del club",
+  "ui.planLog.hint.tired": "Sei arrivato stanco a {n} {n|partita|partite} su {total}.",
+  "ui.planLog.hint.fresh": "Sei arrivato fresco {total|alla partita|a tutte le {total} partite}."
 }

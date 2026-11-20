@@ -181,6 +181,15 @@ in 200 ms (fermi con "riduci movimento"); una regione `aria-live` legge carico, 
 rischio a ogni scelta. Allo stop le settimane in cui l'azione è saltata compaiono in rosso
 inchiostro sopra il pulsante di chiusura della prima pagina.
 
+"Dal piano" (risultato del piano): nella scheda capitolo della home, sotto la riga del piano, le
+voci mosse dall'ultimo stop in fila separate da `·` ("Tiro 61 → 62 · freschezza 74 → 66 · morale
+protetto 2 volte"). A fine capitolo (e a fine stagione) lo stesso elenco va sulla prima pagina,
+sotto i voti: titolo in maiuscoletto rosso, righe in `--o-font-display` 18 px, abilità salite in
+`--o-ink-pos`, poi un suggerimento neutro in corsivo ("Sei arrivato stanco a 3 partite su 9",
+soglia `match.selection.freshnessFrom`). Unico juice: il distintivo `+1` (pixel, fondo oro) accanto
+all'abilità salita fa un pop di 300 ms con rimbalzo e la riga si accende d'oro, una volta per stop
+e solo nel primo posto in cui il blocco si vede; fermo con "riduci movimento".
+
 Simboli degli stemmi: `packages/app/src/app/ui/symbols.ts`, uno per ogni id di
 `content/data/clubs.json`. Avatar "figurina" (stile scelto dall'utente in M14): mezzo busto vettoriale su fondo `--o-surface`,
 ombre morbide (marrone al 16%) sul lato destro del viso, sul collo e sulle braccia, occhi con

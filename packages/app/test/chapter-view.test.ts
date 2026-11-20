@@ -3,23 +3,33 @@ import {
   advanceToStop,
   autoDecider,
   defaultContext,
+  emptyChapterLog,
   getPendingEvents,
   newCareer,
   playerFixture,
   playMatch,
   resolveEvent,
   setChapterPlan,
+  type ChapterLog,
+  type ChapterPlanLog,
   type FastForwardStop,
   type GameState,
 } from '@outstanding/engine';
+import base from '../../content/data/i18n/it.json';
+import ui from '../../content/data/i18n/it.ui.json';
 import {
+  chapterHint,
   chapterPicks,
   currentPick,
   goalHistory,
   goalView,
   needsPlan,
   nextStep,
+  planStretchLine,
+  pointFlashes,
 } from '../src/app/core/chapter-view';
+import { lineText, planIssuesView } from '../src/app/core/plan-sheet-view';
+import { translate } from '../src/app/core/text';
 
 const ctx = defaultContext;
 const start = newCareer(
@@ -126,5 +136,93 @@ describe('home del capitolo', () => {
   it('in preparazione non c’è obiettivo', () => {
     expect(start.chapter.id).toBe('preseason');
     expect(goalView(start, ctx)).toBeNull();
+  });
+});
+
+/** Un tratto con il registro del piano: abilità di partenza dal giocatore di prova. */
+function stretch(plan: Partial<ChapterPlanLog>): ChapterLog {
+  return {
+    ...emptyChapterLog(),
+    plan: {
+      skillsAtStart: { ...start.player.skills, shooting: 61.4 },
+      freshnessAtMatches: [],
+      moraleProtected: 0,
+      sponsorIncome: 0,
+      popularity: 0,
+      gossip: 0,
+      fines: 0,
+      pointsGained: {},
+      ...plan,
+    },
+  };
+}
+
+const table: Record<string, string> = { ...base, ...ui };
+const say = (l: { key: string; params?: Record<string, string | number> }) =>
+  lineText((k, p) => translate(table, k, p), l);
+
+describe('Dal piano', () => {
+  it('un tratto senza registro del piano (vecchi salvataggi) non dà righe né lampi', () => {
+    const old = emptyChapterLog();
+    expect(old.plan).toBeUndefined();
+    expect(planStretchLine(old)).toEqual([]);
+    expect(pointFlashes(old)).toEqual([]);
+    expect(chapterHint(old, ctx)).toBeNull();
+  });
+
+  it('abilità con floor, freschezza prima e ultima partita, morale protetto in volte', () => {
+    const lines = planStretchLine(
+      stretch({
+        pointsGained: { shooting: 1 },
+        freshnessAtMatches: [74.4, 70, 65.6],
+        moraleProtected: 2,
+      }),
+    ).map(say);
+    expect(lines).toEqual(['Tiro 61 → 62', 'freschezza 74 → 66', 'morale protetto 2 volte']);
+  });
+
+  it('una sola partita: la freschezza non ha la freccia; soldi e serate solo se ci sono', () => {
+    const lines = planStretchLine(
+      stretch({ freshnessAtMatches: [58], sponsorIncome: 12000, gossip: 1, fines: 0 }),
+    ).map(say);
+    expect(lines[0]).toBe('freschezza 58 alla partita');
+    expect(lines.some((l) => l.includes('12.000'))).toBe(true);
+    expect(lines.some((l) => /giornali/.test(l))).toBe(true);
+    expect(lines.some((l) => /mult/.test(l))).toBe(false);
+  });
+
+  it('pointFlashes: una per abilità per stop, anche con due punti, mai per un calo', () => {
+    const log = stretch({ pointsGained: { shooting: 2, pace: 1, physical: -1 } });
+    const flashes = pointFlashes(log);
+    expect(flashes).toHaveLength(new Set(flashes).size);
+    expect([...flashes].sort()).toEqual(['pace', 'shooting']);
+  });
+
+  it('suggerimento neutro: stanco sotto la soglia di convocazione della configurazione', () => {
+    const from = ctx.config.match.selection.freshnessFrom;
+    const log = stretch({ freshnessAtMatches: [from + 10, from - 1, from - 5, from, from + 2] });
+    const hint = chapterHint(log, ctx)!;
+    expect(hint.key).toBe('ui.planLog.hint.tired');
+    expect(hint.values).toEqual({ n: 2, total: 5 });
+    expect(translate(table, hint.key, hint.values)).toBe('Sei arrivato stanco a 2 partite su 5.');
+    const fresh = chapterHint(stretch({ freshnessAtMatches: [from, from + 3] }), ctx)!;
+    expect(fresh.key).toBe('ui.planLog.hint.fresh');
+    expect(chapterHint(stretch({}), ctx)).toBeNull();
+  });
+
+  it('planIssues con sponsor scaduto: la prima pagina ha la riga di avviso (planIssuesView)', () => {
+    // Gli avvisi non stanno nel registro del tratto ma nel report dello stop: li legge planIssuesView.
+    const rows = planIssuesView([
+      { week: 30, life: 'sponsor', reasonKey: 'week.blocked.no_sponsor' },
+      { week: 31, life: 'sponsor', reasonKey: 'week.blocked.no_sponsor' },
+    ]);
+    expect(rows).toHaveLength(1);
+    const r = rows[0]!;
+    const text = translate(table, 'ui.stop.planIssue', {
+      life: translate(table, r.nameKey),
+      n: r.weeks,
+      reason: translate(table, r.reasonKey),
+    });
+    expect(text).toBe('Sponsor: 2 settimane saltate. Serve almeno uno sponsor.');
   });
 });

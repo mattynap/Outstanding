@@ -132,7 +132,12 @@
       "max": 1.25
     },
     "lowEnergyThreshold": 30,
-    "lowEnergyFactor": 0.6
+    "lowEnergyFactor": 0.6,
+    "focusShare": 0.6,
+    "focusLoss": 0.1,
+    "freshnessFactor": {
+      "atZero": 0.6
+    }
   },
   "decline": {
     "startAge": 31,
@@ -174,7 +179,8 @@
     "trustNotSelected": -1,
     "injuryRiskTarget": 10,
     "injuryRiskDriftPerWeek": 0.2,
-    "lowEnergyInjuryRisk": 3
+    "lowEnergyInjuryRisk": 3,
+    "freshnessPer90": 22
   },
   "injuries": {
     "matchChancePer90": 0.025,
@@ -213,6 +219,80 @@
         "weeks": [20, 32],
         "weight": 0.1
       }
-    ]
+    ],
+    "freshnessCurve": {
+      "at100": 0.6,
+      "at0": 2
+    }
+  },
+  "loads": {
+    "rest": {
+      "freshnessCap": 100,
+      "freshness": 32,
+      "sessions": 0.3,
+      "sessionInjury": 0,
+      "formNotPlaying": -2,
+      "decline": 1.2
+    },
+    "balanced": {
+      "freshnessCap": 90,
+      "freshness": 22,
+      "sessions": 1,
+      "sessionInjury": 0.002,
+      "formNotPlaying": 0,
+      "decline": 1
+    },
+    "push": {
+      "freshnessCap": 70,
+      "freshness": 12,
+      "sessions": 1.5,
+      "sessionInjury": 0.008,
+      "formNotPlaying": 1,
+      "decline": 0.7
+    },
+    "recovery": {
+      "freshnessCap": 100,
+      "freshness": 28,
+      "sessions": 0,
+      "sessionInjury": 0,
+      "formNotPlaying": -2,
+      "decline": 1,
+      "healChance": 0.5
+    }
+  },
+  "life": {
+    "family": {
+      "moraleLossFactor": 0.5,
+      "affinityDriftFactor": 0
+    },
+    "leisure": {
+      "moraleRecoveryFactor": 2
+    },
+    "sponsor": {
+      "sponsorWeeksPerWeek": 0.5,
+      "freshness": -4
+    },
+    "party": {
+      "popularity": 0.5,
+      "discipline": -1,
+      "partnerAffinity": -2,
+      "gossipChance": 0.05,
+      "fineChance": 0.1
+    }
+  },
+  "skipWeekPlanV4": {
+    "load": "balanced"
+  },
+  "discipline": {
+    "driftPerWeek": 0.05
+  },
+  "events": {
+    "riskToFreshness": 1.7
+  },
+  "preview": {
+    "riskBands": {
+      "medium": 0.15,
+      "high": 0.3
+    }
   }
 }

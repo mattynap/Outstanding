@@ -519,6 +519,10 @@ export const matchSchema = z
       relationshipWeight: z.number().min(0),
       noise: z.number().min(0),
       benchPerRole: perRole(z.number().int().min(0)),
+      /** Sotto questa freschezza il punteggio di convocazione cala (settimana a due binari). */
+      freshnessFrom: pct,
+      /** Calo del punteggio per ogni punto di freschezza sotto `freshnessFrom`. */
+      freshnessWeight: z.number().min(0),
     }),
     substitutions: z.object({
       subOffChance: prob,
@@ -534,6 +538,8 @@ export const matchSchema = z
       formWeight: z.number().min(0),
       moraleWeight: z.number().min(0),
       energyWeight: z.number().min(0),
+      /** Peso lineare della freschezza sui momenti (sostituirà `energyWeight`). */
+      freshnessWeight: z.number().min(0),
       qualityMaxBonus: z.number().min(0).max(0.15),
       types: z.array(momentType).min(1),
     }),
@@ -808,8 +814,46 @@ const ageBands = z
     message: 'age bands must be sorted by maxAge',
   });
 
+const loadConfig = z.object({
+  /** Tetto di freschezza raggiungibile con questo carico. */
+  freshnessCap: pct,
+  /** Variazione settimanale di freschezza (comprende il recupero naturale). */
+  freshness: z.number(),
+  /** Sedute di allenamento equivalenti a settimana. */
+  sessions: z.number().min(0),
+  sessionInjury: prob,
+  formNotPlaying: z.number(),
+  /** Moltiplicatore del declino con questo carico. */
+  decline: z.number().min(0),
+  /** Solo il carico di recupero: probabilità di accorciare l'infortunio. */
+  healChance: prob.optional(),
+});
+
 export const progressionSchema = z
   .object({
+    loads: z.object({
+      rest: loadConfig,
+      balanced: loadConfig,
+      push: loadConfig,
+      recovery: loadConfig,
+    }),
+    life: z.object({
+      family: z.object({ moraleLossFactor: z.number().min(0), affinityDriftFactor: z.number() }),
+      leisure: z.object({ moraleRecoveryFactor: z.number().min(0) }),
+      sponsor: z.object({ sponsorWeeksPerWeek: z.number().min(0), freshness: z.number() }),
+      party: z.object({
+        popularity: z.number(),
+        discipline: z.number(),
+        partnerAffinity: z.number(),
+        gossipChance: prob,
+        fineChance: prob,
+      }),
+    }),
+    /** Piano delle settimane saltate (sostituirà `skipWeekPlan`, Task 7). */
+    skipWeekPlanV4: z.object({ load: z.enum(['rest', 'balanced', 'push', 'recovery']) }),
+    discipline: z.object({ driftPerWeek: z.number().min(0) }),
+    events: z.object({ riskToFreshness: z.number().min(0) }),
+    preview: z.object({ riskBands: z.object({ medium: prob, high: prob }) }),
     actionsPerWeek: z.number().int().min(1),
     actions: z.array(weekAction).min(1),
     /** Azioni applicate in automatico alle settimane saltate. */
@@ -832,6 +876,12 @@ export const progressionSchema = z
       disciplineFactor: z.object({ min: z.number().min(0), max: z.number().min(0) }),
       lowEnergyThreshold: z.number().min(0).max(100),
       lowEnergyFactor: prob,
+      /** Quota della crescita che va all'abilità in focus. */
+      focusShare: prob,
+      /** Quota di crescita persa dalle altre abilità quando c'è un focus. */
+      focusLoss: prob,
+      /** Fattore di crescita a freschezza 0 (lineare fino a 1 a 100). */
+      freshnessFactor: z.object({ atZero: prob }),
     }),
     decline: z.object({
       startAge: z.number().int(),
@@ -857,6 +907,8 @@ export const progressionSchema = z
       injuryRiskTarget: pct,
       injuryRiskDriftPerWeek: prob,
       lowEnergyInjuryRisk: z.number().min(0),
+      /** Freschezza persa per 90 minuti giocati. */
+      freshnessPer90: z.number().min(0),
     }),
     injuries: z.object({
       matchChancePer90: prob,
@@ -865,6 +917,8 @@ export const progressionSchema = z
       lowEnergyMultiplier: z.number().min(1),
       formOnInjury: z.number(),
       moraleOnInjury: z.number(),
+      /** Moltiplicatore della probabilità di infortunio a freschezza 100 e a 0 (lineare). */
+      freshnessCurve: z.object({ at100: z.number().min(0), at0: z.number().min(0) }),
       types: z
         .array(
           z.object({

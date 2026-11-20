@@ -27,7 +27,9 @@
       "DEF": 2,
       "MID": 2,
       "ATT": 2
-    }
+    },
+    "freshnessFrom": 60,
+    "freshnessWeight": 0.1
   },
   "substitutions": {
     "subOffChance": 0.3,
@@ -43,7 +45,8 @@
     "formWeight": 0.08,
     "moraleWeight": 0.04,
     "energyWeight": 0.05,
-    "qualityMaxBonus": 0.1
+    "qualityMaxBonus": 0.1,
+    "freshnessWeight": 0.06
   },
   "rating": {
     "base": 6,
@@ -141,7 +144,12 @@
     "relaxMinutes": 4,
     "repeatPenalty": 0.5,
     "dynAffinity": 0.3,
-    "phaseBias": { "GK": 0.2, "DEF": 0.3, "MID": 0.56, "ATT": 0.7 },
+    "phaseBias": {
+      "GK": 0.2,
+      "DEF": 0.3,
+      "MID": 0.56,
+      "ATT": 0.7
+    },
     "phaseTilt": 0.3,
     "phaseMin": 0.05
   },

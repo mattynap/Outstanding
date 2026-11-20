@@ -36,3 +36,8 @@ Decisioni con il cliente o commerciali: proporle per il registro di base-azienda
 - Decisione: la rapida ha lo stesso budget del regista di full e sim (5–7 momenti), ne mostra 1–2 e risolve gli altri col decisore automatico; leggende solo sui passi visibili; almeno un passo visibile garantito. 4 partite scelte per capitolo (`chapterMatches.max`). `fastForward` resta un ciclo suo ma gestisce i confini di capitolo con gli stessi helper di `advanceToStop`.
 - Perché: con budget 1–2 giocare una partita rendeva meno che simularla (41,5 gol contro 58,9); pareri concordi di architetto e Codex forte. Durata nel bersaglio senza toccare `secondsPer`.
 - Alternative scartate: più xG in config (gonfia la squadra, non il giocatore); nuova baseline accettando il calo; `fastForward` come wrapper (sposterebbe criterio e baseline).
+
+## 2026-11-20 — Skill di sviluppo giochi e suoni
+- Decisione: 10 skill esterne in `.claude/skills/` (Game Studio: phaser-2d-game, game-ui-frontend, game-playtest; awesome-gamedev: phaser-core, game-feel, rpg, roguelike, game-ui-ux, audio-design, game-docs), testo originale invariato più una sezione di progetto che prevale; versionate con LICENSE e NOTICE. Suoni con `zzfx` generati dal codice; audio di Phaser spento.
+- Perché: coprono scene, UI, QA e bilanciamento senza cambiare stack; zzfx mantiene "nessun asset esterno". Screening e review con Codex.
+- Alternative scartate: `phaser.io/llms.txt` (indice commerciale di Phaser AE; fanno fede i tipi locali), `web-game-foundations`, save-systems, dialogue-systems, visual-novel (esempi Godot/Unity su sistemi già presenti), file audio esterni.

@@ -2,7 +2,7 @@
 
 ## In corso
 <!-- max 3 -->
-- [ ] Push di ciro-dev dopo il via dell'utente (2026-11-19)
+- [ ] Push di ciro-dev: via dato, da lanciare a mano con ! (hook) (2026-11-20)
 
 ## Prossimi
 <!-- l'ordine è la priorità -->
@@ -23,9 +23,15 @@
 - [ ] Completare piano M18 dopo la prima integrazione animata e le decisioni residue (2026-11-17)
 - [ ] Passare il mondo ai nomi storpiati (2026-11-17)
 - [ ] Decidere cosa committare fra packages/app/ios/ e le ricerche precedenti in reports/ e research_notes/ (2026-11-17)
+- [ ] QA visiva con Playwright e screenshot del canvas a seme fisso (report Skill e tecnologie, 3.1) (2026-11-20)
+- [ ] Suoni zzfx e vibrazione (@capacitor/haptics) con impostazione dedicata, prima dell'invio ad Apple (2026-11-20)
+- [ ] Account Google Play: personale o aziendale; se personale Prova 1 con ≥12 tester per 14 giorni (2026-11-20)
+- [ ] CLAUDE.md §3: Phaser 4.2.1 e rimando ai tipi locali; allineare docs/design/README.md a CLAUDE.md (2026-11-20)
+- [ ] Decidere su pnpm lint rosso (Prettier su 127 file preesistenti) e sul versionamento delle founder-* (2026-11-20)
 
 ## Fatti
 <!-- ultimi 10; i più vecchi restano in git -->
+- [x] Skill di sviluppo giochi (10) e zzfx installati e committati; report unico su skill e tecnologie (2026-11-20)
 - [x] Regista partita e stagione: piano A0–B4 eseguito, B3b rapida, revisione finale (2026-11-19)
 - [x] Piano regista partita e stagione: builder check, ricerca meccaniche, review, approvazione (2026-11-18)
 - [x] Design regista partita e stagione, approccio B scelto (2026-11-18)
@@ -35,4 +41,3 @@
 - [x] Prima integrazione motore animato, Campo prova e installazione su iPhone 15 (2026-11-17)
 - [x] Dividere i 47 momenti per posizione nel gioco, gruppi P1–P8 (2026-11-17)
 - [x] Ricerca cultura pop del calcio italiano: interviste, conferenze, tormentoni (2026-11-17)
-- [x] Ricerca psicologia del giocatore e design (2026-11-17)

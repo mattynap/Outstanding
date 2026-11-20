@@ -25,6 +25,25 @@ export interface MatchOutcome {
  * dell'allenatore, esperienza (crescita) e possibile infortunio. La freschezza spesa non si scrive
  * qui: torna come `freshnessDelta` e la somma `advanceWeek` a fine settimana.
  */
+/** Probabilità d'infortunio in partita per quota di 90': la stessa per la partita vera e l'anteprima. */
+export function matchInjuryChance(
+  player: Player,
+  share: number,
+  injuryMod: number,
+  ctx: GameContext,
+): number {
+  return injuryChance(
+    ctx.config.progression.injuries.matchChancePer90 * share * injuryMod,
+    player,
+    ctx,
+  );
+}
+
+/** Freschezza persa in partita per quota di 90'. */
+export function matchFreshnessCost(share: number, ctx: GameContext): number {
+  return ctx.config.progression.condition.freshnessPer90 * share;
+}
+
 export function applyMatchAftermath(
   player: Player,
   coachId: string | undefined,
@@ -78,16 +97,12 @@ export function applyMatchAftermath(
   }
 
   let injured = false;
-  const chance = injuryChance(
-    ctx.config.progression.injuries.matchChancePer90 * share * mods.injury,
-    player,
-    ctx,
-  );
+  const chance = matchInjuryChance(player, share, mods.injury, ctx);
   if (played && rng.chance(chance)) {
     p = injure(p, rollInjury(rng, ctx), ctx, lifeMods.moraleLossFactor);
     injured = true;
   }
-  return { player: p, injured, freshnessDelta: -c.freshnessPer90 * share };
+  return { player: p, injured, freshnessDelta: -matchFreshnessCost(share, ctx) };
 }
 
 /**

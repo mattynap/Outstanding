@@ -119,6 +119,21 @@ describe('anteprima del piano', () => {
     expect(loads.push.freshnessCap).toBe(70);
   });
 
+  it('Spinta da 95 con partita questa settimana: legge F0 95 e dichiara il calo al tetto', () => {
+    const s = withEnergy(toMatchWeek(toWeek(newCareer(baseOptions, 7), autumn)), 95);
+    const pre = previewPlan(s, { load: 'push' }, ctx);
+    expect(pre.chapter.freshnessAtMatches[0]).toBe(95);
+    expect(pre.weekly.freshnessEnd).toBeLessThanOrEqual(loads.push.freshnessCap);
+    expect(pre.weekly.capDrop).toBeGreaterThan(0);
+    expect(pre.weekly.freshnessEnd).toBe(
+      endOfWeekFreshness(
+        95,
+        pre.weekly.freshnessDelta - ctx.config.progression.condition.freshnessPer90,
+        loads.push.freshnessCap,
+      ),
+    );
+  });
+
   it('Serata in 14 settimane: giornali = 1 - 0,95^14', () => {
     const start = toWeek(newCareer(baseOptions, 9), autumn);
     const pre = previewPlan(start, { load: 'balanced', life: 'party' }, ctx);

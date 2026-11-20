@@ -32,6 +32,11 @@ export function sessionInjuryChance(
   return Math.min(1, Math.max(0, p));
 }
 
+/** Freschezza del carico a settimana (recupero naturale compreso), prima di partita e tetto. */
+export function loadFreshness(eff: EffectiveLoad, ctx: GameContext): number {
+  return ctx.config.progression.loads[eff].freshness;
+}
+
 /** Crescita deterministica delle sedute: la stessa per la settimana vera e per l'anteprima. */
 export function loadWeekGrowth(
   player: Player,
@@ -64,8 +69,7 @@ export function applyLoadWeek(
   moraleLossFactor = 1,
 ): LoadWeekResult {
   const eff = effectiveLoad(player, load);
-  const cfg = ctx.config.progression.loads[eff];
-  const freshnessDelta = cfg.freshness;
+  const freshnessDelta = loadFreshness(eff, ctx);
 
   if (eff === 'recovery') {
     let next = player;

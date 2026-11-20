@@ -3,22 +3,27 @@ import { difficultyMods } from '../difficulty';
 import {
   endOfWeekFreshness,
   growthFreshnessFactor,
-  injuryFreshnessFactor,
   momentFreshnessModifier,
 } from '../player/freshness';
+import { matchFreshnessCost, matchInjuryChance } from '../player/condition';
 import { growthFactors } from '../player/progression';
 import { SKILLS } from '../player/ratings';
 import { ageAt, seasonStartWeek, weekOfSeason } from '../time';
 import type { EffectiveLoad, GameState, Player, Skill, Skills, WeekPlan } from '../types';
 import { chapterOf } from './director';
 import { lifeFreshness, sponsorWeekIncome } from './life';
-import { effectiveLoad, loadWeekGrowth, sessionInjuryChance } from './load';
+import { effectiveLoad, loadFreshness, loadWeekGrowth, sessionInjuryChance } from './load';
 import { assertWeekPlan, lifeAvailable } from './plan';
 
 export interface PlanPreview {
   /** Esatto per la settimana (senza partita ed eventi): gli stessi numeri di `planWeek`. */
   weekly: {
+    /** Delta grezzo del piano (carico + vita), prima di partita e tetto: lo stesso di `planWeek`. */
     freshnessDelta: number;
+    /** Freschezza a fine settimana, col tetto del carico e nell'ipotesi titolare 90' a ogni partita. */
+    freshnessEnd: number;
+    /** Freschezza persa solo per il tetto del carico (es. Spinta da 95: scende a 70). */
+    capDrop: number;
     gains: Partial<Skills>;
     lifeEffects: { moneyPerWeek?: number; popularityPerWeek?: number; disciplinePerWeek?: number };
   };
@@ -95,35 +100,34 @@ export function previewPlan(
     const weekPlayer: Player = i < injuredWeeks ? sim : healthy;
     const eff: EffectiveLoad = effectiveLoad(weekPlayer, plan.load);
     const grown = loadWeekGrowth(weekPlayer, week, eff, plan.focus, mods.growth, ctx);
-    const loadDelta = prog.loads[eff].freshness;
+    const loadDelta = loadFreshness(eff, ctx);
     const f0 = weekPlayer.condition.energy;
     freshnessSum += f0;
-
-    if (i === 0) {
-      weekly = {
-        freshnessDelta: loadDelta + lifeFresh,
-        gains: grown.gains,
-        lifeEffects: lifeEffects(state.player, life, ctx),
-      };
-    }
 
     const played = eff === 'recovery' ? 0 : fixturesOf(state, clubId, week);
     for (let m = 0; m < played; m++) freshnessAtMatches.push(f0);
     if (played > 0) matchWeeks++;
 
     const sessionP = sessionInjuryChance(weekPlayer, eff, mods.injury, ctx);
-    const matchP = Math.min(
-      1,
-      prog.injuries.matchChancePer90 * mods.injury * injuryFreshnessFactor(f0, ctx),
-    );
+    const matchP = matchInjuryChance(weekPlayer, 1, mods.injury, ctx);
     survive *= (1 - sessionP) * Math.pow(1 - matchP, played);
 
-    const delta = loadDelta + lifeFresh - played * prog.condition.freshnessPer90;
+    const delta = loadDelta + lifeFresh - played * matchFreshnessCost(1, ctx);
+    const f1 = endOfWeekFreshness(f0, delta, prog.loads[eff].freshnessCap);
+    if (i === 0) {
+      weekly = {
+        freshnessDelta: loadDelta + lifeFresh,
+        freshnessEnd: f1,
+        capDrop: Math.max(0, f0 + delta - f1),
+        gains: grown.gains,
+        lifeEffects: lifeEffects(state.player, life, ctx),
+      };
+    }
     sim = {
       ...grown.player,
       condition: {
         ...grown.player.condition,
-        energy: endOfWeekFreshness(f0, delta, prog.loads[eff].freshnessCap),
+        energy: f1,
       },
     };
     history.push({ skills: sim.skills, gains: grown.gains });

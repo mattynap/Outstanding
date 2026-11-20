@@ -4,6 +4,7 @@ import {
   advanceWeek,
   applyDecline,
   applyGrowth,
+  applyLoadGrowth,
   computeOvr,
   defaultContext,
   deserialize,
@@ -23,6 +24,7 @@ import { baseOptions } from './fixtures';
 
 const ctx = defaultContext;
 const start = () => newCareer(baseOptions, 77);
+const noLoad = { rest: 0, balanced: 0, push: 0 };
 const ovr = (p: Player) => computeOvr(p.skills, p.role, ctx.config.ratings);
 
 describe('testi e riferimenti', () => {
@@ -167,11 +169,11 @@ describe('crescita e declino', () => {
 
   it('dopo i 31 anni le abilità calano, meno con tanta disciplina', () => {
     const p = start().player;
-    expect(applyDecline(p, 25, ctx)).toBe(p);
+    expect(applyDecline(p, 25, noLoad, ctx)).toBe(p);
     const lazy: Player = { ...p, persona: { ...p.persona, discipline: 0 } };
     const pro: Player = { ...p, persona: { ...p.persona, discipline: 100 } };
-    const dLazy = p.skills.pace - applyDecline(lazy, 34, ctx).skills.pace;
-    const dPro = p.skills.pace - applyDecline(pro, 34, ctx).skills.pace;
+    const dLazy = p.skills.pace - applyDecline(lazy, 34, noLoad, ctx).skills.pace;
+    const dPro = p.skills.pace - applyDecline(pro, 34, noLoad, ctx).skills.pace;
     expect(dLazy).toBeGreaterThan(dPro);
     expect(dPro).toBeGreaterThan(0);
   });
@@ -205,5 +207,78 @@ describe('settimane senza partite', () => {
     expect(state.week).toBe(s.week + weeksSkipped);
     expect(state.player.skills.shooting).toBeGreaterThan(s.player.skills.shooting);
     expect(skipToNextMatch(state).weeksSkipped).toBe(0);
+  });
+});
+
+describe('crescita continua, focus e declino pesato', () => {
+  const att = (): Player => {
+    const p = start().player;
+    const skills = { ...p.skills };
+    for (const s of Object.keys(skills) as (keyof typeof skills)[]) skills[s] = 70;
+    return {
+      ...p,
+      role: 'ATT',
+      skills,
+      potential: 75,
+      birthWeek: 0,
+      condition: { ...p.condition, energy: 100 },
+    };
+  };
+  const week = 27 * ctx.config.calendar.weeksPerSeason;
+  const sum = (g: Partial<Record<string, number>>) =>
+    Object.values(g).reduce<number>((a, b) => a + (b ?? 0), 0);
+
+  it('14 settimane di Equilibrio a 27 anni fanno crescere (nessun arrotondamento)', () => {
+    let p = att();
+    let total = 0;
+    for (let i = 0; i < 14; i++) {
+      const r = applyLoadGrowth(p, week, 'balanced', undefined, ctx);
+      p = r.player;
+      total += sum(r.gains);
+    }
+    expect(total).toBeGreaterThan(0);
+  });
+
+  it('dieci settimane una alla volta = sommate', () => {
+    const one = applyLoadGrowth(att(), week, 'balanced', undefined, ctx);
+    let p = att();
+    let total = 0;
+    for (let i = 0; i < 10; i++) {
+      const r = applyLoadGrowth(p, week, 'balanced', undefined, ctx);
+      total += sum(r.gains);
+      p = { ...r.player, skills: att().skills };
+    }
+    expect(Math.abs(total - 10 * sum(one.gains))).toBeLessThan(1e-9);
+  });
+
+  it('il focus perde il 10% dei punti e manda il 60% sull abilità scelta', () => {
+    const base = applyLoadGrowth(att(), week, 'balanced', undefined, ctx);
+    const foc = applyLoadGrowth(att(), week, 'balanced', 'shooting', ctx);
+    const T = sum(base.gains);
+    const g = ctx.config.progression.growth;
+    expect(sum(foc.gains)).toBeCloseTo(0.9 * T, 9);
+    const w = base.gains.shooting! / T;
+    const t2 = 0.9 * T;
+    expect(foc.gains.shooting!).toBeCloseTo(g.focusShare * t2 + w * (1 - g.focusShare) * t2, 9);
+  });
+
+  it('declino pesato sul carico', () => {
+    const p: Player = { ...att(), persona: { ...att().persona, discipline: 50 } };
+    const d = (w: Partial<typeof noLoad>) =>
+      p.skills.pace - applyDecline(p, 33, { ...noLoad, ...w }, ctx).skills.pace;
+    const L = ctx.config.progression.loads;
+    expect(d({ push: 52 })).toBeCloseTo(0.7 * d({ balanced: 52 }), 9);
+    expect(d({ rest: 40, push: 12 })).toBeCloseTo(
+      d({ balanced: 1 }) * ((40 * L.rest.decline + 12 * L.push.decline) / 52),
+      9,
+    );
+    expect(d({})).toBeCloseTo(d({ balanced: 5 }), 9);
+  });
+
+  it('OVR mostrato = floor', () => {
+    const p = att();
+    const skills = { ...p.skills };
+    for (const k of Object.keys(skills) as (keyof typeof skills)[]) skills[k] = 61.999;
+    expect(computeOvr(skills, 'ATT', ctx.config.ratings)).toBe(61);
   });
 });

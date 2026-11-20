@@ -149,7 +149,7 @@ export function planWeek(
       );
       player = grown.player;
       for (const [s, g] of Object.entries(grown.gains) as [Skill, number][]) {
-        gains[s] = Math.round(((gains[s] ?? 0) + g) * 100) / 100;
+        gains[s] = (gains[s] ?? 0) + g;
       }
       if (
         action.injuryChance &&

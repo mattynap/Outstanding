@@ -20,6 +20,10 @@ export type Skill =
 
 export type Skills = Record<Skill, number>;
 
+/** Carico settimanale scelto dal giocatore; `recovery` vale solo per chi è infortunato. */
+export type Load = 'rest' | 'balanced' | 'push';
+export type EffectiveLoad = Load | 'recovery';
+
 export interface Contract {
   clubId: string;
   salaryWeekly: number;

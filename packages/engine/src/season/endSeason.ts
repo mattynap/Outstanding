@@ -259,7 +259,7 @@ export function endSeason(
     calendar,
     cups: nextCups.cups,
     player: {
-      ...applyDecline(p, record.age, ctx),
+      ...applyDecline(p, record.age, { rest: 0, balanced: 0, push: 0 }, ctx),
       seasonStats: emptySeasonStats(),
       seasonLevelApps: undefined,
       history: [...p.history, record],

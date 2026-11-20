@@ -2,12 +2,10 @@ import type { ProgressionConfig } from '@outstanding/config';
 import type { GameContext } from '../context';
 import type { Rng } from '../rng';
 import { ageAt } from '../time';
-import type { Player, Skill, Skills } from '../types';
+import type { Load, Player, Skill, Skills } from '../types';
 import { clamp } from '../util';
+import { growthFreshnessFactor } from './freshness';
 import { computeOvr, SKILLS } from './ratings';
-
-/** Le abilità si salvano con due decimali: crescono poco alla volta ma restano leggibili. */
-const round2 = (v: number) => Math.round(v * 100) / 100;
 
 function band(bands: ProgressionConfig['growth']['ageMultipliers'], age: number): number {
   return (bands.find((b) => age <= b.maxAge) ?? bands[bands.length - 1]!).value;
@@ -24,7 +22,7 @@ export function growthMultiplier(player: Player, week: number, ctx: GameContext)
   const gap = clamp((player.potential - ovr) / g.potentialGapScale, 0, g.maxGapFactor);
   const d = g.disciplineFactor;
   const discipline = d.min + ((d.max - d.min) * player.persona.discipline) / 100;
-  const energy = player.condition.energy < g.lowEnergyThreshold ? g.lowEnergyFactor : 1;
+  const energy = growthFreshnessFactor(player.condition.energy, ctx);
   return band(g.ageMultipliers, age) * gap * discipline * energy;
 }
 
@@ -55,24 +53,88 @@ export function applyGrowth(
     else if (weights[s] > 0)
       delta = amount * (g.minWeightShare + (1 - g.minWeightShare) * (weights[s] / maxW));
     if (delta <= 0) continue;
-    const next = round2(Math.min(cap, skills[s] + delta));
+    const next = Math.min(cap, skills[s] + delta);
     if (next > skills[s]) {
-      gains[s] = round2(next - skills[s]);
+      gains[s] = next - skills[s];
       skills[s] = next;
     }
   }
   return { player: { ...player, skills }, gains };
 }
 
-/** Declino di fine stagione dopo l'età indicata; la disciplina lo attenua. */
-export function applyDecline(player: Player, age: number, ctx: GameContext): Player {
+/**
+ * Crescita di una settimana col carico scelto. Punti totali T = basePerSession × sedute × moltiplicatore,
+ * ripartiti sui pesi del ruolo. Con focus il totale scende a (1 − focusLoss) × T: `focusShare` va
+ * sull'abilità scelta, il resto sui pesi del ruolo (compresa la stessa abilità).
+ */
+export function applyLoadGrowth(
+  player: Player,
+  week: number,
+  load: Load,
+  focus: Skill | undefined,
+  ctx: GameContext,
+): { player: Player; gains: Partial<Skills> } {
+  const g = ctx.config.progression.growth;
+  const amount =
+    g.basePerSession *
+    ctx.config.progression.loads[load].sessions *
+    growthMultiplier(player, week, ctx);
+  if (amount <= 0) return { player, gains: {} };
+  const cap = Math.min(g.skillMax, player.potential + g.skillCapOverPotential);
+  const weights = ctx.config.ratings.roleWeights[player.role];
+  const maxW = Math.max(...SKILLS.map((s) => weights[s]));
+
+  const raw: Partial<Skills> = {};
+  let rawTotal = 0;
+  for (const s of SKILLS) {
+    if (weights[s] <= 0) continue;
+    raw[s] = amount * (g.minWeightShare + (1 - g.minWeightShare) * (weights[s] / maxW));
+    rawTotal += raw[s]!;
+  }
+  const total = focus ? (1 - g.focusLoss) * rawTotal : rawTotal;
+  const restShare = focus ? 1 - g.focusShare : 1;
+
+  const skills = { ...player.skills };
+  const gains: Partial<Skills> = {};
+  for (const s of SKILLS) {
+    const roleShare = rawTotal > 0 ? (raw[s] ?? 0) / rawTotal : 0;
+    const delta = total * restShare * roleShare + (s === focus ? total * g.focusShare : 0);
+    if (delta <= 0) continue;
+    const next = Math.min(cap, skills[s] + delta);
+    if (next > skills[s]) {
+      gains[s] = next - skills[s];
+      skills[s] = next;
+    }
+  }
+  return { player: { ...player, skills }, gains };
+}
+
+/**
+ * Declino di fine stagione dopo l'età indicata; la disciplina lo attenua. Il fattore è la media dei
+ * `loads.*.decline` pesata sulle settimane passate a ogni carico (nessuna settimana: 1).
+ */
+export function applyDecline(
+  player: Player,
+  age: number,
+  loadWeeks: Record<Load, number>,
+  ctx: GameContext,
+): Player {
   const d = ctx.config.progression.decline;
   if (age < d.startAge) return player;
-  const base = d.basePerSeason + d.extraPerYear * (age - d.startAge);
+  const loads = ctx.config.progression.loads;
+  const weeks = loadWeeks.rest + loadWeeks.balanced + loadWeeks.push;
+  const loadFactor =
+    weeks > 0
+      ? (loadWeeks.rest * loads.rest.decline +
+          loadWeeks.balanced * loads.balanced.decline +
+          loadWeeks.push * loads.push.decline) /
+        weeks
+      : 1;
+  const base = (d.basePerSeason + d.extraPerYear * (age - d.startAge)) * loadFactor;
   const mitigation = 1 - (d.disciplineMitigation * player.persona.discipline) / 100;
   const skills = { ...player.skills };
   for (const s of SKILLS) {
-    skills[s] = round2(Math.max(1, skills[s] - base * d.skillMultipliers[s] * mitigation));
+    skills[s] = Math.max(1, skills[s] - base * d.skillMultipliers[s] * mitigation);
   }
   return { ...player, skills };
 }

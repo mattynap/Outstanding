@@ -193,7 +193,7 @@ export {
   type WeekOption,
   type WeekPlanReport,
 } from './season/plan';
-export { applyGrowth, applyDecline, growthMultiplier } from './player/progression';
+export { applyGrowth, applyLoadGrowth, applyDecline, growthMultiplier } from './player/progression';
 export {
   acceptOffer,
   clubLevel,

@@ -18,6 +18,10 @@ import {
   type GameState,
   type WeekPlan,
 } from '../src/index';
+import { applyMatchAftermath } from '../src/player/condition';
+import { recordChapterMatch } from '../src/season/director';
+import { lifeModifiers } from '../src/season/life';
+import { Rng } from '../src/rng';
 import { baseOptions } from './fixtures';
 import { chapterOf, emptyChapterLog } from '../src/season/director';
 import { buildHeadlines } from '../src/season/headlines';
@@ -601,13 +605,42 @@ describe('registro del piano nel tratto', () => {
     expect(emptyChapterLog().plan).toBeUndefined();
   });
 
-  it('Famiglia: il morale protetto si somma nel tratto e nel capitolo', () => {
-    const fam = run({ load: 'push', focus: 'shooting', life: 'family' });
-    const none = run({ load: 'push', focus: 'shooting' });
-    const p = fam.s.chapter.stretch.plan!;
-    expect(p.moraleProtected).toBeGreaterThan(0);
-    expect(none.s.chapter.stretch.plan!.moraleProtected).toBe(0);
-    expect(fam.s.chapter.log.plan).toEqual(p);
+  /** Sei settimane col piano dato, senza partite vere; nelle settimane `lossWeeks` si registra una sconfitta. */
+  function runWithLosses(plan: WeekPlan, lossWeeks: number[]) {
+    // Le prime settimane sono di preparazione: nessuna partita vera, solo quelle registrate a mano.
+    let s = start(6);
+    const probe = simulateMatch(skipToNextMatch(s, ctx).state, ctx).matchReport;
+    const forced = { ...probe, result: 'loss' as const, rating: 4 };
+    for (let i = 0; i < 6; i++) {
+      s = planWeek(s, plan, ctx).state;
+      if (lossWeeks.includes(i)) {
+        const after = applyMatchAftermath(
+          s.player,
+          undefined,
+          { selection: 'starter', minutesPlayed: 90, rating: 4, result: 'loss' },
+          s.week,
+          Rng.fromSeed(1),
+          ctx,
+          { growth: 1, injury: 0 },
+          lifeModifiers(plan.life, ctx),
+        );
+        s = recordChapterMatch(s, forced, {
+          freshness: s.player.condition.energy,
+          moraleProtected: after.moraleProtected,
+          startSkills: s.player.skills,
+        });
+      }
+      s = advanceWeek(s, ctx).state;
+    }
+    return s;
+  }
+
+  it('Famiglia: il morale protetto conta le volte, 2 sconfitte = 2; senza Famiglia 0', () => {
+    const fam = runWithLosses({ load: 'balanced', life: 'family' }, [1, 3]);
+    expect(fam.chapter.stretch.plan!.moraleProtected).toBe(2);
+    expect(fam.chapter.log.plan!.moraleProtected).toBe(2);
+    const none = runWithLosses({ load: 'balanced' }, [1, 3]);
+    expect(none.chapter.stretch.plan!.moraleProtected).toBe(0);
   });
 
   it('pointsGained = differenza dei floor fra inizio e fine; solo abilità cambiate', () => {

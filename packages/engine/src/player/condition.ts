@@ -98,13 +98,11 @@ export function applyMatchAftermath(
     p = injure(p, rollInjury(rng, ctx), ctx, lifeMods.moraleLossFactor);
     injured = true;
   }
-  // Morale non perso grazie al fattore dell'azione fuori dal campo (cali di partita e d'infortunio).
+  // Volte in cui il fattore dell'azione fuori dal campo ha attutito un calo: partita e infortunio.
+  const cuts = lifeMods.moraleLossFactor < 1;
   const moraleProtected =
-    Math.max(0, -rawMorale) * (1 - lifeMods.moraleLossFactor) +
-    (injured
-      ? Math.max(0, -ctx.config.progression.injuries.moraleOnInjury) *
-        (1 - lifeMods.moraleLossFactor)
-      : 0);
+    (cuts && rawMorale < 0 ? 1 : 0) +
+    (cuts && injured && ctx.config.progression.injuries.moraleOnInjury < 0 ? 1 : 0);
   return { player: p, injured, freshnessDelta: -matchFreshnessCost(share, ctx), moraleProtected };
 }
 

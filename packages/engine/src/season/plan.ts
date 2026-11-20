@@ -34,7 +34,7 @@ export interface WeekPlanReport {
   sponsorIncome?: number;
   /** Popolarità guadagnata dalla serata (gossip compreso), se c'era. */
   popularityGained?: number;
-  /** Morale non perso grazie alla famiglia in questa fase della settimana. */
+  /** Punti di morale non persi grazie alla famiglia nella seduta (nel registro del tratto conta 1 se > 0). */
   moraleProtected: number;
   /** Azione fuori dal campo del piano non disponibile questa settimana, quindi saltata. */
   lifeSkipped?: LifeAction;

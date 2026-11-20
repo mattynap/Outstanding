@@ -283,6 +283,7 @@ function withPlanLog(
   endSkills: Skills,
   patch: (p: ChapterPlanLog) => ChapterPlanLog,
 ): ChapterLog {
+  // skillsAtStart si prende alla prima registrazione del tratto.
   const base: ChapterPlanLog = log.plan ?? {
     skillsAtStart: { ...startSkills },
     freshnessAtMatches: [],
@@ -310,7 +311,7 @@ function withPlanLog(
 export function recordChapterMatch(
   state: GameState,
   report: MatchReport,
-  plan: { freshness: number; moraleProtected: number; startSkills: Skills },
+  plan: { freshness: number; moraleProtected: number /* volte */; startSkills: Skills },
 ): GameState {
   const picked = state.chapter.picks.some((p) => p.fixtureId === report.fixtureId);
   const { chapter } = state;
@@ -344,7 +345,7 @@ export function recordChapterPlan(
   const note = (log: ChapterLog) =>
     withPlanLog(log, startSkills, state.player.skills, (p) => ({
       ...p,
-      moraleProtected: p.moraleProtected + r.moraleProtected,
+      moraleProtected: p.moraleProtected + (r.moraleProtected > 0 ? 1 : 0),
       sponsorIncome: p.sponsorIncome + (r.sponsorIncome ?? 0),
       popularity: p.popularity + (r.popularityGained ?? 0),
       gossip: p.gossip + (r.party?.gossip ? 1 : 0),

@@ -461,7 +461,7 @@ export interface ChapterPlanLog {
   skillsAtStart: Skills;
   /** Freschezza di inizio settimana letta da ogni partita giocata, in ordine. */
   freshnessAtMatches: number[];
-  /** Morale che la Famiglia ha evitato di far perdere (partite e infortuni). */
+  /** Volte in cui la Famiglia ha protetto il morale (partita, infortunio, seduta). */
   moraleProtected: number;
   sponsorIncome: number;
   /** Popolarità guadagnata dalle serate. */

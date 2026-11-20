@@ -31,7 +31,7 @@ import {
   type WeekPlan,
 } from '@outstanding/engine';
 import { chapterPicks, goalView, needsPlan } from '../core/chapter-view';
-import { planIssuesView, planSheetView, type TextLine } from '../core/plan-sheet-view';
+import { lineText, planIssuesView, planSheetView, type TextLine } from '../core/plan-sheet-view';
 import { GameService } from '../core/game.service';
 import { I18nService, TranslatePipe } from '../core/i18n.service';
 import { kickoffHintKey } from '../core/match-mode';
@@ -216,7 +216,6 @@ import { TipComponent } from '../ui/tip.component';
                       type="button"
                       role="radio"
                       [attr.aria-checked]="l.selected"
-                      [attr.aria-pressed]="l.selected"
                       [attr.aria-describedby]="'plan-load-' + l.id"
                       [disabled]="l.disabled"
                       (click)="load.set(l.id)"
@@ -290,13 +289,12 @@ import { TipComponent } from '../ui/tip.component';
                     <span>{{ 'ui.plan.now' | t: { n: fr.now } }}</span>
                     <span>{{ 'ui.plan.cap' | t: { cap: fr.cap } }}</span>
                   </div>
-                  @if (fr.capFall > 0) {
+                  @if (fr.fall > 0) {
+                    <p class="read-note">{{ 'ui.plan.fall' | t: { n: fr.fall } }}</p>
+                  }
+                  @if (fr.capCut > 0) {
                     <p class="read-note">
-                      {{ 'ui.plan.capDrop' | t: { cap: fr.cap, n: fr.capFall } }}
-                    </p>
-                  } @else if (fr.capWaste > 0) {
-                    <p class="read-note">
-                      {{ 'ui.plan.capWaste' | t: { cap: fr.cap, n: fr.capWaste } }}
+                      {{ 'ui.plan.capCut' | t: { cap: fr.cap, n: fr.capCut } }}
                     </p>
                   }
                   @if (ps.bench; as b) {
@@ -372,7 +370,7 @@ import { TipComponent } from '../ui/tip.component';
                 }
                 <ul class="life-lines">
                   @for (ln of ps.lifeLines; track ln.key) {
-                    <li class="tick-in">{{ ln.key | t: ln.params }}</li>
+                    <li class="tick-in">{{ text(ln) }}</li>
                   }
                 </ul>
                 @if (!ps.canConfirm) {
@@ -1064,7 +1062,6 @@ import { TipComponent } from '../ui/tip.component';
     .fbar-locked {
       position: absolute;
       inset: 0 0 0 auto;
-      right: 0;
       background: repeating-linear-gradient(
         135deg,
         var(--o-border-strong) 0 3px,
@@ -1511,12 +1508,7 @@ export class WeekPage {
 
   /** Traduce una riga: i parametri che finiscono in `Key` sono a loro volta chiavi. */
   protected text(l: TextLine): string {
-    const params: Record<string, string | number> = {};
-    for (const [k, v] of Object.entries(l.params ?? {})) {
-      if (k.endsWith('Key')) params[k.slice(0, -3)] = this.i18n.t(String(v));
-      else params[k] = v;
-    }
-    return this.i18n.t(l.key, params);
+    return lineText((k, p) => this.i18n.t(k, p), l);
   }
 
   protected tone(value: number): 'pos' | 'neg' | 'mid' {

@@ -54,10 +54,10 @@ export interface PlanSheetView {
     now: number;
     /** Tetto del carico: la tacca sulla barra. */
     cap: number;
-    /** Calo rispetto ad adesso dovuto al tetto (si parte sopra il tetto). */
-    capFall: number;
-    /** Recupero della settimana che il tetto spreca, senza calo. */
-    capWaste: number;
+    /** Calo vero a fine settimana rispetto ad adesso (partita da titolare compresa). */
+    fall: number;
+    /** Punti di recupero che il tetto del carico taglia questa settimana. */
+    capCut: number;
     /** Ipotesi "se titolare 90 minuti": vale solo con partite nel capitolo. */
     starter: boolean;
     /** "+2%" nei momenti chiave alla freschezza attesa; nullo senza partite. */
@@ -90,13 +90,32 @@ export interface PlanSheetView {
 
 const LOADS: readonly Load[] = ['rest', 'balanced', 'push'];
 
-/** Probabilità a parole, con frazioni semplici: 0,51 -> "circa 1 su 2", 0,75 -> "circa 3 su 4". */
-export function chanceWords(p: number): string {
-  if (p < 0.01) return 'meno di 1 su 100';
-  if (p >= 0.95) return 'quasi certo';
-  if (p < 2 / 3) return `circa 1 su ${Math.round(1 / p)}`;
-  const n = Math.round(1 / (1 - p));
-  return `circa ${n - 1} su ${n}`;
+/**
+ * Probabilità a parole, con frazioni semplici: 0,51 -> "circa 1 su 2", 0,75 -> "circa 3 su 4".
+ * Restituisce parametri da fondere nella riga: `chanceKey` si traduce con `num` e `den`.
+ */
+export function chanceWords(p: number): TextParams {
+  if (p < 0.01) return { chanceKey: 'ui.plan.chance.lt100' };
+  if (p >= 0.95) return { chanceKey: 'ui.plan.chance.almost' };
+  if (p < 2 / 3) return { chanceKey: 'ui.plan.chance.about', num: 1, den: Math.round(1 / p) };
+  const den = Math.round(1 / (1 - p));
+  return { chanceKey: 'ui.plan.chance.about', num: den - 1, den };
+}
+
+/**
+ * Testo di una riga: i parametri che finiscono in `Key` sono chiavi, tradotte con gli altri
+ * parametri della riga e passate senza il suffisso (`chanceKey` -> `{chance}`).
+ */
+export function lineText(t: (key: string, params?: TextParams) => string, l: TextLine): string {
+  const plain: TextParams = {};
+  const keys: [string, string][] = [];
+  for (const [k, v] of Object.entries(l.params ?? {})) {
+    if (k.endsWith('Key')) keys.push([k.slice(0, -3), String(v)]);
+    else plain[k] = v;
+  }
+  const params: TextParams = { ...plain };
+  for (const [name, key] of keys) params[name] = t(key, plain);
+  return t(l.key, params);
 }
 
 /** La scheda del piano dall'anteprima del motore: nessun calcolo di gioco qui, solo presentazione. */
@@ -128,9 +147,8 @@ export function planSheetView(
   );
   const now = Math.round(clamp100(s.player.condition.energy));
   const cap = prog.loads[eff].freshnessCap;
-  // capDrop del motore è il recupero tagliato dal tetto: calo vero solo se si parte sopra il tetto.
-  const capDrop = Math.round(w.capDrop);
-  const capFall = capDrop > 0 ? Math.min(capDrop, Math.max(0, now - cap)) : 0;
+  // capDrop del motore è solo il recupero tagliato dal tetto; il calo vero si misura dalla fine settimana.
+  const fall = Math.max(0, now - Math.round(w.freshnessEnd));
 
   const skillId: Skill | undefined = plan.focus ?? ch.nextPoint?.skill;
   const skillValue = skillId ? s.player.skills[skillId] : 0;
@@ -176,6 +194,7 @@ export function planSheetView(
   const canConfirm = plan.life === undefined || (available(plan.life)?.available ?? false);
 
   const riskKey = `ui.plan.risk.${ch.riskBand}`;
+  const lines = lifeLines(preview, plan.life, s, ctx);
   const loadShownKey = `week.load.${eff}.name`;
   return {
     header: { chapterKey: `ui.chapter.name.${s.chapter.id}`, weeks: ch.weeks, matches: ch.matches },
@@ -187,8 +206,8 @@ export function planSheetView(
       value,
       now,
       cap,
-      capFall,
-      capWaste: capDrop - capFall,
+      fall,
+      capCut: Math.round(w.capDrop),
       starter,
       moments: starter ? `${formatDelta(Math.round(ch.momentsModifier * 100))}%` : null,
     },
@@ -205,7 +224,7 @@ export function planSheetView(
         ? `${formatDelta(Math.round((ch.declineFactor - 1) * 100))}%`
         : null,
     life,
-    lifeLines: lifeLines(preview, plan.life, s, ctx),
+    lifeLines: lines,
     dropped,
     canConfirm,
     summary: [
@@ -213,6 +232,8 @@ export function planSheetView(
       { key: 'ui.plan.say.fresh', params: { value } },
       { key: 'ui.plan.say.risk', params: { riskKey } },
       { key: plan.life ? `week.life.${plan.life}.name` : 'week.life.none.name' },
+      // L'effetto principale dell'azione, non solo il nome.
+      ...(plan.life && lines[0] ? [lines[0]] : []),
     ],
   };
 }
@@ -264,12 +285,12 @@ function lifeLines(
       }
       lines.push({
         key: 'ui.plan.life.gossip',
-        params: { chance: chanceWords(ch.gossipChance ?? 0), weeks: ch.weeks },
+        params: { ...chanceWords(ch.gossipChance ?? 0), weeks: ch.weeks },
       });
       if (ch.matches > 0 && (ch.fineChance ?? 0) > 0) {
         lines.push({
           key: 'ui.plan.life.fine',
-          params: { chance: chanceWords(ch.fineChance ?? 0), matches: ch.matches },
+          params: { ...chanceWords(ch.fineChance ?? 0), matches: ch.matches },
         });
       }
       return lines;

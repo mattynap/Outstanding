@@ -7,13 +7,20 @@ import {
   type PlanPreview,
   type WeekPlan,
 } from '@outstanding/engine';
+import base from '../../content/data/i18n/it.json';
+import ui from '../../content/data/i18n/it.ui.json';
 import {
   chanceWords,
   disciplineView,
+  lineText,
   planIssuesView,
   planSheetView,
+  type TextLine,
 } from '../src/app/core/plan-sheet-view';
-import { shownStatDelta } from '../src/app/core/text';
+import { shownStatDelta, translate, type TextParams } from '../src/app/core/text';
+
+const table: Record<string, string> = { ...base, ...ui };
+const say = (l: TextLine) => lineText((k: string, p?: TextParams) => translate(table, k, p), l);
 
 const ctx = defaultContext;
 const start = newCareer(
@@ -27,13 +34,19 @@ function preview(
   s: GameState,
   plan: WeekPlan,
   chapter: Partial<PlanPreview['chapter']> = {},
+  weekly: Partial<PlanPreview['weekly']> = {},
 ): PlanPreview {
   const p = previewPlan(s, plan, ctx);
-  return { ...p, chapter: { ...p.chapter, ...chapter } };
+  return { weekly: { ...p.weekly, ...weekly }, chapter: { ...p.chapter, ...chapter } };
 }
 
-function sheet(s: GameState, plan: WeekPlan, chapter: Partial<PlanPreview['chapter']> = {}) {
-  return planSheetView(preview(s, plan, chapter), plan, s, ctx);
+function sheet(
+  s: GameState,
+  plan: WeekPlan,
+  chapter: Partial<PlanPreview['chapter']> = {},
+  weekly: Partial<PlanPreview['weekly']> = {},
+) {
+  return planSheetView(preview(s, plan, chapter, weekly), plan, s, ctx);
 }
 
 describe('scheda del piano', () => {
@@ -59,7 +72,7 @@ describe('scheda del piano', () => {
     // Partendo da 85, la Spinta scende al tetto: il calo si dichiara.
     const push = sheet(start, { load: 'push' });
     expect(push.freshness.now).toBe(85);
-    expect(push.freshness.capFall).toBe(85 - caps.push.freshnessCap);
+    expect(push.freshness.fall).toBe(85 - caps.push.freshnessCap);
     expect(push.freshness.value).toBeLessThanOrEqual(caps.push.freshnessCap);
   });
 
@@ -70,8 +83,15 @@ describe('scheda del piano', () => {
       player: { ...start.player, condition: { ...start.player.condition, energy: cap } },
     };
     const v = sheet(atCap, { load: 'balanced' });
-    expect(v.freshness.capFall).toBe(0);
-    expect(v.freshness.capWaste).toBe(ctx.config.progression.loads.balanced.freshness);
+    expect(v.freshness.fall).toBe(0);
+    expect(v.freshness.capCut).toBe(ctx.config.progression.loads.balanced.freshness);
+  });
+
+  it('con una partita nella settimana il calo vero si misura dalla fine settimana', () => {
+    // 85 + 12 (Spinta) − 22 (partita) = 75, tagliato a 70: il tetto taglia 5, il calo vero è 15.
+    const v = sheet(start, { load: 'push' }, {}, { freshnessEnd: 70, capDrop: 5 });
+    expect(v.freshness.fall).toBe(15);
+    expect(v.freshness.capCut).toBe(5);
   });
 
   it('ogni carico dichiara freschezza a settimana e tetto, letti dalla configurazione', () => {
@@ -89,7 +109,8 @@ describe('scheda del piano', () => {
     const p = 1 - Math.pow(1 - 0.05, 14);
     const v = sheet(start, plan, { weeks: 14, gossipChance: p, fineChance: 0, matches: 0 });
     const gossip = v.lifeLines.find((l) => l.key === 'ui.plan.life.gossip')!;
-    expect(gossip.params).toMatchObject({ chance: 'circa 1 su 2', weeks: 14 });
+    expect(gossip.params).toMatchObject({ weeks: 14 });
+    expect(say(gossip)).toBe('circa 1 su 2 di finire sui giornali in 14 settimane.');
     // Senza partite niente multa da dichiarare.
     expect(v.lifeLines.some((l) => l.key === 'ui.plan.life.fine')).toBe(false);
     const withMatches = sheet(start, plan, {
@@ -98,9 +119,9 @@ describe('scheda del piano', () => {
       fineChance: 0.47,
       matches: 6,
     });
-    expect(withMatches.lifeLines.find((l) => l.key === 'ui.plan.life.fine')!.params).toMatchObject({
-      chance: 'circa 1 su 2',
-    });
+    expect(say(withMatches.lifeLines.find((l) => l.key === 'ui.plan.life.fine')!)).toBe(
+      'circa 1 su 2 di prendere una multa nelle 6 partite.',
+    );
   });
 
   it('infortunato: carico mostrato "Recupero" e chip del carico bloccati', () => {
@@ -179,25 +200,31 @@ describe('scheda del piano', () => {
     expect(sheet(start, { load: 'rest' }).decline).toBeNull();
   });
 
-  it('il riepilogo per il lettore di schermo dice carico, freschezza e rischio', () => {
+  it("il riepilogo per il lettore di schermo dice carico, freschezza, rischio ed effetto dell'azione", () => {
     const v = sheet(start, { load: 'push', life: 'family' });
     expect(v.summary.map((l) => l.key)).toEqual([
       'ui.plan.say.load',
       'ui.plan.say.fresh',
       'ui.plan.say.risk',
       'week.life.family.name',
+      'ui.plan.life.family',
     ]);
+    expect(say(v.summary[0]!)).toBe('Carico Spinta.');
+    expect(sheet(start, { load: 'push' }).summary.at(-1)!.key).toBe('week.life.none.name');
   });
 });
 
 describe('probabilità a parole', () => {
   it('arrotonda a frazioni semplici', () => {
-    expect(chanceWords(0.512)).toBe('circa 1 su 2');
-    expect(chanceWords(0.26)).toBe('circa 1 su 4');
-    expect(chanceWords(0.1)).toBe('circa 1 su 10');
-    expect(chanceWords(0.75)).toBe('circa 3 su 4');
-    expect(chanceWords(0.004)).toBe('meno di 1 su 100');
-    expect(chanceWords(0.97)).toBe('quasi certo');
+    const words = (p: number) => say({ key: 'ui.plan.chance.line', params: chanceWords(p) });
+    table['ui.plan.chance.line'] = '{chance}';
+    expect(words(0.512)).toBe('circa 1 su 2');
+    expect(words(0.26)).toBe('circa 1 su 4');
+    expect(words(0.1)).toBe('circa 1 su 10');
+    expect(words(0.75)).toBe('circa 3 su 4');
+    expect(words(0.004)).toBe('meno di 1 su 100');
+    expect(words(0.97)).toBe('quasi certo');
+    expect(chanceWords(0.512)).toEqual({ chanceKey: 'ui.plan.chance.about', num: 1, den: 2 });
   });
 });
 

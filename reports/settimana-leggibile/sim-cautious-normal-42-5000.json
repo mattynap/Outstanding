@@ -1,0 +1,460 @@
+{
+  "strategy": "cautious",
+  "seed": 42,
+  "careers": 5000,
+  "overall": {
+    "careers": 5000,
+    "reachedTopPct": 57.2,
+    "topDebutAge": 25.9,
+    "topLevelSeasons": 3.4,
+    "appearances": 637.4,
+    "goals": 49.4,
+    "assists": 55.4,
+    "averageRating": 6.27,
+    "averageRatingExact": 6.270347646525382,
+    "peakOvr": 67.8,
+    "trophies": 0.76,
+    "withTrophyPct": 46.5,
+    "trophiesById": {
+      "L3": 0.28,
+      "L1": 0.08,
+      "national_cup": 0.1,
+      "continental_major": 0,
+      "L2": 0.12,
+      "L4": 0.09,
+      "L5": 0.06,
+      "continental_minor": 0.01,
+      "L6": 0.03
+    },
+    "retirementAge": 36.8,
+    "retirementReasonsPct": {
+      "no_offers": 95.3,
+      "age": 4.7
+    },
+    "score": 1494,
+    "tiersPct": {
+      "anonima": 21.1,
+      "leggenda": 2.5,
+      "discreta": 30.7,
+      "buona": 26.6,
+      "grande": 19.1
+    },
+    "legendPct": 2.5,
+    "playMinutes": 414,
+    "stepsPerMatch": {
+      "visible": 1.81,
+      "total": 3.33
+    },
+    "seasons": 20.7,
+    "time": {
+      "goals": {
+        "all": {
+          "total": 413348,
+          "metPct": 41.7
+        },
+        "assists": {
+          "total": 46030,
+          "metPct": 37.9
+        },
+        "avgRating": {
+          "total": 113013,
+          "metPct": 43.9
+        },
+        "cleanSheets": {
+          "total": 47818,
+          "metPct": 35.4
+        },
+        "goals": {
+          "total": 17265,
+          "metPct": 41.2
+        },
+        "pickGoal": {
+          "total": 10003,
+          "metPct": 54.9
+        },
+        "starts": {
+          "total": 125484,
+          "metPct": 48.9
+        },
+        "tablePosition": {
+          "total": 53735,
+          "metPct": 26.8
+        }
+      },
+      "minutesPerSeason": {
+        "median": 20.1,
+        "mean": 19.2,
+        "p10": 15.5,
+        "p90": 23.5
+      },
+      "hoursPerCareer": {
+        "median": 6.94,
+        "mean": 6.91,
+        "p10": 6.19,
+        "p90": 7.56
+      },
+      "perSeason": {
+        "chapters": 4.87,
+        "newsStops": 0,
+        "offerStops": 0.64,
+        "picks": 13.65
+      }
+    }
+  },
+  "byRole": {
+    "GK": {
+      "careers": 1239,
+      "reachedTopPct": 49.7,
+      "topDebutAge": 25.7,
+      "topLevelSeasons": 2.8,
+      "appearances": 559,
+      "goals": 0,
+      "assists": 0,
+      "averageRating": 6.19,
+      "averageRatingExact": 6.190831131210372,
+      "peakOvr": 67.6,
+      "trophies": 0.2,
+      "withTrophyPct": 17.4,
+      "trophiesById": {
+        "L2": 0.02,
+        "L3": 0.05,
+        "L6": 0.01,
+        "national_cup": 0.05,
+        "continental_minor": 0,
+        "L5": 0.03,
+        "L1": 0.01,
+        "L4": 0.02
+      },
+      "retirementAge": 38.1,
+      "retirementReasonsPct": {
+        "no_offers": 85.1,
+        "age": 14.9
+      },
+      "score": 1111,
+      "tiersPct": {
+        "discreta": 31.7,
+        "anonima": 38.8,
+        "buona": 18.3,
+        "grande": 10.1,
+        "leggenda": 1
+      },
+      "legendPct": 1.05,
+      "playMinutes": 417,
+      "stepsPerMatch": {
+        "visible": 1.32,
+        "total": 2.31
+      },
+      "seasons": 22,
+      "time": {
+        "goals": {
+          "all": {
+            "total": 109084,
+            "metPct": 29.4
+          },
+          "avgRating": {
+            "total": 27144,
+            "metPct": 31.7
+          },
+          "cleanSheets": {
+            "total": 24419,
+            "metPct": 24.9
+          },
+          "starts": {
+            "total": 43453,
+            "metPct": 35.6
+          },
+          "tablePosition": {
+            "total": 14068,
+            "metPct": 13.5
+          }
+        },
+        "minutesPerSeason": {
+          "median": 19,
+          "mean": 18.2,
+          "p10": 15.2,
+          "p90": 22.6
+        },
+        "hoursPerCareer": {
+          "median": 6.99,
+          "mean": 6.94,
+          "p10": 6.34,
+          "p90": 7.49
+        },
+        "perSeason": {
+          "chapters": 4.89,
+          "newsStops": 0,
+          "offerStops": 0.7,
+          "picks": 13.6
+        }
+      }
+    },
+    "DEF": {
+      "careers": 1238,
+      "reachedTopPct": 54.3,
+      "topDebutAge": 25.7,
+      "topLevelSeasons": 3.3,
+      "appearances": 683.4,
+      "goals": 0,
+      "assists": 14.7,
+      "averageRating": 6.35,
+      "averageRatingExact": 6.346582771679449,
+      "peakOvr": 68.1,
+      "trophies": 0.38,
+      "withTrophyPct": 32.4,
+      "trophiesById": {
+        "national_cup": 0.06,
+        "L2": 0.05,
+        "L3": 0.14,
+        "L4": 0.05,
+        "L1": 0.01,
+        "L5": 0.05,
+        "L6": 0.02,
+        "continental_minor": 0
+      },
+      "retirementAge": 36.7,
+      "retirementReasonsPct": {
+        "no_offers": 97.9,
+        "age": 2.1
+      },
+      "score": 1510,
+      "tiersPct": {
+        "anonima": 21.7,
+        "buona": 25.4,
+        "leggenda": 2.7,
+        "discreta": 30.9,
+        "grande": 19.2
+      },
+      "legendPct": 2.75,
+      "playMinutes": 422,
+      "stepsPerMatch": {
+        "visible": 2.02,
+        "total": 3.81
+      },
+      "seasons": 20.6,
+      "time": {
+        "goals": {
+          "all": {
+            "total": 101792,
+            "metPct": 46.6
+          },
+          "avgRating": {
+            "total": 31658,
+            "metPct": 47.5
+          },
+          "cleanSheets": {
+            "total": 23399,
+            "metPct": 46.3
+          },
+          "starts": {
+            "total": 31519,
+            "metPct": 57.8
+          },
+          "tablePosition": {
+            "total": 15216,
+            "metPct": 22.2
+          }
+        },
+        "minutesPerSeason": {
+          "median": 20.6,
+          "mean": 19.6,
+          "p10": 15.6,
+          "p90": 23.7
+        },
+        "hoursPerCareer": {
+          "median": 7.04,
+          "mean": 7.03,
+          "p10": 6.42,
+          "p90": 7.59
+        },
+        "perSeason": {
+          "chapters": 4.86,
+          "newsStops": 0,
+          "offerStops": 0.67,
+          "picks": 13.63
+        }
+      }
+    },
+    "MID": {
+      "careers": 1275,
+      "reachedTopPct": 59.9,
+      "topDebutAge": 25.9,
+      "topLevelSeasons": 3.6,
+      "appearances": 729.6,
+      "goals": 0.8,
+      "assists": 163.8,
+      "averageRating": 6.23,
+      "averageRatingExact": 6.230103369243548,
+      "peakOvr": 67.8,
+      "trophies": 0.93,
+      "withTrophyPct": 58.9,
+      "trophiesById": {
+        "L4": 0.15,
+        "L5": 0.11,
+        "national_cup": 0.1,
+        "L3": 0.32,
+        "L2": 0.12,
+        "L6": 0.05,
+        "L1": 0.07,
+        "continental_minor": 0.01
+      },
+      "retirementAge": 36.6,
+      "retirementReasonsPct": {
+        "no_offers": 98.4,
+        "age": 1.6
+      },
+      "score": 1745,
+      "tiersPct": {
+        "discreta": 28.2,
+        "anonima": 9.2,
+        "buona": 33.6,
+        "grande": 26,
+        "leggenda": 3.1
+      },
+      "legendPct": 3.06,
+      "playMinutes": 428,
+      "stepsPerMatch": {
+        "visible": 2.3,
+        "total": 4.29
+      },
+      "seasons": 20.4,
+      "time": {
+        "goals": {
+          "all": {
+            "total": 104260,
+            "metPct": 51
+          },
+          "assists": {
+            "total": 29616,
+            "metPct": 48.5
+          },
+          "avgRating": {
+            "total": 31455,
+            "metPct": 48.6
+          },
+          "starts": {
+            "total": 28843,
+            "metPct": 64.8
+          },
+          "tablePosition": {
+            "total": 14346,
+            "metPct": 33.4
+          }
+        },
+        "minutesPerSeason": {
+          "median": 20.8,
+          "mean": 20,
+          "p10": 15.8,
+          "p90": 23.8
+        },
+        "hoursPerCareer": {
+          "median": 7.18,
+          "mean": 7.13,
+          "p10": 6.46,
+          "p90": 7.71
+        },
+        "perSeason": {
+          "chapters": 4.86,
+          "newsStops": 0,
+          "offerStops": 0.6,
+          "picks": 13.67
+        }
+      }
+    },
+    "ATT": {
+      "careers": 1248,
+      "reachedTopPct": 64.6,
+      "topDebutAge": 26,
+      "topLevelSeasons": 3.9,
+      "appearances": 575.3,
+      "goals": 197.1,
+      "assists": 40.3,
+      "averageRating": 6.31,
+      "averageRatingExact": 6.314781405394697,
+      "peakOvr": 67.6,
+      "trophies": 1.52,
+      "withTrophyPct": 76.6,
+      "trophiesById": {
+        "L3": 0.59,
+        "L1": 0.21,
+        "national_cup": 0.17,
+        "continental_major": 0.01,
+        "L2": 0.29,
+        "continental_minor": 0.01,
+        "L6": 0.03,
+        "L4": 0.14,
+        "L5": 0.07
+      },
+      "retirementAge": 35.8,
+      "retirementReasonsPct": {
+        "no_offers": 99.8,
+        "age": 0.2
+      },
+      "score": 1600,
+      "tiersPct": {
+        "anonima": 15.2,
+        "leggenda": 3.1,
+        "discreta": 32,
+        "grande": 20.8,
+        "buona": 28.8
+      },
+      "legendPct": 3.13,
+      "playMinutes": 391,
+      "stepsPerMatch": {
+        "visible": 1.6,
+        "total": 2.95
+      },
+      "seasons": 19.7,
+      "time": {
+        "goals": {
+          "all": {
+            "total": 98212,
+            "metPct": 40.4
+          },
+          "assists": {
+            "total": 16414,
+            "metPct": 18.6
+          },
+          "avgRating": {
+            "total": 22756,
+            "metPct": 47
+          },
+          "goals": {
+            "total": 17265,
+            "metPct": 41.2
+          },
+          "pickGoal": {
+            "total": 10003,
+            "metPct": 54.9
+          },
+          "starts": {
+            "total": 21669,
+            "metPct": 41.3
+          },
+          "tablePosition": {
+            "total": 10105,
+            "metPct": 43
+          }
+        },
+        "minutesPerSeason": {
+          "median": 19.9,
+          "mean": 18.9,
+          "p10": 15.3,
+          "p90": 23.3
+        },
+        "hoursPerCareer": {
+          "median": 6.54,
+          "mean": 6.52,
+          "p10": 5.85,
+          "p90": 7.17
+        },
+        "perSeason": {
+          "chapters": 4.86,
+          "newsStops": 0,
+          "offerStops": 0.56,
+          "picks": 13.72
+        }
+      }
+    }
+  },
+  "difficulty": "normal"
+}
